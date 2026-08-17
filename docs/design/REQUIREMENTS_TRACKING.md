@@ -265,3 +265,24 @@
 | SWR-V3.1-090 | precedent_library.json：20 条先例（criterion/counterexample/applicability_scope 齐备） | 已完成 |  |
 | SWR-V3.1-091 | checklist_library.json：19 条清单（结构化 binding） | 已完成 |  |
 | SWR-V3.1-092 | harness_manuals × 15（六节结构，事实带 lesson 出处） | 已完成 |  |
+
+---
+
+## v3.2 增量（REQ-V3.2 共 17 条 / SWR-V3.2 共 18 条）
+
+> 完整规格见 REQ_V3_2.md / SWR_V3_2.md。设计完成（2026-08-17），开发未开始。
+
+### 系统需求（REQ-V3.2）状态汇总
+
+| 编号段 | 主题 | 状态 |
+|---|---|---|
+| REQ-V3.2-001~005 | 语言维度（inventory/候选级 lang/词族过滤/手册装载） | 未开发 |
+| REQ-V3.2-010~014 | FFI 边界域（第五域/cross_evidence/CK-FFI/PREC-MULTI-LANG） | 未开发 |
+| REQ-V3.2-020~024 | R3.5-N 复活攻击（抽样/裁决/模式/门禁/任务书） | 未开发 |
+| REQ-V3.2-030~031 | 验收缺陷制度化（分级条款/关键词回填流程） | 部分（grade_verdict 函数已在 v3.1；条款化未开发） |
+| REQ-V3.2-040~041 | 报告语言覆盖表/FFI 边界表 | 未开发 |
+| REQ-V3.2-100~102 | Phase 3.2.3 验收（混合试审/零回退回归/install） | 未开始 |
+
+### 软件需求（SWR-V3.2）状态汇总
+
+全部 18 条未开发（依赖序：M1 → 资产 → M3/M11 → W1 → M4 → M5 → 流程条款）
