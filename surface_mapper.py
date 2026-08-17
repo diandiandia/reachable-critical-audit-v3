@@ -104,10 +104,15 @@ def language_inventory(root):
     component_hint 启发式: 绑定层目录名 (bindings/ffi/ctypes/csrc/native/ext)/
     头文件目录 (include)/脚本目录 (scripts)/前端目录 (www/web/ui/frontend)。
     component_role (v3.2.1): server-side/client-only/build-config。
+    v3.2.2 (REQ-V3.2.2-023): 运行时占比修正——语言文件 >90% 位于
+    scripts/tests/tools/docs/configs 目录时 role=build-config (mbedtls 实证:
+    .sh 构建脚本曾被标 server-side 触发 "4 语言混合" 过配)。
     单语言项目清单长度 1 (向后兼容)。"""
     from signature_matcher import CODE_EXTENSIONS
     inv = {}
     BIND_DIRS = {"bindings", "ffi", "ctypes", "csrc", "native", "ext", "napi"}
+    NON_RUNTIME_SEGS = {"scripts", "script", "tests", "test", "tools", "tool",
+                        "docs", "doc", "configs", "config"}
     for dirpath, _dirs, files in os.walk(root):
         if any(part in dirpath for part in (".git", "node_modules", ".venv", "target", "build")):
             continue
@@ -121,6 +126,7 @@ def language_inventory(root):
             hint = "scripts"
         elif parts & {"www", "web", "ui", "frontend"}:
             hint = "frontend"
+        is_runtime_dir = not (parts & NON_RUNTIME_SEGS)
         for f in files:
             ext = os.path.splitext(f)[1].lower()
             if ext not in CODE_EXTENSIONS:
@@ -129,13 +135,22 @@ def language_inventory(root):
             # v3.2: 头文件归并到 C 语言组 (h/hpp/cc 是 C 组件的组成部分而非独立语言)
             if lang in (".h", ".hpp"):
                 lang = ".c"
-            rec = inv.setdefault(lang, {"file_count": 0, "dirs": set(), "component_hint": hint})
+            rec = inv.setdefault(lang, {"file_count": 0, "runtime_files": 0,
+                                        "dirs": set(), "component_hint": hint})
             rec["file_count"] += 1
+            if is_runtime_dir:
+                rec["runtime_files"] += 1
             rec["dirs"].add(dirpath)
-    out = [{"lang": k, "file_count": v["file_count"],
-            "component_hint": v["component_hint"],
-            "component_role": _component_role(v["component_hint"]),
-            "sample_dirs": sorted(v["dirs"])[:3]} for k, v in sorted(inv.items(), key=lambda x: -x[1]["file_count"])]
+    out = []
+    for k, v in sorted(inv.items(), key=lambda x: -x[1]["file_count"]):
+        role = _component_role(v["component_hint"])
+        if v["component_hint"] in ("core", "scripts") and v["file_count"] > 0 \
+                and v["runtime_files"] / v["file_count"] < 0.1:
+            role = "build-config"
+        out.append({"lang": k, "file_count": v["file_count"],
+                    "component_hint": v["component_hint"],
+                    "component_role": role,
+                    "sample_dirs": sorted(v["dirs"])[:3]})
     return out
 
 
@@ -439,7 +454,11 @@ def size_tier(project_root):
                        ".sh", ".pl", ".pm"}:
                 count += 1
     inv = language_inventory(project_root)
-    n_langs = len(inv)
+    # v3.2.2 (REQ-V3.2.2-023): 语言混合度只计运行时语言 (server-side 组件角色)——
+    # .sh/.py/.pl 构建脚本曾把 mbedtls 计为 "4 语言混合" 触发 large 档 (无害过配,
+    # 但混合度语义应排除构建期语言)
+    runtime_langs = [x for x in inv if x.get("component_role") == "server-side"]
+    n_langs = len(runtime_langs)
     mixed_domains = DOMAINS + [BOUNDARY_DOMAIN]
     if n_langs > 2:
         # v3.2 (SWR-V3.2-014): 3+ 语言混合项目保底 large 档 (多组件审计成本)
@@ -517,8 +536,11 @@ def repair_surfaces(data, project_root=None):
 
 def merge_surfaces(files, project_root=None):
     """SWR-V3-005: 多测绘产出合并。同 entry_point 多域归属合并; 其余冲突标注。
-    project_root 统一解析相对路径 (否则相对/绝对混用导致多域归属检测失效)。"""
-    merged = {"schema_version": "3.0", "surfaces": [], "conflicts": []}
+    project_root 统一解析相对路径 (否则相对/绝对混用导致多域归属检测失效)。
+    v3.2.2 (REQ-V3.2.2-020): 产出 mirror_pairs——kept-first 冲突对,
+    门禁⑦ tracked 计算自动传播镜像面覆盖 (mbedtls 审计 15 冲突对手写 bridge 制度化)。"""
+    merged = {"schema_version": "3.0", "surfaces": [], "conflicts": [],
+              "mirror_pairs": []}
     keymap = {}
     for f in files:
         data = normalize_surfaces(json.load(open(f)), project_root) or {"surfaces": []}
@@ -535,6 +557,8 @@ def merge_surfaces(files, project_root=None):
                             "surfaces": [existing["surface"]["id"], s["id"]],
                             "resolution": "kept-first-multi-domain",
                         })
+                        merged["mirror_pairs"].append(
+                            [existing["surface"]["id"], s["id"]])
                         continue
                 keymap[key] = {"surface": s}
             merged["surfaces"].append(s)
@@ -547,7 +571,65 @@ def merge_surfaces(files, project_root=None):
         seen_ids.add(s.get("id"))
         dedup.append(s)
     merged["surfaces"] = dedup
+    # mirror_pairs 去重 (无序对)
+    seen_pairs = set()
+    mps = []
+    for a, b in merged["mirror_pairs"]:
+        k = tuple(sorted((a, b)))
+        if k in seen_pairs:
+            continue
+        seen_pairs.add(k)
+        mps.append([a, b])
+    merged["mirror_pairs"] = mps
     return merged
+
+
+def scope_snapshot(project_root):
+    """v3.2.2 (REQ-V3.2.2-018): R0 scope 快照——子模块状态 + 关键目录存在性。
+    动机: mbedtls 审计中 R4 智能体自行 submodule update 物化 tf-psa-crypto,
+    R1 的"子模块空目录"scope 判定与 R2 drop 理由当场作废; 快照供各阶段 diff。"""
+    import subprocess
+    snap = {"schema_version": "3.2.2", "submodules": {}, "key_dirs": {}}
+    try:
+        out = subprocess.run(["git", "-C", project_root, "submodule", "status"],
+                             capture_output=True, text=True, timeout=15).stdout
+        for line in out.splitlines():
+            parts = line.split()
+            if len(parts) >= 2:
+                # 形态: "<sha> <path> (<describe>)" 或 "-<sha> <path>" (未物化)
+                snap["submodules"][parts[1]] = parts[0]
+    except (OSError, subprocess.SubprocessError) as e:
+        snap["git_error"] = f"submodule status failed: {e}"
+    gm = os.path.join(project_root, ".gitmodules")
+    if os.path.exists(gm):
+        for line in open(gm, errors="ignore"):
+            line = line.strip()
+            if line.startswith("path ="):
+                p = line.split("=", 1)[1].strip()
+                snap["key_dirs"][p] = bool(os.listdir(
+                    os.path.join(project_root, p))) if os.path.isdir(
+                    os.path.join(project_root, p)) else False
+    return snap
+
+
+def scope_diff(project_root, snapshot):
+    """v3.2.2 (REQ-V3.2.2-018): 现状 vs 快照差异。
+    返回 {changed: bool, changes: [描述], affected_dirs: [路径]}。"""
+    cur = scope_snapshot(project_root)
+    changes = []
+    affected = []
+    for name, sha in snapshot.get("submodules", {}).items():
+        cur_sha = cur.get("submodules", {}).get(name)
+        if cur_sha != sha:
+            changes.append(f"submodule {name}: {sha} -> {cur_sha}")
+            affected.append(name)
+    for d, was in snapshot.get("key_dirs", {}).items():
+        now = cur.get("key_dirs", {}).get(d)
+        if now != was:
+            changes.append(f"dir {d}: materialized={was} -> {now}")
+            affected.append(d)
+    return {"changed": bool(changes), "changes": changes,
+            "affected_dirs": affected}
 
 
 def main(argv):
@@ -583,8 +665,40 @@ def main(argv):
         root = argv[argv.index("--root") + 1] if "--root" in argv else None
         files = [a for a in argv[2:] if a != "--root" and a != root]
         out = merge_surfaces(files, root)
+        # v3.2.2 (REQ-V3.2.2-011): 默认落盘 input_surface.json
+        # (P-E REQ-V3.2.2-020: mirror_pairs 由 merge_surfaces 产出, 一并落盘)
+        out_path = (argv[argv.index("--out") + 1] if "--out" in argv
+                    else os.path.join(root, ".audit_results", "input_surface.json")
+                    if root else "input_surface.json")
+        os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+        with open(out_path, "w") as f:
+            json.dump(out, f, ensure_ascii=False, indent=2)
         print(json.dumps(out, ensure_ascii=False, indent=2))
+        print(f"# written: {out_path}", file=sys.stderr)
         return 0
+    if cmd == "scope":
+        sub = argv[2] if len(argv) > 2 else "snapshot"
+        root = argv[3] if len(argv) > 3 else "."
+        if sub == "snapshot":
+            snap = scope_snapshot(root)
+            out_path = os.path.join(root, ".audit_results", "scope_snapshot.json")
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            json.dump(snap, open(out_path, "w"), ensure_ascii=False, indent=2)
+            print(json.dumps(snap, ensure_ascii=False, indent=2))
+            print(f"# written: {out_path}", file=sys.stderr)
+            return 0
+        if sub == "diff":
+            sp = os.path.join(root, ".audit_results", "scope_snapshot.json")
+            if not os.path.exists(sp):
+                print(json.dumps({"changed": False, "changes": [],
+                                  "note": "no scope_snapshot.json (R0 未快照)"},
+                                 ensure_ascii=False))
+                return 0
+            snap = json.load(open(sp))
+            print(json.dumps(scope_diff(root, snap), ensure_ascii=False, indent=2))
+            return 0
+        print("usage: scope <snapshot|diff> <project>", file=sys.stderr)
+        return 1
     print(__doc__)
     return 1
 

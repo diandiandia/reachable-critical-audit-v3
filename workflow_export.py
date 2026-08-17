@@ -47,6 +47,11 @@ VERDICT_SCHEMA = {
             "type": "object", "required": ["edge", "proof"],
             "properties": {"edge": {"type": "string"}, "proof": {"type": "string"}}}},
         "cwe": {"type": "array", "items": {"type": "string"}},
+        # v3.2.2 (REQ-V3.2.2-017): claim_type 仅 REACHABLE 有意义——
+        # "声称"(漏洞声称)只属于可达裁决; UNREACHABLE 填 claim 会被 collect
+        # 机械置 null (claim_nulled_by=collect-claim-null-v3.2.2)
+        "claim_type": {"enum": ["crash", "panic", "oom", "unbounded", "xss",
+                                "protocol_dos", "null"]},
     },
 }
 

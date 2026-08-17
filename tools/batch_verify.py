@@ -33,6 +33,7 @@ batch_verify.py — R3 批量验证编排器 (Mode A' for opencode/Claude Code)
 
 import json
 import os
+import re
 import sys
 import glob
 
@@ -41,6 +42,59 @@ REQUIRED_VERDICT_KEYS = {"verdict", "reachability_type", "call_chain", "call_cha
 MIN_CALL_CHAIN_DEPTH = 3
 VALID_VERDICTS = {"REACHABLE", "UNREACHABLE", "NEEDS_REVIEW"}
 VALID_REACHABILITY_TYPES = {"DIRECT", "ACROSS_BOUNDARY", "INDIRECT", None}
+
+# v3.2.2 (REQ-V3.2.2-006): verifier 步骤 0.5 按候选 lang 分派模板——
+# 第一原则三禁止②: 运行时机制不得依赖单一语言特征 (Python 思维定式根除)
+IMPORTABILITY_STEPS = {
+    "python": """### 步骤 0.5（v3.2.1 强制）: 模块可导入性预检
+回溯前先回答：**链首模块在部署布局下能否被导入？**（模块存在≠被导入）
+1. 顶层包解析：链首模块所属顶层包能否解析（import 语法/包结构）——顶层包不存在则链首模块整体不可导入。
+   ⚠️ 包存在性检查不执行模块体：传递依赖断裂（模块体 import 链内一层断裂，
+   如模块体顶层裸导入同级模块）会空过——存在依赖可疑时必须用实际导入验证
+   （python3 -c 'import <module>'，stub 仅第三方依赖、项目自身 import 图真实执行）
+2. DI/组件扫描器吞错路径审查：注册器若含 `except Exception: log/continue` 模式，
+   必须验证目标模块实际注册成功（注册表/路由表/扫描日志），不得以框架设计推定
+3. import 失败 → 该边记 broken_edge，verdict=NEEDS_REVIEW（修复即可达条件候选，
+   blocking_point 写明断裂点）——静态链真实 ≠ 运行时存在""",
+    "c": """### 步骤 0.5（v3.2.1 强制）: 模块构建包含性预检
+回溯前先回答：**链首源文件在部署布局下是否被构建包含？**（源码存在≠被编译链接）
+1. 构建包含：该源文件被构建系统引用（CMake file(GLOB)/显式源列表/Makefile）——
+   未列入构建的文件不可达
+2. 符号引用：sink 函数是否被链上调用者实际引用（交叉引用/链接符号/调用 grep）——
+   被 #if 0 或未链接分支包围的符号不可达
+3. 构建失败/符号无引用 → 该边记 broken_edge，verdict=NEEDS_REVIEW
+   （修复即可达条件候选，blocking_point 写明断裂点）""",
+    "cpp": """### 步骤 0.5（v3.2.1 强制）: 模块构建包含性预检
+回溯前先回答：**链首源文件在部署布局下是否被构建包含？**（源码存在≠被编译链接）
+1. 构建包含：该源文件被构建系统引用（CMake/显式源列表）——未列入构建的文件不可达
+2. 符号引用：sink 函数是否被链上调用者实际引用（链接符号/调用 grep）——
+   被 #if 0 或未链接分支包围的符号不可达
+3. 构建失败/符号无引用 → 该边记 broken_edge，verdict=NEEDS_REVIEW""",
+    "go": """### 步骤 0.5（v3.2.1 强制）: 模块构建包含性预检
+回溯前先回答：**链首源文件在部署布局下是否被构建包含？**（源码存在≠被编译链接）
+1. 构建包含：该文件所属 package 是否被主模块 import（go.mod module 路径 +
+   包 import 图）——未被 import 的包不进入二进制
+2. 符号引用：sink 函数是否被实际调用（调用 grep/接口实现注册）
+3. 构建失败/符号无引用 → 该边记 broken_edge，verdict=NEEDS_REVIEW""",
+    "rust": """### 步骤 0.5（v3.2.1 强制）: 模块构建包含性预检
+回溯前先回答：**链首源文件在部署布局下是否被构建包含？**（源码存在≠被编译链接）
+1. 构建包含：该文件所属 crate 是否被 workspace/Cargo.toml 包含（mod 声明链）
+2. 符号引用：sink 函数是否被实际调用（调用 grep/特征实现注册）
+3. 构建失败/符号无引用 → 该边记 broken_edge，verdict=NEEDS_REVIEW""",
+    "java": """### 步骤 0.5（v3.2.1 强制）: 模块构建包含性预检
+回溯前先回答：**链首源文件在部署布局下是否被构建包含？**（源码存在≠被编译打包）
+1. 构建包含：该文件是否在构建系统（Maven module/Gradle sourceSet）内
+2. 符号引用：sink 方法是否被实际调用（调用 grep/接口实现/框架反射注册——
+   反射调用需查注解与扫描器配置，不得以框架设计推定）
+3. 构建失败/符号无引用 → 该边记 broken_edge，verdict=NEEDS_REVIEW""",
+    "default": """### 步骤 0.5（v3.2.1 强制）: 模块可导入性/构建包含性预检
+回溯前先回答：**链首模块在部署布局下能否被导入/构建？**（模块存在≠被导入）
+1. 顶层解析：链首模块所属顶层单元能否解析（包导入/构建系统包含/模块声明链）
+2. 依赖断裂审查：模块体内部依赖若断裂（如顶层裸导入缺失模块），存在性检查会
+   空过——可疑时必须用实际执行验证（实际 import/实际编译，stub 仅第三方依赖）
+3. 导入失败 → 该边记 broken_edge，verdict=NEEDS_REVIEW（修复即可达条件候选，
+   blocking_point 写明断裂点）——静态链真实 ≠ 运行时存在""",
+}
 
 # 扩展名 → 语言 (与 ast_scanner.ASTCoarseScanner.EXTENSION_MAP 保持一致的子集)
 _EXT_LANG = {
@@ -250,8 +304,13 @@ def stage_collect(project_root, batch_id, verdicts):
         entry["verified_at"] = __import__("datetime").datetime.now().isoformat()
         # W5 回归发现: v3 字段必须落盘——claim_type (实证门禁 ③ 依赖)
         # 与 edge_evidence (分级证据链); 此前被 v2 字段白名单静默丢弃
-        if v.get("claim_type"):
+        # v3.2.2 (REQ-V3.2.2-016): "声称"只属于 REACHABLE——
+        # UNREACHABLE/NEEDS_REVIEW 携带 claim 曾反触发强制实证 (mbedtls 实测)
+        if v.get("claim_type") and v["verdict"] == "REACHABLE":
             entry["claim_type"] = v["claim_type"]
+        elif v.get("claim_type") and v["verdict"] != "REACHABLE":
+            entry["claim_type"] = None
+            entry["claim_nulled_by"] = "collect-claim-null-v3.2.2"
         if v.get("edge_evidence"):
             entry["edge_evidence"] = v["edge_evidence"]
         # Preserve CWE from rule if not overridden
@@ -406,6 +465,29 @@ def stage_next_cluster(project_root, batch_size=BATCH_SIZE, group_by_file=False)
     }, indent=2, ensure_ascii=False))
 
 
+def _extract_journal_verdicts(transcript_dir):
+    """v3.2.2 (REQ-V3.2.2-024): 从 workflow transcript 目录的 journal.jsonl
+    提取 schema-validated 最终返回 (result/value 双字段兼容, W6 §10.3)。
+    返回 {cand_id: verdict_dict}——只采信 schema 校验过的最终返回,
+    半程输出作废。"""
+    import glob as _glob
+    out = {}
+    candidates = _glob.glob(os.path.join(transcript_dir, "journal.jsonl"))
+    if not candidates:
+        return out
+    for line in open(candidates[0]):
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if rec.get("type") != "result":
+            continue
+        r = rec.get("result") or rec.get("value")
+        if isinstance(r, dict) and r.get("id") and r.get("verdict"):
+            out[r["id"]] = r
+    return out
+
+
 def _safe_name(key):
     import hashlib
     return hashlib.md5("|".join(key).encode()).hexdigest()[:12]
@@ -475,6 +557,19 @@ def stage_cluster_collect(project_root, cluster_file, verdict):
                       "errors": errors, "remaining_pending": remaining}, ensure_ascii=False))
 
 
+def _norm_hypothesis_id(hid):
+    """v3.2.2 (REQ-V3.2.2-014): 假说 id 归一——H1/H7 与 H-1/H-7 双向接受,
+    内部统一 H-N 形态 (mbedtls 审计: collect 落 H1 形态、assert 期望 H-1 形态)。"""
+    if not isinstance(hid, str):
+        return hid
+    h = hid.strip()
+    if len(h) == 2 and h[0].upper() == "H" and h[1].isdigit():
+        return f"H-{h[1]}"
+    if re.fullmatch(r"H-\d", h):
+        return h
+    return h
+
+
 def stage_r4_collect(project_root, findings_file):
     """SWR-V3-055: R4 findings 写回 (merge 语义)。"""
     queue = load_queue(project_root)
@@ -482,8 +577,9 @@ def stage_r4_collect(project_root, findings_file):
     items = findings if isinstance(findings, list) else [findings]
     existing = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", [])}
     for f in items:
-        hid = f.get("hypothesis_id")
+        hid = _norm_hypothesis_id(f.get("hypothesis_id"))
         if hid:
+            f["hypothesis_id"] = hid
             f["status"] = "VERIFIED"
             existing[hid] = f
     queue["r4_findings"] = list(existing.values())
@@ -495,7 +591,8 @@ def stage_r4_collect(project_root, findings_file):
 def stage_r4_assert(project_root):
     """SWR-V3-055: H1-H7 全部 VERIFIED 断言。"""
     queue = load_queue(project_root)
-    have = {f.get("hypothesis_id") for f in queue.get("r4_findings", [])
+    have = {_norm_hypothesis_id(f.get("hypothesis_id"))
+            for f in queue.get("r4_findings", [])
             if f.get("status") == "VERIFIED"}
     missing = [f"H-{i}" for i in range(1, 8) if f"H-{i}" not in have]
     print(json.dumps({"status": "R4_ASSERT_PASSED" if not missing else "R4_ASSERT_FAILED",
@@ -570,6 +667,22 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     result = mod.export_script(project_root, mode=mode, batch_size=batch_size)
+    # v3.2.2 (REQ-V3.2.2-018/019): 入队前 scope diff——R0 快照 vs 现状,
+    # 子模块物化/目录变化时附 scope_changed 提示 (mbedtls 审计: R4 智能体
+    # submodule update 使 R2 drop 理由作废, 需复活重验)
+    snap_path = os.path.join(project_root, ".audit_results", "scope_snapshot.json")
+    if os.path.exists(snap_path):
+        try:
+            import surface_mapper as _sm
+            snap = json.load(open(snap_path))
+            diff = _sm.scope_diff(project_root, snap)
+            result["scope_changed"] = diff
+            if diff.get("changed"):
+                result["scope_advice"] = (
+                    "scope 已变更: R2 的 scope_dependent drop (树外不可验证类) "
+                    "理由可能失效——按 R3.5-N 复活流程重开受影响候选")
+        except (ImportError, ValueError):
+            pass
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
@@ -713,7 +826,7 @@ def _build_prompt(cand, ctx, project_root):
     if target_kind == "library":
         prompt += """
 ## 目标类型存在性规则（v3.2.1, target_kind=library）
-- 公共 API 即信任边界（Newtonsoft.Json 先例）：API 静态存在即攻击面
+- 公共 API 即信任边界（库型先例）：API 静态存在即攻击面
 - 仓内调用者缺失**不是**阻断；死代码豁免规则不适用（库的调用者在仓外）
 - 部署前提不适用；平台限定路径仅记录型
 """
@@ -739,18 +852,7 @@ def _build_prompt(cand, ctx, project_root):
 调用存在性/常量值）。前提断裂 → 立即终止回溯，verdict 按断裂方向判定。
 verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重前提"（W6 §17.10/§19.5）。
 
-### 步骤 0.5（v3.2.1 强制，W6 §25.2/§26.2）: 模块可导入性预检
-回溯前先回答：**链首模块在部署布局下能否被导入？**（模块存在≠被导入）
-1. 顶层包解析：链首模块所属顶层包能否解析（find_spec/import 语法/go.mod require/
-   crate 是否被构建包含）——顶层包不存在则链首模块整体不可导入。
-   ⚠️ find_spec 只验证包存在性、不执行模块体：传递依赖断裂（模块体 import 链内一层
-   断裂，如 Lersosa required_args_constructor.py:39 裸顶层 common 导入）find_spec 会
-   空过——存在依赖可疑时必须用实际导入验证（python3 -c 'import <module>' 或等价执行，
-   stub 仅第三方依赖、项目自身 import 图真实执行）
-2. DI/组件扫描器吞错路径审查：注册器若含 `except Exception: log/continue` 模式，
-   必须验证目标模块实际注册成功（注册表/路由表/扫描日志），不得以框架设计推定
-3. import 失败 → 该边记 broken_edge，verdict=NEEDS_REVIEW（修复即可达条件候选，
-   blocking_point 写明断裂点）——静态链真实 ≠ 运行时存在（Lersosa CAND-004/009 先例）
+{IMPORTABILITY_STEPS.get(ctx["language"], IMPORTABILITY_STEPS["default"])}
 
 ### 步骤 1: 逆向调用链回溯（最小深度 3 层）
 1. 读取 {ctx['file']} L{ctx['line']} 周围代码，确认 sink 点
@@ -780,7 +882,7 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
         prompt += """### 步骤 5.5（v3.2.1，write→read 注入族强制，W6 §25.3）: 消费端中间层枚举
 本候选为写入端→消费端复合链。对消费端执行：
 1. 中间层横向枚举：adapter 与 domain 之间逐层列出缓存/门闩/降级/拦截器——
-   不能只沿调用链直查（Lersosa CAND-007: Redis 前置门闩被整层漏掉的前车之鉴）
+   不能只沿调用链直查（既有先例: 缓存前置门闩被整层漏掉的前车之鉴）
 2. 缓存层三查：
    - 错误分支方向：`if err == nil` 块内处理错误分支 = 写反死代码；
      缓存未命中返回什么（空实体+nil error 会短路 DB 回源）
@@ -839,6 +941,7 @@ def main():
     cluster_file = None
     cluster_verdict = None
     findings_file = None
+    from_journal = None
     verdicts = {}
     sinks_file = None
     sinks_inline = None
@@ -850,6 +953,10 @@ def main():
             stage = args[i + 1]
         elif arg.startswith("--stage="):
             stage = arg.split("=", 1)[1]
+        elif arg.startswith("--from-journal="):
+            from_journal = arg.split("=", 1)[1]
+        elif arg == "--from-journal" and i + 1 < len(args):
+            from_journal = args[i + 1]
         elif arg.startswith("--batch="):
             batch_id = int(arg.split("=", 1)[1])
         elif arg == "--batch" and i + 1 < len(args):
@@ -930,8 +1037,19 @@ def main():
     elif stage == "report":
         stage_report(project_root)
     elif stage == "collect":
+        # v3.2.2 (REQ-V3.2.2-024): --from-journal 桥接——从 workflow transcript
+        # 目录的 journal.jsonl 提取 schema-validated 结果 (result/value 双字段,
+        # W6 §10.3), 免手工拼 --cand-XXX 参数 (mbedtls 审计手工步骤机械化)
+        if from_journal:
+            extracted = _extract_journal_verdicts(from_journal)
+            if not extracted:
+                print(f"Error: journal 无 schema-validated 结果: {from_journal}",
+                      file=sys.stderr)
+                sys.exit(1)
+            verdicts.update(extracted)
         if not verdicts:
-            print("Error: --cand-XXX JSON arguments required for collect", file=sys.stderr)
+            print("Error: --cand-XXX JSON arguments or --from-journal required for collect",
+                  file=sys.stderr)
             sys.exit(1)
         stage_collect(project_root, batch_id or 0, verdicts)
     elif stage == "assert":

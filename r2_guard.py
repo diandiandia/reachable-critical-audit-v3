@@ -68,11 +68,15 @@ def validate_hypotheses(hypotheses, input_surface, strict=True, project_root=Non
 
 def anchor_check(hypothesis, project_root):
     """SWR-V3.1-071: 锚点行验证。sink 行必须是可执行代码而非文档注释/纯注释行。
+    v3.2.2 (REQ-V3.2.2-013): 兼容 hit_sites 数组形态 (R2 假设数据模型)。
     返回 {ok, reason, line_text}。"""
     f = hypothesis.get("source_file") or hypothesis.get("file")
     line = hypothesis.get("source_line") or hypothesis.get("line")
+    if (not f or not line) and hypothesis.get("hit_sites"):
+        hs = hypothesis["hit_sites"][0]
+        f, line = hs.get("file"), hs.get("line")
     if not f or not line:
-        return {"ok": False, "reason": "锚点缺 file/line"}
+        return {"ok": False, "reason": "锚点缺 file/line (候选需 source_file/source_line 或 hit_sites[0])"}
     path = f if os.path.isabs(f) else os.path.join(project_root, f)
     if not os.path.exists(path):
         return {"ok": False, "reason": f"锚点文件不存在: {path}"}
@@ -88,6 +92,21 @@ def anchor_check(hypothesis, project_root):
         return {"ok": False, "reason": "锚点行是文档注释/纯注释/空行 (退化候选, W6 §23.7)",
                 "line_text": text[:60]}
     return {"ok": True, "line_text": text[:60]}
+
+
+def anchor_check_all(hypotheses, project_root):
+    """v3.2.2 (REQ-V3.2.2-013): 批量锚点检查 (hit_sites 全量)。
+    CLI 用; 返回 (ok, results)。"""
+    hyps = hypotheses.get("hypotheses", []) if isinstance(hypotheses, dict) else hypotheses
+    results = []
+    for h in hyps:
+        hid = h.get("hypothesis_id") or h.get("id", "<no-id>")
+        for hs in h.get("hit_sites", []):
+            r = anchor_check(hs, project_root)
+            results.append({"hypothesis": hid, "file": hs.get("file"),
+                            "line": hs.get("line"), **r})
+    bad = [r for r in results if not r["ok"]]
+    return (len(bad) == 0), results
 
 
 def audit_filter_drops(kept, dropped, path=None):
@@ -118,14 +137,23 @@ def main(argv):
         return 0 if ok else 1
     if cmd == "anchor":
         hyp = json.load(open(argv[2]))
-        root = argv[3]
+        root = argv[3] if len(argv) > 3 else "."
+        # v3.2.2: 假设文件 (hit_sites 数组) → 批量检查; 单候选 → 单点检查
+        if isinstance(hyp, dict) and "hypotheses" in hyp:
+            ok, results = anchor_check_all(hyp, root)
+            for r in results:
+                print(f"{'OK ' if r['ok'] else 'BAD'} {r['hypothesis']} "
+                      f"{r.get('file')}:{r.get('line')} {r.get('reason')}")
+            return 0 if ok else 1
         r = anchor_check(hyp, root)
         print(json.dumps(r, ensure_ascii=False))
         return 0 if r["ok"] else 1
     if cmd == "drops":
         data = json.load(open(argv[2]))
         kept = data.get("kept", [])
-        dropped = data.get("dropped", [])
+        # v3.2.2 (REQ-V3.2.2-012): 键名归一——filter 任务书模板产出 "drop" (单数),
+        # 守卫读 "dropped" (复数) 曾静默报 0 (mbedtls 审计实测)
+        dropped = data.get("dropped") or data.get("drop") or []
         out, missing = audit_filter_drops(kept, dropped)
         print(f"kept={len(kept)} dropped={len(dropped)} missing_reason={missing}")
         return 0

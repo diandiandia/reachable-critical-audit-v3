@@ -48,6 +48,16 @@ TEMPLATES = {
         "judgement": "累积发生且 handler 收到 0 字节 → 确认；对齐必然恢复 → 证伪",
         "script": "templates/harness/multipart_align.py",
     },
+    # v3.2.2 (REQ-V3.2.2-008): parser-fuzz——C/C++ 解析器 crash 声称类。
+    # mbedtls 审计实战模板化 (asn1_get_len ASan harness 2M+ 输入零越界)
+    "parser_fuzz": {
+        "langs": ["c", "cpp"],
+        "attack": "sink 函数体逐字提取为独立 C 文件 → ASan+UBSan 编译 → "
+                  "随机缓冲 + 长度字段极值前缀 + 截断矩阵轰炸",
+        "metrics": ["asan_findings", "ubsan_findings", "rounds", "exit"],
+        "judgement": "任一 ASan/UBSan 报告 → OOB 确认；零报告 + 拒绝语义正确 → 防御确认",
+        "script": "templates/harness/parser_fuzz_c.py",
+    },
 }
 
 SAMPLING_PROTOCOL = (

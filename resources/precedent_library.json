@@ -42,7 +42,7 @@
    "id": "PREC-BYDESIGN-001",
    "name": "by-design 用户中介",
    "criterion": "框架无自动触发机制，行为需要用户/管理员显式中介且文档如此设计 → UNREACHABLE 或 NEEDS_REVIEW（框架按设计透传，危害归应用）",
-   "counterexample": "框架文档化推荐的模式（如 sinatra `redirect back`）若受害方可触发，不适用 by-design 降级（见 PREC-VICTIM-TRIGGER-001）",
+   "counterexample": "框架文档化推荐的模式（如框架文档化的 `redirect back` 模式）若受害方可触发，不适用 by-design 降级（见 PREC-VICTIM-TRIGGER-001）",
    "applicability_scope": "需要用户显式配置/调用且无受害方触发面的场景",
    "applications": [
     "ohmyzsh CAND-013 (custom 目录)",
@@ -112,7 +112,7 @@
    "id": "PREC-HOST-FAMILY-001",
    "name": "Host 采信族裁决树",
    "criterion": "① 框架内建安全敏感消费者（密码重置/链接生成，零应用协作）→ REACHABLE；② 仅暴露 helper 供应用使用 → NEEDS_REVIEW；③ Host↔authority 一致性校验 → 直接封口",
-   "counterexample": "框架文档化 back+redirect 配对且受害方可触发 → 不落入 ②（见 PREC-VICTIM-TRIGGER-001 对 sinatra CAND-003 的裁决）",
+   "counterexample": "框架文档化 back+redirect 配对且受害方可触发 → 不落入 ②（见 PREC-VICTIM-TRIGGER-001 对 redirect-back 族的裁决）",
    "applicability_scope": "Host 头/绝对 URI authority/X-Forwarded-Host 采信类候选",
    "applications": [
     "Django Host 投毒密码重置 (①)",
@@ -196,7 +196,7 @@
    "name": "引擎矩阵",
    "criterion": "多引擎框架的 REACHABLE 须在文档默认引擎成立；『某引擎成立』必须显式标注引擎矩阵",
    "counterexample": "文档默认引擎即受影响引擎 → 正常 REACHABLE",
-   "applicability_scope": "多后端/多引擎框架（ktor CIO/Netty、sinatra EM/非EM 等）",
+   "applicability_scope": "多后端/多引擎框架（如 CIO/Netty、EM/非EM 等多后端框架）",
    "applications": [
     "Ktor CAND-003 (PATH A 仅 CIO 执行，Netty 用 ServerCookieDecoder.LAX)"
    ],
@@ -208,7 +208,7 @@
    "id": "PREC-GATE-RATING-001",
    "name": "gate 评级规则",
    "criterion": "框架硬化缺口 finding 的评级：gate 在部署者（symlink 写入/显式开启选项）→ Medium 上限；gate 无（默认链路直接成立）→ 可上 High",
-   "counterexample": "gate 无但攻击成本极高（带宽比例型无放大）→ 可下修 Low（actix CAND-006 先例）",
+   "counterexample": "gate 无但攻击成本极高（带宽比例型无放大）→ 可下修 Low（带宽比例型无放大先例）",
    "applicability_scope": "R4 defense-in-depth gap 类 finding 评级",
    "applications": [
     "actix H4-1/H4-2 (Medium 上限) vs H1-F1 Payload 无界 (High)"
@@ -290,8 +290,8 @@
    "id": "PREC-TARGET-KIND-001",
    "name": "目标类型存在性规则矩阵",
    "criterion": "审计目标类型 (target_kind) 决定存在性规则: application=三层默认检查含 shipped 配置实际值+运行时注册核实+platform_precondition 显式标注; library=公共 API 即信任边界, 仓内调用者缺失不是阻断, 死代码豁免不适用",
-   "counterexample": "fixture 同形状两库型候选一判 REACHABLE 一判 UNREACHABLE (2/2 证伪+4/4 复活指向同根因); Lersosa 三处部署前提错误 (tls_enable 代码零值 vs shipped 显式 true; 路由自动注册 vs 模块导入断裂 404)",
-   "applicability_scope": "一切候选的存在性/默认可达判定; 库型先例 Newtonsoft.Json (公共 API 即信任边界)",
+   "counterexample": "同形状两库型候选一判 REACHABLE 一判 UNREACHABLE (2/2 证伪+4/4 复活指向同根因); 应用型项目三处部署前提错误 (tls 开关代码零值 vs shipped 显式 true; 路由自动注册 vs 模块导入断裂 404)",
+   "applicability_scope": "一切候选的存在性/默认可达判定; 库型先例: 公共 API 即信任边界",
    "applications": [
     "mixed-fixture GT-1~5 (库型统一裁决)",
     "Lersosa CAND-001/008 (shipped config 实际值)",
@@ -306,7 +306,7 @@
    "id": "PREC-IMPORT-BREAK-001",
    "name": "模块导入断裂条件候选",
    "criterion": "链首模块因顶层包不存在/构建未包含而不可导入, 或 DI/组件扫描器吞错导致零注册 → 调用边记 broken_edge, 候选判 NEEDS_REVIEW (修复即可达条件候选), 不判 REACHABLE——静态链真实 ≠ 运行时存在 (模块存在≠被导入)",
-   "counterexample": "verifier 9 跳逐行核实全真仍被判 REACHABLE 的两条候选 (Lersosa CAND-004 SSRF / CAND-009 CSV 注入) 事后双双降级——入口 /crawler/run 404 实证",
+   "counterexample": "verifier 9 跳逐行核实全真仍被判 REACHABLE 的两条候选 (SSRF / CSV 注入) 事后双双降级——入口路由 404 实证",
    "applicability_scope": "一切以路由注册/DI 扫描/框架自动装载为入口前提的候选; library 型不适用 (公共 API 静态存在即面)",
    "applications": [
     "Lersosa CAND-004 (爬虫 SSRF, 修复即可达)",

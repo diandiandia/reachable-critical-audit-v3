@@ -1,0 +1,190 @@
+{
+ "schema_version": "3.2.2",
+ "instances": [
+  {
+   "project": "actix-web",
+   "file": "actix-web-actors/src/ws.rs",
+   "line": 771,
+   "confirmed": true,
+   "note": "WsStream buf.extend_from_slice 无上限 (R5 实测确认)",
+   "sig_id": "SIG-BUFFER-ACCUM-001"
+  },
+  {
+   "project": "ktor",
+   "file": "ktor-shared/ktor-websockets/jvm/src/io/ktor/websocket/SimpleFrameCollector.kt",
+   "line": 23,
+   "confirmed": true,
+   "note": "ByteBuffer.allocate(远端声明长度), maxFrameSize 默认 Long.MAX_VALUE (R5 实测 +1.03GB)",
+   "sig_id": "SIG-BUFFER-ACCUM-001"
+  },
+  {
+   "project": "akka-http",
+   "file": "akka-http-core/src/main/scala/akka/http/impl/engine/http2/Http2StreamHandling.scala",
+   "line": 584,
+   "confirmed": true,
+   "note": "buffer ++= payload 窗口膨胀",
+   "sig_id": "SIG-BUFFER-ACCUM-001"
+  },
+  {
+   "project": "vapor",
+   "file": "Sources/Vapor/HTTPNewNew/HTTPServerHandler.swift",
+   "line": 34,
+   "confirmed": true,
+   "note": "请求体无上限预收集 (R5 实测 +201MB)",
+   "sig_id": "SIG-BUFFER-ACCUM-001"
+  },
+  {
+   "project": "AWStats",
+   "file": "wwwroot/cgi-bin/awstats.pl",
+   "line": 1776,
+   "confirmed": true,
+   "note": "configdir !~ 未锚定子串绕过 → RCE 链 (三 tag 交叉验证)",
+   "sig_id": "SIG-PATH-WHITELIST-002"
+  },
+  {
+   "project": "actix-web",
+   "file": "actix-files/src/files.rs",
+   "line": 99,
+   "confirmed": true,
+   "note": "空 serve_from 复现 CVE-2026-72814 条件",
+   "sig_id": "SIG-PATH-WHITELIST-002"
+  },
+  {
+   "project": "vapor",
+   "file": "Sources/Vapor/Middleware/FileMiddleware.swift",
+   "line": 75,
+   "confirmed": true,
+   "note": "仅拦字面 ../ (平台前提未满足时降级 hardening)",
+   "sig_id": "SIG-PATH-WHITELIST-002"
+  },
+  {
+   "project": "ktor",
+   "file": "ktor-shared/ktor-websockets/jvm/src/io/ktor/websocket/SimpleFrameCollector.kt",
+   "line": 23,
+   "confirmed": true,
+   "sig_id": "SIG-PREALLOC-LEN-003"
+  },
+  {
+   "project": "akka-http",
+   "file": "akka-http-core/src/main/scala/akka/http/impl/engine/http2/HeaderDecompression.scala",
+   "line": 42,
+   "confirmed": true,
+   "note": "maxHeaderListSize=Int.MaxValue",
+   "sig_id": "SIG-PREALLOC-LEN-003"
+  },
+  {
+   "project": "Newtonsoft.Json",
+   "file": "Src/Newtonsoft.Json/Bson/BsonReader.cs",
+   "line": 659,
+   "confirmed": true,
+   "note": "远端长度驱动 StringBuilder 分配",
+   "sig_id": "SIG-PREALLOC-LEN-003"
+  },
+  {
+   "project": "actix-web",
+   "file": "actix-router/src/resource.rs",
+   "line": 700,
+   "confirmed": true,
+   "note": ">64KB 路径 u16 截断 → 反向切片 panic (双 agent 坐实)",
+   "sig_id": "SIG-TRUNC-CAST-004"
+  },
+  {
+   "project": "fastjson2",
+   "file": "com/alibaba/fastjson2/util/TypeUtils.java",
+   "line": 1,
+   "confirmed": true,
+   "note": "checkAutoType hash 白名单绕过 (2.0.62/2.0.63)",
+   "sig_id": "SIG-LOGIC-WEAKEN-005"
+  },
+  {
+   "project": "AWStats",
+   "file": "wwwroot/cgi-bin/awstats.pl",
+   "line": 18062,
+   "confirmed": true,
+   "note": "pluginmode 分发先于安全检查 → 鉴权绕过",
+   "sig_id": "SIG-LOGIC-WEAKEN-005"
+  },
+  {
+   "project": "AWStats",
+   "file": "wwwroot/cgi-bin/awstats.pl",
+   "line": 8303,
+   "confirmed": true,
+   "note": "diricons img src 属性注入 (R5 perl 路径模拟确认)",
+   "sig_id": "SIG-HEADER-INJ-006"
+  },
+  {
+   "project": "WordPress",
+   "file": "wp-admin/user-edit.php",
+   "line": 782,
+   "confirmed": true,
+   "note": "display_name 相邻转义遗漏",
+   "sig_id": "SIG-HEADER-INJ-006"
+  },
+  {
+   "project": "sinatra",
+   "file": "lib/sinatra/base.rb",
+   "line": 399,
+   "confirmed": true,
+   "note": "content_type 参数条件 inspect 过滤",
+   "sig_id": "SIG-HEADER-INJ-006"
+  },
+  {
+   "project": "django",
+   "file": "django/middleware/csrf.py",
+   "line": 282,
+   "confirmed": true,
+   "note": "CSRF Origin 锚定 Host header",
+   "sig_id": "SIG-AUTHZ-BOUND-007"
+  },
+  {
+   "project": "sinatra",
+   "file": "lib/sinatra/base.rb",
+   "line": 1958,
+   "confirmed": true,
+   "note": "会话 secret 跨子类共享",
+   "sig_id": "SIG-AUTHZ-BOUND-007"
+  },
+  {
+   "project": "Pester",
+   "file": "src/functions/TestDrive.Tests.ps1",
+   "confirmed": false,
+   "line": 1,
+   "sig_id": "SIG-PS-SCRIPTBLOCK-001"
+  },
+  {
+   "project": "ohmyzsh",
+   "file": "lib/functions.zsh",
+   "confirmed": false,
+   "line": 1,
+   "sig_id": "SIG-SH-EVAL-001"
+  },
+  {
+   "project": "Newtonsoft.Json",
+   "file": "Src/Newtonsoft.Json/Serialization/JsonSerializerInternalReader.cs",
+   "confirmed": false,
+   "line": 1,
+   "sig_id": "SIG-CS-DESER-001"
+  },
+  {
+   "project": "django",
+   "file": "django/core/handlers/asgi.py",
+   "confirmed": false,
+   "line": 1,
+   "sig_id": "SIG-PY-PICKLE-001"
+  },
+  {
+   "project": "nest",
+   "file": "packages/microservices/context/rpc-context-creator.ts",
+   "confirmed": false,
+   "line": 1,
+   "sig_id": "SIG-TS-ACCUM-001"
+  },
+  {
+   "project": "ktor",
+   "file": "ktor-shared/ktor-websockets/common/src/io/ktor/websocket/Frame.kt",
+   "confirmed": false,
+   "line": 1,
+   "sig_id": "SIG-KT-RECEIVE-001"
+  }
+ ]
+}

@@ -245,7 +245,19 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
     # ⑦surface 覆盖 (REQ-V3-095)
     if surface_data is not None:
         total = surface_data.get("total", 0)
-        tracked = surface_data.get("tracked", 0)
+        tracked_ids = set(surface_data.get("tracked_ids") or [])
+        if tracked_ids:
+            # v3.2.2 (REQ-V3.2.2-020): mirror_pairs 镜像自动传播——
+            # kept-first 多域冲突对中任一 surface 被 tracked, 对端镜像同样视为覆盖
+            # (mbedtls 审计: 15 冲突对曾需主代理手写 coverage_bridge)
+            mps = surface_data.get("mirror_pairs") or []
+            for a, b in mps:
+                if a in tracked_ids or b in tracked_ids:
+                    tracked_ids.update((a, b))
+            tracked = len(tracked_ids)
+        else:
+            # 兼容旧调用: 只给计数 (无 id 列表) → 无镜像传播能力
+            tracked = surface_data.get("tracked", 0)
         if total <= 0 or tracked / total < 1.0:
             violations.append({"gate": "surface_coverage",
                                "tracked": tracked, "total": total})
@@ -330,6 +342,13 @@ def r4_feedback(queue):
                         "h7_committed_value": h7_val,
                         "h7_source": snippet[:120]})
                     break
+    # v3.2.2 (v3.2.2 候选遗留): resolved 标记位——主代理裁决后的冲突
+    # 写 {candidate, key, resolved_by, note}, 不再重复告警 (W6 §25.6 遗留)
+    resolved = {(r.get("candidate"), r.get("key")) for r in
+                queue.get("r4_feedback_resolved", []) if isinstance(r, dict)}
+    if resolved:
+        conflicts = [c for c in conflicts
+                     if (c.get("candidate"), c.get("key")) not in resolved]
     return conflicts
 
 

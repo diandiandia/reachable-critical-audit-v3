@@ -1,5 +1,26 @@
 # Reachable Critical Audit Skill v3（可达性严重漏洞审计）
 
+## 🥇 第一原则：通用型 Skill（最高优先，一切修改的第一判据）
+
+**目标**：本 skill 是**通用型代码审计 skill**——对任意语言、任意项目形态（application/library/hybrid/infra）、任意平台的任意代码库均可审计。审计能力必须来自通用机制（阶段骨架 / 门禁 / 数据模型 / CWE 锚定的语义族 / 通用检查清单），而不是来自"我们审过哪个项目"。
+
+**禁止项**（违反即视为缺陷，必须修复）：
+1. 禁止为已审计的具体项目做专门优化：项目名、项目目录结构、项目专属 API 名不得进入运行时资产（签名 grep 列表、任务书例证、harness 模板、先例/清单正文）
+2. 禁止让运行时机制依赖单一语言特征：语言相关内容必须按 `lang` 字段分派，或写入语言手册（harness_manuals/）
+3. 禁止用历史项目目录做运行时锚定：known_instances 等回归锚点只允许存在于测试 fixture（tests/），不得影响 R0 自检等运行时路径
+
+**提炼经验的正确方式（两段式）**：具体审计发现 → **去项目化提炼**（抽象到 CWE 类 / 语言无关模式 / 通用检查步骤）→ 入库。项目名只允许出现在追溯字段（lessons / 来源列）。
+
+**测试与回归的边界**：回归 fixture 可以来自具体项目（三锚点基线），但 fixture 只用于验证"通用机制未回退"，不得成为运行时行为依据。
+
+**每次修改 skill 的自检**（违反任一条 = 修改不合格）：
+- [ ] 新资产（签名/先例/清单/模板）是否已去除项目专属名称？
+- [ ] 新机制在任何语言上是否有语义，或已按 lang 分派？
+- [ ] 新代码是否读取了具体项目路径/目录名（tests/ fixture 除外）？
+- [ ] 验收是否包含"未审计过的新项目"场景（每版本至少一个新项目验收，防止向历史项目收敛）？
+
+> 来源：2026-08-17 mbedtls 审计复盘——签名库携带 Django/NestJS/Ktor/lighttpd/WordPress 专属 API 名（get_host/read_body/multer/maxDecodedContentLength/good_origin/CleanXSS）、verifier 任务书是 Python 思维定式（find_spec）、harness 按历史战役配置（4 模板 6/15 语言）、R0 冒烟仅对历史 fixture 有意义（非 fixture 项目恒放行）。修复方案见 v3.2.2 设计（P-A 资产去项目化问题域）。
+
 > [!IMPORTANT]
 > **v3 取代 v2.1**。v3 由三锚点回归测试（sinatra/lighttpd/actix-web 对照归档基线，2026-08-16）实战验证：候选规模下降 98~99.98%、闭合率 100%、独立复核机制三次实战拦截"代码路径可达≠攻击相关"误判、产出 2 个实证确认的 REACHABLE。v2.1 唯一遗产为 `docs/legacy/SKILL_V2.1.md`（规范备份，供对照历史）。
 >
@@ -24,13 +45,24 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 ## 🛠️ R0：目录守卫 + 自检（任一步失败即终止）
 
 1. **目录守卫**：`mkdir -p <project>/.audit_results/`；所有产物必须以 `.audit_results/` 为前缀。
-2. **签名库自检**（REQ-V3-010）：
+1.5 **scope 快照**（v3.2.2, REQ-V3.2.2-018）：
    ```bash
-   python3 -c "import sys; sys.path.insert(0,'<skill_dir>'); import signature_lib as sl; \
-   d=sl.load(); ok,e=sl.validate(d); print(ok, len(d['signatures'])); \
-   r,rate=sl.smoke_test(d, ['<project>']); print('smoke', rate)"
+   python3 <skill_dir>/surface_mapper.py scope snapshot <project>
    ```
-   `hit_rate < 1.0 AND testable > 0`（跳过项不计分母; 全 skipped 即 testable=0 放行, W6 §7）或 validate 失败 → 阻止启动。known_instances 非空是签名存在的前提。
+   落盘 `.audit_results/scope_snapshot.json`（子模块状态 + 关键目录存在性）。
+   scope 是各阶段判定的隐含前提——子模块中途物化/依赖目录出现会使
+   "树外不可验证"类 drop 理由作废（mbedtls 审计实战形态），R3 入队前
+   batch_verify 自动 diff 并输出 `scope_changed` 提示，受影响 drop
+   （`scope_dependent: true`）按 R3.5-N 复活流程重开。
+2. **签名库自检**（REQ-V3-010, v3.2.2 起单一事实源：只引用 selfcheck 命令）：
+   ```bash
+   python3 <skill_dir>/signature_lib.py selfcheck <project>
+   ```
+   exit 0 = 放行。两种语义：fixture 仓库（回归锚点可定位）→ anchor recall
+   `hit_rate ≥ required_hit_rate`；非 fixture 仓库 → **签名库完整性自检**
+   （validate + L2 词族 lang 必填 + 去项目化扫描 0 命中 + grep 可编译，REQ-V3.2.2-005）。
+   完整性自检失败同样阻止启动（第一原则：资产必须通用，不得携带项目专属名）。
+   回归锚点库已移入 `tests/fixtures/known_instances.json`（第一原则三禁止③）。
 3. **harness 自检**（REQ-V3-011）：`harness_runner.list_templates()` ≥ 1；否则 R5 阶段降级为静态 + 告警。
 4. **target_kind 判定**（v3.2.1, REQ-V3.2.1-001/002, W6 §25.1）：
    ```bash
@@ -146,6 +178,9 @@ print(ok, v)"
 ```
 ① no_pending ② REACHABLE 无 static_only ③ 实证类声称 100% empirically_confirmed ④ H1-H7 全 VERIFIED
 ⑤ 对账零差异（dispatched 全部终态）⑥ escalated=0 或主代理签收 ⑦ surface 覆盖率 100%
+（v3.2.2：tracked 计算 = R2/R4 直接覆盖 ∪ input_surface.json `mirror_pairs` 镜像自动传播
+∪ 主代理签收的 `verify_queue.coverage_bridge`——relay 中继面[套接字层/示例程序中转]的正式通道，
+每条 bridge 必附 basis 说明，REQ-V3.2.2-020/021）
 ⑧ target_kind_required（v3.2.1：R0 未签收 target_kind 不放行；旧队列复跑
 `require_target_kind=False` 豁免）。另输出 `r4_feedback` 告警（warn 级不阻断 PASS）：
 R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主代理裁决纠正（W6 §25.6）。
@@ -268,6 +303,9 @@ akka-http / etcd / actix-web 三项目复跑对照:
 - 声称类 UNREACHABLE 全量 + 其他 20% 抽样（最少 2，上限 8）做 N=1 尽力复活复核
 - `workflow_export.export_script_resurrect` 导出；revived=true 回 R3 重验（附 gap），
   不直接改 verdict；全部候选落盘 resurrection_review（六门禁新增检查）
+- **落盘契约（v3.2.2 文档化，REQ-V3.2.2-015）**：`resurrection_review` 必须写为
+  **候选级 dict** `{"revived": bool, "outcome": "<理由>"}`——队列级 list 形态只作
+  汇总记录，lessons_recorder 只读候选级字段（lenient 加载兜底，str 自动包装）。
 
 ### 裁决
 - 同族一致性断言按 lang 分组（PREC-MULTI-LANG-001）；同 lang 组保持 v3.1 断言

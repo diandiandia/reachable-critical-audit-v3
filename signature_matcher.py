@@ -164,6 +164,11 @@ def match_signatures(surfaces, signatures, project_index, depth=DEFAULT_DEPTH):
         for entry in surface.get("entry_points", []):
             window = expand_window(entry, project_index, depth)
             for site in window:
+                # v3.2.2 (REQ-V3.2.2-003): tests/ 路径排除——
+                # 测试辅助代码的匹配是噪声 (mbedtls tests/src/test_helpers 实证)
+                parts = site["file"].replace(os.sep, "/").split("/")
+                if any(p in ("tests", "test") for p in parts):
+                    continue
                 if site["file"] not in file_cache:
                     try:
                         file_cache[site["file"]] = open(site["file"], errors="ignore").read().splitlines()
@@ -202,14 +207,17 @@ def gen_hypotheses(hits, signatures):
     hypotheses, logic_hypotheses, reading_hints, n = [], [], [], 0
     for (surf, sig_id), hs in sorted(groups.items()):
         sig = by_sig.get(sig_id, {})
-        if sig.get("tier") == "L1":
-            # v3.1 (W6 §14.1/§19.1): 通用危险词零假设, 仅阅读提示
+        if sig.get("tier") != "L3":
+            # v3.1 (W6 §14.1/§19.1) + v3.2.2 (REQ-V3.2.2-004):
+            # L1/L2 词族命中零假设, 仅作阅读提示——假设生成主路径是 LLM 基于 surface 图,
+            # 词族命中是佐证器 (mbedtls 审计: L2 pickle/get_host 词族产出跨项目假族)
             reading_hints.append({
                 "signature_id": sig_id,
                 "surface_id": surf,
+                "tier": sig.get("tier", "L2"),
                 "sites": [{"file": h["site"]["file"], "line": h["site"]["line"],
                            "matched": h["matched_pattern"]} for h in hs],
-                "note": "L1 通用危险词命中: 仅作 verifier 阅读提示, 不生成假设"})
+                "note": f"{sig.get('tier', 'L1/L2')} 词族命中: 仅作佐证/阅读提示, 不生成假设"})
             continue
         n += 1
         hyp = {

@@ -28,36 +28,7 @@
      "声明长度与累积量是否独立？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "actix-web",
-     "file": "actix-web-actors/src/ws.rs",
-     "line": 771,
-     "confirmed": true,
-     "note": "WsStream buf.extend_from_slice 无上限 (R5 实测确认)"
-    },
-    {
-     "project": "ktor",
-     "file": "ktor-shared/ktor-websockets/jvm/src/io/ktor/websocket/SimpleFrameCollector.kt",
-     "line": 23,
-     "confirmed": true,
-     "note": "ByteBuffer.allocate(远端声明长度), maxFrameSize 默认 Long.MAX_VALUE (R5 实测 +1.03GB)"
-    },
-    {
-     "project": "akka-http",
-     "file": "akka-http-core/src/main/scala/akka/http/impl/engine/http2/Http2StreamHandling.scala",
-     "line": 584,
-     "confirmed": true,
-     "note": "buffer ++= payload 窗口膨胀"
-    },
-    {
-     "project": "vapor",
-     "file": "Sources/Vapor/HTTPNewNew/HTTPServerHandler.swift",
-     "line": 34,
-     "confirmed": true,
-     "note": "请求体无上限预收集 (R5 实测 +201MB)"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": "ws_frame_accum",
    "tier": "L3",
    "tier_note": "语义族: 无界累积 (known_instances 跨 actix/ktor/akka 三语言, §3.4 旗舰签名)",
@@ -65,7 +36,8 @@
    "contribution": {
     "hypotheses_contributed": 0,
     "batches_seen": 0
-   }
+   },
+   "lang": "any"
   },
   {
    "sig_id": "SIG-PATH-WHITELIST-002",
@@ -74,8 +46,8 @@
     "CWE-22"
    ],
    "platform_profiles": [
-    "server-framework",
-    "cgi-tool"
+    "cgi-tool",
+    "server-framework"
    ],
    "detection_hints": {
     "grep": [
@@ -84,9 +56,8 @@
      "starts_with",
      "startsWith",
      "hasPrefix",
-     "configdir",
-     "serve_from",
-     "valid_path"
+     "realpath",
+     "canonicalize"
     ],
     "checklist": [
      "门禁是否锚定（^…$）？",
@@ -95,29 +66,7 @@
      "空路径/默认回退值是否绕过门禁？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "AWStats",
-     "file": "wwwroot/cgi-bin/awstats.pl",
-     "line": 1776,
-     "confirmed": true,
-     "note": "configdir !~ 未锚定子串绕过 → RCE 链 (三 tag 交叉验证)"
-    },
-    {
-     "project": "actix-web",
-     "file": "actix-files/src/files.rs",
-     "line": 99,
-     "confirmed": true,
-     "note": "空 serve_from 复现 CVE-2026-72814 条件"
-    },
-    {
-     "project": "vapor",
-     "file": "Sources/Vapor/Middleware/FileMiddleware.swift",
-     "line": 75,
-     "confirmed": true,
-     "note": "仅拦字面 ../ (平台前提未满足时降级 hardening)"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": "xss_path_sim",
    "tier": "L3",
    "runtime_prereq": null,
@@ -125,7 +74,8 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "tier_note": "语义族: 路径白名单"
+   "tier_note": "语义族: 路径白名单",
+   "lang": "any"
   },
   {
    "sig_id": "SIG-PREALLOC-LEN-003",
@@ -135,8 +85,8 @@
     "CWE-789"
    ],
    "platform_profiles": [
-    "server-framework",
-    "parser-library"
+    "parser-library",
+    "server-framework"
    ],
    "detection_hints": {
     "grep": [
@@ -153,28 +103,7 @@
      "默认上限是否存在且有效（非 MAX_VALUE 类）？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "ktor",
-     "file": "ktor-shared/ktor-websockets/jvm/src/io/ktor/websocket/SimpleFrameCollector.kt",
-     "line": 23,
-     "confirmed": true
-    },
-    {
-     "project": "akka-http",
-     "file": "akka-http-core/src/main/scala/akka/http/impl/engine/http2/HeaderDecompression.scala",
-     "line": 42,
-     "confirmed": true,
-     "note": "maxHeaderListSize=Int.MaxValue"
-    },
-    {
-     "project": "Newtonsoft.Json",
-     "file": "Src/Newtonsoft.Json/Bson/BsonReader.cs",
-     "line": 659,
-     "confirmed": true,
-     "note": "远端长度驱动 StringBuilder 分配"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": "ws_frame_alloc",
    "tier": "L3",
    "runtime_prereq": null,
@@ -182,7 +111,8 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "tier_note": "语义族: 预分配长度"
+   "tier_note": "语义族: 预分配长度",
+   "lang": "any"
   },
   {
    "sig_id": "SIG-TRUNC-CAST-004",
@@ -193,8 +123,8 @@
     "CWE-681"
    ],
    "platform_profiles": [
-    "server-framework",
-    "parser-library"
+    "parser-library",
+    "server-framework"
    ],
    "detection_hints": {
     "grep": [
@@ -210,15 +140,7 @@
      "有无 checked cast 或范围校验？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "actix-web",
-     "file": "actix-router/src/resource.rs",
-     "line": 700,
-     "confirmed": true,
-     "note": ">64KB 路径 u16 截断 → 反向切片 panic (双 agent 坐实)"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": null,
    "tier": "L3",
    "runtime_prereq": null,
@@ -226,7 +148,8 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "tier_note": "语义族: 截断转换"
+   "tier_note": "语义族: 截断转换",
+   "lang": "any"
   },
   {
    "sig_id": "SIG-LOGIC-WEAKEN-005",
@@ -241,7 +164,6 @@
    ],
    "detection_hints": {
     "grep": [
-     "checkAutoType",
      "allowlist",
      "whitelist",
      "isInAllowList",
@@ -254,22 +176,7 @@
      "历史修复是否在树（修复-再暴露）？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "fastjson2",
-     "file": "com/alibaba/fastjson2/util/TypeUtils.java",
-     "line": 1,
-     "confirmed": true,
-     "note": "checkAutoType hash 白名单绕过 (2.0.62/2.0.63)"
-    },
-    {
-     "project": "AWStats",
-     "file": "wwwroot/cgi-bin/awstats.pl",
-     "line": 18062,
-     "confirmed": true,
-     "note": "pluginmode 分发先于安全检查 → 鉴权绕过"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": null,
    "tier": "L3",
    "runtime_prereq": null,
@@ -277,7 +184,8 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "tier_note": "LOGIC_PATTERN: 授权谓词弱化"
+   "tier_note": "LOGIC_PATTERN: 授权谓词弱化",
+   "lang": "any"
   },
   {
    "sig_id": "SIG-HEADER-INJ-006",
@@ -287,8 +195,8 @@
     "CWE-113"
    ],
    "platform_profiles": [
-    "server-framework",
     "cgi-tool",
+    "server-framework",
     "web-app"
    ],
    "detection_hints": {
@@ -299,7 +207,6 @@
      "img src",
      "escape\\(",
      "encode\\(",
-     "CleanXSS",
      "XMLEncode"
     ],
     "checklist": [
@@ -308,29 +215,7 @@
      "转义是否覆盖引号/斜杠/CRLF 全部维度？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "AWStats",
-     "file": "wwwroot/cgi-bin/awstats.pl",
-     "line": 8303,
-     "confirmed": true,
-     "note": "diricons img src 属性注入 (R5 perl 路径模拟确认)"
-    },
-    {
-     "project": "WordPress",
-     "file": "wp-admin/user-edit.php",
-     "line": 782,
-     "confirmed": true,
-     "note": "display_name 相邻转义遗漏"
-    },
-    {
-     "project": "sinatra",
-     "file": "lib/sinatra/base.rb",
-     "line": 399,
-     "confirmed": true,
-     "note": "content_type 参数条件 inspect 过滤"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": "xss_path_sim",
    "tier": "L3",
    "tier_note": "语义族: 头注入 (known_instances 非空)",
@@ -338,30 +223,28 @@
    "contribution": {
     "hypotheses_contributed": 0,
     "batches_seen": 0
-   }
+   },
+   "lang": "any"
   },
   {
    "sig_id": "SIG-AUTHZ-BOUND-007",
-   "semantic": "信任边界/鉴权前提缺失：Host/转发头被信任、IPC 同 UID 无隔离、owner 比对缺失",
+   "semantic": "信任边界/鉴权前提缺失：Host/转发头被信任（来源校验缺失/鉴权谓词弱化）",
    "cwe": [
     "CWE-807",
     "CWE-350",
     "CWE-639"
    ],
    "platform_profiles": [
-    "server-framework",
-    "security-boundary"
+    "security-boundary",
+    "server-framework"
    ],
    "detection_hints": {
     "grep": [
-     "get_host",
      "X-Forwarded",
      "Forwarded",
      "request.host",
      "Host header",
-     "session_secret",
-     "good_origin",
-     "request_origin"
+     "X-Real-IP"
     ],
     "checklist": [
      "该值是否被用于鉴权/CSRF/重定向/绝对 URL 构造？",
@@ -369,29 +252,7 @@
      "owner/session 与资源归属是否比对？"
     ]
    },
-   "known_instances": [
-    {
-     "project": "django",
-     "file": "django/middleware/csrf.py",
-     "line": 282,
-     "confirmed": true,
-     "note": "CSRF Origin 锚定 Host header"
-    },
-    {
-     "project": "sinatra",
-     "file": "lib/sinatra/base.rb",
-     "line": 1958,
-     "confirmed": true,
-     "note": "会话 secret 跨子类共享"
-    },
-    {
-     "project": "container",
-     "file": "XPC 鉴权",
-     "line": 1,
-     "confirmed": true,
-     "note": "XPC 鉴权仅 EUID (gvisor/container 教训)"
-    }
-   ],
+   "known_instances": [],
    "empirical_harness": null,
    "tier": "L3",
    "runtime_prereq": null,
@@ -399,7 +260,8 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "tier_note": "语义族: 授权边界"
+   "tier_note": "语义族: 授权边界",
+   "lang": "any"
   },
   {
    "sig_id": "SIG-PS-SCRIPTBLOCK-001",
@@ -427,15 +289,9 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "known_instances": [
-    {
-     "project": "Pester",
-     "file": "src/functions/TestDrive.Tests.ps1",
-     "confirmed": false,
-     "line": 1
-    }
-   ],
-   "empirical_harness": null
+   "known_instances": [],
+   "empirical_harness": null,
+   "lang": "powershell"
   },
   {
    "sig_id": "SIG-SH-EVAL-001",
@@ -464,26 +320,19 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "known_instances": [
-    {
-     "project": "ohmyzsh",
-     "file": "lib/functions.zsh",
-     "confirmed": false,
-     "line": 1
-    }
-   ],
-   "empirical_harness": null
+   "known_instances": [],
+   "empirical_harness": null,
+   "lang": "shell"
   },
   {
    "sig_id": "SIG-CS-DESER-001",
    "tier": "L2",
    "tier_note": "语言词族: C# 反序列化 (W6 §13.1)",
-   "semantic": "反序列化类选择/程序集加载（TypeNameHandling/BindToType/Assembly.Load/Type.GetType(s,true)）",
+   "semantic": "反序列化类选择/程序集加载（TypeNameHandling/BindToType/Assembly.Load/Type.GetType——Newtonsoft.Json 通用框架 API）",
    "cwe": [
     "CWE-502"
    ],
    "platform_profiles": [
-    "server-framework",
     "server-framework"
    ],
    "detection_hints": {
@@ -502,21 +351,15 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "known_instances": [
-    {
-     "project": "Newtonsoft.Json",
-     "file": "Src/Newtonsoft.Json/Serialization/JsonSerializerInternalReader.cs",
-     "confirmed": false,
-     "line": 1
-    }
-   ],
-   "empirical_harness": null
+   "known_instances": [],
+   "empirical_harness": null,
+   "lang": "cs"
   },
   {
    "sig_id": "SIG-PY-PICKLE-001",
    "tier": "L2",
    "tier_note": "语言词族: Python (W6 §14.1)",
-   "semantic": "pickle 反序列化族 + get_host 采信 + ASGI read_body 无界循环",
+   "semantic": "Python pickle 反序列化（不可信数据直接 load）",
    "cwe": [
     "CWE-502",
     "CWE-770"
@@ -526,11 +369,9 @@
    ],
    "detection_hints": {
     "grep": [
-     "pickle.loads",
-     "get_host",
-     "read_body",
-     "safe_join",
-     "validate_host"
+     "pickle\\.loads",
+     "pickle\\.load\\b",
+     "Unpickler"
     ],
     "checklist": []
    },
@@ -539,21 +380,15 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "known_instances": [
-    {
-     "project": "django",
-     "file": "django/core/handlers/asgi.py",
-     "confirmed": false,
-     "line": 1
-    }
-   ],
-   "empirical_harness": null
+   "known_instances": [],
+   "empirical_harness": null,
+   "lang": "python"
   },
   {
    "sig_id": "SIG-TS-ACCUM-001",
    "tier": "L2",
    "tier_note": "语言词族: TypeScript (W6 §15.1)",
-   "semantic": "socket.on('data') 累积/multer 无 limits/JSON.stringify 无 catch/reply channel 拼接",
+   "semantic": "Node.js 流/套接字 data 事件逐块累积（无总量上限）",
    "cwe": [
     "CWE-400"
    ],
@@ -562,12 +397,7 @@
    ],
    "detection_hints": {
     "grep": [
-     "socket\\.on\\('data'",
-     "socket\\.on\\(\"data\"",
-     "multer",
-     "JSON.stringify",
-     "replyTo",
-     "reply-to"
+     "socket\\.on\\(['\"]data['\"]"
     ],
     "checklist": []
    },
@@ -576,21 +406,15 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "known_instances": [
-    {
-     "project": "nest",
-     "file": "packages/microservices/context/rpc-context-creator.ts",
-     "confirmed": false,
-     "line": 1
-    }
-   ],
-   "empirical_harness": null
+   "known_instances": [],
+   "empirical_harness": null,
+   "lang": "typescript"
   },
   {
    "sig_id": "SIG-KT-RECEIVE-001",
    "tier": "L2",
    "tier_note": "语言词族: Kotlin (W6 §19.1)",
-   "semantic": "receive/readRemaining 无上限 + respondRedirect + Cookie parse",
+   "semantic": "Kotlin 通道/IO 接收（receive/readRemaining 无上限消费）",
    "cwe": [
     "CWE-770",
     "CWE-601"
@@ -601,11 +425,7 @@
    "detection_hints": {
     "grep": [
      "receive\\(",
-     "readRemaining",
-     "respondRedirect",
-     "Cookie.parse",
-     "maxFrameSize",
-     "maxDecodedContentLength"
+     "readRemaining"
     ],
     "checklist": []
    },
@@ -614,15 +434,9 @@
     "hypotheses_contributed": 0,
     "batches_seen": 0
    },
-   "known_instances": [
-    {
-     "project": "ktor",
-     "file": "ktor-shared/ktor-websockets/common/src/io/ktor/websocket/Frame.kt",
-     "confirmed": false,
-     "line": 1
-    }
-   ],
-   "empirical_harness": null
+   "known_instances": [],
+   "empirical_harness": null,
+   "lang": "kotlin"
   }
  ],
  "smoke_test": {

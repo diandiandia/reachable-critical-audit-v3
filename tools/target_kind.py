@@ -124,12 +124,40 @@ def determine_target_kind(project_root):
                     add("package-manifest", "lib", f"{rel}: module 声明", 0.5)
 
     # 2. 监听器 (决定性强信号)
+    # v3.2.2 (REQ-V3.2.2-022): 路径分域——测试/脚本/文档/库目录/示例目录命中不得计
+    # app 方向 (mbedtls 实证: library/net_sockets.c 辅助函数与 programs/ 示例服务器
+    # 曾致机械推荐 application; 通用规则: 仅示例目录有监听 = 示例非产品本体)
+    _NON_PRODUCT_SEGS = ("tests", "test", "scripts", "script", "tools", "tool",
+                         "docs", "doc")
+    _LIB_SEGS = ("library", "lib")
+    _EXAMPLE_SEGS = ("examples", "example", "demos", "demo", "samples",
+                     "sample", "programs")
+
+    def _classify_hit(path):
+        parts = os.path.relpath(path, root).replace(os.sep, "/").split("/")
+        if any(p in _NON_PRODUCT_SEGS for p in parts):
+            return "nonproduct"
+        if any(p in _LIB_SEGS for p in parts):
+            return "libdir"
+        if any(p in _EXAMPLE_SEGS for p in parts):
+            return "examples"
+        return "product"
+
     listens = _grep(root, LISTEN_PATTERN,
                     {".go", ".rs", ".py", ".js", ".ts", ".java", ".scala",
                      ".rb", ".php", ".c", ".cpp"})
-    if listens:
-        add("listener", "app", f"{len(listens)} 处监听/服务构建命中, 例: "
-            f"{os.path.relpath(listens[0][0], root)}:{listens[0][1]}", 2.0)
+    product_hits = [h for h in listens if _classify_hit(h[0]) == "product"]
+    libdir_hits = [h for h in listens if _classify_hit(h[0]) == "libdir"]
+    example_hits = [h for h in listens if _classify_hit(h[0]) == "examples"]
+    if product_hits:
+        add("listener", "app", f"{len(product_hits)} 处监听/服务构建命中(产品路径), 例: "
+            f"{os.path.relpath(product_hits[0][0], root)}:{product_hits[0][1]}", 2.0)
+    elif example_hits:
+        add("listener", "lib", f"监听命中仅位于示例/程序目录 (示例非产品本体), 例: "
+            f"{os.path.relpath(example_hits[0][0], root)}:{example_hits[0][1]}", 0.8)
+    elif libdir_hits:
+        add("listener", "lib", f"监听模式命中仅位于库目录 (socket 抽象辅助函数), 例: "
+            f"{os.path.relpath(libdir_hits[0][0], root)}:{libdir_hits[0][1]}", 0.8)
     else:
         add("listener", "lib", "无监听器/服务构建模式命中", 1.0)
 
@@ -139,6 +167,9 @@ def determine_target_kind(project_root):
                                 r"ActixSystem::new|#[tokio::main]|app\.run\(\)",
                                 re.IGNORECASE),
                      {".go", ".rs", ".py", ".java"}, 6)
+    # v3.2.2: 排除测试/脚本/文档目录的启动链 (scripts/analyze_outcomes.py 与
+    # docs/conf.py 类非产品 main 曾致误判)
+    starters = [s for s in starters if _classify_hit(s[0]) != "nonproduct"]
     if starters:
         add("startup-chain", "app", f"启动链命中: {starters[0][0].split(os.sep)[-1]}:{starters[0][1]}", 1.2)
 

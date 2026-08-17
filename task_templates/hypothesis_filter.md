@@ -19,9 +19,16 @@
 3. hit 行在测试/示例/构建工具代码
 4. 语义族与项目平台不匹配
 
+## scope_dependent 标记（v3.2.2, REQ-V3.2.2-019）
+drop 理由属于"目标代码在审计范围内不可见"类（子模块未物化/树外实现/依赖缺失）时
+必须 `scope_dependent: true`——该 drop 是 scope 快照的函数; scope 变更时（入队前
+scope diff）这类 drop 自动提示复活重验（mbedtls 审计: tf-psa-crypto 中途物化
+使"树外不可验证"drop 作废的实战形态）。其余 drop 为 false。
+
 ## 产出（强制 JSON，最终回复）
 {"keep":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"sources":["LLM|SIG-xxx"]}],
- "drop":[{"id":"HYP-xxx","reason":"...","dropped_by":"filter"}],
+ "drop":[{"id":"HYP-xxx","reason":"...","dropped_by":"filter",
+          "scope_dependent":false|true}],
  "boundary_confirmations":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"confirmed_defense":"..."}]}
 
 

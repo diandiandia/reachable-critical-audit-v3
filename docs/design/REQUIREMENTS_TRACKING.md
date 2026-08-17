@@ -316,3 +316,33 @@
 | M7 组件角色 | 1 | 已经完成开发 |
 | M8 SKILL/报告/判据 | 2 | 已经完成开发 |
 | M9 测试 | 2 | 已经完成开发（90/90 全绿） |
+
+## v3.2.2 增量（REQ-V3.2.2 共 24+2 条 / SWR-V3.2.2 共 41 条）
+
+| 组 | 内容 | 状态 |
+|---|---|---|
+| REQ-V3.2.2-001~007 | 资产去项目化（签名 lang/cwe 必填 + 黑名单扫描 + match lang 过滤 + gen L3-only + 完整性自检 + 任务书 lang 分派 + 资产脱敏） | 开发完成（mbedtls 复跑 hits 36→7 零跨语言、gen 20→2 纯 L3） |
+| REQ-V3.2.2-008~009 | harness parser_fuzz 模板 + 覆盖矩阵 | 开发完成 |
+| REQ-V3.2.2-010~015 | 契约同步（selfcheck/doc-lint/merge 落盘/drops 归一/anchor hit_sites/r4 id/lessons lenient） | 开发完成（97/97 测试全绿） |
+| REQ-V3.2.2-016~017 | claim_type 只属 REACHABLE | 开发完成 |
+| REQ-V3.2.2-018~021 | scope guard + mirror_pairs + coverage_bridge 正式化 | 开发完成 |
+| REQ-V3.2.2-022~024 | target_kind 分域/tier 运行时语言/collect --from-journal | 开发完成（mbedtls 机械推荐 library） |
+| REQ-V3.2.2-030 | r4_feedback resolved 标记位 | 开发完成 |
+| REQ-V3.2.2-040~043 | Phase 3.2.2.3 验收 | 进行中（见 ACCEPTANCE_V3_2_2.md） |
+
+### 软件需求（SWR-V3.2.2）状态汇总
+
+| 模块 | 条目数 | 状态 |
+|---|---|---|
+| M1 signature_lib 数据模型 v2 | 8 | 已经完成开发 |
+| M2 签名库重构 | 2 | 已经完成开发 |
+| M3 signature_matcher | 2 | 已经完成开发 |
+| M4 surface_mapper | 5 | 已经完成开发 |
+| M5 r2_guard | 3 | 已经完成开发 |
+| M6 batch_verify | 6 | 已经完成开发 |
+| M7 evidence_ledger | 2 | 已经完成开发 |
+| M8 lessons_recorder | 1 | 已经完成开发 |
+| M9-M10 harness | 3 | 已经完成开发 |
+| M11 target_kind | 1 | 已经完成开发 |
+| M12-M15 资产脱敏与文档 | 3 | 已经完成开发 |
+| M16 tests | 3 | 已经完成开发（97/97 全绿） |

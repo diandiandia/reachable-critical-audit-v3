@@ -46,8 +46,14 @@ def collect(project_root):
         if adj.get("attribution_corrections"):
             issues.append({"stage": "R3.5", "kind": "attribution_correction",
                            "detail": f"{cid}: {str(adj['attribution_corrections'][0])[:200]}"})
+        # v3.2.2 (REQ-V3.2.2-015): resurrection_review lenient 加载——
+        # 契约形态是候选级 dict{revived,outcome}; str/list 落盘曾崩溃 (mbedtls 实测)
         rr = c.get("resurrection_review") or {}
-        if rr.get("revived"):
+        if isinstance(rr, str):
+            rr = {"revived": False, "outcome": rr}
+        elif isinstance(rr, list):
+            rr = {}
+        if isinstance(rr, dict) and rr.get("revived"):
             issues.append({"stage": "R3.5-N", "kind": "resurrection",
                            "detail": f"{cid}: {rr.get('outcome', '')[:200]}"})
         if c.get("grade_recomputed_by"):

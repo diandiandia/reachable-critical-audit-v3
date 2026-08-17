@@ -15,6 +15,30 @@ import os
 VALID_PROFILES = {"server-framework", "parser-library", "cgi-tool", "web-app",
                   "security-boundary", "cli-tool", "desktop", "embedded", "any"}
 
+# v3.2.2 (P-A, REQ-V3.2.2-001/002): 通用型第一原则——资产去项目化。
+# L2 词族签名必须声明 lang; L3 语义族 lang 缺省为 "any"。
+VALID_LANGS = {"any", "c", "cpp", "python", "java", "go", "rust", "kotlin", "scala",
+               "cs", "js", "ts", "typescript", "php", "perl", "ruby", "shell",
+               "powershell", "ps", "swift", "lua"}
+
+# 项目专属 API 名黑名单（mbedtls 审计复盘取证, 2026-08-17）。
+# 命中任一 token 的 grep 模式或 semantic 文本 = 资产携带项目残留, validate 拒绝。
+# token 匹配: 大小写不敏感子串。
+DEPROJECT_BLACKLIST = [
+    "multer", "replyto",                 # NestJS
+    "maxdecodedcontentlength", "maxframesize",  # Ktor
+    "good_origin", "request_origin",     # lighttpd mod
+    "cleanxss",                          # WordPress/AWStats
+    "safe_join", "validate_host", "get_host", "read_body",  # Django
+    "required_args_constructor", "lersosa",  # Lersosa
+    "wp-admin", "wwwroot", "xpc 鉴权",   # 历史项目目录名
+    "checkautotype",                     # fastjson
+    "configdir", "serve_from",           # AWStats 时代
+]
+
+FIXTURE_INSTANCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      "tests", "fixtures", "known_instances.json")
+
 REQUIRED_FIELDS = ["sig_id", "semantic", "cwe", "platform_profiles",
                    "detection_hints", "known_instances", "empirical_harness"]
 
@@ -26,8 +50,21 @@ def load(path=DEFAULT_PATH):
     return json.load(open(path))
 
 
+def _deproject_scan(sig):
+    """v3.2.2: 扫描 semantic + grep 模式, 命中项目专属名黑名单返回违规列表。"""
+    hits = []
+    haystack = (str(sig.get("semantic", "")) + " " +
+                " ".join(sig.get("detection_hints", {}).get("grep", []))).lower()
+    for tok in DEPROJECT_BLACKLIST:
+        if tok in haystack:
+            hits.append(tok)
+    return hits
+
+
 def validate(data):
-    """SWR-V3-010/011: schema 校验 + known_instances 非空强制。返回 (ok, errors)。"""
+    """SWR-V3-010/011 + v3.2.2: schema 校验 + lang 必填(L2) + 去项目化扫描。
+    known_instances 非空强制退役 (v3.2.2): 回归锚点移入 tests/fixtures,
+    validate 不再要求签名内嵌实例。返回 (ok, errors)。"""
     errors = []
     if not isinstance(data, dict) or "signatures" not in data:
         return False, ["missing 'signatures'"]
@@ -40,18 +77,30 @@ def validate(data):
         if sig.get("sig_id") in seen_ids:
             errors.append(f"{tag}: duplicate sig_id")
         seen_ids.add(sig.get("sig_id"))
+        # v3.2.2: cwe 非空 + semantic 非空
+        if not sig.get("cwe"):
+            errors.append(f"{tag}: cwe 为空 (语义族必须 CWE 锚定)")
+        if not str(sig.get("semantic", "")).strip():
+            errors.append(f"{tag}: semantic 为空 (需抽象形态描述)")
+        # v3.2.2: lang 必填 (L2 词族必须具体语言; L3 语义族缺省 any)
+        tier = sig.get("tier") or sig.get("level")
+        lang = sig.get("lang")
+        if tier == "L2":
+            if not lang or lang not in VALID_LANGS or lang == "any":
+                errors.append(f"{tag}: L2 词族 lang 必填 (got {lang!r})")
+        elif lang is not None and lang not in VALID_LANGS:
+            errors.append(f"{tag}: invalid lang {lang!r}")
+        # v3.2.2 (REQ-V3.2.2-001): 去项目化扫描
+        for tok in _deproject_scan(sig):
+            errors.append(f"{tag}: 项目专属名 '{tok}' 出现在 semantic/grep (第一原则三禁止①)")
         profs = sig.get("platform_profiles", [])
         bad = [p for p in profs if p not in VALID_PROFILES]
         if bad:
             errors.append(f"{tag}: invalid platform_profiles {bad}")
-        # SWR-V3-011: known_instances 非空强制
         insts = sig.get("known_instances", [])
-        if not insts:
-            errors.append(f"{tag}: known_instances 为空 (SWR-V3-011 强制非空)")
-        else:
-            for inst in insts:
-                if not all(k in inst for k in ("project", "file", "line", "confirmed")):
-                    errors.append(f"{tag}: instance 缺字段 {inst}")
+        for inst in insts:
+            if not all(k in inst for k in ("project", "file", "line", "confirmed")):
+                errors.append(f"{tag}: instance 缺字段 {inst}")
         hints = sig.get("detection_hints", {})
         if "grep" not in hints or "checklist" not in hints:
             errors.append(f"{tag}: detection_hints 需含 grep 与 checklist")
@@ -77,18 +126,66 @@ def _compile_grep(patterns):
     return out
 
 
+def load_fixture_instances(path=FIXTURE_INSTANCES_PATH):
+    """v3.2.2: 回归锚点从 resources 移入 tests/fixtures (第一原则三禁止③)。
+    返回 {sig_id: [instances]}；fixture 文件缺失时返回空表（完整性自检会报缺）。"""
+    if not os.path.exists(path):
+        return {}
+    try:
+        data = json.load(open(path))
+    except (OSError, ValueError):
+        return {}
+    if isinstance(data, dict) and isinstance(data.get("instances"), list):
+        out = {}
+        for inst in data["instances"]:
+            out.setdefault(inst.get("sig_id"), []).append(inst)
+        return out
+    return {}
+
+
+def integrity_selfcheck(data):
+    """v3.2.2 (REQ-V3.2.2-005): 非 fixture 仓库的 R0 自检语义——
+    签名库完整性: validate + lang 完备 + 去项目化 0 命中 + 全部 grep 可编译。
+    返回 (ok, detail_lines)。"""
+    lines = []
+    ok, errors = validate(data)
+    if not ok:
+        return False, errors
+    for sig in data["signatures"]:
+        tier = sig.get("tier") or sig.get("level")
+        lang = sig.get("lang")
+        if tier == "L2" and (not lang or lang == "any"):
+            lines.append(f"{sig['sig_id']}: L2 词族缺具体 lang")
+        tok = _deproject_scan(sig)
+        if tok:
+            lines.append(f"{sig['sig_id']}: 项目专属名 {tok}")
+        try:
+            _compile_grep(sig["detection_hints"]["grep"])
+        except ValueError as e:
+            lines.append(f"{sig['sig_id']}: {e}")
+    if lines:
+        return False, lines
+    return True, [f"integrity OK: {len(data['signatures'])} signatures (lang/cwe/deproject 完备)"]
+
+
 def smoke_test(data, repo_paths):
-    """SWR-V3-013: 对每个签名取第 1 个 confirmed known_instance，
-    在其文件行窗口(±3 行)验证 detection_hints.grep 至少 1 条命中。
-    known_instances 横跨多仓库: 仅在提供的 repo 中定位不到时计 skipped（不计入命中率分母）;
-    全部实例 skipped 视为配置错误。返回 (results, hit_rate)。"""
+    """SWR-V3-013 + v3.2.2: 回归锚点取自 tests/fixtures/known_instances.json。
+    - 实例在 repo 中可定位 (fixture 仓库) → anchor recall, hit_rate 检查
+    - 全部 skipped (非 fixture 仓库) → 完整性自检 (integrity_selfcheck),
+      结果挂在 results['__integrity__'], testable=0 放行语义不变 (W6 §7)
+    返回 (results, hit_rate, testable)。"""
     results = {}
     testable = 0
+    fixture = load_fixture_instances()
+    if not fixture:
+        results["__integrity__"] = {"hit": False, "skipped": True,
+                                    "instance": None,
+                                    "detail": "tests/fixtures/known_instances.json 缺失或空"}
     for sig in data["signatures"]:
-        inst = next((x for x in sig["known_instances"] if x.get("confirmed")), None)
+        inst = next((x for x in fixture.get(sig["sig_id"], []) if x.get("confirmed")), None)
         if inst is None:
             results[sig["sig_id"]] = {"hit": False, "instance": None,
-                                      "detail": "no confirmed instance", "skipped": True}
+                                      "detail": "no confirmed fixture instance", "skipped": True}
             continue
         fpath = None
         for repo in repo_paths:
@@ -119,6 +216,12 @@ def smoke_test(data, repo_paths):
                                   "detail": ("hit" if hit else
                                              f"no grep pattern matched window of {inst['file']}:{inst['line']}")}
     hit_rate = (sum(1 for r in results.values() if r["hit"]) / testable) if testable else 0.0
+    if testable == 0:
+        # v3.2.2: 非 fixture 仓库 → 完整性自检
+        iok, ilines = integrity_selfcheck(data)
+        results["__integrity__"] = {"hit": iok, "skipped": False,
+                                    "instance": None, "testable": testable,
+                                    "detail": "; ".join(ilines)[:500]}
     # v3.1 (W6 §7): 全 skipped (testable=0) 时 hit_rate=0 是合法状态——跨仓库锚点库
     # 单仓库审计必然全 skipped, 不得按字面 hit_rate<1.0 阻止启动
     return results, hit_rate, testable
@@ -143,15 +246,48 @@ def main(argv):
             if r.get("skipped"):
                 print(f"SKIP  {sig}  @ {r.get('instance')}  {r['detail']}")
             else:
-                print(f"{'PASS' if r['hit'] else 'FAIL'}  {sig}  @ {r['instance']}  {r['detail']}")
+                print(f"{'PASS' if r['hit'] else 'FAIL'}  {sig}  @ {r.get('instance')}  {r['detail']}")
         required = data["smoke_test"]["required_hit_rate"]
         print(f"hit_rate={rate:.0%} required={required:.0%} testable={testable}")
         # v3.1 (W6 §7): 全 skipped 放行 (testable=0 时 hit_rate 无意义)
         if testable == 0:
-            print("all instances skipped (testable=0) -> PASS per W6 §7")
-            return 0
+            integ = results.get("__integrity__", {})
+            if integ.get("hit"):
+                print(f"all instances skipped (testable=0) -> integrity: {integ.get('detail')}")
+                return 0
+            print(f"all instances skipped (testable=0) but integrity FAIL: {integ.get('detail')}")
+            return 2
         return 0 if rate >= required else 2
-    print("usage: signature_lib.py [validate|smoke <repo>]")
+    if cmd == "selfcheck":
+        # v3.2.2 (REQ-V3.2.2-010): R0 单一事实源——SKILL.md 只引用这一条命令。
+        # 用法: python3 signature_lib.py selfcheck [<repo>]  (省略 repo = 当前目录)
+        repos = argv[2:] if len(argv) > 2 else ["."]
+        ok, errors = validate(data)
+        if not ok:
+            print("FAIL: validate")
+            for e in errors:
+                print("  -", e)
+            return 2
+        results, rate, testable = smoke_test(data, repos)
+        print(f"validate OK ({len(data['signatures'])} signatures); "
+              f"hit_rate={rate:.0%} testable={testable}")
+        if testable > 0:
+            required = data["smoke_test"]["required_hit_rate"]
+            if rate < required:
+                print(f"FAIL: hit_rate {rate:.0%} < required {required:.0%}")
+                for sig, r in results.items():
+                    if not r.get("skipped") and not r["hit"]:
+                        print(f"  - {sig}: {r['detail']}")
+                return 2
+            return 0
+        integ = results.get("__integrity__", {})
+        if integ.get("hit"):
+            print(f"non-fixture repo -> {integ.get('detail')}")
+            return 0
+        print("FAIL: integrity self-check")
+        print(f"  {integ.get('detail')}")
+        return 2
+    print("usage: signature_lib.py [validate|smoke <repo>|selfcheck [<repo>]]")
     return 1
 
 
