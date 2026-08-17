@@ -60,9 +60,17 @@
 | SWR-V3.2-071 | SKILL.md 增加 R3.5-N 编排条款（时机/抽样/复活回 R3 重验路径） | REQ-V3.2-021 | 已完成 | 条款入 SKILL |
 | SWR-V3.2-072 | SKILL.md 增加报告语言覆盖表 + FFI 边界表条款 | REQ-V3.2-040/041 | 已完成 | 条款入 SKILL |
 
+## M13 lessons_recorder.py（R6，新组件）
+
+| 编号 | 需求 | 满足 | 状态 | 验收判据 |
+|---|---|---|---|---|
+| SWR-V3.2-080 | 实现 `collect()`：从 verify_queue/验收记录机械提取问题证据（correction_record/r35 降级与补强/resurrection/grade_recomputed/paraphrased/adjudication_note/target_kind） | REQ-V3.2-061 | 已完成 | fixture 审计提取 13 条 |
+| SWR-V3.2-081 | 实现 `render()/write_lesson()`：生成 lessons 文档（自动提取段 + 主代理过程观察段 + 待回填段）+ 索引自动更新 | REQ-V3.2-060 | 已完成 | mixed-fixture lessons 已生成 |
+| SWR-V3.2-082 | SKILL.md R6 条款（回写时机/价值判定/闭合门禁）+ install.sh 安装模块 | REQ-V3.2-060 | 已完成 | 条款入 SKILL |
+
 ## 统计
 
-- 总计 21 条：已完成 21 / 未开发 0 / 开发中 0（2026-08-17 开发完成）
+- 总计 24 条：已完成 24 / 未开发 0 / 开发中 0（2026-08-17 开发完成；R6 lessons_recorder 为验收中新增需求）
 - 剩余义务：Phase 3.2.3 验收（REQ-V3.2-100~102）
 - 注：REQ-V3.2-030 的 grade_verdict 重算函数在 v3.1 已实现；SWR-V3.2-070 的流程条款化
   已在本次开发完成（SKILL.md v3.2 段 + verifier 模板加注）

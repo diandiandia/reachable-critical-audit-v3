@@ -44,6 +44,13 @@
 | REQ-V3.2-030 | 分级机械复核条款化：collect 后对全部 REACHABLE 强制跑 grade_verdict 重算，差异写 grade_recomputed_by；verifier 任务书加注"evidence_grade 是证据的机械函数，非自我评估" | ACCEPTANCE_V3_1 §判据③、设计 P-D | P0 | 复跑中 verifier 自标 static_only 而证据齐全的候选被机械升级 |
 | REQ-V3.2-031 | 绑定关键词回填流程化：复跑/验收发现的清单绑定缺口当日回填 + 绑定矩阵回归测试追加用例 | ACCEPTANCE_V3_1、设计 P-D | P1 | 缺口回填有测试用例固化 |
 
+## 4.5 R6 lessons 回写需求（v3.2 新增，2026-08-17）
+
+| 编号 | 需求 | 来源 | 优先级 | 验收判据 |
+|---|---|---|---|---|
+| REQ-V3.2-060 | 审计六门禁通过后强制 R6 lessons 回写：生成 lessons/SKILL_LESSONS_<project>.md 描述遇到的问题 | 用户需求（审计后 lessons 问题文档）+ 战役教训（§1-24 手工回写） | P0 | 未执行 R6 审计不得闭合 |
+| REQ-V3.2-061 | lessons 文档证据必须机械提取（裁决纠正/降级/复活/分级重算/paraphrased/验收记录），过程观察由主代理补充并区分标注 | R6 设计 | P0 | 文档含自动提取段与人工补充段分明 |
+
 ## 5. 门禁与报告需求
 
 | 编号 | 需求 | 来源 | 优先级 | 验收判据 |

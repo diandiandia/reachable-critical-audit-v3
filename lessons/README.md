@@ -47,3 +47,4 @@
   P0/P1/P2 分级的建议清单、"表现良好的部分（保持）"。
 - 与项目审计报告的关系：lesson 只沉淀 skill 缺陷，不重复项目漏洞细节（引用项目
   `.audit_results/` 归档）。
+| [SKILL_LESSONS_mixed-fixture.md](SKILL_LESSONS_mixed-fixture.md) | 自动 | mixed-fixture | 2026-08-17 | R6 机械生成: 13 条问题证据 |

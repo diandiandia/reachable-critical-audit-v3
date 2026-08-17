@@ -261,3 +261,19 @@ akka-http / etcd / actix-web 三项目复跑对照:
 
 ### 验收（Phase 3.2.3）
 混合项目试审（≥3 语言 + FFI 边界）+ akka-http 单语言零回退回归。
+
+## 📝 R6：lessons 回写（审计闭合前置，v3.2 新增）
+
+六门禁通过后、报告定稿前，强制生成代码审计问题文档：
+
+```bash
+python3 lessons_recorder.py <project> --write
+# → lessons/SKILL_LESSONS_<project>.md（机械提取: 裁决纠正/降级/复活/分级重算/
+#   paraphrased 标记/验收记录——全部来自 .audit_results/ 产物证据）
+```
+
+1. 主代理必须**人工补充过程观察段**（agent 行为/工具链陷阱/workflow 缺陷——
+   非结构化数据无法机械提取），用 `write_lesson(project, process_notes=[...])`
+2. 价值判定：高价值条目（新缺陷模式/语言盲区/裁决先例）当日并入
+   W6_MORE_LANGS_FINDINGS.md 或对应语言 lessons；低价值条目留审计轨迹
+3. 索引 lessons/README.md 自动更新；**未执行 R6 的审计不得闭合**（报告阶段门禁）
