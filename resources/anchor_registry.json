@@ -1,0 +1,228 @@
+{
+ "schema_version": "1.0",
+ "comment": "Ground-truth CVE attack-surface anchors per language (REQ-24). ast_scanner.py --self-check must hit ALL anchors for a language or that language's rule library FAILs. Also serves as regression set for rule-library changes.",
+ "anchors": {
+  "php": [
+   {
+    "cwe_id": "CWE-98",
+    "category": "LocalFileInclusion",
+    "sample_code": "<?php if (isset($_REQUEST['target'])) { include $_REQUEST['target']; } ?>",
+    "cve": "CVE-2018-12613"
+   },
+   {
+    "cwe_id": "CWE-89",
+    "category": "SqlInjection",
+    "sample_code": "<?php $stmt = mysqli_query($conn, \"SELECT * FROM t WHERE id=$id\"); ?>",
+    "cve": "CVE-2021-4048"
+   },
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandInjection",
+    "sample_code": "<?php system($_POST['cmd']); ?>",
+    "cve": "CVE-2022-4256"
+   },
+   {
+    "cwe_id": "CWE-502",
+    "category": "Deserialization",
+    "sample_code": "<?php $obj = unserialize($_COOKIE['data']); ?>",
+    "cve": "CVE-2018-7600"
+   }
+  ],
+  "java": [
+   {
+    "cwe_id": "CWE-502",
+    "category": "DeserializationLogic",
+    "sample_code": "class A { Object f(String typeName) { long hash = MAGIC_HASH_CODE; for (int i=0;i<typeName.length();++i){ hash ^= typeName.charAt(i); hash *= MAGIC_PRIME; if (Arrays.binarySearch(acceptHashCodes, hash) >= 0) { return Class.forName(typeName); } } return null; } }",
+    "cve": "fastjson2 checkAutoType hash-forge (2.0.62)"
+   },
+   {
+    "cwe_id": "CWE-502",
+    "category": "Deserialization",
+    "sample_code": "class A { Object f(String n) { return Class.forName(n).newInstance(); } }",
+    "cve": "CVE-2018-7600 (Drupalgeddon2)"
+   },
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandInjection",
+    "sample_code": "class A { void f(String c) { Runtime.getRuntime().exec(c); } }",
+    "cve": "CVE-2016-5734"
+   }
+  ],
+  "go": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandInjection",
+    "sample_code": "package main\nimport \"os/exec\"\nfunc f(userInput string) { exec.Command(\"sh\", \"-c\", userInput).Run() }",
+    "cve": "CWE-78 generic"
+   }
+  ],
+  "cpp": [
+   {
+    "cwe_id": "CWE-787",
+    "category": "OutOfBoundsWrite",
+    "sample_code": "void f(uint32_t count) { uint64_t arr[10]; for (uint32_t i=0;i<count;i++) arr[i]=0; }",
+    "cve": "tengine parse_rc_info (R4-H2-RCINFO)"
+   }
+  ],
+  "c": [
+   {
+    "cwe_id": "CWE-789",
+    "category": "UncontrolledMemoryAllocation",
+    "sample_code": "void f(size_t n) { char *p = malloc(n); }",
+    "cve": "xquic MOQ payload_len (R4-H1)"
+   }
+  ],
+  "javascript": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandInjection",
+    "sample_code": "function f(cmd) { child_process.exec(cmd); }",
+    "cve": "CWE-78 generic"
+   }
+  ],
+  "ruby": [
+   {
+    "cwe_id": "CWE-94",
+    "category": "CodeInjection",
+    "sample_code": "def render(user_input)\n  eval(user_input)\nend",
+    "cve": "CWE-94 generic"
+   },
+   {
+    "cwe_id": "CWE-89",
+    "category": "SqlInjection",
+    "sample_code": "db.async_exec(user_sql)",
+    "cve": "CWE-89 generic"
+   },
+   {
+    "cwe_id": "CWE-502",
+    "category": "Deserialization",
+    "sample_code": "load(user_file)",
+    "cve": "CWE-502 generic"
+   }
+  ],
+  "rust": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandExecution",
+    "sample_code": "fn f(user_input: &str) { std::process::Command::new(\"sh\").arg(user_input).status(); }",
+    "cve": "CWE-78 generic"
+   },
+   {
+    "cwe_id": "CWE-22",
+    "category": "PathTraversal",
+    "sample_code": "fn f(user_path: &str) { std::fs::create_dir_all(user_path); }",
+    "cve": "CVE-2026-72814 (actix-files CWE-22 family)"
+   }
+  ],
+  "csharp": [
+   {
+    "cwe_id": "CWE-502",
+    "category": "Deserialization",
+    "sample_code": "var t = Type.GetType(userTypeName);",
+    "cve": "CVE-2024-21907 (Newtonsoft TypeNameHandling family)"
+   },
+   {
+    "cwe_id": "CWE-611",
+    "category": "XxeXmlParser",
+    "sample_code": "XmlSchema(schemaFile);",
+    "cve": "CWE-611 generic"
+   }
+  ],
+  "perl": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandExecution",
+    "sample_code": "system($user_cmd);",
+    "cve": "CWE-78 generic (AWStats CVE-2020-35176 family)"
+   },
+   {
+    "cwe_id": "CWE-22",
+    "category": "FileSystemAccess",
+    "sample_code": "open(my $fh, \"<\", $user_file) or die;",
+    "cve": "CVE-2020-35176 (AWStats config path traversal)"
+   },
+   {
+    "cwe_id": "CWE-94",
+    "category": "CodeExecution",
+    "sample_code": "eval $user_code;",
+    "cve": "CWE-94 generic"
+   }
+  ],
+  "python": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "SystemCommandExecution",
+    "sample_code": "subprocess.run(user_input, shell=True)",
+    "cve": "CWE-78 generic"
+   },
+   {
+    "cwe_id": "CWE-502",
+    "category": "InsecureDeserialization",
+    "sample_code": "pickle.loads(user_data)",
+    "cve": "CWE-502 generic"
+   },
+   {
+    "cwe_id": "CWE-94",
+    "category": "CodeExecution",
+    "sample_code": "eval(user_code)",
+    "cve": "CWE-94 generic"
+   }
+  ],
+  "kotlin": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandExecution",
+    "sample_code": "ProcessBuilder(userCmd).start()",
+    "cve": "CWE-78 generic"
+   },
+   {
+    "cwe_id": "CWE-22",
+    "category": "PathTraversal",
+    "sample_code": "FileWriter(userPath)",
+    "cve": "CWE-22 generic"
+   }
+  ],
+  "scala": [
+   {
+    "cwe_id": "CWE-113",
+    "category": "ResponseSplitting",
+    "sample_code": "resp.addHeader(userValue)",
+    "cve": "CWE-113 generic"
+   },
+   {
+    "cwe_id": "CWE-22",
+    "category": "PathTraversal",
+    "sample_code": "FileWriter(userPath)",
+    "cve": "CWE-22 generic"
+   }
+  ],
+  "shell": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandInjection",
+    "sample_code": "eval $userinput",
+    "cve": "CWE-78 generic"
+   },
+   {
+    "cwe_id": "CWE-22",
+    "category": "PathTraversal",
+    "sample_code": "cat $userfile",
+    "cve": "CWE-22 generic"
+   }
+  ],
+  "powershell": [
+   {
+    "cwe_id": "CWE-78",
+    "category": "CommandExecution",
+    "sample_code": "Invoke-Expression $UserInput",
+    "cve": "CWE-78 generic"
+   },
+   {
+    "cwe_id": "CWE-22",
+    "category": "FileSystemAccess",
+    "sample_code": "Get-Content $UserPath",
+    "cve": "CWE-22 generic"
+   }
+  ]
+ }
+}

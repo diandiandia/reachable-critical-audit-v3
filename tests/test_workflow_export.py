@@ -1,0 +1,127 @@
+"""W1/W2/W4 测试: workflow_export 脚本导出 + bump_attempt 升级 (REQ-V3-091/092/094)."""
+import json
+import os
+import sys
+import tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+import batch_verify as bv
+import workflow_export as we
+
+
+def _mk_project(cands):
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    bv.save_queue(tmp, {"schema_version": "2.0", "candidates": cands})
+    return tmp
+
+
+def _cand(cid, status="PENDING", verdict=None, grade=None):
+    c = {"id": cid, "file_path": f"src/{cid}.rs", "source_file": f"src/{cid}.rs",
+         "source_line": 7, "line_number": 7, "sink_content": "buf.push(x)",
+         "language": "rust", "cwe_id": "CWE-400", "category": "memory",
+         "status": status}
+    if verdict:
+        c["verdict"] = verdict
+    if grade:
+        c["evidence_grade"] = grade
+    return c
+
+
+def test_export_verify_script():
+    tmp = _mk_project([_cand("A-1"), _cand("A-2")])
+    r = we.export_script(tmp, mode="verify", batch_size=4)
+    assert r["status"] == "WORKFLOW_SCRIPT_READY" and r["count"] == 2
+    script = open(os.path.join(tmp, ".audit_results", "workflow_verify.js")).read()
+    assert "v3-verify-wave" in script and "pipeline(" in script
+    # 嵌入 schema 是合法 JSON
+    marker = "const VERDICT_SCHEMA = "
+    i = script.index(marker)
+    j = script.index("\n", i)
+    schema = json.loads(script[i + len(marker):j].rstrip())
+    assert set(schema["required"]) >= {"id", "verdict", "evidence_grade", "blocking_point"}
+    # payload 与候选一一对应且 prompt 含 Mode W 契约 (无文件系统, 心跳契约属于 Mode A')
+    assert [p["id"] for p in r["payload"]] == ["A-1", "A-2"]
+    assert "Mode W 输出契约" in r["payload"][0]["prompt"]
+    assert ".pending" not in r["payload"][0]["prompt"]
+    assert r["payload"][0]["prompt"].startswith("你是一个 vulnerability-verifier")
+
+
+def test_export_verify_empty_pool():
+    tmp = _mk_project([_cand("A-1", status="VERIFIED", verdict="UNREACHABLE")])
+    r = we.export_script(tmp, mode="verify")
+    assert r == {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "verify"}
+
+
+def test_export_refutation_pool_selection():
+    cands = [
+        _cand("R-1", status="VERIFIED", verdict="REACHABLE", grade="edge_proven"),
+        _cand("R-2", status="VERIFIED", verdict="UNREACHABLE"),
+        _cand("R-3", status="VERIFIED", verdict="REACHABLE", grade="static_only"),
+        _cand("R-4", status="VERIFIED", verdict="REACHABLE", grade="empirically_confirmed"),
+    ]
+    tmp = _mk_project(cands)
+    r = we.export_script(tmp, mode="refutation", batch_size=4)
+    assert r["status"] == "WORKFLOW_SCRIPT_READY"
+    # 仅 REACHABLE 且 grade>=edge_proven 入选; static_only/UNREACHABLE 排除
+    assert sorted(p["id"] for p in r["payload"]) == ["R-1", "R-4"]
+    script = open(os.path.join(tmp, ".audit_results", "workflow_refutation.js")).read()
+    assert "N_REFUTERS = 2" in script and "KILL_THRESHOLD = 2" in script
+    assert "v3-refutation-wave" in script
+
+
+def test_refutation_payload_shape():
+    tmp = _mk_project([_cand("R-1", status="VERIFIED", verdict="REACHABLE",
+                             grade="edge_proven")])
+    q = bv.load_queue(tmp)
+    q["candidates"][0]["evidence"] = "ev"
+    q["candidates"][0]["call_chain"] = ["a:1:f", "b:2:g"]
+    bv.save_queue(tmp, q)
+    r = we.export_script(tmp, mode="refutation")
+    p = r["payload"][0]
+    assert p["evidence"] == "ev" and p["call_chain"] == ["a:1:f", "b:2:g"]
+    assert p["evidence_grade"] == "edge_proven"
+
+
+def test_bump_attempt_increments():
+    tmp = _mk_project([_cand("A-1")])
+    bv.stage_bump_attempt(tmp, "A-1")
+    q = bv.load_queue(tmp)
+    c = q["candidates"][0]
+    assert c["attempt"] == 1 and c["status"] == "PENDING"
+
+
+def test_bump_attempt_escalates_at_max():
+    tmp = _mk_project([_cand("A-1")])
+    q = bv.load_queue(tmp)
+    q["candidates"][0]["attempt"] = 2
+    bv.save_queue(tmp, q)
+    bv.stage_bump_attempt(tmp, "A-1")
+    c = bv.load_queue(tmp)["candidates"][0]
+    assert c["status"] == "ESCALATED"
+    assert c["attempt"] == 3
+    assert "escalated_reason" in c and c["escalation_log"][0]["note"]
+    # 已升级后再次 bump 不再累加 attempt (幂等保护)
+    bv.stage_bump_attempt(tmp, "A-1")
+    c = bv.load_queue(tmp)["candidates"][0]
+    assert c["attempt"] == 3
+
+
+def test_bump_attempt_unknown_id_noop():
+    tmp = _mk_project([_cand("A-1")])
+    bv.stage_bump_attempt(tmp, "NOPE")
+    assert bv.load_queue(tmp)["candidates"][0].get("attempt") is None
+
+
+def test_cli_stage_workflow_script_entry():
+    tmp = _mk_project([_cand("A-1")])
+    rc = bv.stage_workflow_script(tmp, mode="verify", batch_size=2)
+    assert rc == 0
+    assert os.path.exists(os.path.join(tmp, ".audit_results", "workflow_verify.js"))
+
+
+def test_cli_stage_workflow_script_empty():
+    tmp = _mk_project([_cand("A-1", status="VERIFIED", verdict="UNREACHABLE")])
+    bv.stage_workflow_script(tmp, mode="verify")
+    assert not os.path.exists(os.path.join(tmp, ".audit_results", "workflow_verify.js"))

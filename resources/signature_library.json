@@ -1,0 +1,633 @@
+{
+ "schema_version": "3.0",
+ "signatures": [
+  {
+   "sig_id": "SIG-BUFFER-ACCUM-001",
+   "semantic": "远端投递数据的无界累积（帧/body/流）在大小校验之前发生",
+   "cwe": [
+    "CWE-770",
+    "CWE-789"
+   ],
+   "platform_profiles": [
+    "server-framework"
+   ],
+   "detection_hints": {
+    "grep": [
+     "extend_from_slice",
+     "writeFully",
+     "readRemaining",
+     "\\+\\+= payload",
+     "append\\(",
+     "writeBytes\\(",
+     "bodyBuffer"
+    ],
+    "checklist": [
+     "累积点在哪里？",
+     "flush/对齐条件是什么（什么事件触发消费/清空）？",
+     "大小上限在累积之前还是之后检查？",
+     "声明长度与累积量是否独立？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "actix-web",
+     "file": "actix-web-actors/src/ws.rs",
+     "line": 771,
+     "confirmed": true,
+     "note": "WsStream buf.extend_from_slice 无上限 (R5 实测确认)"
+    },
+    {
+     "project": "ktor",
+     "file": "ktor-shared/ktor-websockets/jvm/src/io/ktor/websocket/SimpleFrameCollector.kt",
+     "line": 23,
+     "confirmed": true,
+     "note": "ByteBuffer.allocate(远端声明长度), maxFrameSize 默认 Long.MAX_VALUE (R5 实测 +1.03GB)"
+    },
+    {
+     "project": "akka-http",
+     "file": "akka-http-core/src/main/scala/akka/http/impl/engine/http2/Http2StreamHandling.scala",
+     "line": 584,
+     "confirmed": true,
+     "note": "buffer ++= payload 窗口膨胀"
+    },
+    {
+     "project": "vapor",
+     "file": "Sources/Vapor/HTTPNewNew/HTTPServerHandler.swift",
+     "line": 34,
+     "confirmed": true,
+     "note": "请求体无上限预收集 (R5 实测 +201MB)"
+    }
+   ],
+   "empirical_harness": "ws_frame_accum",
+   "tier": "L3",
+   "tier_note": "语义族: 无界累积 (known_instances 跨 actix/ktor/akka 三语言, §3.4 旗舰签名)",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   }
+  },
+  {
+   "sig_id": "SIG-PATH-WHITELIST-002",
+   "semantic": "路径白名单/目录门禁用未锚定子串或前缀校验，可被路径穿越形式绕过",
+   "cwe": [
+    "CWE-22"
+   ],
+   "platform_profiles": [
+    "server-framework",
+    "cgi-tool"
+   ],
+   "detection_hints": {
+    "grep": [
+     "!~",
+     "contains\\(",
+     "starts_with",
+     "startsWith",
+     "hasPrefix",
+     "configdir",
+     "serve_from",
+     "valid_path"
+    ],
+    "checklist": [
+     "门禁是否锚定（^…$）？",
+     "校验值是正则还是字面量（正则需转义）？",
+     "校验发生在规范化/解码之前还是之后？",
+     "空路径/默认回退值是否绕过门禁？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "AWStats",
+     "file": "wwwroot/cgi-bin/awstats.pl",
+     "line": 1776,
+     "confirmed": true,
+     "note": "configdir !~ 未锚定子串绕过 → RCE 链 (三 tag 交叉验证)"
+    },
+    {
+     "project": "actix-web",
+     "file": "actix-files/src/files.rs",
+     "line": 99,
+     "confirmed": true,
+     "note": "空 serve_from 复现 CVE-2026-72814 条件"
+    },
+    {
+     "project": "vapor",
+     "file": "Sources/Vapor/Middleware/FileMiddleware.swift",
+     "line": 75,
+     "confirmed": true,
+     "note": "仅拦字面 ../ (平台前提未满足时降级 hardening)"
+    }
+   ],
+   "empirical_harness": "xss_path_sim",
+   "tier": "L3",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "tier_note": "语义族: 路径白名单"
+  },
+  {
+   "sig_id": "SIG-PREALLOC-LEN-003",
+   "semantic": "远端声明长度字段在数据到达前直接驱动内存分配（先分配后校验）",
+   "cwe": [
+    "CWE-770",
+    "CWE-789"
+   ],
+   "platform_profiles": [
+    "server-framework",
+    "parser-library"
+   ],
+   "detection_hints": {
+    "grep": [
+     "allocate\\(",
+     "with_capacity",
+     "StringBuilder\\(",
+     "new byte\\[",
+     "reserve\\(",
+     "capacity"
+    ],
+    "checklist": [
+     "分配容量参数是否直接来自远端长度字段？",
+     "校验发生在分配之前还是之后？",
+     "默认上限是否存在且有效（非 MAX_VALUE 类）？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "ktor",
+     "file": "ktor-shared/ktor-websockets/jvm/src/io/ktor/websocket/SimpleFrameCollector.kt",
+     "line": 23,
+     "confirmed": true
+    },
+    {
+     "project": "akka-http",
+     "file": "akka-http-core/src/main/scala/akka/http/impl/engine/http2/HeaderDecompression.scala",
+     "line": 42,
+     "confirmed": true,
+     "note": "maxHeaderListSize=Int.MaxValue"
+    },
+    {
+     "project": "Newtonsoft.Json",
+     "file": "Src/Newtonsoft.Json/Bson/BsonReader.cs",
+     "line": 659,
+     "confirmed": true,
+     "note": "远端长度驱动 StringBuilder 分配"
+    }
+   ],
+   "empirical_harness": "ws_frame_alloc",
+   "tier": "L3",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "tier_note": "语义族: 预分配长度"
+  },
+  {
+   "sig_id": "SIG-TRUNC-CAST-004",
+   "semantic": "大偏移/长度值窄化截断（usize→u16/u32→usize）后用于切片/索引",
+   "cwe": [
+    "CWE-617",
+    "CWE-248",
+    "CWE-681"
+   ],
+   "platform_profiles": [
+    "server-framework",
+    "parser-library"
+   ],
+   "detection_hints": {
+    "grep": [
+     "as u16",
+     "as u32",
+     "as usize",
+     "toInt\\(\\)",
+     "toInt32"
+    ],
+    "checklist": [
+     "截断值是否来自远端可控长度/偏移？",
+     "截断后是否用于切片/索引/长度计算？",
+     "有无 checked cast 或范围校验？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "actix-web",
+     "file": "actix-router/src/resource.rs",
+     "line": 700,
+     "confirmed": true,
+     "note": ">64KB 路径 u16 截断 → 反向切片 panic (双 agent 坐实)"
+    }
+   ],
+   "empirical_harness": null,
+   "tier": "L3",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "tier_note": "语义族: 截断转换"
+  },
+  {
+   "sig_id": "SIG-LOGIC-WEAKEN-005",
+   "semantic": "安全谓词被弱化：hash-only 白名单、前缀校验替代全名校验、检查位于操作之后（LOGIC_PATTERN 族）",
+   "cwe": [
+    "CWE-502",
+    "CWE-863",
+    "CWE-306"
+   ],
+   "platform_profiles": [
+    "any"
+   ],
+   "detection_hints": {
+    "grep": [
+     "checkAutoType",
+     "allowlist",
+     "whitelist",
+     "isInAllowList",
+     "acceptHash",
+     "binarySearch"
+    ],
+    "checklist": [
+     "授权/白名单谓词的判定域是否完整（全名 vs hash/前缀/子串）？",
+     "检查与危险操作的位置关系（先检查后操作？）",
+     "历史修复是否在树（修复-再暴露）？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "fastjson2",
+     "file": "com/alibaba/fastjson2/util/TypeUtils.java",
+     "line": 1,
+     "confirmed": true,
+     "note": "checkAutoType hash 白名单绕过 (2.0.62/2.0.63)"
+    },
+    {
+     "project": "AWStats",
+     "file": "wwwroot/cgi-bin/awstats.pl",
+     "line": 18062,
+     "confirmed": true,
+     "note": "pluginmode 分发先于安全检查 → 鉴权绕过"
+    }
+   ],
+   "empirical_harness": null,
+   "tier": "L3",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "tier_note": "LOGIC_PATTERN: 授权谓词弱化"
+  },
+  {
+   "sig_id": "SIG-HEADER-INJ-006",
+   "semantic": "远端值拼接进响应头/属性上下文时仅部分转义（相邻转义遗漏、条件转义、默认模式转义空操作）",
+   "cwe": [
+    "CWE-79",
+    "CWE-113"
+   ],
+   "platform_profiles": [
+    "server-framework",
+    "cgi-tool",
+    "web-app"
+   ],
+   "detection_hints": {
+    "grep": [
+     "set-cookie",
+     "Location:",
+     "href=",
+     "img src",
+     "escape\\(",
+     "encode\\(",
+     "CleanXSS",
+     "XMLEncode"
+    ],
+    "checklist": [
+     "同一变量的其他消费点是否有转义（adjacent-escape-miss）？",
+     "转义函数在当前输出模式是否为有效实现（如 html 模式下 XML 转义空操作）？",
+     "转义是否覆盖引号/斜杠/CRLF 全部维度？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "AWStats",
+     "file": "wwwroot/cgi-bin/awstats.pl",
+     "line": 8303,
+     "confirmed": true,
+     "note": "diricons img src 属性注入 (R5 perl 路径模拟确认)"
+    },
+    {
+     "project": "WordPress",
+     "file": "wp-admin/user-edit.php",
+     "line": 782,
+     "confirmed": true,
+     "note": "display_name 相邻转义遗漏"
+    },
+    {
+     "project": "sinatra",
+     "file": "lib/sinatra/base.rb",
+     "line": 399,
+     "confirmed": true,
+     "note": "content_type 参数条件 inspect 过滤"
+    }
+   ],
+   "empirical_harness": "xss_path_sim",
+   "tier": "L3",
+   "tier_note": "语义族: 头注入 (known_instances 非空)",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   }
+  },
+  {
+   "sig_id": "SIG-AUTHZ-BOUND-007",
+   "semantic": "信任边界/鉴权前提缺失：Host/转发头被信任、IPC 同 UID 无隔离、owner 比对缺失",
+   "cwe": [
+    "CWE-807",
+    "CWE-350",
+    "CWE-639"
+   ],
+   "platform_profiles": [
+    "server-framework",
+    "security-boundary"
+   ],
+   "detection_hints": {
+    "grep": [
+     "get_host",
+     "X-Forwarded",
+     "Forwarded",
+     "request.host",
+     "Host header",
+     "session_secret",
+     "good_origin",
+     "request_origin"
+    ],
+    "checklist": [
+     "该值是否被用于鉴权/CSRF/重定向/绝对 URL 构造？",
+     "信任该头/通道的前提（代理剥离）是否在框架内强制？",
+     "owner/session 与资源归属是否比对？"
+    ]
+   },
+   "known_instances": [
+    {
+     "project": "django",
+     "file": "django/middleware/csrf.py",
+     "line": 282,
+     "confirmed": true,
+     "note": "CSRF Origin 锚定 Host header"
+    },
+    {
+     "project": "sinatra",
+     "file": "lib/sinatra/base.rb",
+     "line": 1958,
+     "confirmed": true,
+     "note": "会话 secret 跨子类共享"
+    },
+    {
+     "project": "container",
+     "file": "XPC 鉴权",
+     "line": 1,
+     "confirmed": true,
+     "note": "XPC 鉴权仅 EUID (gvisor/container 教训)"
+    }
+   ],
+   "empirical_harness": null,
+   "tier": "L3",
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "tier_note": "语义族: 授权边界"
+  },
+  {
+   "sig_id": "SIG-PS-SCRIPTBLOCK-001",
+   "tier": "L2",
+   "tier_note": "语言词族: PowerShell (W6 §9.1)",
+   "semantic": "动态脚本执行/注入（ScriptBlock::Create、dot-source、& 调用、iex）",
+   "cwe": [
+    "CWE-94"
+   ],
+   "platform_profiles": [
+    "cli-tool"
+   ],
+   "detection_hints": {
+    "grep": [
+     "[ScriptBlock]::Create",
+     "iex",
+     "Invoke-Expression",
+     "ParseInput",
+     "& $SafeCommands"
+    ],
+    "checklist": []
+   },
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "known_instances": [
+    {
+     "project": "Pester",
+     "file": "src/functions/TestDrive.Tests.ps1",
+     "confirmed": false,
+     "line": 1
+    }
+   ],
+   "empirical_harness": null
+  },
+  {
+   "sig_id": "SIG-SH-EVAL-001",
+   "tier": "L2",
+   "tier_note": "语言词族: Shell (W6 §12.1)",
+   "semantic": "shell eval/注入（trap/eval/source env 路径/curl|sh）",
+   "cwe": [
+    "CWE-78"
+   ],
+   "platform_profiles": [
+    "cli-tool"
+   ],
+   "detection_hints": {
+    "grep": [
+     "\\beval ",
+     "\\btrap ",
+     "\\bsource ",
+     "\\bcurl ",
+     "\\| sh",
+     "\\$\\([^)]*\\)"
+    ],
+    "checklist": []
+   },
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "known_instances": [
+    {
+     "project": "ohmyzsh",
+     "file": "lib/functions.zsh",
+     "confirmed": false,
+     "line": 1
+    }
+   ],
+   "empirical_harness": null
+  },
+  {
+   "sig_id": "SIG-CS-DESER-001",
+   "tier": "L2",
+   "tier_note": "语言词族: C# 反序列化 (W6 §13.1)",
+   "semantic": "反序列化类选择/程序集加载（TypeNameHandling/BindToType/Assembly.Load/Type.GetType(s,true)）",
+   "cwe": [
+    "CWE-502"
+   ],
+   "platform_profiles": [
+    "server-framework",
+    "server-framework"
+   ],
+   "detection_hints": {
+    "grep": [
+     "TypeNameHandling",
+     "BindToType",
+     "Assembly.Load",
+     "Type.GetType",
+     "Expression.Compile",
+     "ISerializableCreator"
+    ],
+    "checklist": []
+   },
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "known_instances": [
+    {
+     "project": "Newtonsoft.Json",
+     "file": "Src/Newtonsoft.Json/Serialization/JsonSerializerInternalReader.cs",
+     "confirmed": false,
+     "line": 1
+    }
+   ],
+   "empirical_harness": null
+  },
+  {
+   "sig_id": "SIG-PY-PICKLE-001",
+   "tier": "L2",
+   "tier_note": "语言词族: Python (W6 §14.1)",
+   "semantic": "pickle 反序列化族 + get_host 采信 + ASGI read_body 无界循环",
+   "cwe": [
+    "CWE-502",
+    "CWE-770"
+   ],
+   "platform_profiles": [
+    "server-framework"
+   ],
+   "detection_hints": {
+    "grep": [
+     "pickle.loads",
+     "get_host",
+     "read_body",
+     "safe_join",
+     "validate_host"
+    ],
+    "checklist": []
+   },
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "known_instances": [
+    {
+     "project": "django",
+     "file": "django/core/handlers/asgi.py",
+     "confirmed": false,
+     "line": 1
+    }
+   ],
+   "empirical_harness": null
+  },
+  {
+   "sig_id": "SIG-TS-ACCUM-001",
+   "tier": "L2",
+   "tier_note": "语言词族: TypeScript (W6 §15.1)",
+   "semantic": "socket.on('data') 累积/multer 无 limits/JSON.stringify 无 catch/reply channel 拼接",
+   "cwe": [
+    "CWE-400"
+   ],
+   "platform_profiles": [
+    "server-framework"
+   ],
+   "detection_hints": {
+    "grep": [
+     "socket\\.on\\('data'",
+     "socket\\.on\\(\"data\"",
+     "multer",
+     "JSON.stringify",
+     "replyTo",
+     "reply-to"
+    ],
+    "checklist": []
+   },
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "known_instances": [
+    {
+     "project": "nest",
+     "file": "packages/microservices/context/rpc-context-creator.ts",
+     "confirmed": false,
+     "line": 1
+    }
+   ],
+   "empirical_harness": null
+  },
+  {
+   "sig_id": "SIG-KT-RECEIVE-001",
+   "tier": "L2",
+   "tier_note": "语言词族: Kotlin (W6 §19.1)",
+   "semantic": "receive/readRemaining 无上限 + respondRedirect + Cookie parse",
+   "cwe": [
+    "CWE-770",
+    "CWE-601"
+   ],
+   "platform_profiles": [
+    "server-framework"
+   ],
+   "detection_hints": {
+    "grep": [
+     "receive\\(",
+     "readRemaining",
+     "respondRedirect",
+     "Cookie.parse",
+     "maxFrameSize",
+     "maxDecodedContentLength"
+    ],
+    "checklist": []
+   },
+   "runtime_prereq": null,
+   "contribution": {
+    "hypotheses_contributed": 0,
+    "batches_seen": 0
+   },
+   "known_instances": [
+    {
+     "project": "ktor",
+     "file": "ktor-shared/ktor-websockets/common/src/io/ktor/websocket/Frame.kt",
+     "confirmed": false,
+     "line": 1
+    }
+   ],
+   "empirical_harness": null
+  }
+ ],
+ "smoke_test": {
+  "mode": "anchor_recall",
+  "required_hit_rate": 1.0
+ },
+ "retired_signatures": []
+}

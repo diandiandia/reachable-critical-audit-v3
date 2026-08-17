@@ -1,0 +1,203 @@
+import json, os, sys, tempfile
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import surface_mapper as sm
+
+def _mk_surface(repo, snippet="if (! empty($_REQUEST['target']))"):
+    f = os.path.join(repo, "app.pl")
+    open(f, "w").write("\n".join(["#!/usr/bin/perl"] * 9 + [snippet]))
+    return {
+        "id": "S-001", "type": "network_endpoint", "name": "CGI query",
+        "entry_points": [{"file": f, "line": 10, "function": "main",
+                          "evidence": {"snippet": snippet}}],
+        "taint_channels": ["query_string"],
+        "downstream_hints": ["config load"],
+        "trust_boundary": {"type": "unauthenticated_remote", "gate": "none"},
+        "confidence": "high",
+    }
+
+def test_validate_ok():
+    with tempfile.TemporaryDirectory() as tmp:
+        d = {"surfaces": [_mk_surface(tmp)]}
+        ok, errors = sm.validate_surfaces(d)
+        assert ok, errors
+
+def test_validate_rejects_missing_evidence():
+    d = {"surfaces": [{"id": "S-1", "type": "network_endpoint", "name": "x",
+        "entry_points": [{"file": "f", "line": 1, "evidence": {"snippet": ""}}],
+        "taint_channels": [], "trust_boundary": {"type": "unauthenticated_remote"},
+        "confidence": "high"}]}
+    ok, errors = sm.validate_surfaces(d)
+    assert not ok and any("snippet" in e for e in errors)
+
+def test_validate_rejects_bad_trust():
+    with tempfile.TemporaryDirectory() as tmp:
+        s = _mk_surface(tmp)
+        s["trust_boundary"] = {"type": "bogus"}
+        ok, errors = sm.validate_surfaces({"surfaces": [s]})
+        assert not ok and any("trust_boundary" in e for e in errors)
+
+def test_validate_rejects_mismatched_line():
+    with tempfile.TemporaryDirectory() as tmp:
+        s = _mk_surface(tmp)
+        s["entry_points"][0]["line"] = 3   # 第 3 行是 shebang 行, 与 snippet 不匹配
+        ok, errors = sm.validate_surfaces({"surfaces": [s]})
+        assert not ok and any("不匹配" in e for e in errors)
+
+def test_merge_multi_domain():
+    with tempfile.TemporaryDirectory() as tmp:
+        s1 = _mk_surface(tmp)
+        s2 = json.loads(json.dumps(s1))
+        s2["id"] = "S-002"; s2["type"] = "data_input"
+        f1 = os.path.join(tmp, "a.json"); f2 = os.path.join(tmp, "b.json")
+        json.dump({"surfaces": [s1]}, open(f1, "w"))
+        json.dump({"surfaces": [s2]}, open(f2, "w"))
+        merged = sm.merge_surfaces([f1, f2])
+        assert len(merged["surfaces"]) == 2
+        assert any(c["resolution"] == "kept-first-multi-domain" for c in merged["conflicts"])
+
+def test_architecture_context():
+    with tempfile.TemporaryDirectory() as tmp:
+        open(os.path.join(tmp, "Cargo.toml"), "w").write(
+            "[dependencies]\nactix-web = \"4\"\ntokio = \"1\"\n")
+        open(os.path.join(tmp, "README.md"), "w").write("Security policy: see SECURITY.md")
+        open(os.path.join(tmp, "main.rs"), "w").write("fn main() {}")
+        open(os.path.join(tmp, "lib.rs"), "w").write("pub fn f() {}")
+        ctx = sm.build_architecture_context(tmp)
+        assert "Cargo.toml" in ctx["build_files"]
+        assert "actix-web" in ctx["deps"]
+        assert ctx["maturity"] == "mature"
+        assert ctx["lang"] == ".rs"
+
+def test_tasks_4_domains():
+    with tempfile.TemporaryDirectory() as tmp:
+        tasks = sm.gen_surface_tasks(tmp)
+        assert [t["domain"] for t in tasks] == ["network", "data", "process", "storage"]
+        assert all(t["architecture_context"] and t["evidence_requirement"] for t in tasks)
+
+
+# ---- W5 回归发现固化: 契约归一化 + 证据模糊匹配 ----
+
+def test_normalize_bare_array_and_string_trust():
+    data = [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [], "taint_channels": [],
+             "trust_boundary": "gated", "confidence": "high"}]
+    norm = sm.normalize_surfaces(data)
+    assert norm["surfaces"][0]["trust_boundary"] == {"type": "gated"}
+
+def test_normalize_html_entities_and_relative_paths():
+    data = [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [{"file": "lib/a.rb", "line": 1,
+                               "evidence": {"snippet": "a &amp;&amp; b"}}],
+             "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+             "confidence": "high"}]
+    norm = sm.normalize_surfaces(data, "/repo")
+    ep = norm["surfaces"][0]["entry_points"][0]
+    assert ep["file"] == "/repo/lib/a.rb"
+    # W6 契约: 保留原始 snippet (源码字面实体不可误解码), 另存 unescape 变体
+    assert ep["evidence"]["snippet"] == "a &amp;&amp; b"
+    assert ep["evidence"]["snippet_unescaped"] == "a && b"
+
+
+def test_source_literal_entities_match_dual_variant():
+    """W6/AWStats 回归: 源码字面实体 (Perl s/&/&amp;/g;) 不得被 unescape 破坏匹配;
+    agent HTML 实体化 (&& → &amp;&amp;) 亦能经变体命中。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "a.pl")
+        open(f, "w").write('$QueryString =~ s/&/&amp;/g;\n')
+        d = {"surfaces": [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [{"file": f, "line": 1,
+                               "evidence": {"snippet": "$QueryString =~ s/&/&amp;/g;"}}],
+             "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+             "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d)
+        assert ok, errors
+
+def test_gated_is_valid_trust():
+    with tempfile.TemporaryDirectory() as tmp:
+        s = _mk_surface(tmp)
+        s["trust_boundary"] = {"type": "gated"}
+        ok, errors = sm.validate_surfaces({"surfaces": [s]})
+        assert ok, errors
+
+def test_whitespace_alignment_and_comment_suffix_match():
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "a.rb")
+        open(f, "w").write("captures           = pattern.match(route)\n")
+        d = {"surfaces": [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [{"file": f, "line": 1,
+                               "evidence": {"snippet":
+                                   "captures = pattern.match(route) # 注释混入"}}],
+             "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+             "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d)
+        assert ok, errors
+
+def test_line_drift_suggests_correction():
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "a.rb")
+        open(f, "w").write("\n" * 9 + "def real_sink\n")
+        d = {"surfaces": [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [{"file": f, "line": 1,
+                               "evidence": {"snippet": "def real_sink"}}],
+             "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+             "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d)
+        assert not ok
+        assert any("suggested_line=10" in str(e) for e in errors)
+
+
+def test_merge_keeps_all_surfaces_multi_per_file():
+    """W5 回归发现: append 缩进错误曾导致每文件只保留最后一个 surface。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f1 = os.path.join(tmp, "a.json")
+        f2 = os.path.join(tmp, "b.json")
+        json.dump([{"id": "S-1", "type": "data", "name": "x",
+                    "entry_points": [{"file": "x.rb", "line": 1,
+                                      "evidence": {"snippet": "a"}}],
+                    "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+                    "confidence": "high"},
+                   {"id": "S-2", "type": "data", "name": "y",
+                    "entry_points": [{"file": "y.rb", "line": 1,
+                                      "evidence": {"snippet": "b"}}],
+                    "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+                    "confidence": "high"}], open(f1, "w"))
+        json.dump([{"id": "S-3", "type": "network", "name": "z",
+                    "entry_points": [{"file": "z.rb", "line": 1,
+                                      "evidence": {"snippet": "c"}}],
+                    "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+                    "confidence": "high"}], open(f2, "w"))
+        merged = sm.merge_surfaces([f1, f2])
+        assert sorted(s["id"] for s in merged["surfaces"]) == ["S-1", "S-2", "S-3"]
+
+
+def test_snippet_prefix_of_source_line_matches():
+    """W5/lighttpd 回归: snippet 为源行前缀 (缺行尾 '{') 时窗口匹配须通过。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "a.c")
+        open(f, "w").write("static void magnet_set_request(lua_State *L, request_st * const r) {\n")
+        d = {"surfaces": [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [{"file": f, "line": 1,
+                               "evidence": {"snippet":
+                                   "static void magnet_set_request(lua_State *L, request_st * const r)"}}],
+             "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+             "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d)
+        assert ok, errors
+
+
+def test_callee_name_fallback_for_mixed_snippet():
+    """W5/lighttpd 回归: snippet 混拼上下文 (ds = ...array_match_key_prefix_klen(...);)
+    时, 提取 callee 名做唯一调用行建议。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "a.c")
+        open(f, "w").write("static handler_t\nmod_alias_remap (void)\n{\n"
+                           "    ds = array_match_key_prefix_klen(aliases, uri_ptr, uri_len);\n}\n")
+        d = {"surfaces": [{"id": "S-1", "type": "data", "name": "x",
+             "entry_points": [{"file": f, "line": 1,
+                               "evidence": {"snippet":
+                                   "ds = (data_string *)array_match_key_prefix_klen(aliases, uri_ptr, uri_len);"}}],
+             "taint_channels": [], "trust_boundary": "unauthenticated_remote",
+             "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d)
+        assert not ok
+        assert any("suggested_line=4" in str(e) for e in errors)
