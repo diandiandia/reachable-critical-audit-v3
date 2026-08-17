@@ -263,3 +263,16 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 | 24.7 | **R1 小项目适配成功**（2 agents 20 surfaces vs 4 agents 48 surfaces 的 actix）：A=net+data / B=proc+storage 分工无冲突，证据质量高（仅相对路径 + 13 行号漂移，均被修复器处理） | 文件规模 <100 的 Ruby 项目 R1 用 2 agents 即可；相对路径修复器逻辑（非绝对路径 → 拼项目根）已纳入修复器模式 |
 | 24.8 | **CAND-001 static! 实证以全 payload 矩阵形式完成**（23 种穿越 payload 全 404 + symlink 预置 200 LEAKED 对照）：verifier 自己跑了真实 App.call 探针而非只读代码——R3 层实证化趋势延续（§21.4/§22.5 之后第三次 verifier 自主实证） | verifier 任务书对 Ruby 项目可显式允许轻量探针（ruby -Ilib + Rack::MockRequest 零依赖可跑）；"守卫链封死"类结论必须有至少一维实测 payload 矩阵支撑 |
 | 24.9 | **NEEDS_REVIEW 与 R4 confirmed 的同事实共存规范化**（CAND-007↔H5-F1、CAND-010↔H7-F2、CAND-004↔H4-F2）：候选降级为 NEEDS_REVIEW 而同一事实以 confirmed gap finding 保留——报告明确交叉引用避免"既降级又定级"的矛盾观感 | 报告模板增加"NEEDS_REVIEW ↔ R4 finding 同事实映射表"；裁决书明确写"候选分类（可达性口径）与 finding 评级（硬化缺口口径）是两套口径" |
+
+## 25. v3.1 验收缺陷 + v3.2 开发/验收（混合项目维度，2026-08-17）
+
+| # | 缺陷/观察 | 如何应用 |
+|---|---|---|
+| 25.1 | **v3.2 缺陷: R0 缺 target_kind（application/library）判定**（fixture + Lersosa 两次验收同根因）：fixture 同批库型裁决矛盾（2/2 证伪 + 4/4 复活全部指向同一根因）；Lersosa 三处 verifier 部署前提错误（CAND-001/008 明文路径、CAND-004/009 入口 404）均可追溯至"未定目标类型就用应用审计存在性规则" | v3.2.1 最高优先项：R0 增加 target_kind 判定（库型→公共 API 即信任边界，Newtonsoft.Json 先例；应用型→部署实证前置）；verifier 任务书按 target_kind 装载不同存在性规则 |
+| 25.2 | **verifier 盲区: 「函数存在≠被调用」扩展为「模块存在≠被导入」**（Lersosa CAND-004/009）：9 跳逐行静态核实全真的调用链，因顶层 common/infrastructure 导入断裂 + DI 扫描器吞错（ComponentScanner try/except 仅记 warning）在运行时零注册——/crawler/run 404 实证 | verifier 任务书增加"模块可导入性"预检：对每条链的首跳模块做 find_spec/顶层包解析；对 DI/组件扫描框架必查吞错路径（catch Exception→continue 模式=静默失败温床）；"路由自动注册"类前提必须核对注册器是否真的扫描到了该模块 |
+| 25.3 | **verifier 盲区: adapter 与 domain 之间的缓存/门闩层被整层漏掉**（Lersosa CAND-007）：verifier 核验了路由→controller→repo 直通，未发现 GetDefaultOssConfig 的 Redis 前置门闩（且门闩错误分支写反是死代码 + SetDefault/GetDefault JSON 形状不匹配）——2/2 证伪降级 | verifier 任务书要求对消费端中间件/缓存/门闩/降级路径做显式枚举，不能只沿调用链直查；"缓存层条件反转 bug"类（`if err==nil` 内处理错误分支）是静默阻断的经典形态，列为 CK 检查项 |
+| 25.4 | **verifier 部署前提错误集中爆发**（Lersosa CAND-001/008）：『三层全开明文 9003』实际 Linux 下客户端 TLS 失败是致命 panic（进程不监听）；『tls_enable 零值默认明文』实际 5 份 shipped config 全部显式 true。平台限定路径（Windows 证书绝对路径）未在证据中标注 | "默认可达"类 gate 必须核对 shipped 配置文件实际值而非代码零值；平台限定路径显式标注为 platform_precondition；"任何能跑起来的部署"形态才是有意义的可达基准 |
+| 25.5 | **R3.5 证伪者实证纪律红利**（Lersosa）：404 实证（实际启动+日志+curl）纠正了 9 跳静态核实为真的 verifier；端到端 OOM 复现（8TB→RSS 9.4GB）纠正了原探针错误机制数字（~1.2MB/GB 提交比而非 4GB 全提交） | 证伪者"有疑问即 refuted"默认立场 + 允许实证的设计有效；机械分级重算使 CAND-001 edge_proven→empirically_confirmed 升级自动发生 |
+| 25.6 | **R4↔R3 交叉验证**（Lersosa）：H-7 f1（tls fail-open 明文）在 CAND-001 原判定出错处是对的——R4 假设层捕获了 R3 verifier 漏掉的部署层真实形态 | 制度化：R4 H-7 默认值盘点结果反向回灌 R3 候选的 gate 证据（v3.2.1 候选） |
+| 25.7 | **判据①措辞缺陷**（REQ-V3.2-100）："每语言 ≥1 surface 且非零候选"未区分客户端组件语言——Lersosa TS 前端 32 文件零候选，覆盖面经边界面 cross_evidence + Go 侧归因达成 | v3.2.1：判据①限定服务端组件语言，或接受"边界面裁决 + cross_evidence 等价"（TS 浏览器组件无服务端可达面） |
+| 25.8 | **v3.1 验收缺陷三件套的制度化闭环验证成功**（akka 零回退 + Lersosa）：v3.1 发现的"R3 自我拦截（akka 3/3）、声称细化（etcd 3 升级 + actix 1 恢复）、verifier 自我分级过低（akka CAND-004）"在 v3.2 中全部由机制处理——R3.5-N 复活攻击 4/4 命中（fixture）+ 2/2 执行（Lersosa），机械分级重算自动升级 5 次 | v3.2 验收判据 REQ-V3.2-100/101 全部 PASS；遗留项进入 v3.2.1（见 25.1/25.6/25.7） |
