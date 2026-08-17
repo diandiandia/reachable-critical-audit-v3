@@ -26,6 +26,10 @@ except ImportError:  # pragma: no cover
     checklist_binder = None
     precedent_library = None
 
+# v3.2: 声称类集合 (与 evidence_ledger.EMPIRICAL_CLAIMS 同源; workflow 脚本
+# 模块独立性——不在顶层 import evidence_ledger 以免循环依赖)
+EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos")
+
 VERDICT_SCHEMA = {
     "type": "object",
     "required": ["id", "verdict", "reachability_type", "call_chain",
@@ -167,6 +171,112 @@ def refute_prompt(c, idx):
         f"发现更强的攻击向量或 verifier 归因错误时分别写入 strengthened / "
         f"attribution_correction 字段。"
     )
+
+
+
+RESURRECT_SCHEMA = {
+    "type": "object",
+    "required": ["id", "revived", "reason"],
+    "properties": {
+        "id": {"type": "string"},
+        "revived": {"type": "boolean"},
+        "reason": {"type": "string"},
+        "gap": {"type": "string"},
+    },
+}
+
+RESURRECT_SCRIPT = r"""export const meta = {
+  name: 'v3.2-resurrect-wave',
+  description: 'R3.5-N 复活攻击: UNREACHABLE 候选 N=1 尽力复活复核',
+  phases: [{ title: 'Resurrect', detail: 'one revival attacker per candidate' }],
+}
+
+if (!args || !args.candidates) {
+  return { mode: 'resurrect', error: 'args.candidates 缺失 (W6 §5)' }
+}
+
+const RESURRECT_SCHEMA = __SCHEMA__
+
+const results = await pipeline(
+  args.candidates,
+  (c) => agent(c.prompt, { label: `resurrect:${c.id}`, schema: RESURRECT_SCHEMA }),
+)
+
+const decisions = results.map((r, i) => r || null)
+return {
+  mode: 'resurrect',
+  decisions: decisions.filter(Boolean),
+  missing: args.candidates.filter((_, i) => !decisions[i]).map((c) => c.id),
+  note: 'revived=true 由主代理回 R3 重验 (附复活者 gap), 不直接改 verdict (REQ-V3.2-021)',
+}
+"""
+
+
+def resurrect_pool(candidates, batch_size=8):
+    """SWR-V3.2-040: UNREACHABLE 复活攻击抽样。
+    (1) 声称类 UNREACHABLE (claim_type 命中 EMPIRICAL_CLAIMS 或 evidence 含
+        unbounded/oom/xss/crash 等) → 全量;
+    (2) 其他类 → 20% 抽样, 最少 2, 上限 batch_size;
+    已有 resurrection_review 的候选排除 (多波不重复, W6 §12.3 同构)。"""
+    pool = [c for c in candidates
+            if c.get("status") == "VERIFIED" and c.get("verdict") == "UNREACHABLE"
+            and not c.get("resurrection_review")]
+    claimed, other = [], []
+    for c in pool:
+        text = " ".join(str(c.get(k) or "")
+                        for k in ("claim_type", "evidence", "summary", "sink_type")).lower()
+        if any(k in text for k in EMPIRICAL_CLAIMS):
+            claimed.append(c)
+        else:
+            other.append(c)
+    sample_n = max(2, min(batch_size, len(other) // 5)) if other else 0
+    # 确定性抽样: 按 id 排序取前 N (无随机数依赖, workflow 可重放)
+    sampled = sorted(other, key=lambda c: c.get("id", ""))[:sample_n]
+    return claimed + sampled
+
+
+def resurrect_prompt(c):
+    """SWR-V3.2-041: 尽力复活任务书——默认立场 = 找到一条 verifier 未枚举的
+    阻断缺口或错误前提即 revived=true (防漏放, 313 验收 etcd 三连救回的制度化)。"""
+    return (
+        f"你是复活攻击者（对抗性复核，N=1）。候选 {c['id']} 被判 UNREACHABLE。\n"
+        f"任务: **尽力复活**该候选——枚举 verifier 可能遗漏的阻断缺口或错误前提。\n"
+        f"默认立场: 找到一条 verifier 未枚举的维度即 revived=true。\n"
+        f"复活维度:\n"
+        f"  1. 阻断是否覆盖攻击者可控的**全部**维度（任一维度未覆盖即复活）\n"
+        f"  2. 承重前提是否真伪（严格相等门控/默认参数/常量值逐一核实）\n"
+        f"  3. 三层默认语义是否误用（部署层前提被当默认关）\n"
+        f"  4. 死代码豁免是否误用（'无生产调用者'是否漏了动态/反射调用）\n"
+        f"  5. 平台前提是否有实证（platform_excluded 是否凭惯例假设）\n\n"
+        f"原判定证据: {c.get('evidence', '')[:1200]}\n"
+        f"调用链: {c.get('call_chain', [])[:8]}\n\n"
+        f"输出 revived=true/false + reason（附 file:line）；revived=true 时 "
+        f"gap 字段写 verifier 的具体缺口。"
+    )
+
+
+def export_script_resurrect(project_root, batch_size=8):
+    """SWR-V3.2-042: 导出复活攻击 workflow (复用 export_script 的载荷模式)。"""
+    queue = bv.load_queue(project_root)
+    pool = resurrect_pool(queue["candidates"], batch_size)
+    if not pool:
+        return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "resurrect"}
+    payload = []
+    for c in pool:
+        payload.append({"id": c["id"], "prompt": resurrect_prompt(c)})
+    js = RESURRECT_SCRIPT.replace("__SCHEMA__", json.dumps(RESURRECT_SCHEMA, ensure_ascii=False))
+    script_path = os.path.join(project_root, ".audit_results", "workflow_resurrect.js")
+    with open(script_path, "w") as f:
+        f.write(js)
+    return {
+        "status": "WORKFLOW_SCRIPT_READY", "mode": "resurrect",
+        "count": len(payload), "script_path": ".audit_results/workflow_resurrect.js",
+        "payload_key": "candidates", "payload": payload, "schema": RESURRECT_SCHEMA,
+        "next_step": ("Workflow 工具运行: scriptPath=workflow_resurrect.js, "
+                      "args={\"candidates\": <payload>};\n"
+                      "revived=true 候选回 R3 重验 (附 gap), 不直接改 verdict;\n"
+                      "全部候选落盘 resurrection_review (REQ-V3.2-023)"),
+    }
 
 
 def _checklist_section(c):

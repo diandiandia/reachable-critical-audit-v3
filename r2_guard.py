@@ -44,6 +44,11 @@ def validate_hypotheses(hypotheses, input_surface, strict=True):
             if sid not in known:
                 issues.append({"severity": "blocking",
                                "msg": f"{hid}: surface_id {sid} 不存在于 input_surface.json"})
+    for h in hyps:
+        hid = h.get("hypothesis_id") or h.get("id", "<no-id>")
+        if h.get("lang_pair") and not h.get("lang"):
+            issues.append({"severity": "warn",
+                           "msg": f"{hid}: lang_pair 存在但缺 lang (v3.2 boundary 假设)"})
     blocking = [i for i in issues if i["severity"] == "blocking"]
     return (len(blocking) == 0), issues
 

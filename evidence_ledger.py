@@ -206,6 +206,16 @@ def assert_ledger(queue, dispatched=None, surface_data=None):
     escalated = [c.get("id") for c in cands if c.get("status") == "ESCALATED"]
     if escalated and not queue.get("escalated_signed_off"):
         violations.append({"gate": "escalated_unsigned", "ids": escalated})
+    # ③c v3.2 (SWR-V3.2-051): R3.5-N 复活攻击完成度——声称类 UNREACHABLE
+    # 必须有 resurrection_review (防漏放, 313 验收 etcd 三连救回的制度化)
+    for c in cands:
+        if c.get("verdict") != "UNREACHABLE":
+            continue
+        text = " ".join(str(c.get(k) or "")
+                        for k in ("claim_type", "evidence", "summary")).lower()
+        if any(k in text for k in EMPIRICAL_CLAIMS) and \
+           not c.get("resurrection_review"):
+            violations.append({"gate": "resurrection_required", "id": c.get("id")})
     # ③b R4 findings 同受实证类门禁 (W6 §18.9)。
     # 验收级: empirically_confirmed 或 source_fact(哨兵/算术类, 附 note/blocker,
     # §17.7/§21.4 源事实级规则)——其余均违规。
@@ -251,7 +261,10 @@ def consistency_check(queue):
     for c in queue.get("candidates", []):
         if c.get("status") not in TERMINAL_STATUSES or not c.get("verdict"):
             continue
-        fam = (c.get("source_file"), (c.get("sink_type") or c.get("cwe") or ""))
+        # v3.2 (SWR-V3.2-050): 分组键增加 lang——跨语言同 sink 形态不触发告警
+        # (PREC-MULTI-LANG-001); 同 lang 组内保持 v3.1 一致性断言
+        fam = (c.get("source_file"), (c.get("sink_type") or c.get("cwe") or ""),
+               c.get("lang"))
         groups.setdefault(fam, []).append(c)
     issues = []
     for fam, cs in groups.items():

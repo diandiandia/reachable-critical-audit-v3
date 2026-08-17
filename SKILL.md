@@ -229,3 +229,35 @@ print(ok, v)"
 akka-http / etcd / actix-web 三项目复跑对照:
 ① R3.5 拦截率下降（R3 质量上升） ② 原 REACHABLE 结论零丢失 ③ 六门禁全 PASS。
 三条件同时满足才合并 main + install 到 skill 目录。
+
+---
+
+## 🆕 v3.2 增量（2026-08-17，混合语言项目能力 + 防漏放，开发中）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_2.md`。v3.2 不改变阶段骨架，把语言从
+> 项目级属性降为候选级属性，并新增 R3.5-N 复活攻击。
+
+### R0/R1: 语言清单 + boundary 第五域
+- `surface_mapper.py context` 输出 `language_inventory`（每语言文件数/组件角色）
+- R1 测绘 4 域 → **4+1 域**（boundary: 跨语言 FFI 边界调用表——extern/ctypes/cffi/
+  N-API/JNI/embed，boundary surface 必填 boundary_kind + lang_pair）
+- surface/entry_point/候选均带 lang 字段；任务书背景按语言分片
+- `size_tier`: 2 语言项目 domains 含 boundary；3+ 语言保底 large 档（5 agents）
+
+### R2/R3: 语言维度
+- L2 词族按 surface.lang 过滤（C 词族不打 Rust surface）
+- verifier 上下文语言按候选.lang 取；分级机械复核条款（collect 后强制
+  grade_verdict 重算，差异写 grade_recomputed_by）
+- CK-FFI-BOUNDARY（第 21 条清单）绑定 ffi/ctypes/extern 类候选
+
+### R3.5-N（新）: UNREACHABLE 复活攻击
+- 声称类 UNREACHABLE 全量 + 其他 20% 抽样（最少 2，上限 8）做 N=1 尽力复活复核
+- `workflow_export.export_script_resurrect` 导出；revived=true 回 R3 重验（附 gap），
+  不直接改 verdict；全部候选落盘 resurrection_review（六门禁新增检查）
+
+### 裁决
+- 同族一致性断言按 lang 分组（PREC-MULTI-LANG-001）；同 lang 组保持 v3.1 断言
+- 报告新增语言覆盖表 + FFI 边界表
+
+### 验收（Phase 3.2.3）
+混合项目试审（≥3 语言 + FFI 边界）+ akka-http 单语言零回退回归。

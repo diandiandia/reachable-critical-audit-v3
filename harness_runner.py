@@ -231,6 +231,25 @@ def env_trap_checklist(lang):
     return common + per_lang.get(lang, [])
 
 
+def mixed_build_hint(candidate):
+    """SWR-V3.2-061: 混合项目多组件构建提示——按候选.lang 组装构建矩阵,
+    引用 harness_manuals/mixed_build.md 总纲。"""
+    langs = {candidate.get("lang")} if candidate.get("lang") else set()
+    lp = str(candidate.get("lang_pair") or "")
+    for side in lp.replace("->", " ").split():
+        if side in ("c", "py", "rust", "js", "ts"):
+            langs.add(side)
+    if len(langs) < 2:
+        return ""
+    return (
+        "## 混合项目实证提示 (harness_manuals/mixed_build.md)\n"
+        "1. 组件级构建矩阵: 每组件 {lang, build_cmd, 产物, 测试入口} 先分别验证构建\n"
+        "2. 宿主进程 + 动态库加载编排 (C .so + ctypes/cdylib 驱动)\n"
+        "3. 边界两侧各放插桩, 交叉对表; 顺序: 单侧机制级 → 边界级 E2E\n"
+        "4. 陷阱: ctypes argtypes 未声明截断/编码不一致/释放责任错配"
+    )
+
+
 def contrast_matrix_prompt(target):
     """SWR-V3.1-063: 对照矩阵实证模式（默认配置拒绝 + 弱化配置接受, W6 §24.4）。"""
     return (

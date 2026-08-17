@@ -26,7 +26,7 @@ def test_end_to_end(tmp_path=None):
     # 1) R1: 架构上下文 + 测绘任务书
     ctx = surface_mapper.build_architecture_context(repo)
     tasks = surface_mapper.gen_surface_tasks(repo, ctx)
-    assert len(tasks) == 4
+    assert len(tasks) == 5  # v3.2: 4 域 + boundary 第五域
     # 2) 手写 1 个 surface (模拟测绘 agent 产出), 经校验器
     entry = os.path.join(repo, "entry.pl")
     surfaces = {"surfaces": [{

@@ -82,7 +82,7 @@ def match(candidate, lib=None):
     cwe = _cwe_set(candidate)
     text = " ".join(str(candidate.get(k) or "")
                     for k in ("summary", "sink_type", "claim_type", "verdict",
-                              "blocking_point", "r35_note")).lower()
+                              "blocking_point", "r35_note", "lang", "lang_pair")).lower()
     for fam, ids in CWE_FAMILY_MAP.items():
         if cwe & set(fam):
             for pid in ids:
@@ -95,6 +95,12 @@ def match(candidate, lib=None):
                 if by_id.get(pid) and pid not in seen:
                     seen.add(pid)
                     hits.append(by_id[pid])
+    # v3.2 (SWR-V3.2-030): lang_pair/lang 字段存在 → 多语言裁决分组先例
+    if candidate.get("lang_pair") or candidate.get("lang"):
+        pid = "PREC-MULTI-LANG-001"
+        if by_id.get(pid) and pid not in seen:
+            seen.add(pid)
+            hits.append(by_id[pid])
     return hits
 
 

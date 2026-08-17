@@ -17,6 +17,9 @@ import re
 import sys
 
 DOMAINS = ["network", "data", "process", "storage"]
+# v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
+BOUNDARY_DOMAIN = "boundary"
+BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-other")
 
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown"}
@@ -56,6 +59,8 @@ def build_architecture_context(project_root):
     # v3.1 (W6 §23.6/§24.6): 项目形态判定——mature framework 的 R4 与 R3 并行
     # 且 H1/H7 深度上调 (R4 产率三连超 R3: actix 6:1 / sinatra 9:2)
     ctx["project_kind"] = _classify_project_kind(project_root, ctx)
+    # v3.2 (SWR-V3.2-010): 语言清单——混合项目审计的基础 (候选级 lang 的来源)
+    ctx["language_inventory"] = language_inventory(project_root)
     return ctx
 
 
@@ -80,6 +85,44 @@ def _classify_project_kind(root, ctx):
     if kind_hints and "infra" in kind_hints and "framework" not in kind_hints:
         return "infra"
     return "app"
+
+
+def language_inventory(root):
+    """SWR-V3.2-010: 全语言清单。{lang: {file_count, dirs, component_hint}}。
+    component_hint 启发式: 绑定层目录名 (bindings/ffi/ctypes/csrc/native/ext)/
+    头文件目录 (include)/脚本目录 (scripts)/前端目录 (www/web/ui/frontend)。
+    单语言项目清单长度 1 (向后兼容)。"""
+    from signature_matcher import CODE_EXTENSIONS
+    inv = {}
+    BIND_DIRS = {"bindings", "ffi", "ctypes", "csrc", "native", "ext", "napi"}
+    for dirpath, _dirs, files in os.walk(root):
+        if any(part in dirpath for part in (".git", "node_modules", ".venv", "target", "build")):
+            continue
+        parts = set(p.lower() for p in dirpath.split(os.sep))
+        hint = "core"
+        if parts & BIND_DIRS:
+            hint = "bindings"
+        elif "include" in parts or "include" in {p.lower() for p in dirpath.split(os.sep)}:
+            hint = "headers"
+        elif "scripts" in parts:
+            hint = "scripts"
+        elif parts & {"www", "web", "ui", "frontend"}:
+            hint = "frontend"
+        for f in files:
+            ext = os.path.splitext(f)[1].lower()
+            if ext not in CODE_EXTENSIONS:
+                continue
+            lang = ext
+            # v3.2: 头文件归并到 C 语言组 (h/hpp/cc 是 C 组件的组成部分而非独立语言)
+            if lang in (".h", ".hpp"):
+                lang = ".c"
+            rec = inv.setdefault(lang, {"file_count": 0, "dirs": set(), "component_hint": hint})
+            rec["file_count"] += 1
+            rec["dirs"].add(dirpath)
+    out = [{"lang": k, "file_count": v["file_count"],
+            "component_hint": v["component_hint"],
+            "sample_dirs": sorted(v["dirs"])[:3]} for k, v in sorted(inv.items(), key=lambda x: -x[1]["file_count"])]
+    return out
 
 
 def _detect_lang(root):
@@ -145,8 +188,17 @@ def gen_surface_tasks(project_root, ctx=None):
         "data": "文件上传/下载、配置加载、日志文件解析、模板加载、序列化入口",
         "process": "IPC、环境变量注入、命令行参数、信号处理、子进程",
         "storage": "数据库查询入口、缓存键来源、LDAP/外部存储",
+        # v3.2: 语言间边界——混合项目最高危面 (所有权/ABI/释放责任)
+        BOUNDARY_DOMAIN: ("跨语言 FFI 边界: extern \"C\"/ctypes/cffi/N-API/JNI/CPython 嵌入/JS addon——"
+                          "枚举每个边界调用点 {调用方向, 语言对, 桥接文件:行, 边界类型, 数据流方向}"),
     }
-    for domain in DOMAINS:
+    domains = DOMAINS + [BOUNDARY_DOMAIN]
+    # v3.2 (SWR-V3.2-012): 架构背景按语言分片 (每语言组件摘要段)
+    lang_ctx = ctx.get("language_inventory") or []
+    lang_sections = "\n".join(
+        f"- {li['lang']}: {li['file_count']} 文件, 组件角色={li['component_hint']}"
+        for li in lang_ctx) or "- (单语言)"
+    for domain in domains:
         tasks.append({
             "domain": domain,
             "guide": domain_guides[domain],
@@ -157,10 +209,13 @@ def gen_surface_tasks(project_root, ctx=None):
                 "maturity": ctx["maturity"],
                 "readme_summary": ctx["readme_summary"],
                 "build_files": ctx["build_files"],
+                "language_inventory": ctx.get("language_inventory", []),
+                "lang_sections": lang_sections,
             },
             "output_schema": {
                 "surface": ["id", "type", "name", "entry_points", "taint_channels",
-                            "downstream_hints", "trust_boundary", "confidence"],
+                            "downstream_hints", "trust_boundary", "confidence",
+                            "lang", "boundary_kind", "call_direction", "lang_pair"],
                 "entry_point": ["file", "line", "function", "evidence"],
                 "evidence": {"snippet": "该行代码片段(必须非空)"},
             },
@@ -180,6 +235,8 @@ def normalize_surfaces(data, project_root=None):
     surfaces = data.get("surfaces", []) if isinstance(data, dict) else data
     if not isinstance(surfaces, list):
         return None
+    # v3.2 (SWR-V3.2-013): surface lang 透传; 缺省时由调用方在 merge 阶段按
+    # 主语言继承 (normalize 不臆造——继承责任在 merge/main-agent)
     out = []
     for s in surfaces:
         if not isinstance(s, dict):
@@ -237,6 +294,12 @@ def validate_surfaces(data, project_root=None):
                   "trust_boundary", "confidence"):
             if f not in s:
                 errors.append(f"{tag}: missing '{f}'")
+        if s.get("type") == "boundary":
+            bk = s.get("boundary_kind")
+            if bk not in BOUNDARY_KINDS:
+                errors.append(f"{tag}: boundary surface 缺 boundary_kind (需 {BOUNDARY_KINDS})")
+            if not s.get("lang_pair"):
+                errors.append(f"{tag}: boundary surface 缺 lang_pair (语言对)")
         tb = s.get("trust_boundary", {})
         if not isinstance(tb, dict) or tb.get("type") not in VALID_TRUST:
             errors.append(f"{tag}: trust_boundary.type 非法 (需 {sorted(VALID_TRUST)})")
@@ -333,16 +396,28 @@ def size_tier(project_root):
                        ".scala", ".swift", ".php", ".js", ".ts", ".cs", ".ps1",
                        ".sh", ".pl", ".pm"}:
                 count += 1
+    inv = language_inventory(project_root)
+    n_langs = len(inv)
+    mixed_domains = DOMAINS + [BOUNDARY_DOMAIN]
+    if n_langs > 2:
+        # v3.2 (SWR-V3.2-014): 3+ 语言混合项目保底 large 档 (多组件审计成本)
+        return {"tier": "large", "agent_count": 5, "time_limit_min": 45,
+                "checkpoint_every_min": 10, "domains_split": mixed_domains,
+                "rationale": f"v3.2: {n_langs} 语言混合项目 → 4+1 域保底 large 档"}
     if count < 100:
-        return {"tier": "small", "agent_count": 2, "time_limit_min": None,
-                "checkpoint_every_min": None, "domains_split": ["network+data", "process+storage"],
-                "rationale": "W6 §24.7 (sinatra 20 surfaces 2 agents)"}
+        # v3.2: 2 语言混合项目 domains 也含 boundary 域
+        ds = mixed_domains if n_langs >= 2 else ["network+data", "process+storage"]
+        return {"tier": "small", "agent_count": 2 if n_langs < 2 else 3,
+                "time_limit_min": None, "checkpoint_every_min": None, "domains_split": ds,
+                "rationale": "W6 §24.7 (sinatra 20 surfaces 2 agents)" + (f"; v3.2 {n_langs} 语言 → 含 boundary 域" if n_langs >= 2 else "")}
     if count <= 500:
+        ds = mixed_domains if n_langs >= 2 else DOMAINS
         return {"tier": "medium", "agent_count": 4, "time_limit_min": None,
-                "checkpoint_every_min": None, "domains_split": DOMAINS,
+                "checkpoint_every_min": None, "domains_split": ds,
                 "rationale": "W6 §20.5 (495 文件是 R1 agent 舒适区)"}
+    ds = mixed_domains if n_langs >= 2 else DOMAINS
     return {"tier": "large", "agent_count": 4, "time_limit_min": 45,
-            "checkpoint_every_min": 10, "domains_split": DOMAINS,
+            "checkpoint_every_min": 10, "domains_split": ds,
             "rationale": "W6 §17.1/§18.6 (WP 2.5h 失控 / Dubbo 2h+; 失控判据=超时+无落盘)"}
 
 

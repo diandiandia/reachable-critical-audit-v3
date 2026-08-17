@@ -44,6 +44,10 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 "empirical":null|{"status":"...","scope":"mechanism|function_body|full_chain|e2e","scope_note":"..."},
 "evidence":"...（含清单执行记录 + 自证伪自查段）","cwe":["CWE-xxx"]}
 
+**分级说明（v3.2，SWR-V3.2-070）**: evidence_grade 是证据的机械函数，非自我评估——
+call_chain 每相邻两跳都有 edge_evidence 即 edge_proven，证据齐全却自标 static_only
+会被主代理机械升级（ACCEPTANCE_V3_1 akka CAND-004/etcd CAND-002 先例）。
+
 **实证范围纪律（v3.1，W6 §17.7/§15.6）**: 机制级实证（过滤链/函数体）只能支撑
 edge_proven 的边证据，不能直接升 empirically_confirmed；claim_type 按攻击影响定类，
 不得因实证成本降级 claim（W6 §13.9）。

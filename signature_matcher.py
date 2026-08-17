@@ -155,6 +155,11 @@ def match_signatures(surfaces, signatures, project_index, depth=DEFAULT_DEPTH):
         except re.error as e:
             raise ValueError(f"{sig['sig_id']}: {e}")
     file_cache = {}
+    # v3.2 (SWR-V3.2-020): L2 词族按 surface.lang 过滤——C 词族不打 Rust surface
+    def _sig_applicable(sig, surface):
+        if sig.get("tier") == "L2" and sig.get("lang"):
+            return surface.get("lang") == sig["lang"]
+        return True
     for surface in surfaces:
         for entry in surface.get("entry_points", []):
             window = expand_window(entry, project_index, depth)
@@ -167,16 +172,19 @@ def match_signatures(surfaces, signatures, project_index, depth=DEFAULT_DEPTH):
                 lines = file_cache[site["file"]]
                 if not (1 <= site["line"] <= len(lines)):
                     continue
-                text = lines[site["line"] - 1]
                 for sig in signatures:
-                    for rx in compiled[sig["sig_id"]]:
-                        if rx.search(text):
+                    if not _sig_applicable(sig, surface):
+                        continue
+                    for pat in compiled[sig["sig_id"]]:
+                        m = pat.search(lines[site["line"] - 1])
+                        if m:
                             hits.append({
                                 "surface_id": surface["id"],
                                 "sig_id": sig["sig_id"],
                                 "site": {"file": site["file"], "line": site["line"]},
-                                "matched_pattern": rx.pattern,
-                                "line_text": text.strip()[:120],
+                                "matched_pattern": pat.pattern,
+                                "line_text": lines[site["line"] - 1].strip()[:200],
+                                "lang": surface.get("lang"),  # v3.2 SWR-V3.2-021
                             })
                             break  # 同一签名同一行只记 1 条
     return hits

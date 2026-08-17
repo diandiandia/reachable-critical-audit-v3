@@ -68,10 +68,13 @@ def test_architecture_context():
         assert ctx["maturity"] == "mature"
         assert ctx["lang"] == ".rs"
 
-def test_tasks_4_domains():
+def test_tasks_5_domains():
+    # v3.2: 4 域 + boundary 第五域 (FFI 边界专项)
     with tempfile.TemporaryDirectory() as tmp:
         tasks = sm.gen_surface_tasks(tmp)
-        assert [t["domain"] for t in tasks] == ["network", "data", "process", "storage"]
+        assert [t["domain"] for t in tasks] == ["network", "data", "process", "storage", "boundary"]
+        b = tasks[-1]
+        assert "boundary_kind" in b["output_schema"]["surface"]
         assert all(t["architecture_context"] and t["evidence_requirement"] for t in tasks)
 
 
