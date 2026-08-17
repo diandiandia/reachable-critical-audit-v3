@@ -739,10 +739,14 @@ def _build_prompt(cand, ctx, project_root):
 调用存在性/常量值）。前提断裂 → 立即终止回溯，verdict 按断裂方向判定。
 verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重前提"（W6 §17.10/§19.5）。
 
-### 步骤 0.5（v3.2.1 强制，W6 §25.2）: 模块可导入性预检
+### 步骤 0.5（v3.2.1 强制，W6 §25.2/§26.2）: 模块可导入性预检
 回溯前先回答：**链首模块在部署布局下能否被导入？**（模块存在≠被导入）
 1. 顶层包解析：链首模块所属顶层包能否解析（find_spec/import 语法/go.mod require/
-   crate 是否被构建包含）——顶层包不存在则链首模块整体不可导入
+   crate 是否被构建包含）——顶层包不存在则链首模块整体不可导入。
+   ⚠️ find_spec 只验证包存在性、不执行模块体：传递依赖断裂（模块体 import 链内一层
+   断裂，如 Lersosa required_args_constructor.py:39 裸顶层 common 导入）find_spec 会
+   空过——存在依赖可疑时必须用实际导入验证（python3 -c 'import <module>' 或等价执行，
+   stub 仅第三方依赖、项目自身 import 图真实执行）
 2. DI/组件扫描器吞错路径审查：注册器若含 `except Exception: log/continue` 模式，
    必须验证目标模块实际注册成功（注册表/路由表/扫描日志），不得以框架设计推定
 3. import 失败 → 该边记 broken_edge，verdict=NEEDS_REVIEW（修复即可达条件候选，

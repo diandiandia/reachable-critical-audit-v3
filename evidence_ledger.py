@@ -404,7 +404,9 @@ def main(argv):
         return 1 if blocking else 0
     if cmd == "assert":
         q = load_lenient(argv[2])
-        ok, violations = assert_ledger(q)
+        # v3.2.1: --legacy-no-target-kind 仅复跑旧队列 (R0 未签收 target_kind) 时豁免门禁⑧
+        ok, violations = assert_ledger(
+            q, require_target_kind="--legacy-no-target-kind" not in argv)
         for v in violations:
             print("  -", json.dumps(v, ensure_ascii=False)[:200])
         print("ASSERT_PASSED" if ok else "ASSERT_FAILED")

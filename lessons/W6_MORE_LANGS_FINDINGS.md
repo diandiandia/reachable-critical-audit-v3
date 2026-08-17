@@ -276,3 +276,13 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 | 25.6 | **R4↔R3 交叉验证**（Lersosa）：H-7 f1（tls fail-open 明文）在 CAND-001 原判定出错处是对的——R4 假设层捕获了 R3 verifier 漏掉的部署层真实形态 | 制度化：R4 H-7 默认值盘点结果反向回灌 R3 候选的 gate 证据（v3.2.1 候选） |
 | 25.7 | **判据①措辞缺陷**（REQ-V3.2-100）："每语言 ≥1 surface 且非零候选"未区分客户端组件语言——Lersosa TS 前端 32 文件零候选，覆盖面经边界面 cross_evidence + Go 侧归因达成 | v3.2.1：判据①限定服务端组件语言，或接受"边界面裁决 + cross_evidence 等价"（TS 浏览器组件无服务端可达面） |
 | 25.8 | **v3.1 验收缺陷三件套的制度化闭环验证成功**（akka 零回退 + Lersosa）：v3.1 发现的"R3 自我拦截（akka 3/3）、声称细化（etcd 3 升级 + actix 1 恢复）、verifier 自我分级过低（akka CAND-004）"在 v3.2 中全部由机制处理——R3.5-N 复活攻击 4/4 命中（fixture）+ 2/2 执行（Lersosa），机械分级重算自动升级 5 次 | v3.2 验收判据 REQ-V3.2-100/101 全部 PASS；遗留项进入 v3.2.1（见 25.1/25.6/25.7） |
+
+## 26. v3.2.1 开发/验收（四缺陷修复，2026-08-17）
+
+| # | 缺陷/观察 | 如何应用 |
+|---|---|---|
+| 26.1 | **target_kind 机械判定可行**：六类信号（包清单/监听器/启动链/Dockerfile/README/发布物）加权判 {application, library, hybrid}——fixture→library、Lersosa→application 与人工结论一致 | R0 必做步骤；门禁⑧ 未签收不放行；hybrid 按组件装载规则，无法确定归属时按 application（保守） |
+| 26.2 | **verifier 任务书前置捕获验证 + find_spec 措辞缺口**：单点重验证明步骤 0.5 子项 2 与步骤 5.5 均在 R3 阶段程序化捕获 CAND-004 入口断裂 / CAND-007 Redis 门闩（终态与 R3.5 裁决零回退一致）；但验证者实测发现子项 1 缺口——**find_spec 只验证包存在性、不执行模块体**，对传递依赖断裂（import 链内一层）空过（find_spec 返回 True 而真实 import 抛 ModuleNotFoundError） | 新任务书三段为 application 型强制；子项 1 已补『依赖可疑时用实际导入验证（python3 -c 'import <module>'，stub 仅第三方依赖）』；导入类预检一律以真实执行为准，find_spec 仅作存在性粗筛 |
+| 26.3 | **r4_feedback 匹配的镜头难题**：真实文本"tls_enable 代码零值=false（明文），仓库配置=true"中提交值是中文零回指（"仓库配置=true"无 key 相邻），机械 key=value 匹配全部落空；解决 = 窗口双镜头（key 后 50 字符内 配置/仓库/shipped=value 归 committed-lens）+ 候选侧 ±40 窗默认主张词（零值/默认/缺省/明文/开启）归 code-lens | 自然语言断言提取必须先问"该值陈述的是哪个镜头"；window 匹配要在两个方向都留窗（前缀镜头词"代码默认 key=value"形态） |
+| 26.4 | **历史证据残留规范缺失**：r4_feedback 检出的冲突在 correction_record 已纠正后仍存在于 evidence 原文（保留原文以保可追溯性）——告警与纠正的并存关系需要规范（建议: correction_record 注明"该冲突已由裁决 X 纠正"则断言静默） | v3.2.2 候选：r4_feedback 冲突条目加 resolved 标记位 |
+| 26.5 | **补丁版开发模式验证**：不新增阶段/不改门禁语义/不重排流水线，仅就地制度化——20 SWR 一个工作日闭环，90/90 回归无破坏 | 缺陷修复优先补丁版而非版本跳跃；每个补丁必须带"历史队列回放验证"（用旧数据证明新断言能检出旧错误） |
