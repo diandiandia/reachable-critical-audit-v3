@@ -62,7 +62,7 @@
 
 | 编号 | 需求 | 来源 | 优先级 | 验收判据 |
 |---|---|---|---|---|
-| REQ-V3.2-100 | 混合项目试审验收：选型判据 = ≥3 语言组件 + 存在 FFI 边界 + 公开项目（备选自造最小 fixture：C 核心 + Python ctypes + Rust cdylib）。判据：① 语言覆盖表每语言 ≥1 surface 且非零候选 ② 全部 FFI 边界有 cross_evidence ③ 六门禁 PASS | 设计 §8 | P0 | 三判据同时满足 |
+| REQ-V3.2-100 | 混合项目试审验收：选型判据 = ≥3 语言组件 + 存在 FFI 边界 + 公开项目（备选自造最小 fixture：C 核心 + Python ctypes + Rust cdylib）。判据：① 语言覆盖表每服务端组件语言 ≥1 surface 且非零候选（客户端组件语言以 ≥1 边界面 + cross_evidence 为等价判据，v3.2.1 REQ-V3.2.1-020 修正）② 全部 FFI 边界有 cross_evidence ③ 六门禁 PASS | 设计 §8 | P0 | 三判据同时满足 |
 | REQ-V3.2-101 | 单语言零回退回归：任选 1 个 313 项目（akka-http）重跑，结论与 313 验收一致 | 设计 §7 权衡 5 | P0 | 零回退 |
 | REQ-V3.2-102 | 验收通过后合并 main + install 到 skill 目录 | 设计 §8 | P0 | 运行时权威切换有验收背书 |
 

@@ -21,7 +21,7 @@ DOC_BLOCK_RE = re.compile(
     r'^\s*(//!|/\*|\*|#|--|\'\'|"""|//\s*!|//\s*@|#\s*!)', re.IGNORECASE)
 
 
-def validate_hypotheses(hypotheses, input_surface, strict=True):
+def validate_hypotheses(hypotheses, input_surface, strict=True, project_root=None):
     """SWR-V3.1-070: 假设 schema 校验。
     - surface_ids 必须为数组（单值字符串/缺失 → 违规, W6 §9.6/§12.6/§16.7 三次重现的根修）
     - 每个 surface_id 必须存在于 input_surface.json（孤儿假设拦截）
@@ -49,6 +49,19 @@ def validate_hypotheses(hypotheses, input_surface, strict=True):
         if h.get("lang_pair") and not h.get("lang"):
             issues.append({"severity": "warn",
                            "msg": f"{hid}: lang_pair 存在但缺 lang (v3.2 boundary 假设)"})
+    # v3.2.1 (SWR-V3.2.1-050): gate 语义含"默认可达/默认开启"且 shipped_config.json
+    # 存在 → 强制追加第三层检查引用条款 (W6 §25.4: 代码零值≠shipped 实际值)
+    sc = os.path.join(project_root or "", ".audit_results", "shipped_config.json")
+    if os.path.exists(sc):
+        for h in hyps:
+            hid = h.get("hypothesis_id") or h.get("id", "<no-id>")
+            gate = str(h.get("gate") or "")
+            if any(k in gate for k in ("默认", "默认可达", "默认开启", "默认明文")):
+                issues.append({
+                    "severity": "warn",
+                    "msg": (f"{hid}: gate 声称默认可达——必须引用 "
+                            f".audit_results/shipped_config.json 第三层检查"
+                            f"(shipped 配置实际值, 而非代码零值, W6 §25.4)")})
     blocking = [i for i in issues if i["severity"] == "blocking"]
     return (len(blocking) == 0), issues
 

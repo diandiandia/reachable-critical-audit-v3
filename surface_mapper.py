@@ -88,10 +88,22 @@ def _classify_project_kind(root, ctx):
     return "app"
 
 
+def _component_role(hint):
+    """SWR-V3.2.1-060: component_hint → component_role。
+    frontend→client-only (浏览器客户端, 无服务端可达面); scripts/headers→build-config;
+    其余 (core/bindings)→server-side (绑定层通常运行在服务端进程内)。"""
+    if hint == "frontend":
+        return "client-only"
+    if hint in ("scripts", "headers"):
+        return "build-config"
+    return "server-side"
+
+
 def language_inventory(root):
     """SWR-V3.2-010: 全语言清单。{lang: {file_count, dirs, component_hint}}。
     component_hint 启发式: 绑定层目录名 (bindings/ffi/ctypes/csrc/native/ext)/
     头文件目录 (include)/脚本目录 (scripts)/前端目录 (www/web/ui/frontend)。
+    component_role (v3.2.1): server-side/client-only/build-config。
     单语言项目清单长度 1 (向后兼容)。"""
     from signature_matcher import CODE_EXTENSIONS
     inv = {}
@@ -122,6 +134,7 @@ def language_inventory(root):
             rec["dirs"].add(dirpath)
     out = [{"lang": k, "file_count": v["file_count"],
             "component_hint": v["component_hint"],
+            "component_role": _component_role(v["component_hint"]),
             "sample_dirs": sorted(v["dirs"])[:3]} for k, v in sorted(inv.items(), key=lambda x: -x[1]["file_count"])]
     return out
 

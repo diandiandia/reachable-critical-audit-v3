@@ -659,9 +659,36 @@ def _build_context(cand, project_root=None):
     return ctx
 
 
+def _load_target_kind(project_root):
+    """SWR-V3.2.1-012: verify_queue.target_kind 优先, 回退 target_kind.json;
+    均缺 → None (不注入, 兼容旧队列)。"""
+    try:
+        q = json.load(open(os.path.join(project_root, ".audit_results",
+                                        "verify_queue.json")))
+        tk = q.get("target_kind")
+        if tk:
+            return tk
+    except Exception:
+        pass
+    try:
+        d = json.load(open(os.path.join(project_root, ".audit_results",
+                                        "target_kind.json")))
+        return d.get("recommendation")
+    except Exception:
+        return None
+
+
+def _is_write_read_family(cand):
+    """SWR-V3.2.1-011 触发条件: write→read 注入族候选 (写入端→消费端出站/重定向)。"""
+    text = " ".join(str(cand.get(k) or "") for k in
+                    ("claim_type", "sink_type", "summary", "cwe")).lower()
+    return any(k in text for k in ("write", "写入", "注入", "redirect", "重定向",
+                                   "出站", "outbound", "config", "配置"))
+
+
 def _build_prompt(cand, ctx, project_root):
     """Build the task prompt for a vulnerability-verifier subagent.
-    
+
     The subagent has full access to read, grep, and explore tools.
     This prompt only provides context — it does NOT constrain how
     the subagent verifies the finding.
@@ -681,6 +708,29 @@ def _build_prompt(cand, ctx, project_root):
         prompt += f"- **Source 正则**: {ctx['sources_regex']}\n"
     prompt += f"- **项目路径**: {project_root}\n"
 
+    # v3.2.1 (SWR-V3.2.1-010/011/012): target_kind 存在性规则 + 两盲区预检
+    target_kind = _load_target_kind(project_root)
+    if target_kind == "library":
+        prompt += """
+## 目标类型存在性规则（v3.2.1, target_kind=library）
+- 公共 API 即信任边界（Newtonsoft.Json 先例）：API 静态存在即攻击面
+- 仓内调用者缺失**不是**阻断；死代码豁免规则不适用（库的调用者在仓外）
+- 部署前提不适用；平台限定路径仅记录型
+"""
+    elif target_kind == "hybrid":
+        prompt += """
+## 目标类型存在性规则（v3.2.1, target_kind=hybrid）
+- 按候选所属组件装载规则：库型组件=公共 API 即边界；应用型组件=应用规则（下表）
+- 无法确定组件归属时按 application 规则（保守）
+"""
+    elif target_kind == "application":
+        prompt += """
+## 目标类型存在性规则（v3.2.1, target_kind=application）
+- 默认可达三层检查的第三层**必须**核对 shipped 配置文件的提交实际值（不是代码零值）
+- 运行时注册必须核实（路由/DI 注册真实发生），不得以框架设计推定
+- platform_precondition（平台限定路径，如 Windows 证书路径）必须显式标注
+"""
+
     prompt += f"""
 ## 强制分析步骤（语言无关）
 
@@ -688,6 +738,15 @@ def _build_prompt(cand, ctx, project_root):
 回溯开始前，先 grep 一句话能证实/证伪的**假设承重前提**（严格相等门控/默认参数/
 调用存在性/常量值）。前提断裂 → 立即终止回溯，verdict 按断裂方向判定。
 verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重前提"（W6 §17.10/§19.5）。
+
+### 步骤 0.5（v3.2.1 强制，W6 §25.2）: 模块可导入性预检
+回溯前先回答：**链首模块在部署布局下能否被导入？**（模块存在≠被导入）
+1. 顶层包解析：链首模块所属顶层包能否解析（find_spec/import 语法/go.mod require/
+   crate 是否被构建包含）——顶层包不存在则链首模块整体不可导入
+2. DI/组件扫描器吞错路径审查：注册器若含 `except Exception: log/continue` 模式，
+   必须验证目标模块实际注册成功（注册表/路由表/扫描日志），不得以框架设计推定
+3. import 失败 → 该边记 broken_edge，verdict=NEEDS_REVIEW（修复即可达条件候选，
+   blocking_point 写明断裂点）——静态链真实 ≠ 运行时存在（Lersosa CAND-004/009 先例）
 
 ### 步骤 1: 逆向调用链回溯（最小深度 3 层）
 1. 读取 {ctx['file']} L{ctx['line']} 周围代码，确认 sink 点
@@ -711,7 +770,25 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 ### 步骤 5: 路径覆盖
 - 列出所有到达该 Sink 点的调用路径
 - 多条路径中只要有一条无阻断 → 该点 REACHABLE
+"""
 
+    if _is_write_read_family(cand):
+        prompt += """### 步骤 5.5（v3.2.1，write→read 注入族强制，W6 §25.3）: 消费端中间层枚举
+本候选为写入端→消费端复合链。对消费端执行：
+1. 中间层横向枚举：adapter 与 domain 之间逐层列出缓存/门闩/降级/拦截器——
+   不能只沿调用链直查（Lersosa CAND-007: Redis 前置门闩被整层漏掉的前车之鉴）
+2. 缓存层三查：
+   - 错误分支方向：`if err == nil` 块内处理错误分支 = 写反死代码；
+     缓存未命中返回什么（空实体+nil error 会短路 DB 回源）
+   - 写读形状一致：缓存写入方与读取方序列化形状是否匹配
+     （writer 单对象 vs reader 切片 → 往返必然失败）
+   - 缓存键写路径：Save/Modify 是否失效/回填缓存键——不写则新写入的 DB 行
+     永远进不了读路径
+3. 状态依赖（缓存命中的条件态 vs 默认态）写入 evidence；默认态不可达时
+   blocking_point 写明门闩层
+"""
+
+    prompt += """
 ### 步骤 6: 结论
 无法明确判定 → NEEDS_REVIEW（不允许默认判定或静默丢弃）
 """

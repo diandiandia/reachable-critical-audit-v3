@@ -12,6 +12,7 @@
 """
 import json
 import os
+import re
 import sys
 
 GRADES = ("static_only", "edge_proven", "empirically_confirmed")
@@ -167,13 +168,16 @@ def commit(queue, verdict):
 TERMINAL_STATUSES = {"VERIFIED", "ESCALATED", "NEEDS_REVIEW"}
 
 
-def assert_ledger(queue, dispatched=None, surface_data=None):
-    """SWR-V3-034 + REQ-V3-093/095/096: 六门禁。
+def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind=True):
+    """SWR-V3-034 + REQ-V3-093/095/096 + SWR-V3.2.1-004/040: 门禁。
     ①no_pending ②REACHABLE 无 static_only ③实证类 100% ④H1-H7 全 VERIFIED
     ⑤对账零差异 (dispatched 提供时: 每个已派发 id 必须有终态)
     ⑥escalated=0 或主代理签收 (escalated_signed_off)
     ⑦surface 覆盖率=100% (surface_data 提供时)
-    返回 (ok, violations)。dispatched/surface_data 为 None 时对应门禁跳过并记 skip_note。"""
+    ⑧target_kind_required (v3.2.1, require_target_kind=False 仅复跑兼容)
+    r4_feedback (v3.2.1, warn 级): H-7 默认值盘点与 R3 REACHABLE gate 证据冲突检测
+    返回 (ok, violations)。dispatched/surface_data 为 None 时对应门禁跳过并记 skip_note。
+    ⑧/r4_feedback 之外的 warn 级违规不阻断 PASS (v3.2.1 起 ok 只计 blocking)。"""
     violations = []
     skipped = []
     cands = queue.get("candidates", [])
@@ -247,10 +251,86 @@ def assert_ledger(queue, dispatched=None, surface_data=None):
                                "tracked": tracked, "total": total})
     else:
         skipped.append("surface_coverage")
+    # ⑧target_kind (v3.2.1, SWR-V3.2.1-004): R0 未签收 target_kind 不得启动 R3
+    if require_target_kind and not queue.get("target_kind"):
+        violations.append({"gate": "target_kind_required",
+                           "msg": "verify_queue.target_kind 缺失 (R0 判定未签收); "
+                                  "仅复跑旧队列时以 require_target_kind=False 豁免"})
+    # r4_feedback (v3.2.1, SWR-V3.2.1-040, warn 级): H-7 默认值盘点 ↔ R3 gate 证据冲突
+    conflicts = r4_feedback(queue)
+    if conflicts:
+        violations.append({"gate": "r4_feedback", "severity": "warn",
+                           "conflicts": conflicts})
     if skipped:
         violations.append({"gate": "skipped_gates", "gates": skipped,
                            "severity": "warn"})
-    return (len([v for v in violations if v["gate"] != "skipped_gates"]) == 0), violations
+    ok = len([v for v in violations
+              if v["gate"] != "skipped_gates" and v.get("severity", "blocking") != "warn"]) == 0
+    return ok, violations
+
+
+def r4_feedback(queue):
+    """SWR-V3.2.1-040: R4 H-7 默认值盘点 ↔ R3 REACHABLE gate 证据冲突检测 (warn 级)。
+    窗口双镜头匹配 (W6 §25.4 真实形态):
+    - 候选侧 code-lens: key[=:]value 或 key+零值/默认/缺省+value, 且 ±40 字符窗内有
+      默认主张词 (零值|默认|缺省|明文|开启) → 声称部署态 = 代码默认值 V_c
+    - H-7 侧 committed-lens: key[=:]value 直接赋值; 或 key 后 40 字符窗内
+      (配置|仓库|shipped|committed|实际值)=value → 提交值 V_h
+    V_c ≠ V_h → 冲突 (主代理裁决)。动机: Lersosa H-7 f1 (仓库配置=true) 在
+    CAND-008 原判定 (代码默认 tls_enable=false→明文) 出错处是对的。"""
+    conflicts = []
+    assign_re = re.compile(
+        r"([a-z_][a-z0-9_]*)\s*[=:]\s*(true|false|\"[^\"]{1,40}\"|\d+)")
+    # key + 可选镜头词 + 可选赋值符 + value ("tls_enable 零值 false" 形态)
+    gap_val_re = re.compile(
+        r"([a-z_][a-z0-9_]*)\s*(?:零值|默认|缺省)\s*[=:]?\s*"
+        r"(true|false|\"[^\"]{1,40}\"|\d+)")
+    commit_ctx_re = re.compile(
+        r"(?:配置|仓库|shipped|committed|实际值)\s*[=:]\s*"
+        r"(true|false|\"[^\"]{1,40}\"|\d+)")
+    code_ctx_re = re.compile(r"零值|默认|缺省|明文|开启")
+    h7 = [h for h in queue.get("r4_findings", []) if h.get("hypothesis_id") == "H-7"]
+    h7_committed = {}
+    for h in h7:
+        for f in h.get("findings", []):
+            text = " ".join(str(f.get(k) or "")
+                            for k in ("title", "evidence", "correction_record"))
+            # 形态1: key=value 直接赋值 ("tls_enable=true (shipped config)")
+            for m in assign_re.finditer(text):
+                h7_committed.setdefault(m.group(1), []).append((m.group(2), text[:120]))
+            # 形态2: key 出现后 50 字符内的 (配置|仓库|shipped|...)=value 零回指
+            # ("tls_enable 代码零值=false（明文），仓库配置=true", W6 §25.4 真实形态)
+            for m in re.finditer(r"([a-z_][a-z0-9_]+)", text):
+                tail = text[m.end(): m.end() + 50]
+                cm = commit_ctx_re.search(tail)
+                if cm:
+                    h7_committed.setdefault(m.group(1), []).append((cm.group(1), text[:120]))
+    if not h7_committed:
+        return conflicts
+    for c in queue.get("candidates", []):
+        if c.get("verdict") != "REACHABLE":
+            continue
+        text = " ".join(str(c.get(k) or "")
+                        for k in ("evidence", "call_chain", "gate_note",
+                                  "trust_boundary", "summary"))
+        seen = set()
+        for m in list(assign_re.finditer(text)) + list(gap_val_re.finditer(text)):
+            key, cand_val = m.group(1), m.group(2)
+            if key not in h7_committed or (key, cand_val) in seen:
+                continue
+            seen.add((key, cand_val))
+            ctx = text[max(0, m.start() - 40): m.end() + 40]
+            if not code_ctx_re.search(ctx):
+                continue  # 无默认主张词 → 不构成"部署态=代码默认值"声称
+            for h7_val, snippet in h7_committed[key]:
+                if h7_val != cand_val:
+                    conflicts.append({
+                        "candidate": c.get("id"), "key": key,
+                        "candidate_code_lens_value": cand_val,
+                        "h7_committed_value": h7_val,
+                        "h7_source": snippet[:120]})
+                    break
+    return conflicts
 
 
 def consistency_check(queue):

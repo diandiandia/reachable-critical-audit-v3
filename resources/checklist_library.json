@@ -613,6 +613,70 @@
     "v3.2 P-B 设计",
     "W6 §20.2 (跨语言对照先例)"
    ]
+  },
+  {
+   "id": "CK-IMPORT-REGISTRATION",
+   "name": "模块可导入性/注册真实性检查",
+   "family": "import-registration",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "import",
+     "导入",
+     "di",
+     "组件扫描",
+     "component_scan",
+     "route",
+     "路由注册",
+     "register",
+     "autowired",
+     "provider"
+    ],
+    "note": "v3.2.1 (W6 §25.2): 链首模块存在≠被导入; DI 扫描器吞错路径=静默失败温床 (Lersosa CAND-004/009 404 先例)"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "顶层包解析: 链首模块所属顶层包在部署布局下能否解析 (find_spec/import 语法/go.mod require/crate 在依赖树)——顶层包不存在则链首模块整体不可导入",
+    "构建包含: 该模块所在目录/文件是否被构建系统包含 (tsconfig include/Cargo [[bin]]/setup.py packages)",
+    "DI/组件扫描器吞错路径审查: 注册器若含 `except Exception: log/continue` 模式, 必须验证目标模块实际注册成功 (注册表/路由表/扫描日志), 不得以框架设计推定",
+    "实证核验: 有条件时实际启动/导入验证 (启动日志 grep 模块名 + 路由表/注册计数)——import 失败 → 边记 broken_edge, verdict=NEEDS_REVIEW (修复即可达条件候选)"
+   ]
+  },
+  {
+   "id": "CK-CACHE-GATE-LAYER",
+   "name": "消费端中间层/缓存门闩三查",
+   "family": "cache-gate",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "cache",
+     "缓存",
+     "redis",
+     "fallback",
+     "降级",
+     "gate",
+     "门闩",
+     "default_config",
+     "defaultOss",
+     "getdefault",
+     "write",
+     "写入"
+    ],
+    "note": "v3.2.1 (W6 §25.3): adapter↔domain 间缓存/门闩层被整层漏掉 → CAND-007 过度声称 (Redis 门闩错误分支写反死代码)"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "中间层横向枚举: 消费端 adapter 与 domain 之间逐层列出缓存/门闩/降级/拦截器——不能只沿调用链直查 (Lersosa CAND-007: GetDefaultOssConfig 的 Redis 前置门闩被整层漏掉)",
+    "错误分支方向: 检查 `if err == nil` 块内是否处理了错误分支 (写反=死代码); 缓存未命中路径返回什么 (空实体+nil error 会短路 DB 回源)",
+    "写读形状一致: 缓存写入方与读取方的序列化形状是否匹配 (writer 单对象 vs reader 切片 → 往返必然失败, 缓存永不能服务新值)",
+    "缓存键写路径: Save/Modify/Remove 是否失效/回填缓存键——不写缓存键则新写入的 DB 行永远进不了读路径; 状态依赖 (缓存命中的条件态 vs 默认态) 写入 blocking_point 候选"
+   ]
   }
  ]
 }

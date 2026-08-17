@@ -57,7 +57,7 @@ def test_assert_gates():
     assert {"no_pending", "no_static_only_reachable", "empirical_required", "r4_all_verified"} <= gates
 
 def test_assert_clean_passes():
-    q = {"candidates": [
+    q = {"target_kind": "application", "candidates": [
         {"id": "C-1", "status": "VERIFIED", "verdict": "UNREACHABLE", "evidence_grade": "edge_proven"},
         {"id": "C-2", "status": "VERIFIED", "verdict": "REACHABLE",
          "evidence_grade": "empirically_confirmed", "claim_type": "oom"},
@@ -68,7 +68,8 @@ def test_assert_clean_passes():
 # ---- W3: 六门禁扩展 (REQ-V3-093/095/096) ----
 
 def _clean_queue():
-    return {"candidates": [
+    # v3.2.1: target_kind 为门禁⑧ 必填字段 (旧队列复跑以 require_target_kind=False 豁免)
+    return {"target_kind": "application", "candidates": [
         {"id": "C-1", "status": "VERIFIED", "verdict": "UNREACHABLE", "evidence_grade": "edge_proven"},
         {"id": "C-2", "status": "VERIFIED", "verdict": "REACHABLE",
          "evidence_grade": "empirically_confirmed", "claim_type": "oom"},

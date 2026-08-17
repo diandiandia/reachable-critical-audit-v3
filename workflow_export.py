@@ -64,6 +64,107 @@ REFUTATION_SCHEMA = {
     },
 }
 
+# v3.2.1 (SWR-V3.2.1-020): shipped-config 盘点——提交值 vs 代码零值对照
+SHIPPED_CONFIG_SCHEMA = {
+    "type": "object",
+    "required": ["component", "items"],
+    "properties": {
+        "component": {"type": "string"},
+        "items": {"type": "array", "items": {
+            "type": "object",
+            "required": ["file", "key", "committed_value"],
+            "properties": {
+                "file": {"type": "string"},
+                "key": {"type": "string"},
+                "committed_value": {"type": "string"},
+                "code_default": {"type": "string"},
+                "mismatched": {"type": "boolean"},
+                "note": {"type": "string"}}}},
+    },
+}
+
+SHIPPED_CONFIG_SCRIPT = r"""export const meta = {
+  name: 'v3-shipped-config',
+  description: 'R1.5 子任务: shipped config 实际值盘点 (v3.2.1)',
+  phases: [{ title: 'Inventory', detail: 'committed value vs code default per component' }],
+}
+
+if (!args || !args.components) {
+  return { mode: 'shipped-config', error: 'args.components 缺失 (resume 须携带与首跑一致的 args, W6 §5)' }
+}
+
+const SCHEMA = __SCHEMA__
+
+const results = await pipeline(
+  args.components,
+  (comp) => agent(comp.prompt, { label: `shipped-config:${comp.name}`, schema: SCHEMA }),
+)
+
+return {
+  mode: 'shipped-config',
+  inventories: results.filter(Boolean),
+  missing: args.components.filter((_, i) => !results[i]).map((c) => c.name),
+}
+"""
+
+CONFIG_KEY_HINTS = ("tls", "ssl", "auth", "token", "cert", "listen", "addr",
+                    "port", "bind", "password", "secret", "key", "enable",
+                    "enabled", "timeout", "limit", "cors")
+
+
+def shipped_config_prompt(component):
+    """SWR-V3.2.1-020: 每组件一个盘点 agent 的任务书。"""
+    return f"""你是一个 shipped-config 盘点子智能体 (R1.5 子任务, v3.2.1)。
+
+## 任务上下文
+- **组件**: {component['name']} (语言 {component.get('lang', '?')})
+- **项目路径**: {component['project_root']}
+- **候选目录**: {component.get('dirs', '全仓 config 目录')}
+
+## 任务 (只读盘点, 不修改任何文件)
+1. 找出该组件**随仓库提交的配置文件**（configs/*.yaml|toml|json、.env*、docker-compose*.yml、nginx.conf 等）
+2. 对每个安全敏感键（tls/ssl/auth/token/cert/监听地址/端口绑定/密码/密钥/开关/超时/上限/cors）：
+   - `committed_value` = 配置文件中的提交实际值
+   - `code_default` = 代码中该键的零值/默认值（从结构体定义/默认构造 grep）
+   - `mismatched` = 两者不一致时为 true（这正是"代码零值默认明文"类误判的根源, W6 §25.4）
+3. 输出 items 数组, 每个 item: file/key/committed_value/code_default/mismatched/note(平台限定路径如 Windows 证书路径须注明)
+
+## 输出格式
+结构化输出工具按 schema 强制校验。最终回复直接作为结果返回, 不要写文件。"""
+
+
+def export_script_shipped_config(project_root, components):
+    """SWR-V3.2.1-020: 导出 shipped-config 盘点 workflow 脚本。
+    components: [{name, lang, dirs}]。"""
+    if not components:
+        return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "shipped-config"}
+    payload = [{"name": c["name"],
+                "prompt": shipped_config_prompt({**c, "project_root": project_root})}
+               for c in components]
+    js = SHIPPED_CONFIG_SCRIPT.replace("__SCHEMA__",
+                                       json.dumps(SHIPPED_CONFIG_SCHEMA,
+                                                  ensure_ascii=False))
+    out_rel = "workflow_shipped_config.js"
+    script_path = os.path.join(project_root, ".audit_results", out_rel)
+    os.makedirs(os.path.dirname(script_path), exist_ok=True)
+    with open(script_path, "w") as f:
+        f.write(js)
+    return {
+        "status": "WORKFLOW_SCRIPT_READY",
+        "mode": "shipped-config",
+        "count": len(payload),
+        "script_path": f".audit_results/{out_rel}",
+        "payload_key": "components",
+        "payload": payload,
+        "schema": SHIPPED_CONFIG_SCHEMA,
+        "next_step": (
+            f"Workflow 工具运行: scriptPath={script_path}, "
+            f"args={{\"components\": <payload>}};\n"
+            f"收集 inventories 落盘 .audit_results/shipped_config.json "
+            f"(主代理汇总: {{component, items[]}})。"),
+    }
+
+
 # v3.1 (W6 §21.1/§19.4/§16.10): 证伪者实证工具箱——按声称类别附标准实验动作
 REFUTER_TOOLBOX = {
     "interval/boundary": "区间/边界类: 小规模参照模型实现 + 百万级随机对拍差分 (W6 §21.1)",

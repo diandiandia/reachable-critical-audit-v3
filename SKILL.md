@@ -32,7 +32,17 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    ```
    `hit_rate < 1.0 AND testable > 0`（跳过项不计分母; 全 skipped 即 testable=0 放行, W6 §7）或 validate 失败 → 阻止启动。known_instances 非空是签名存在的前提。
 3. **harness 自检**（REQ-V3-011）：`harness_runner.list_templates()` ≥ 1；否则 R5 阶段降级为静态 + 告警。
-4. 初始化空 `verify_queue.json`：`{"schema_version":"3.0","candidates":[]}`。
+4. **target_kind 判定**（v3.2.1, REQ-V3.2.1-001/002, W6 §25.1）：
+   ```bash
+   python3 <skill_dir>/tools/target_kind.py <project> --write
+   ```
+   → 机械推荐 {application, library, hybrid} + 信号证据。主代理复核后**签收**写入
+   `verify_queue.target_kind`。存在性规则按型装载（PREC-TARGET-KIND-001）：
+   - **application**：默认可达三层检查含 shipped 配置实际值 + 运行时注册核实 + platform_precondition 显式标注
+   - **library**：公共 API 即信任边界（Newtonsoft.Json 先例）；仓内调用者缺失不是阻断；死代码豁免不适用
+   - **hybrid**：按组件分别装载；无法确定归属时按 application（保守）
+   未签收 → 门禁⑧ target_kind_required 不放行（旧队列复跑以 `require_target_kind=False` 豁免）。
+5. 初始化空 `verify_queue.json`：`{"schema_version":"3.0","candidates":[]}`。
 
 ## 🗺️ R1：输入面测绘（审计起点，禁止全库轰炸）
 
@@ -135,12 +145,16 @@ ok,v=el.assert_ledger(q, dispatched=[c['id'] for c in q['candidates']],
 print(ok, v)"
 ```
 ① no_pending ② REACHABLE 无 static_only ③ 实证类声称 100% empirically_confirmed ④ H1-H7 全 VERIFIED
-⑤ 对账零差异（dispatched 全部终态）⑥ escalated=0 或主代理签收 ⑦ surface 覆盖率 100%。
+⑤ 对账零差异（dispatched 全部终态）⑥ escalated=0 或主代理签收 ⑦ surface 覆盖率 100%
+⑧ target_kind_required（v3.2.1：R0 未签收 target_kind 不放行；旧队列复跑
+`require_target_kind=False` 豁免）。另输出 `r4_feedback` 告警（warn 级不阻断 PASS）：
+R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主代理裁决纠正（W6 §25.6）。
 
 ## 📊 报告
 
 落盘 `.audit_results/reachable_vulnerabilities_report.md`，必须含：
 - 规模对照（候选/假设/surface 数、闭合率）
+- **语言覆盖表**（v3.2.1 增加 `组件角色` 列：server-side/client-only/build-config；判据①：服务端组件语言 ≥1 surface 且非零候选；客户端组件语言以 ≥1 边界面 + cross_evidence 为等价判据）
 - 每个 REACHABLE：verdict + 证据分级 + 调用链 + 独立复核结果 + 实证记录（如有）
 - NEEDS_REVIEW 显式清单（含 correction_record 理由）
 - R4 假说 verdict 表、六门禁断言结果、修复建议
@@ -261,6 +275,34 @@ akka-http / etcd / actix-web 三项目复跑对照:
 
 ### 验收（Phase 3.2.3）
 混合项目试审（≥3 语言 + FFI 边界）+ akka-http 单语言零回退回归。
+
+## 🆕 v3.2.1 增量（2026-08-17，验收暴露四缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_2_1.md`。补丁版：不新增阶段、不改门禁语义。
+
+### R0: target_kind 判定（REQ-V3.2.1-001~005）
+见 R0 步骤 4：`tools/target_kind.py` 六类信号 → 推荐值 + 主代理签收 →
+`verify_queue.target_kind`；门禁⑧ 未签收不放行。存在性规则按型装载（M2-3）：
+application=三层检查含 shipped 实际值+运行时注册核实；library=公共 API 即边界
+（仓内调用者缺失非阻断，死代码豁免不适用）；hybrid 按组件。
+
+### R1: shipped-config 盘点（REQ-V3.2.1-030/031）
+4+1 域合并后、R2 之前，对含 config 目录的组件跑 `workflow_export.export_script_shipped_config`
+→ 每组件 1 agent 提取 tls/auth/监听/密码类键的**提交值 vs 代码零值** →
+落盘 `.audit_results/shipped_config.json`。R2 gate 声称"默认可达"的假设强制引用
+（r2_guard 提示）。动机: Lersosa CAND-001/008 的 `tls_enable` 代码零值误判 (W6 §25.4)。
+
+### R3: verifier 任务书三段扩展（REQ-V3.2.1-010~012）
+- 步骤 0.5 **模块可导入性预检**：顶层包解析 + DI 扫描器吞错路径审查 + broken_edge
+  → NEEDS_REVIEW（模块存在≠被导入，Lersosa CAND-004/009 404 先例）
+- 步骤 5.5 **消费端中间层枚举**（write→read 注入族）：缓存/门闩/降级层逐层列出
+  + 三查（错误分支方向/写读形状/缓存键写路径，Lersosa CAND-007 Redis 门闩先例）
+- target_kind 存在性规则段（由 verify_queue.target_kind 选择装载）
+- 新清单 CK-IMPORT-REGISTRATION / CK-CACHE-GATE-LAYER（第 22/23 条）；
+  新先例 PREC-TARGET-KIND-001 / PREC-IMPORT-BREAK-001
+
+### 验收（Phase 3.2.1.3）
+fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退 + 六门禁⑧ PASS + install。
 
 ## 📝 R6：lessons 回写（审计闭合前置，v3.2 新增）
 

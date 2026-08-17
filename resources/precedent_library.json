@@ -285,6 +285,37 @@
    "source_lessons": [
     "v3.2 P-B 设计"
    ]
+  },
+  {
+   "id": "PREC-TARGET-KIND-001",
+   "name": "目标类型存在性规则矩阵",
+   "criterion": "审计目标类型 (target_kind) 决定存在性规则: application=三层默认检查含 shipped 配置实际值+运行时注册核实+platform_precondition 显式标注; library=公共 API 即信任边界, 仓内调用者缺失不是阻断, 死代码豁免不适用",
+   "counterexample": "fixture 同形状两库型候选一判 REACHABLE 一判 UNREACHABLE (2/2 证伪+4/4 复活指向同根因); Lersosa 三处部署前提错误 (tls_enable 代码零值 vs shipped 显式 true; 路由自动注册 vs 模块导入断裂 404)",
+   "applicability_scope": "一切候选的存在性/默认可达判定; 库型先例 Newtonsoft.Json (公共 API 即信任边界)",
+   "applications": [
+    "mixed-fixture GT-1~5 (库型统一裁决)",
+    "Lersosa CAND-001/008 (shipped config 实际值)",
+    "Lersosa CAND-004/009 (运行时注册核实)"
+   ],
+   "source_lessons": [
+    "W6 §25.1",
+    "ACCEPTANCE_V3_2 key_finding"
+   ]
+  },
+  {
+   "id": "PREC-IMPORT-BREAK-001",
+   "name": "模块导入断裂条件候选",
+   "criterion": "链首模块因顶层包不存在/构建未包含而不可导入, 或 DI/组件扫描器吞错导致零注册 → 调用边记 broken_edge, 候选判 NEEDS_REVIEW (修复即可达条件候选), 不判 REACHABLE——静态链真实 ≠ 运行时存在 (模块存在≠被导入)",
+   "counterexample": "verifier 9 跳逐行核实全真仍被判 REACHABLE 的两条候选 (Lersosa CAND-004 SSRF / CAND-009 CSV 注入) 事后双双降级——入口 /crawler/run 404 实证",
+   "applicability_scope": "一切以路由注册/DI 扫描/框架自动装载为入口前提的候选; library 型不适用 (公共 API 静态存在即面)",
+   "applications": [
+    "Lersosa CAND-004 (爬虫 SSRF, 修复即可达)",
+    "Lersosa CAND-009 (CSV 注入, 修复即可达)"
+   ],
+   "source_lessons": [
+    "W6 §25.2",
+    "ACCEPTANCE_V3_2"
+   ]
   }
  ]
 }
