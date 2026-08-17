@@ -29,12 +29,16 @@ def test_validate_rejects_missing_evidence():
     ok, errors = sm.validate_surfaces(d)
     assert not ok and any("snippet" in e for e in errors)
 
-def test_validate_rejects_bad_trust():
+def test_validate_maps_free_text_trust():
+    # v3.2: 自由文本 trust_boundary 映射到枚举 + original 留档 (Lersosa 实测形态)
     with tempfile.TemporaryDirectory() as tmp:
         s = _mk_surface(tmp)
-        s["trust_boundary"] = {"type": "bogus"}
+        s["trust_boundary"] = {"type": "外部请求者 → 服务层"}
         ok, errors = sm.validate_surfaces({"surfaces": [s]})
-        assert not ok and any("trust_boundary" in e for e in errors)
+        assert ok, errors
+        norm = sm.normalize_surfaces({"surfaces": [s]})
+        assert norm["surfaces"][0]["trust_boundary"]["type"] == "unauthenticated_remote"
+        assert norm["surfaces"][0]["trust_boundary"]["original"] == "外部请求者 → 服务层"
 
 def test_validate_rejects_mismatched_line():
     with tempfile.TemporaryDirectory() as tmp:
@@ -85,7 +89,7 @@ def test_normalize_bare_array_and_string_trust():
              "entry_points": [], "taint_channels": [],
              "trust_boundary": "gated", "confidence": "high"}]
     norm = sm.normalize_surfaces(data)
-    assert norm["surfaces"][0]["trust_boundary"] == {"type": "gated"}
+    assert norm["surfaces"][0]["trust_boundary"]["type"] == "gated"  # v3.2: +original 留档
 
 def test_normalize_html_entities_and_relative_paths():
     data = [{"id": "S-1", "type": "data", "name": "x",

@@ -19,7 +19,8 @@ import sys
 DOMAINS = ["network", "data", "process", "storage"]
 # v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
 BOUNDARY_DOMAIN = "boundary"
-BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-other")
+BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-other",
+               "proto", "http-service", "subprocess", "grpc", "cli")
 
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown"}
@@ -244,7 +245,35 @@ def normalize_surfaces(data, project_root=None):
         s = dict(s)
         tb = s.get("trust_boundary")
         if isinstance(tb, str):
-            s["trust_boundary"] = {"type": tb}
+            # v3.2: agent 常写描述性自由文本——按关键词映射到枚举, 原文留档
+            s["trust_boundary_raw"] = tb
+            t = tb.lower()
+            if any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
+                mapped = "unauthenticated_remote"
+            elif any(k in t for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
+                mapped = "local"
+            elif any(k in t for k in ("tls", "会话", "令牌", "token", "认证")):
+                mapped = "authenticated_remote"
+            elif any(k in t for k in ("gated", "gate", "门控")):
+                mapped = "gated"
+            else:
+                mapped = "environment"
+            s["trust_boundary"] = {"type": mapped, "original": tb}
+        elif isinstance(tb, dict) and tb.get("type") not in VALID_TRUST:
+            # v3.2: 上一轮 normalize 已把自由文本包进 dict 的产物 (遗留形态)
+            s.setdefault("trust_boundary_raw", tb.get("type"))
+            t = str(tb.get("type", "")).lower()
+            if any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
+                mapped = "unauthenticated_remote"
+            elif any(k in t for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
+                mapped = "local"
+            elif any(k in t for k in ("tls", "会话", "令牌", "token", "认证")):
+                mapped = "authenticated_remote"
+            elif any(k in t for k in ("gated", "gate", "门控")):
+                mapped = "gated"
+            else:
+                mapped = "environment"
+            s["trust_boundary"] = {"type": mapped, "original": tb.get("type")}
         for ep in s.get("entry_points", []) or []:
             ev = ep.get("evidence")
             if isinstance(ev, dict) and ev.get("snippet"):

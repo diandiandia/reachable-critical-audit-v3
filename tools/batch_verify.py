@@ -44,8 +44,8 @@ VALID_REACHABILITY_TYPES = {"DIRECT", "ACROSS_BOUNDARY", "INDIRECT", None}
 
 # 扩展名 → 语言 (与 ast_scanner.ASTCoarseScanner.EXTENSION_MAP 保持一致的子集)
 _EXT_LANG = {
-    ".java": "java", ".cpp": "cpp", ".cc": "cpp", ".cxx": "cpp", ".c": "cpp",
-    ".h": "cpp", ".hpp": "cpp", ".py": "python", ".go": "go", ".rs": "rust",
+    ".java": "java", ".cpp": "cpp", ".cc": "cpp", ".cxx": "cpp", ".c": "c",
+    ".h": "c", ".hpp": "cpp", ".py": "python", ".go": "go", ".rs": "rust",
     ".js": "javascript", ".ts": "javascript", ".jsx": "javascript", ".tsx": "javascript",
     ".cs": "csharp", ".php": "php", ".rb": "ruby", ".swift": "swift",
     ".kt": "kotlin", ".kts": "kotlin", ".scala": "scala", ".sh": "shell",
