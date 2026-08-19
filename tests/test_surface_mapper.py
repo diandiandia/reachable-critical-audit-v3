@@ -278,3 +278,20 @@ def test_trust_boundary_host_api():
         assert ok, errs
         norm = sm.normalize_surfaces(d)
         assert norm["surfaces"][0]["trust_boundary"]["type"] == "host_api"
+
+
+def test_v331_normalize_surface_lang():
+    """v3.3.1: normalize 归一化 surface lang 形态 ('.c'→c, ts→typescript)。"""
+    d = {"surfaces": [{"id": "S-1", "type": "data_input", "name": "x",
+                       "lang": ".c",
+                       "entry_points": [{"file": "a.c", "line": 1,
+                                         "function": "f",
+                                         "evidence": {"snippet": "f();"}}],
+                       "taint_channels": [], "downstream_hints": [],
+                       "trust_boundary": "host_api",
+                       "confidence": "high"}]}
+    norm = sm.normalize_surfaces(d)
+    assert norm["surfaces"][0]["lang"] == "c"
+    d2 = {"surfaces": [dict(d["surfaces"][0], lang="ts")]}
+    norm2 = sm.normalize_surfaces(d2)
+    assert norm2["surfaces"][0]["lang"] == "typescript"

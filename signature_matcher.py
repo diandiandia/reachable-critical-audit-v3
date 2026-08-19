@@ -15,6 +15,25 @@ import re
 import sys
 import signature_lib
 
+# v3.3.1: 扩展名/别名 → 签名 lang 词表 (对齐 signature_lib.VALID_LANGS 词汇;
+# 注意 batch_verify._EXT_LANG 的 csharp/javascript 词汇与此不同, 各模块独立)
+EXT_LANG_ALIAS = {
+    "c": "c", "h": "c", "cpp": "cpp", "cc": "cpp", "cxx": "cpp", "hpp": "cpp",
+    "rs": "rust", "go": "go", "java": "java", "py": "python", "rb": "ruby",
+    "cs": "cs", "ts": "typescript", "kt": "kotlin", "kts": "kotlin",
+    "scala": "scala", "swift": "swift", "php": "php", "pl": "perl",
+    "pm": "perl", "sh": "shell", "ps1": "powershell", "js": "js",
+    "m": "objc", "mm": "objc", "lua": "lua",
+}
+
+
+def norm_lang(lang):
+    """v3.3.1: surface lang 归一化——剥点/小写/别名映射; None 原样返回。"""
+    if not lang:
+        return None
+    l = str(lang).strip().lstrip(".").lower()
+    return EXT_LANG_ALIAS.get(l, l)
+
 DEFAULT_DEPTH = 3
 LOGIC_PATTERN_PREFIX = "SIG-LOGIC-"
 # 窗口有界化 (W5 回归发现: god-file 全文件窗口 + 无 cap BFS 导致窗口爆炸)
@@ -156,9 +175,12 @@ def match_signatures(surfaces, signatures, project_index, depth=DEFAULT_DEPTH):
             raise ValueError(f"{sig['sig_id']}: {e}")
     file_cache = {}
     # v3.2 (SWR-V3.2-020): L2 词族按 surface.lang 过滤——C 词族不打 Rust surface
+    # v3.3.1: surface lang 归一化——R1 测绘产出常见带点扩展名形态 ('.c') 或
+    # 别名 (ts/sh/kt/ps1), 与签名 lang 词表 (c/typescript/shell/kotlin/powershell)
+    # 不一致时 L2 过滤静默全不命中 (Lua 审计 0 hits 的另一半根因)
     def _sig_applicable(sig, surface):
         if sig.get("tier") == "L2" and sig.get("lang"):
-            return surface.get("lang") == sig["lang"]
+            return norm_lang(surface.get("lang")) == sig["lang"]
         return True
     for surface in surfaces:
         for entry in surface.get("entry_points", []):

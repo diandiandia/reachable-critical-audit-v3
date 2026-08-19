@@ -147,3 +147,37 @@ def test_v33_c_l2_hits_only_c_surface():
     r_ids = {h["sig_id"] for h in hits if h["surface_id"] == "S-R"}
     assert "SIG-C-ALLOC-001" in c_ids
     assert "SIG-C-ALLOC-001" not in r_ids
+
+
+def test_v331_lang_dot_form_normalized():
+    """v3.3.1: surface lang 带点扩展名形态 ('.c') 或别名 (ts) 归一化后命中——
+    旧版直接字符串比较, 真实流程 (context lang='.c') 下 L2 过滤静默全不命中。"""
+    import tempfile as _t
+    repo = _t.mkdtemp()
+    open(os.path.join(repo, "a.c"), "w").write(
+        "void h(void) {\n  char *p = malloc(remote_len());\n}\n")
+    idx = sm.build_project_index(repo)
+    sigs = signature_lib.load()["signatures"]
+    for langval in ("c", ".c", "C"):
+        cs = {"id": f"S-{langval}", "type": "data_input", "lang": langval,
+              "entry_points": [{"file": os.path.join(repo, "a.c"), "line": 2}]}
+        hits = sm.match_signatures([cs], sigs, idx)
+        ids = {h["sig_id"] for h in hits}
+        assert "SIG-C-ALLOC-001" in ids, f"lang={langval} 未归一化命中"
+    assert sm.norm_lang(".ts") == "typescript"
+    assert sm.norm_lang("kt") == "kotlin"
+    assert sm.norm_lang(".ps1") == "powershell"
+
+
+def test_v331_cpp_family():
+    """v3.3.1: SIG-CPP-ALLOC-001 对 .cpp surface 命中。"""
+    import tempfile as _t
+    repo = _t.mkdtemp()
+    open(os.path.join(repo, "a.cpp"), "w").write(
+        "void h() {\n  auto *p = new char[n];\n  v.push_back(x);\n}\n")
+    idx = sm.build_project_index(repo)
+    sigs = signature_lib.load()["signatures"]
+    cs = {"id": "S-CPP", "type": "data_input", "lang": ".cpp",
+          "entry_points": [{"file": os.path.join(repo, "a.cpp"), "line": 2}]}
+    hits = sm.match_signatures([cs], sigs, idx)
+    assert any(h["sig_id"] == "SIG-CPP-ALLOC-001" for h in hits)

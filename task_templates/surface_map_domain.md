@@ -17,7 +17,8 @@
 
 ## 产出（强制 JSON 写入 {out}，最终回复同 JSON）
 {"surfaces":[{"id":"S-xxx","type":"network_endpoint|data_input|process_input|storage_input",
-"name":"...","entry_points":[{"file":"...","line":N,"function":"...","evidence":{"snippet":"该行代码"}}],
+"name":"...","lang":"该面代码语言 (c/cpp/go/rust/java/python/ruby/...; 从架构上下文继承, 必填)",
+"entry_points":[{"file":"...","line":N,"function":"...","evidence":{"snippet":"该行代码"}}],
 "taint_channels":["..."],"downstream_hints":["..."],
 "trust_boundary":{"type":"unauthenticated_remote|authenticated_remote|trusted_channel|host_api|local|environment|unknown","gate":"none|..."},
 "confidence":"high|medium|low"}]}

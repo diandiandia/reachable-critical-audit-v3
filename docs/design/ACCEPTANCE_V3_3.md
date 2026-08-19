@@ -45,3 +45,22 @@
 ## 结论
 
 **三判据 PASS**：113 测试全绿 + 14 REQ 逐条实证 + yyjson 非 Web 新项目验收通过。
+
+---
+
+## v3.3.1 复评修正（2026-08-19，二轮偏见评估取证后）
+
+二轮评估复核触发三项端到端修复——**L2 佐证器空转的另一半根因**：
+
+1. **R1 产出无 lang 字段**：canonical schema（任务书 + SKILL.md）补 lang 必填——
+   Lua 审计实测 31 surfaces lang 全部缺失（schema 从未要求）
+2. **lang 形态无归一化**：真实流程 lang 是带点扩展名（".c"）或别名（ts/kt/sh），
+   签名词表是裸名（c/typescript/kotlin/shell）——旧版直接字符串比较，
+   L2 过滤静默全不命中。新增 signature_matcher.norm_lang + EXT_LANG_ALIAS
+   （对齐 VALID_LANGS 词汇；与 batch_verify._EXT_LANG 的 csharp/javascript 词汇差异已注明），
+   surface_mapper normalize 同步归一化
+3. **C++ 词族补齐**：SIG-CPP-ALLOC-001（裸 new/new[]/容器无界增长，lang=cpp）
+   + harness_manuals/cpp.md（对齐检查抓出）
+
+验证：端到端实测安装版——`lang=".c"` surface → SIG-C-ALLOC-001 + SIG-PREALLOC-LEN-003
+双命中（旧版静默 0 hits）。116 测试全绿（安装版 114+2 skip）。

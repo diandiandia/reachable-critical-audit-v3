@@ -407,11 +407,16 @@ def normalize_surfaces(data, project_root=None):
         return None
     # v3.2 (SWR-V3.2-013): surface lang 透传; 缺省时由调用方在 merge 阶段按
     # 主语言继承 (normalize 不臆造——继承责任在 merge/main-agent)
+    # v3.3.1: lang 形态归一化 ('.c'/'ts'/'kt' → c/typescript/kotlin),
+    # 与 signature_matcher.norm_lang 同规则 (L2 过滤依赖)
     out = []
     for s in surfaces:
         if not isinstance(s, dict):
             continue
         s = dict(s)
+        if s.get("lang"):
+            from signature_matcher import norm_lang
+            s["lang"] = norm_lang(s["lang"])
         tb = s.get("trust_boundary")
         if isinstance(tb, str):
             # v3.2: agent 常写描述性自由文本——按关键词映射到枚举, 原文留档

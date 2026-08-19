@@ -657,6 +657,40 @@
         "hypotheses_contributed": 0,
         "batches_seen": 0
       }
+    },
+    {
+      "sig_id": "SIG-CPP-ALLOC-001",
+      "tier": "L2",
+      "tier_note": "语言词族: C++ (v3.3.1 补齐)",
+      "semantic": "裸 new/new[] 分配无业务预算或容器无界增长 (push_back/resize 无总量上限)",
+      "cwe": [
+        "CWE-789",
+        "CWE-770"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "new\\s+\\w+\\[",
+          "\\bnew\\s+\\w+\\s*[;\\(]",
+          "push_back\\(",
+          "resize\\("
+        ],
+        "checklist": [
+          "分配大小是否来自不可信长度/计数字段？",
+          "new 前是否只有溢出检查而无业务预算？",
+          "容器增长是否有 reserve 上限/总量预算？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "empirical_harness": null,
+      "lang": "cpp",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
     }
   ],
   "smoke_test": {

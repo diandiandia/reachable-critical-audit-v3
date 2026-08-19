@@ -94,6 +94,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    > ⚠️ **任务书 schema 契约（W5 教训 ②）**：任务书必须内嵌下述 canonical schema，禁止让子智能体自定格式：
    > ```json
    > [{"id":"SURF-<域>-NNN","name":"...","type":"network|data|process|storage",
+   >   "lang":"<面代码语言: c/cpp/go/rust/java/python/... 必填, 从架构上下文继承>",
    >   "entry_points":[{"file":"<相对项目根路径>","line":N,"function":"...",
    >                     "evidence":{"snippet":"<该行代码, 可含上下文注释>"}}],
    >   "taint_channels":["..."],"trust_boundary":"unauthenticated_remote|trusted_channel|gated|host_api|local|environment|unknown",
