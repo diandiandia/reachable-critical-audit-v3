@@ -100,8 +100,18 @@ def grade_verdict(v):
     empirical = v.get("empirical")
     # SWR-V3.3.2-003: status 比较前大小写归一化 (历史实证 "CONFIRMED" 大写与
     # 小写元组不匹配曾静默降级 edge_proven)
+    # v3.4.1: 旧 schema 兼容——v3.3 前 empirical 字段无 status 但有 scope
+    # (e2e/full_chain 级实证已记录 harness/result) → 按 scope 推断 confirmed,
+    # 附告警提示回填 status (Lua 复跑实测: 2 候选被静默降级)
+    status = str(empirical.get("status", "")).lower() if isinstance(empirical, dict) else ""
+    scope_infer = (isinstance(empirical, dict)
+                   and not status
+                   and str(empirical.get("scope", "")).lower() in ("e2e", "full_chain"))
+    if scope_infer:
+        errors.append("旧 empirical schema 缺 status, 按 scope=e2e/full_chain 推断 "
+                      "empirically_confirmed (建议回填 status:'confirmed')")
     if empirical and isinstance(empirical, dict) and \
-       str(empirical.get("status", "")).lower() in CONFIRMED_EMPIRICAL_STATUSES:
+       (status in CONFIRMED_EMPIRICAL_STATUSES or scope_infer):
         grade = "empirically_confirmed"
     else:
         chain = v.get("call_chain", [])
@@ -350,6 +360,9 @@ def r4_feedback(queue):
                             for k in ("title", "evidence", "correction_record"))
             # 形态1: key=value 直接赋值 ("tls_enable=true (shipped config)")
             for m in assign_re.finditer(text):
+                # v3.4.1: 单字母键 (代码片段/变量名噪音) 不计入 committed 侧
+                if len(m.group(1)) < 2:
+                    continue
                 h7_committed.setdefault(m.group(1), []).append((m.group(2), text[:120]))
             # 形态2: key 出现后 50 字符内的 (配置|仓库|shipped|...)=value 零回指
             # ("tls_enable 代码零值=false（明文），仓库配置=true", W6 §25.4 真实形态)
@@ -385,7 +398,7 @@ def r4_feedback(queue):
         seen = set()
         for m in list(assign_re.finditer(text)) + list(gap_val_re.finditer(text)):
             key, cand_val = m.group(1), m.group(2)
-            if key not in h7_committed or (key, cand_val) in seen:
+            if len(key) < 2 or key not in h7_committed or (key, cand_val) in seen:
                 continue
             seen.add((key, cand_val))
             ctx = text[max(0, m.start() - 40): m.end() + 40]

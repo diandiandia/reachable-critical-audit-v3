@@ -294,3 +294,17 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 > Low 且无实证接受 source_fact/机制级（REQ-V3.1-074 语义）。
 > 理由：结构化接线（REQ-V3.3.2-012）会把关键词假运行坐实为真阻断——先收窄义务
 > 再接消费者（义务入库三问第②条）。文本关键词匹配降为 fallback warn。
+
+## 30. v3.4.1 复跑回归发现（Lua 旧队列 × 新工具链，2026-08-20）
+
+> 重新测试 /root/lua（v3.3 时代审计产物）暴露 3 项旧队列兼容缺口，已修复：
+> 1. **旧 empirical schema 无 status 字段** → grade_verdict 静默降级 edge_proven。
+>    修复：status 缺失但 scope∈{e2e,full_chain} 时按范围纪律推断 empirically_confirmed
+>    并告警回填（mechanism/function_body 不推断——REQ-V3.1-045 保持）。
+> 2. **coverage CLI 不读 _r2_filter.json** → 旧 schema 的 surface_ids 在
+>    keep/drop/boundary_confirmations 记录里而 hypotheses.json 为空, 覆盖率 18/31 假缺口。
+>    修复：stage_coverage 增加 _r2_filter.json 三清单读取。
+> 3. **r4_feedback 单字母键噪音**（lens 正则捕获代码片段变量名 "c=744"）→ 首次在
+>    真实数据上点火即噪音。修复：committed/候选两侧 key 长度 ≥2 守卫。
+> 教训：新门禁/新命令上线后必须对**旧版本审计产物**复跑——本次三个缺口全是
+> "新工具 × 旧数据"方向，而 v3.4 验收只测了新数据方向。

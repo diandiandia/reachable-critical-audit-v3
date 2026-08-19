@@ -676,6 +676,19 @@ def stage_coverage(project_root):
                 tracked.add(norm(sid))
     except (FileNotFoundError, ValueError):
         pass
+    # v3.4.1: 旧 schema 兼容——v3.2.2 前的 R2 产物把 surface_ids 写在
+    # _r2_filter.json 的 keep/drop/boundary_confirmations 记录里, 而
+    # hypotheses.json 的 surface_ids 为空 (Lua 复跑实测: 8 面未计)
+    try:
+        r2 = json.load(open(os.path.join(root, "_r2_filter.json")))
+        for k in (r2.get("keep") or []) + (r2.get("boundary_confirmations") or []):
+            for sid in (k.get("surface_ids") or []):
+                tracked.add(norm(sid))
+        for d in (r2.get("drop") or []):
+            for sid in (d.get("surface_ids") or []):
+                tracked.add(norm(sid))
+    except (FileNotFoundError, ValueError):
+        pass
     for f in queue.get("r4_findings", []):
         for fi in f.get("findings", []):
             for sid in (fi.get("tracked_surfaces") or []):

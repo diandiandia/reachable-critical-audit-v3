@@ -309,3 +309,29 @@ def test_coverage_ledger_gaps_prints_crypto_gap():
     out = _json.loads(r.stdout)
     assert out["status"] == "LEDGER_GAPS"
     assert any("CRYPTO" in g for g in out["gap_cells"])
+
+# ---- v3.4.1: coverage 读 _r2_filter.json (旧 schema 兼容) ----
+def test_coverage_reads_r2_filter_surface_ids():
+    import tempfile, subprocess, sys, os, json as _json
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    _json.dump({"schema_version": "3.0", "surfaces": [
+        {"id": "SURF-DATA-001", "name": "a", "type": "data"},
+        {"id": "SURF-PROC-002", "name": "b", "type": "process"}]},
+        open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
+    _json.dump({"schema_version": "3.0", "candidates": []},
+               open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    # 旧 schema: hypotheses.json 无 surface_ids, 覆盖在 _r2_filter.json
+    _json.dump({"schema_version": "3.0", "hypotheses": [], "logic_hypotheses": []},
+               open(os.path.join(tmp, ".audit_results", "hypotheses.json"), "w"))
+    _json.dump({"schema_version": "3.0", "keep": [
+                   {"id": "HYP-001", "surface_ids": ["SURF-DATA-001"]}],
+                "drop": [], "boundary_confirmations": [
+                   {"id": "HYP-002", "surface_ids": ["SURF-PROC-002"]}]},
+               open(os.path.join(tmp, ".audit_results", "_r2_filter.json"), "w"))
+    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                        tmp, "--stage", "coverage"],
+                       capture_output=True, text=True)
+    out = _json.loads(r.stdout)
+    assert out["status"] == "COVERAGE_OK", out
+    assert out["missing"] == []

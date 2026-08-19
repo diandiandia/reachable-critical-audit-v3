@@ -250,3 +250,37 @@ def test_r4_feedback_structured_table_conflict():
     # warn 级不阻断 PASS, 但冲突必须产出
     assert ok
     assert any(v.get("gate") == "r4_feedback" for v in violations)
+
+# ---- v3.4.1: 旧 empirical schema (无 status, 有 scope) 兼容 ----
+def test_grade_old_empirical_scope_inference():
+    v = {"verdict": "REACHABLE",
+         "empirical": {"scope": "e2e", "harness": "h/", "result": "RSS +8GB"}}
+    grade, errors = el.grade_verdict(v)
+    assert grade == "empirically_confirmed", errors
+    assert any("旧 empirical schema" in e for e in errors)
+
+def test_grade_mechanism_scope_not_inferred():
+    # 机制级 scope 不推断 (REQ-V3.1-045 范围纪律)
+    v = {"verdict": "REACHABLE",
+         "empirical": {"scope": "mechanism", "result": "静态核实"},
+         "call_chain": ["a", "b"],
+         "edge_evidence": [{"edge": "a->b", "proof": "hit"}]}
+    grade, errors = el.grade_verdict(v)
+    assert grade == "edge_proven", (grade, errors)
+
+def test_r4_feedback_single_char_key_filtered():
+    q = {"target_kind": "application",
+         "candidates": [
+            {"id": "C-1", "status": "VERIFIED", "verdict": "REACHABLE",
+             "evidence_grade": "empirically_confirmed", "claim_type": "other",
+             "evidence": "c=744 配置行"}],
+         "r4_findings": [
+            {"hypothesis_id": f"H-{i}", "status": "VERIFIED"}
+            for i in range(1, 8)] + [
+            {"hypothesis_id": "H-7", "status": "VERIFIED", "verdict": "confirmed",
+             "default_value_table": [
+                 {"name": "c", "default": "574", "code_point": "x",
+                  "disposition": "保留"}]}]}
+    ok, violations = el.assert_ledger(q)
+    assert ok
+    assert not any(v.get("gate") == "r4_feedback" for v in violations)
