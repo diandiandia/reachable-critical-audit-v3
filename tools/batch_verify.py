@@ -805,6 +805,115 @@ def stage_r35_collect(project_root, transcript_dir):
     return 0
 
 
+def stage_coverage_ledger(project_root, write=False):
+    """SWR-V3.4-001/002/003: 覆盖账本——CWE 族 x 语言审计覆盖追踪 (范围守护)。
+    --write: 从 verify_queue 聚合候选级 cwe x lang (+ R4 findings 按项目主导语言
+    近似计入), 项目级幂等 (sources 去重), merge 累加写账本。
+    无参: 打印缺口格 (0 覆盖 + 单项目低深度) 与全矩阵计数表。"""
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    ledger_path = os.path.join(_parent, "resources", "issue_coverage_matrix.json")
+    if not os.path.exists(ledger_path):
+        print("Error: resources/issue_coverage_matrix.json 缺失", file=sys.stderr)
+        return 1
+    ledger = json.load(open(ledger_path))
+    fam_map = {}
+    for fam, spec in (ledger.get("families") or {}).items():
+        for code in (spec.get("cwe") or []):
+            fam_map[int(code)] = fam
+
+    def fam_of(code):
+        return fam_map.get(int(code), "OTHER")
+
+    def codes_of(entry):
+        codes = set()
+        cw = entry.get("cwe")
+        if isinstance(cw, list):
+            for x in cw:
+                m = re.search(r"CWE-(\d+)", str(x))
+                if m:
+                    codes.add(int(m.group(1)))
+        elif isinstance(cw, str):
+            m = re.search(r"CWE-(\d+)", cw)
+            if m:
+                codes.add(int(m.group(1)))
+        if not codes:
+            for m in re.finditer(r"CWE-(\d+)", str(entry.get("sink_type") or "")):
+                codes.add(int(m.group(1)))
+        return codes
+
+    _LANG_ALIAS = {"py": "python", "pl": "perl", "ts": "javascript", "js": "javascript",
+                   "rb": "ruby", "kt": "kotlin", "sh": "shell", "ps1": "powershell",
+                   "cs": "csharp", "rs": "rust"}
+
+    def lang_of(c):
+        lg = (c.get("language") or c.get("lang") or "").strip()
+        if lg:
+            # 归一化: 旧队列存在 ".go" 扩展名形态 / 短扩展名形态 (py/pl) /
+            # "unknown" 占位 (v3.2 前数据)
+            lg = lg.lstrip(".")
+            if lg and lg != "unknown":
+                return _LANG_ALIAS.get(lg, lg)
+        ext = os.path.splitext(str(c.get("source_file") or ""))[1].lower()
+        return _EXT_LANG.get(ext, "other")
+
+    if not write:
+        gaps, low = [], []
+        langs = ledger.get("langs") or []
+        for row in ledger.get("rows", []):
+            fam = row["family"]
+            for lg in langs:
+                n = (row.get("langs") or {}).get(lg, 0)
+                if n == 0:
+                    gaps.append((fam, lg))
+                elif n == 1:
+                    low.append((fam, lg))
+        print(json.dumps({
+            "status": "LEDGER_GAPS",
+            "gap_cells": [f"{f} x {l}" for f, l in gaps],
+            "low_depth_cells": [f"{f} x {l}" for f, l in low],
+            "note": ("缺口格 = 该 CWE 族 x 该语言从未审计 (0 覆盖)。"
+                     "批次选题优先缺口格 (REQ-V3.4-006)。"),
+        }, ensure_ascii=False, indent=2))
+        return 0
+
+    if project_root in (ledger.get("sources") or []):
+        print(json.dumps({"status": "LEDGER_IDEMPOTENT_SKIP",
+                          "project": project_root}, ensure_ascii=False))
+        return 0
+    queue = load_queue(project_root)
+    counts = {}
+    lang_freq = {}
+    for c in queue.get("candidates", []):
+        lg = lang_of(c)
+        lang_freq[lg] = lang_freq.get(lg, 0) + 1
+        for code in codes_of(c):
+            counts[(fam_of(code), lg)] = counts.get((fam_of(code), lg), 0) + 1
+    if lang_freq:
+        dom = max(lang_freq, key=lang_freq.get)
+    else:
+        dom = "other"
+    for f in queue.get("r4_findings", []):
+        for fi in f.get("findings", []):
+            for code in codes_of(fi):
+                counts[(fam_of(code), dom)] = counts.get((fam_of(code), dom), 0) + 1
+    rows = {r["family"]: (r.get("langs") or {}) for r in ledger.get("rows", [])}
+    for (fam, lg), n in counts.items():
+        if fam not in rows:
+            rows[fam] = {}
+        rows[fam][lg] = rows[fam].get(lg, 0) + n
+    ledger["rows"] = [{"family": f, "langs": ls} for f, ls in sorted(rows.items())]
+    ledger.setdefault("sources", []).append(project_root)
+    ledger["updated_at"] = "2026-08-19"
+    json.dump(ledger, open(ledger_path, "w"), ensure_ascii=False, indent=2)
+    print(json.dumps({"status": "LEDGER_WRITTEN", "project": project_root,
+                      "new_counts": {f"{f}x{l}": n for (f, l), n in
+                                     sorted(counts.items())}},
+                     ensure_ascii=False, indent=2))
+    return 0
+
+
 def stage_report(project_root):
     """SWR-V3-055: 基础量化报告 (过程问责指标)。"""
     queue = load_queue(project_root)
@@ -819,6 +928,25 @@ def stage_report(project_root):
     reachable = [c for c in verified if c.get("verdict") == "REACHABLE"]
     static_only_reachable = [c for c in reachable if c.get("evidence_grade") == "static_only"]
     r4 = queue.get("r4_findings", [])
+    # SWR-V3.4-004: 覆盖账本缺口段 (报告尾注, 范围守护)
+    coverage_ledger = None
+    try:
+        _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        _lp = os.path.join(_parent, "resources", "issue_coverage_matrix.json")
+        if os.path.exists(_lp):
+            ledger = json.load(open(_lp))
+            langs = ledger.get("langs") or []
+            gap = []
+            for row in ledger.get("rows", []):
+                for lg in langs:
+                    if (row.get("langs") or {}).get(lg, 0) == 0:
+                        gap.append(f"{row['family']} x {lg}")
+            coverage_ledger = {"status": "LEDGER_GAP_SUMMARY",
+                               "gap_cell_count": len(gap),
+                               "gap_cells": gap[:30],
+                               "note": "批次选题优先缺口格 (REQ-V3.4-006)"}
+    except (OSError, ValueError):
+        coverage_ledger = {"status": "LEDGER_UNAVAILABLE"}
     report = {
         "total_candidates": total,
         "verified": len(verified),
@@ -827,6 +955,7 @@ def stage_report(project_root):
         "reachable": len(reachable),
         "reachable_static_only_violations": [c["id"] for c in static_only_reachable],
         "correction_records": sum(len(c.get("correction_record", [])) for c in verified),
+        "coverage_ledger": coverage_ledger,
         "r4_hypotheses_verified": len([f for f in r4 if f.get("status") == "VERIFIED"]),
         "input_surface_coverage_note": "input_surface.json 追踪见 surface_mapper; 覆盖门禁由编排器断言",
     }
@@ -1305,6 +1434,8 @@ def main():
         sys.exit(stage_coverage(project_root))
     elif stage == "grade-recheck":
         sys.exit(stage_grade_recheck(project_root))
+    elif stage == "coverage-ledger":
+        sys.exit(stage_coverage_ledger(project_root, write="--write" in args))
     elif stage == "r35-collect":
         if not from_journal:
             print("Error: r35-collect requires --from-journal <transcript_dir>",

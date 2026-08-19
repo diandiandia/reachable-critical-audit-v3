@@ -35,6 +35,8 @@ description: >-
 - [ ] 新机制在任何语言上是否有语义，或已按 lang 分派？
 - [ ] 新代码是否读取了具体项目路径/目录名（tests/ fixture 除外）？
 - [ ] 验收是否包含"未审计过的新项目"场景（每版本至少一个新项目验收，防止向历史项目收敛）？
+      且 v3.4 起验收项目**优先选补覆盖账本缺口格的项目**（语言 × CWE 族），
+      验收判据含"覆盖格 +1"（REQ-V3.4-008）？
 
 > 来源：2026-08-17 mbedtls 审计复盘——签名库携带 Django/NestJS/Ktor/lighttpd/WordPress 专属 API 名（get_host/read_body/multer/maxDecodedContentLength/good_origin/CleanXSS）、verifier 任务书是 Python 思维定式（find_spec）、harness 按历史战役配置（4 模板 6/15 语言）、R0 冒烟仅对历史 fixture 有意义（非 fixture 项目恒放行）。修复方案见 v3.2.2 设计（P-A 资产去项目化问题域）。
 
@@ -131,6 +133,12 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 
 ## 🔄 R3：候选验证（Mode W 默认）
 
+**批次选题规则（v3.4, REQ-V3.4-006）**：多项目批次开题时，先跑
+`batch_verify.py <任一项目> --stage coverage-ledger` 读覆盖账本缺口格
+（CWE 族 × 语言，`resources/issue_coverage_matrix.json`），**优先选未覆盖
+（语言 × CWE 族）格的项目**；可实证性降为可行性约束而非第一判据。
+审计闭合（R6）时执行 `--stage coverage-ledger --write` 回填账本。
+
 **入队**：筛选 kept 的假设按 focus sink 簇化（同 sink 合并为一条簇级候选），写入 `verify_queue.json`：
 ```json
 {"id":"CAND-001","source_file":"...","source_line":N,"sink_type":"CWE-xxx",
@@ -220,7 +228,9 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 ## 📊 报告
 
-落盘 `.audit_results/reachable_vulnerabilities_report.md`，必须含：
+落盘 `.audit_results/reachable_vulnerabilities_report.md`，必须含（v3.4 尾注：
+覆盖账本段由 `--stage report` 的 coverage_ledger 字段机械渲染——本批新增覆盖格
+与仍存缺口格，为下批选题依据）：
 - 规模对照（候选/假设/surface 数、闭合率）
 - **语言覆盖表**（v3.2.1 增加 `组件角色` 列：server-side/client-only/build-config；判据①：服务端组件语言 ≥1 surface 且非零候选；客户端组件语言以 ≥1 边界面 + cross_evidence 为等价判据）
 - 每个 REACHABLE：verdict + 证据分级 + 调用链 + 独立复核结果 + 实证记录（如有）

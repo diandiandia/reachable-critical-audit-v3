@@ -128,3 +128,18 @@ def test_prec_precision_gate_host_family_injected_for_host_candidate():
     hints = pl.self_refutation_hints(cand)
     ids = [h.split("]")[0].lstrip("[") for h in hints]
     assert "PREC-HOST-FAMILY-001" in ids
+
+# ---- SWR-V3.4-042: 问题类清单绑定 ----
+def test_checklist_crypto_bind():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import checklist_binder as cb
+    r = cb.bind({"id": "C-1", "sink_type": "CWE-327", "summary": "对称加密",
+                 "language": "c"})
+    ids = [i for i, _ in r]
+    assert "CK-CRYPTO-MISUSE" in ids
+    # 回归: CWE-770 绑定不含新清单
+    r2 = cb.bind({"id": "C-2", "sink_type": "CWE-770", "summary": "累积", "language": "c"})
+    ids2 = [i for i, _ in r2]
+    assert "CK-CRYPTO-MISUSE" not in ids2
+    assert "CK-CHECKPOINT-AFTER-ACCUM" in ids2

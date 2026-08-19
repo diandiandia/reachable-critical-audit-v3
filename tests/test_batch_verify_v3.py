@@ -257,3 +257,55 @@ def test_resurrect_sample_dump():
     doc = json.load(open(os.path.join(tmp, ".audit_results", "_resurrect_sample.json")))
     assert doc["selected"] == ["CAND-001", "CAND-002"]
     assert doc["rule"].startswith("声称类")
+
+# ---- SWR-V3.4-040/041: 覆盖账本聚合与缺口 ----
+def test_coverage_ledger_write_and_idempotent():
+    import tempfile, subprocess, sys, os, json as _json, shutil
+    sys.path.insert(0, WORK)
+    # 测试写真实账本资产 → 快照/恢复, 防污染 (账本为记录型资产)
+    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    snapshot = open(ledger_path).read()
+    try:
+        _run_ledger_tests()
+    finally:
+        open(ledger_path, "w").write(snapshot)
+
+
+def _run_ledger_tests():
+    import tempfile, subprocess, sys, os, json as _json
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    _json.dump({"schema_version": "3.0", "candidates": [
+        {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
+         "sink_type": "CWE-770", "status": "VERIFIED", "language": "c", "cwe": ["CWE-770"]},
+        {"id": "CAND-002", "source_file": "b.py", "source_line": 1,
+         "sink_type": "CWE-327", "status": "VERIFIED", "language": "python"}]},
+        open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                        tmp, "--stage", "coverage-ledger", "--write"],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    out = _json.loads(r.stdout)
+    assert out["status"] == "LEDGER_WRITTEN"
+    assert "RESOURCE-DOSxc" in out["new_counts"]
+    assert "CRYPTOxpython" in out["new_counts"]
+    # 幂等
+    r2 = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                         tmp, "--stage", "coverage-ledger", "--write"],
+                        capture_output=True, text=True)
+    assert _json.loads(r2.stdout)["status"] == "LEDGER_IDEMPOTENT_SKIP"
+
+def test_coverage_ledger_gaps_prints_crypto_gap():
+    import tempfile, subprocess, sys, os, json as _json
+    sys.path.insert(0, WORK)
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    _json.dump({"schema_version": "3.0", "candidates": []},
+               open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                        tmp, "--stage", "coverage-ledger"],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    out = _json.loads(r.stdout)
+    assert out["status"] == "LEDGER_GAPS"
+    assert any("CRYPTO" in g for g in out["gap_cells"])

@@ -1,0 +1,301 @@
+{
+  "schema_version": "3.4",
+  "note": "CWE 族 x 语言审计覆盖账本 (范围守护, REQ-V3.4-001)。rows 计数来源=候选级 cwe x lang 聚合 + R4 findings 按项目主导语言近似计入; sources=已回填项目 (幂等去重)。统计口径与缺口打印见 batch_verify --stage coverage-ledger。",
+  "langs": [
+    "perl",
+    "powershell",
+    "shell",
+    "csharp",
+    "python",
+    "javascript",
+    "java",
+    "kotlin",
+    "scala",
+    "go",
+    "c",
+    "cpp",
+    "rust",
+    "php",
+    "ruby",
+    "swift"
+  ],
+  "families": {
+    "RESOURCE-DOS": {
+      "name": "资源耗尽/无界 (DoS)",
+      "cwe": [
+        770,
+        789,
+        400,
+        409,
+        834,
+        833
+      ]
+    },
+    "MEMORY-SAFETY": {
+      "name": "内存安全 (越界/UAF/双重释放)",
+      "cwe": [
+        125,
+        787,
+        416,
+        415,
+        476,
+        190,
+        129
+      ]
+    },
+    "INJECTION": {
+      "name": "注入 (SQL/命令/模板/反序列化/类加载)",
+      "cwe": [
+        89,
+        78,
+        94,
+        77,
+        502,
+        470,
+        74
+      ]
+    },
+    "CRYPTO": {
+      "name": "密码学误用 (算法/密钥/随机源)",
+      "cwe": [
+        327,
+        326,
+        338,
+        347,
+        330,
+        310,
+        311,
+        295
+      ]
+    },
+    "AUTHN": {
+      "name": "认证/授权 (绕过/缺失/谓词弱化)",
+      "cwe": [
+        287,
+        862,
+        863,
+        285,
+        639,
+        926,
+        306
+      ]
+    },
+    "DATA-INTEGRITY": {
+      "name": "数据完整性 (来源伪造/校验语义)",
+      "cwe": [
+        345,
+        351,
+        829
+      ]
+    },
+    "WEB": {
+      "name": "Web 层 (路径穿越/XSS/重定向/SSRF)",
+      "cwe": [
+        79,
+        601,
+        22,
+        352,
+        918
+      ]
+    },
+    "RACE": {
+      "name": "并发竞态",
+      "cwe": [
+        362,
+        366,
+        367
+      ]
+    },
+    "OTHER": {
+      "name": "其他",
+      "cwe": []
+    }
+  },
+  "rows": [
+    {
+      "family": "AUTHN",
+      "langs": {
+        "perl": 7,
+        "rust": 6,
+        "go": 23,
+        "csharp": 8,
+        "scala": 3,
+        "python": 7,
+        "java": 13,
+        "kotlin": 7,
+        "c": 13,
+        "javascript": 10,
+        "other": 6,
+        "swift": 9,
+        "php": 3
+      }
+    },
+    {
+      "family": "CRYPTO",
+      "langs": {
+        "go": 1,
+        "python": 2,
+        "c": 3,
+        "ruby": 1,
+        "rust": 1
+      }
+    },
+    {
+      "family": "DATA-INTEGRITY",
+      "langs": {
+        "python": 4,
+        "powershell": 1,
+        "kotlin": 1,
+        "cpp": 1,
+        "shell": 1,
+        "ruby": 1,
+        "c": 1
+      }
+    },
+    {
+      "family": "INJECTION",
+      "langs": {
+        "python": 9,
+        "csharp": 11,
+        "powershell": 9,
+        "scala": 1,
+        "java": 15,
+        "kotlin": 1,
+        "c": 5,
+        "javascript": 1,
+        "shell": 5,
+        "other": 12,
+        "php": 1
+      }
+    },
+    {
+      "family": "MEMORY-SAFETY",
+      "langs": {
+        "perl": 1,
+        "csharp": 3,
+        "powershell": 2,
+        "rust": 16,
+        "c": 35,
+        "python": 5,
+        "java": 2,
+        "javascript": 1,
+        "cpp": 2,
+        "other": 3,
+        "swift": 2
+      }
+    },
+    {
+      "family": "OTHER",
+      "langs": {
+        "perl": 17,
+        "python": 33,
+        "go": 28,
+        "csharp": 4,
+        "powershell": 5,
+        "rust": 24,
+        "scala": 10,
+        "c": 53,
+        "java": 22,
+        "kotlin": 15,
+        "javascript": 40,
+        "cpp": 3,
+        "other": 13,
+        "shell": 2,
+        "ruby": 6,
+        "swift": 34,
+        "php": 8
+      }
+    },
+    {
+      "family": "RACE",
+      "langs": {
+        "perl": 2,
+        "go": 3,
+        "csharp": 3,
+        "powershell": 4,
+        "rust": 3,
+        "python": 4,
+        "java": 2,
+        "c": 4,
+        "cpp": 1,
+        "other": 4,
+        "swift": 3,
+        "php": 1
+      }
+    },
+    {
+      "family": "RESOURCE-DOS",
+      "langs": {
+        "perl": 3,
+        "go": 33,
+        "csharp": 11,
+        "powershell": 1,
+        "rust": 24,
+        "other": 6,
+        "scala": 5,
+        "c": 38,
+        "python": 10,
+        "java": 10,
+        "kotlin": 12,
+        "javascript": 15,
+        "cpp": 9,
+        "ruby": 1,
+        "swift": 14,
+        "php": 3
+      }
+    },
+    {
+      "family": "WEB",
+      "langs": {
+        "perl": 8,
+        "python": 5,
+        "go": 3,
+        "csharp": 1,
+        "powershell": 2,
+        "rust": 5,
+        "scala": 1,
+        "java": 3,
+        "kotlin": 2,
+        "c": 4,
+        "javascript": 5,
+        "cpp": 2,
+        "ruby": 5,
+        "swift": 5,
+        "php": 10
+      }
+    }
+  ],
+  "sources": [
+    "/root/AWStats",
+    "/root/Lersosa",
+    "/root/Newtonsoft.Json",
+    "/root/Pester",
+    "/root/actix-web",
+    "/root/akka-http",
+    "/root/bbolt",
+    "/root/cjson",
+    "/root/django",
+    "/root/dubbo",
+    "/root/etcd",
+    "/root/fasthttp",
+    "/root/hikaricp",
+    "/root/ktor",
+    "/root/kubernetes",
+    "/root/libuv",
+    "/root/lighttpd1.4",
+    "/root/lua",
+    "/root/mbedtls",
+    "/root/mixed-fixture",
+    "/root/nest",
+    "/root/node-sqlite3",
+    "/root/ohmyzsh",
+    "/root/sinatra",
+    "/root/starlette",
+    "/root/tiny_http",
+    "/root/uwebsockets",
+    "/root/vapor",
+    "/root/wordpress",
+    "/root/yyjson"
+  ],
+  "updated_at": "2026-08-19"
+}
