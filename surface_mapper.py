@@ -14,6 +14,7 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
 
 DOMAINS = ["network", "data", "process", "storage"]
@@ -23,7 +24,8 @@ BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-othe
                "proto", "http-service", "subprocess", "grpc", "cli")
 
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
-               "trusted_channel", "local", "environment", "unknown"}
+               "trusted_channel", "local", "environment", "unknown",
+               "host_api"}  # v3.3 (REQ-V3.3-008): 宿主 API 边界 (库组件默认)
 VALID_CONFIDENCE = {"high", "medium", "low"}
 
 BUILD_FILES = ["Package.swift", "Cargo.toml", "pom.xml", "build.gradle",
@@ -44,9 +46,16 @@ def build_architecture_context(project_root):
     }
     for bf in BUILD_FILES:
         p = os.path.join(project_root, bf)
-        if os.path.exists(p):
-            ctx["build_files"].append(bf)
-            ctx["deps"].extend(_extract_deps(bf, open(p, errors="ignore").read()))
+        if not os.path.exists(p):
+            # v3.3 (REQ-V3.3-005, SWR-V3.3-032): 小写变体 (makefile 等历史仓库常见,
+            # Lua 审计实测 build_files=[] 根因)
+            low = bf.lower()
+            if low != bf and os.path.exists(os.path.join(project_root, low)):
+                p = os.path.join(project_root, low)
+            else:
+                continue
+        ctx["build_files"].append(bf)
+        ctx["deps"].extend(_extract_deps(bf, open(p, errors="ignore").read()))
     readme = _find_readme(project_root)
     if readme:
         text = open(readme, errors="ignore").read()
@@ -55,37 +64,169 @@ def build_architecture_context(project_root):
         for kw, tag in [("vulnerability", "security-process"), ("security policy", "security-process"),
                         ("oss-fuzz", "fuzzed"), ("cve", "cve-history")]:
             if kw in low:
-                ctx["maturity"] = "mature" if ctx["maturity"] != "mature" else ctx["maturity"]
                 ctx["entry_hints"].append(tag)
     # v3.1 (W6 §23.6/§24.6): 项目形态判定——mature framework 的 R4 与 R3 并行
     # 且 H1/H7 深度上调 (R4 产率三连超 R3: actix 6:1 / sinatra 9:2)
-    ctx["project_kind"] = _classify_project_kind(project_root, ctx)
+    # v3.3 (REQ-V3.3-005/006): 四值判定 + 信号证据; maturity 独立信号
+    # (git 版本标签主信号; README 安全流程关键词为辅助信号)
+    ctx["project_kind"], ctx["kind_signals"] = _classify_project_kind(project_root, ctx)
+    ctx["maturity_info"] = _detect_maturity(project_root)
+    if ctx["maturity_info"]["level"] == "unknown" and \
+            "security-process" in ctx["entry_hints"]:
+        ctx["maturity_info"] = {"level": "developing",
+                                "signals": ["readme:security-process"]}
+    ctx["maturity"] = ctx["maturity_info"]["level"]
     # v3.2 (SWR-V3.2-010): 语言清单——混合项目审计的基础 (候选级 lang 的来源)
     ctx["language_inventory"] = language_inventory(project_root)
     return ctx
 
 
 def _classify_project_kind(root, ctx):
-    """SWR-V3.1-020: 项目形态判定 framework/library/infra/app。
-    依据: 构建文件类型 + 源码规模 + 是否存在框架标志文件。"""
-    bfs = set(ctx.get("build_files", []))
-    kind_hints = []
-    for marker, kind in [
-        ("Gemfile", "framework"), ("Cargo.toml", "framework"),
-        ("Package.swift", "framework"), ("composer.json", "framework"),
-        ("pom.xml", "framework"), ("build.gradle", "framework"),
-        ("go.mod", "framework"), ("package.json", "framework"),
-        ("Makefile", "infra"), ("CMakeLists.txt", "infra"),
-    ]:
-        if marker in bfs:
-            kind_hints.append(kind)
-    if "setup.py" in bfs or "pyproject.toml" in bfs:
-        kind_hints.append("framework")
-    if kind_hints and "framework" in kind_hints:
-        return "framework"
-    if kind_hints and "infra" in kind_hints and "framework" not in kind_hints:
-        return "infra"
-    return "app"
+    """v3.3 (REQ-V3.3-005): 项目形态四值判定 {framework, library, infra, app}。
+    信号加权: 构建文件降为弱信号 (权重 1); 可执行入口 (main/监听器, 权重 3) 与
+    公共 API 主导 (权重 2) 为强信号。返回 (kind, signals)。
+    旧版 (v3.1) 仅按构建文件硬映射且无 library 返回路径——纯库项目含
+    Cargo.toml 即被误判 framework (偏见审查 §3 裁决)。"""
+    bfs = {b.lower() for b in ctx.get("build_files", [])}
+    signals = []
+    score = {"framework": 0, "library": 0, "infra": 0, "app": 0}
+    # 信号 1: 构建文件 (弱信号, 不再硬映射)
+    for m in ("gemfile", "cargo.toml", "package.swift", "composer.json",
+              "pom.xml", "build.gradle", "go.mod", "package.json",
+              "setup.py", "pyproject.toml"):
+        if m in bfs:
+            score["framework"] += 1
+            signals.append(f"build_fw:{m}")
+    for m in ("makefile", "cmakelists.txt"):
+        if m in bfs:
+            score["infra"] += 1
+            signals.append(f"build_infra:{m}")
+    # 信号 2: 可执行入口 (main/监听器, 强信号)
+    srcs = _sample_source_files(root)
+    has_main, has_listener = _detect_exec_entry(srcs)
+    if has_main:
+        score["app"] += 3
+        signals.append("exec:main")
+    if has_listener:
+        score["app"] += 3
+        signals.append("exec:listener")
+    # 信号 3: 公共 API 主导 (头文件率/导出符号, 强信号)
+    api_ratio = _public_api_ratio(srcs)
+    if api_ratio is not None:
+        signals.append(f"api_ratio:{api_ratio:.2f}")
+        if api_ratio >= 0.5:
+            score["library"] += 2
+    # 判定 (保守倾向: 无法确定归属时按 app)
+    if score["app"] >= 3:
+        return "app", signals
+    if score["library"] >= 2:
+        return "library", signals
+    if score["framework"] >= 2:
+        return "framework", signals
+    if score["infra"] >= 1:
+        return "infra", signals
+    return "app", signals
+
+
+_SRC_EXTS = {".c", ".h", ".cpp", ".hpp", ".cc", ".rs", ".go", ".java",
+             ".py", ".rb", ".js", ".ts", ".cs", ".swift", ".kt"}
+
+
+def _sample_source_files(root, cap=120):
+    """v3.3: 采样源码文件清单 (排除测试/构建/审计产物目录, 上限 cap)。
+    misc/example/bench/fuzz/doc 类目录含开发工具与生成物, 其 main/bind 信号
+    会污染分类器 (yyjson 实测: misc/make_tables.c 与 doxygen 产物 resize.js)。"""
+    out = []
+    skip_dirs = {".git", ".audit_results", "test", "tests", "testes", "vendor",
+                 "node_modules", "third_party", "build", "target",
+                 "misc", "example", "examples", "benchmark", "bench",
+                 "fuzz", "fuzzer", "doc", "docs", "doxygen"}
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in skip_dirs
+                       and not d.startswith(".")]
+        for fn in filenames:
+            ext = os.path.splitext(fn)[1].lower()
+            if ext in _SRC_EXTS:
+                out.append(os.path.join(dirpath, fn))
+                if len(out) >= cap:
+                    return out
+    return out
+
+
+def _detect_exec_entry(srcs):
+    """v3.3: 可执行入口探测 (main 函数 / 网络监听)。采样读文件头, 廉价。"""
+    main_pat = re.compile(
+        r"\bint\s+main\s*\(|\bfn\s+main\s*\(|\bfunc\s+main\s*\(|"
+        r"public\s+static\s+void\s+main\s*\(|def\s+main\s*\(|"
+        r"if\s+__name__\s*==\s*['\"]__main__['\"]")
+    listen_pat = re.compile(
+        r"\blisten\s*\(|\bServerSocket\s*\(|\bTcpListener\s*::|\bnet\.Listen\s*\(|"
+        r"\bbind\s*\(\s*[\"']|socket\.bind\s*\(|createServer\s*\(|"
+        r"http\.Server\s*\(")
+    has_main = has_listener = False
+    for p in srcs:
+        try:
+            with open(p, errors="ignore") as f:
+                # head+tail 采样: CLI 入口常位于文件尾部 (Lua lua.c main@777 实测)
+                head = f.read(32768)
+                if len(head) == 32768:
+                    f.seek(0, 2)
+                    size = f.tell()
+                    if size > 32768:
+                        f.seek(max(32768, size - 4096))
+                        head += f.read(4096)
+        except OSError:
+            continue
+        if not has_main and main_pat.search(head):
+            has_main = True
+        if not has_listener and listen_pat.search(head):
+            has_listener = True
+        if has_main and has_listener:
+            return True, True
+    return has_main, has_listener
+
+
+def _public_api_ratio(srcs):
+    """v3.3: 公共 API 主导信号——头文件率 (C/C++ 系) 或导出符号率 (Rust)。
+    v3.3 精修: 单头/双文件小库形态 (1h+1c) 与 header-only 形态纳入
+    (旧 >=8 阈值漏掉经典小库, yyjson 实测)。"""
+    hdr = sum(1 for p in srcs if p.endswith((".h", ".hpp")))
+    src = sum(1 for p in srcs if p.endswith((".c", ".cpp", ".cc")))
+    if hdr > 0 and src == 0 and hdr >= 3:
+        return 1.0  # header-only 库
+    if hdr + src >= 2 and src > 0 and hdr >= 1:
+        return hdr / (hdr + src)
+    pub = 0
+    rust_files = 0
+    for p in srcs:
+        if not p.endswith(".rs"):
+            continue
+        rust_files += 1
+        try:
+            if "pub " in open(p, errors="ignore").read(8192):
+                pub += 1
+        except OSError:
+            pass
+    if rust_files >= 5:
+        return pub / rust_files
+    return None
+
+
+def _detect_maturity(root):
+    """v3.3 (REQ-V3.3-006): maturity 独立信号 (与 project_kind 解耦)。
+    稳定版本标签语义: v>=1.0 → mature; 0.x → developing; 无标签 → unknown。"""
+    try:
+        out = subprocess.run(
+            ["git", "-C", root, "describe", "--tags", "--always"],
+            capture_output=True, text=True, timeout=5)
+        tag = out.stdout.strip()
+        m = re.match(r"v?(\d+)\.(\d+)", tag)
+        if m:
+            level = "mature" if int(m.group(1)) >= 1 else "developing"
+            return {"level": level, "signals": [f"git_tag:{tag}"]}
+    except Exception:
+        pass
+    return {"level": "unknown", "signals": []}
 
 
 def _component_role(hint):
@@ -278,6 +419,8 @@ def normalize_surfaces(data, project_root=None):
             t = tb.lower()
             if any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
                 mapped = "unauthenticated_remote"
+            elif any(k in t for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
+                mapped = "host_api"  # v3.3 (REQ-V3.3-008)
             elif any(k in t for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
                 mapped = "local"
             elif any(k in t for k in ("tls", "会话", "令牌", "token", "认证")):
@@ -293,6 +436,8 @@ def normalize_surfaces(data, project_root=None):
             t = str(tb.get("type", "")).lower()
             if any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
                 mapped = "unauthenticated_remote"
+            elif any(k in t for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
+                mapped = "host_api"  # v3.3 (REQ-V3.3-008)
             elif any(k in t for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
                 mapped = "local"
             elif any(k in t for k in ("tls", "会话", "令牌", "token", "认证")):
@@ -392,6 +537,7 @@ def validate_surfaces(data, project_root=None):
                 snip_variants.add(re.sub(r"\s+", " ", ev["snippet_unescaped"].strip()))
             ok_line = False
             suggested = None
+            suggested_all = []  # v3.3: 文件不存在路径的初始化 (存量 UnboundLocalError 根修)
             if os.path.exists(ep["file"]):
                 try:
                     lines = open(ep["file"], errors="ignore").read().splitlines()

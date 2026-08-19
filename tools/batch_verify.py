@@ -893,6 +893,11 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 调用链到达任何进程/IPC/跨模块边界时，边界即 sink：
 - 自由文本参数来自外部输入拼接 → REACHABLE_ACROSS_BOUNDARY
 - 强制参数化/类型安全/白名单 → UNREACHABLE
+- v3.3 (REQ-V3.3-008): 库组件的宿主 API 边界（trust_boundary=host_api）——
+  数据经宿主对本库公共 API 的调用进入时，「跨库边界」≠「跨主体边界」：
+  env/调用参数控制者=启动者本人（同主体）时 reachability_type 用 DIRECT 并
+  在 evidence 注明信任边界几何，不得默认升级 ACROSS_BOUNDARY（惯例假设幻觉，
+  R3.5 证伪者将拦截）
 
 ### 步骤 4: 阻断检测
 - 强类型转换、掩码（`& 0xFF`）、参数化绑定（`?` 占位符）、边界检查（`offset+len <= total`）

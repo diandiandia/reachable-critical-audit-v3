@@ -77,3 +77,31 @@ def test_smoke_skip_when_repo_missing():
     # v3.2.2: 非 fixture 仓库 → 完整性自检结果存在且通过
     integ = results.get("__integrity__")
     assert integ is not None and integ["hit"] is True
+
+
+def test_v33_new_l2_families_valid():
+    """v3.3 (REQ-V3.3-001): 新 4 族 L2 签名 lang 必填 + 去项目化。"""
+    sl = signature_lib.load()
+    sigs = {s["sig_id"]: s for s in sl["signatures"]}
+    for sid in ("SIG-C-ALLOC-001", "SIG-GO-ACCUM-001",
+                "SIG-RS-UNSAFE-001", "SIG-JAVA-DESER-001"):
+        assert sid in sigs, f"missing {sid}"
+        assert sigs[sid]["lang"] in ("c", "go", "rust", "java")
+        assert sigs[sid]["tier"] == "L2"
+        for w in sigs[sid]["detection_hints"]["grep"]:
+            assert "multer" not in w and "lua" not in w.lower()
+
+
+def test_v33_new_l3_families():
+    """v3.3 (REQ-V3.3-002): SIG-STATE-RACE / SIG-CRYPTO-WEAK cwe 完备。"""
+    sl = signature_lib.load()
+    sigs = {s["sig_id"]: s for s in sl["signatures"]}
+    assert set(sigs["SIG-STATE-RACE-001"]["cwe"]) >= {"CWE-362", "CWE-367"}
+    assert set(sigs["SIG-CRYPTO-WEAK-001"]["cwe"]) >= {"CWE-327", "CWE-330"}
+    assert sigs["SIG-STATE-RACE-001"]["lang"] == "any"
+
+
+def test_v33_l2_manual_alignment():
+    """v3.3 (REQ-V3.3-004): L2 词族语言全部有 harness_manuals/<lang>.md。"""
+    missed = signature_lib.l2_manual_alignment(signature_lib.load())
+    assert missed == [], missed

@@ -69,7 +69,10 @@ def test_architecture_context():
         ctx = sm.build_architecture_context(tmp)
         assert "Cargo.toml" in ctx["build_files"]
         assert "actix-web" in ctx["deps"]
-        assert ctx["maturity"] == "mature"
+        # v3.3 (REQ-V3.3-006): maturity 独立信号——无 git 标签时 README 安全流程
+        # 关键词降为 developing (旧版 README 关键词直接判 mature 的启发式已退役)
+        assert ctx["maturity"] == "developing"
+        assert ctx["maturity_info"]["signals"] == ["readme:security-process"]
         assert ctx["lang"] == ".rs"
 
 def test_tasks_5_domains():
@@ -208,3 +211,70 @@ def test_callee_name_fallback_for_mixed_snippet():
         ok, errors = sm.validate_surfaces(d)
         assert not ok
         assert any("suggested_line=4" in str(e) for e in errors)
+
+
+def test_classify_four_values():
+    """v3.3 (REQ-V3.3-005): 四值分类——纯库 Cargo.toml 判 library 而非 framework
+    (偏见审查 §3 裁决: 构建文件硬映射已退役)。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        # 纯库: Cargo.toml + 大量 pub API + 无 main
+        open(os.path.join(tmp, "Cargo.toml"), "w").write("[package]\n")
+        for i in range(6):
+            open(os.path.join(tmp, f"lib{i}.rs"), "w").write("pub fn f() {}\n")
+        ctx = sm.build_architecture_context(tmp)
+        assert ctx["project_kind"] == "library", ctx["kind_signals"]
+    with tempfile.TemporaryDirectory() as tmp:
+        # app: main + 监听
+        open(os.path.join(tmp, "main.rs"), "w").write(
+            "fn main() {}\nfn srv() { let _l = std::net::TcpListener::bind(\"0.0.0.0:80\"); }\n")
+        ctx = sm.build_architecture_context(tmp)
+        assert ctx["project_kind"] == "app", ctx["kind_signals"]
+    with tempfile.TemporaryDirectory() as tmp:
+        # infra: 仅 CMakeLists, 无源码
+        open(os.path.join(tmp, "CMakeLists.txt"), "w").write("cmake_minimum_required\n")
+        ctx = sm.build_architecture_context(tmp)
+        assert ctx["project_kind"] == "infra", ctx["kind_signals"]
+    with tempfile.TemporaryDirectory() as tmp:
+        # 无任何信号 → app (保守)
+        open(os.path.join(tmp, "x.txt"), "w").write("hi\n")
+        ctx = sm.build_architecture_context(tmp)
+        assert ctx["project_kind"] == "app", ctx["kind_signals"]
+
+
+def test_build_files_lowercase_variant():
+    """v3.3 (REQ-V3.3-005): 小写构建文件变体检出 (Lua 仓库 makefile 实测根因)。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        open(os.path.join(tmp, "makefile"), "w").write("all:\n")
+        ctx = sm.build_architecture_context(tmp)
+        assert "Makefile" in ctx["build_files"]
+
+
+def test_maturity_git_tag():
+    """v3.3 (REQ-V3.3-006): git 版本标签 → mature/developing 语义。"""
+    import subprocess as sp
+    with tempfile.TemporaryDirectory() as tmp:
+        sp.run(["git", "init", "-q"], cwd=tmp, check=True)
+        sp.run(["git", "-c", "user.email=t@t", "-c", "user.name=t",
+                "commit", "-q", "--allow-empty", "-m", "i"], cwd=tmp, check=True)
+        sp.run(["git", "tag", "v2.1.0"], cwd=tmp, check=True)
+        ctx = sm.build_architecture_context(tmp)
+        assert ctx["maturity"] == "mature"
+        assert "git_tag:v2.1.0" in ctx["maturity_info"]["signals"]
+
+
+def test_trust_boundary_host_api():
+    """v3.3 (REQ-V3.3-008): host_api 枚举 + 关键词映射。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "f.c")
+        open(f, "w").write("void f() {}\n")
+        d = {"surfaces": [{"id": "S-1", "type": "data_input", "name": "x",
+                           "entry_points": [{"file": f, "line": 1,
+                                             "function": "f",
+                                             "evidence": {"snippet": "void f() {}"}}],
+                           "taint_channels": [], "downstream_hints": [],
+                           "trust_boundary": "宿主公共 API 调用方传入",
+                           "confidence": "high"}]}
+        ok, errs = sm.validate_surfaces(d)
+        assert ok, errs
+        norm = sm.normalize_surfaces(d)
+        assert norm["surfaces"][0]["trust_boundary"]["type"] == "host_api"

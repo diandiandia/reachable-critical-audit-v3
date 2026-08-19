@@ -96,7 +96,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    > [{"id":"SURF-<域>-NNN","name":"...","type":"network|data|process|storage",
    >   "entry_points":[{"file":"<相对项目根路径>","line":N,"function":"...",
    >                     "evidence":{"snippet":"<该行代码, 可含上下文注释>"}}],
-   >   "taint_channels":["..."],"trust_boundary":"unauthenticated_remote|trusted_channel|gated",
+   >   "taint_channels":["..."],"trust_boundary":"unauthenticated_remote|trusted_channel|gated|host_api|local|environment|unknown",
    >   "confidence":"high|medium|low","downstream_hints":["..."]}]
    > ```
    > 子智能体落盘到 `.audit_results/_r1_<域>.json`，最终回复同 JSON。
@@ -166,7 +166,7 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 
 ## 🧪 R5：实证抽验（声称类强制，REQ-V3-004/060）
 
-**触发判定**：verdict=REACHABLE 且 `claim_type ∈ {crash,panic,oom,unbounded,xss,protocol_dos}` 且 `evidence_grade ≠ empirically_confirmed` → **强制实证，否则六门禁 ③ 不放行**（可选路径：主代理裁决降级 NEEDS_REVIEW，不实证不申报）。
+**触发判定**：verdict=REACHABLE 且 `claim_type ∈ {crash,panic,oom,unbounded,xss,protocol_dos,rce}` 且 `evidence_grade ≠ empirically_confirmed` → **强制实证，否则六门禁 ③ 不放行**（可选路径：主代理裁决降级 NEEDS_REVIEW，不实证不申报——v3.3 起此为明示条款：NEEDS_REVIEW 是合法终态而非降级耻辱，成因须注明「保守裁决」或「证据不足」）。源事实级降级规则（哨兵值/算术类，网络阻断记录 blocker，W6 §21.4）继续有效。
 
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
@@ -200,7 +200,8 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 - 规模对照（候选/假设/surface 数、闭合率）
 - **语言覆盖表**（v3.2.1 增加 `组件角色` 列：server-side/client-only/build-config；判据①：服务端组件语言 ≥1 surface 且非零候选；客户端组件语言以 ≥1 边界面 + cross_evidence 为等价判据）
 - 每个 REACHABLE：verdict + 证据分级 + 调用链 + 独立复核结果 + 实证记录（如有）
-- NEEDS_REVIEW 显式清单（含 correction_record 理由）
+- NEEDS_REVIEW 显式清单（含 correction_record 理由；v3.3 起注明成因双分：
+  `保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法取证））
 - R4 假说 verdict 表、六门禁断言结果、修复建议
 
 ## 📏 数据模型速查
@@ -234,8 +235,10 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 ### R0 新增: maturity 判定
 - `surface_mapper.py context` 输出 `project_kind ∈ {framework, library, infra, app}`
-  （W6 §23.6/§24.6: 成熟框架 R4 产率三连超 R3）
-- **mature framework → R4 与 R3 并行启动**，H1/H7 深度上调
+  与独立 `maturity` 信号（W6 §23.6/§24.6: 成熟框架 R4 产率三连超 R3）
+- **v3.3 触发条件（REQ-V3.3-007）**: `maturity==mature` → R4 与 R3 并行启动，
+  H1/H7 深度上调；project_kind==framework 不再单独触发；maturity 由 git 版本标签
+  语义判定（≥1.0 稳定标签=mature），主代理复核后可手动覆盖
 
 ### R1 新增: validate v3.1 + 预算档位
 - `surface_mapper.py repair` 行号漂移自动修复器（首行键全文件匹配 ±80 语义 +
@@ -350,6 +353,44 @@ application=三层检查含 shipped 实际值+运行时注册核实；library=�
 
 ### 验收（Phase 3.2.1.3）
 fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退 + 六门禁⑧ PASS + install。
+
+## 🆕 v3.3 增量（2026-08-19，偏见审查 5 大类裁决 + Lua 审计教训的制度化）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_3.md`（问题域 P-A~P-F）。
+> 需求: `docs/design/REQ_V3_3.md`（14 条系统需求）/ `docs/design/SWR_V3_3.md`
+> （35 条软件需求）。上游: 用户偏见审查（语言/CWE/形态/黑名单/保守倾向 5 大类,
+> 主代理取证裁决 2 完全属实 + 3 部分属实）+ Lua 审计 SKILL_LESSONS_lua.md。
+
+### 签名资产: 去 Web 化/系统语言扩充（P-A）
+- L2 词族新增 **c/go/rust/java** 4 族（malloc 无上限家族/流式累积/unsafe-FFI/
+  反序列化）；L3 新增 **SIG-STATE-RACE**（CWE-362/367）与 **SIG-CRYPTO-WEAK**
+  （CWE-327/330）；既有 L3 补系统形态 grep hints——签名库 19 条
+- integrity_selfcheck 新增 L2 词族 ↔ harness_manuals 覆盖对齐检查
+  （cs↔csharp 命名不一致存量缺陷已修）
+
+### 项目形态判定: 四值 + 信号加权（P-B）
+- `project_kind` 四值 {framework, library, infra, app}——构建文件降为弱信号
+  （权重 1），可执行入口（main/监听, 权重 3）与公共 API 主导（权重 2）为强信号；
+  小写构建文件变体（makefile）检出修复
+- `maturity` 独立信号（git 版本标签语义），R4 并行触发条件改为 maturity==mature
+
+### 信任边界: host_api（P-C）
+- trust_boundary.type 枚举补 **host_api**（宿主对公共 API 的调用进入；library
+  组件默认）；R1 任务书增补「非网络/离线项目」映射指引（宿主 API 输入 →
+  data_input + host_api，不得过度归 local/environment）
+- verifier 任务书步骤 3 明示：跨库边界 ≠ 跨主体边界（R3.5 惯例假设拦截制度化）
+
+### 保守倾向明示化（P-D）
+- 「不实证不申报」（NEEDS_REVIEW 合法终态）为明示条款；报告 NEEDS_REVIEW 双成因
+  （保守裁决 / 证据不足）；claim_type 枚举含 rce/other（v3.2.3 已入）
+
+### 先例库（P-E）
+- +PREC-ALLOC-VIRTUAL-001（分配请求≠资源耗尽：提交内存受输入限制→Low）、
+  +PREC-ENV-SAME-PRINCIPAL-001（env→代码加载同主体边界几何→DIRECT+Low）
+
+### 契约同步（P-F）
+- tools/gen_tracking.py 扫描泛化至全部版本段；REQUIREMENTS_TRACKING.md 含
+  v3~v3.3 全部需求；验收判据强制每版本一个新项目且须覆盖非 Web 形态
 
 ## 📝 R6：lessons 回写（审计闭合前置，v3.2 新增）
 

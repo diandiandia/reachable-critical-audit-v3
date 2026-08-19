@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
-"""从 REQ_V3(.1).md / SWR_V3(.1).md 自动提取需求编号，重新生成 REQUIREMENTS_TRACKING.md。
+r"""从全部版本 REQ/SWR 文档自动提取需求编号，重新生成 REQUIREMENTS_TRACKING.md。
 注意: 状态变更在 REQUIREMENTS_TRACKING.md 手工维护；本脚本用于需求文档增删后重建骨架
-(会保留既有状态，仅按当前需求文档补齐/移除条目)。v3.1 需求同样纳入重建。"""
+(会保留既有状态，仅按当前需求文档补齐/移除条目)。
+v3.3 (SWR-V3.3-060/061): DOCS 覆盖全部版本段, 提取正则泛化
+`(REQ|SWR)-V3(?:\.[0-9.]+)?-\d{3}`——v3.2 起追踪矩阵漂移的根修。"""
 import re, sys, os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DOCS = {
-    "REQ-V3": "docs/design/REQ_V3.md",
-    "SWR-V3": "docs/design/SWR_V3.md",
-    "REQ-V3.1": "docs/design/REQ_V3_1.md",
-    "SWR-V3.1": "docs/design/SWR_V3_1.md",
-}
+# 版本段有序: (标签, REQ 文档路径, SWR 文档路径)
+VERSIONS = [
+    ("V3",     "docs/design/REQ_V3.md",     "docs/design/SWR_V3.md"),
+    ("V3.1",   "docs/design/REQ_V3_1.md",   "docs/design/SWR_V3_1.md"),
+    ("V3.2",   "docs/design/REQ_V3_2.md",   "docs/design/SWR_V3_2.md"),
+    ("V3.2.1", "docs/design/REQ_V3_2_1.md", "docs/design/SWR_V3_2_1.md"),
+    ("V3.2.2", "docs/design/REQ_V3_2_2.md", "docs/design/SWR_V3_2_2.md"),
+    ("V3.3",   "docs/design/REQ_V3_3.md",   "docs/design/SWR_V3_3.md"),
+]
+DOCS = {f"{k}-{label}": p for label, rp, sp in VERSIONS
+        for k, p in (("REQ", rp), ("SWR", sp))}
 
 # v3.1 REQ 文档无逐条状态列——状态以 SWR 完成度为代理 + 验收项显式标注
 REQ_V31_OVERRIDE = {
@@ -18,29 +25,56 @@ REQ_V31_OVERRIDE = {
     "REQ-V3.1-100": "未开发", "REQ-V3.1-101": "未开发",
 }
 
+ID_RE = r'(REQ|SWR)-V3(?:\.[0-9.]+)?-\d{3}'
+
+# v3.3: 历史版本 SWR 文档状态措辞归一化 (v3.2.2 用「已经完成开发」)
+STATUS_RE = r'(未开发|开发中|已完成|已经完成开发)'
+STATUS_NORM = {"已经完成开发": "已完成"}
+
+
 def extract(path):
     reqs = []
     for line in open(os.path.join(ROOT, path), encoding="utf-8"):
-        m = re.match(r'\| (REQ-V3-\d{3}|SWR-V3-\d{3}|REQ-V3\.1-\d{3}|SWR-V3\.1-\d{3}) \| (.+?) \|', line)
+        # group(1)=完整 ID, group(2)=REQ|SWR 内层交替, group(3)=需求文本
+        m = re.match(rf'\| ({ID_RE}) \| (.+?) \|', line)
         if m:
-            reqs.append((m.group(1), m.group(2).strip()))
+            reqs.append((m.group(1), m.group(3).strip()))
     return reqs
 
+
 def load_status():
-    """从既有 tracking 行加载状态 (v3 与 v3.1 都认)。"""
+    """状态源优先级 (v3.3 修正):
+    - v3/v3.1 段: tracking 手工维护为权威 (SWR_V3_1 文档状态列仅填充缺项)
+    - v3.2+ 段: SWR 文档自带状态列为权威, 覆盖 tracking (tracking 的旧默认
+      未开发 曾阻断 SWR 文档已完成 状态——重建错标根修)。"""
     status = {}
     p = os.path.join(ROOT, 'docs/design/REQUIREMENTS_TRACKING.md')
     if os.path.exists(p):
         for line in open(p, encoding="utf-8"):
-            m = re.match(r'\| (REQ-V3-\d{3}|SWR-V3-\d{3}|REQ-V3\.1-\d{3}|SWR-V3\.1-\d{3}) \| .+? \| (未开发|开发中|已完成) \|', line)
+            # group(1)=完整 ID, group(2)=REQ|SWR 内层交替, group(3)=状态
+            m = re.match(rf'\| ({ID_RE}) \| .+? \| (未开发|开发中|已完成) \|', line)
             if m:
-                status[m.group(1)] = m.group(2)
-    # SWR_V3_1.md 自带状态列, 作为 SWR-V3.1 的第二状态源
-    for line in open(os.path.join(ROOT, DOCS["SWR-V3.1"]), encoding="utf-8"):
-        m = re.match(r'\| (SWR-V3\.1-\d{3}) \| .+? \| .+? \| (未开发|开发中|已完成) \|', line)
-        if m:
-            status.setdefault(m.group(1), m.group(2))
+                rid = m.group(1)
+                if rid.startswith(("REQ-V3.", "SWR-V3.")) and \
+                        not rid.startswith(("REQ-V3.1-", "SWR-V3.1-")):
+                    continue  # v3.2+ 段不从旧 tracking 继承 (SWR 文档权威)
+                status[rid] = m.group(3)
+    for label, _, swr_path in VERSIONS:
+        swr_file = os.path.join(ROOT, swr_path)
+        if not os.path.exists(swr_file):
+            continue
+        for line in open(swr_file, encoding="utf-8"):
+            # SWR 文档三列形态: | 编号 | 需求 | 状态 | (状态措辞归一化)
+            m = re.match(rf'\| ({ID_RE}) \| .+? \| {STATUS_RE} \|', line)
+            if m:
+                rid = m.group(1)
+                st = STATUS_NORM.get(m.group(3), m.group(3))
+                if label in ("V3", "V3.1"):
+                    status.setdefault(rid, st)
+                else:
+                    status[rid] = st  # v3.2+: SWR 文档权威覆盖
     return status
+
 
 def emit_section(out, title, reqs, status, override=None):
     override = override or {}
@@ -50,23 +84,38 @@ def emit_section(out, title, reqs, status, override=None):
         st = override.get(rid) or status.get(rid, '未开发')
         out.append(f'| {rid} | {text} | {st} |  |')
 
-sys_v3 = extract(DOCS["REQ-V3"])
-swr_v3 = extract(DOCS["SWR-V3"])
-sys_v31 = extract(DOCS["REQ-V3.1"])
-swr_v31 = extract(DOCS["SWR-V3.1"])
-status = load_status()
-# v3.1 REQ 默认态: SWR 全完成 → 已完成 (验收项除外)
-v31_done = all(status.get(rid) == '已完成' for rid, _ in swr_v31)
-for rid, _ in sys_v31:
-    if rid not in status and rid not in REQ_V31_OVERRIDE:
-        status[rid] = '已完成' if v31_done else '开发中'
 
-out = ['# Reachable Critical Audit v3 — 需求追踪矩阵（Requirements Tracking）\n',
-       '> 状态枚举：`未开发` / `开发中` / `已完成`；完成判据 = 对应测试通过。\n',
-       '> 本文件由 tools/gen_tracking.py 生成（保留既有状态）。\n']
-emit_section(out, '系统需求（REQ-V3）', sys_v3, status)
-emit_section(out, '软件需求（SWR-V3）', swr_v3, status)
-emit_section(out, '系统需求（REQ-V3.1）', sys_v31, status, REQ_V31_OVERRIDE)
-emit_section(out, '软件需求（SWR-V3.1）', swr_v31, status)
-open(os.path.join(ROOT, 'docs/design/REQUIREMENTS_TRACKING.md'), 'w').write('\n'.join(out) + '\n')
-print(f'{len(sys_v3)} REQ-V3 + {len(swr_v3)} SWR-V3 + {len(sys_v31)} REQ-V3.1 + {len(swr_v31)} SWR-V3.1 regenerated')
+def main():
+    """v3.3: 执行体收敛进 main + __main__ 守卫——旧版模块级执行使
+    `import gen_tracking` 在无 docs/design 的环境 (安装目录冒烟测试)
+    于导入时即炸 (FileNotFoundError 实测)。"""
+    status = load_status()
+    out = ['# Reachable Critical Audit v3 — 需求追踪矩阵（Requirements Tracking）\n',
+           '> 状态枚举：`未开发` / `开发中` / `已完成`；完成判据 = 对应测试通过。\n',
+           '> 本文件由 tools/gen_tracking.py 生成（保留既有状态）。\n']
+
+    counts = []
+    for label, req_path, swr_path in VERSIONS:
+        sys_reqs = extract(req_path)
+        swr_reqs = extract(swr_path)
+        if not sys_reqs and not swr_reqs:
+            continue
+        counts.extend([f'{len(sys_reqs)} REQ-{label}',
+                       f'{len(swr_reqs)} SWR-{label}'])
+        # v3.3 泛化: 各版本 REQ 默认态以同版本 SWR 完成度为代理 (v3.1 逻辑推广)
+        swr_done = all(status.get(rid) == '已完成' for rid, _ in swr_reqs)
+        for rid, _ in sys_reqs:
+            if rid not in status and rid not in REQ_V31_OVERRIDE:
+                status[rid] = '已完成' if swr_done else '开发中'
+        emit_section(out, f'系统需求（REQ-{label}）', sys_reqs, status,
+                     REQ_V31_OVERRIDE)
+        emit_section(out, f'软件需求（SWR-{label}）', swr_reqs, status)
+
+    out_path = os.path.join(ROOT, 'docs/design/REQUIREMENTS_TRACKING.md')
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    open(out_path, 'w').write('\n'.join(out) + '\n')
+    print(' + '.join(counts) + ' regenerated')
+
+
+if __name__ == "__main__":
+    main()

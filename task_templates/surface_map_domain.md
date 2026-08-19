@@ -19,8 +19,16 @@
 {"surfaces":[{"id":"S-xxx","type":"network_endpoint|data_input|process_input|storage_input",
 "name":"...","entry_points":[{"file":"...","line":N,"function":"...","evidence":{"snippet":"该行代码"}}],
 "taint_channels":["..."],"downstream_hints":["..."],
-"trust_boundary":{"type":"unauthenticated_remote|authenticated_remote|trusted_channel|local|environment|unknown","gate":"none|..."},
+"trust_boundary":{"type":"unauthenticated_remote|authenticated_remote|trusted_channel|host_api|local|environment|unknown","gate":"none|..."},
 "confidence":"high|medium|low"}]}
+
+## 非网络/离线项目映射指引（v3.3 强制，REQ-V3.3-009）
+本项目若无网络服务面，按以下映射归类，**不得**把宿主 API 输入过度归为 local/environment：
+- **库/解析引擎类**：宿主应用通过公共 API 喂入的不可信数据（脚本文本/字节码/二进制块/字符串）
+  → **data_input**，trust_boundary 用 **host_api**（宿主 API 即信任边界）
+- **数据处理库/协议栈类**：文件/持久化入口 → storage_input；进程控制/命令执行 → process_input
+- **无 socket 代码时**：network 域写 `empty_domain_reason` 说明（合法产出，非缺漏）
+- host_api 语义：数据经宿主对本库公共 API 的调用进入——跨库边界 ≠ 跨主体边界
 
 ## 落盘拦截契约（v3.2.3 强制）
 若环境（权限/plan mode）阻止写入 {out}：最终回复**必须**是完整 JSON 且

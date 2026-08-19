@@ -126,3 +126,24 @@ def test_cli_outputs_land_in_audit_results():
     with contextlib.redirect_stdout(buf):
         sm.main(["sm", "index", repo])
     assert os.path.exists(os.path.join(ar, "project_index.json"))
+
+
+def test_v33_c_l2_hits_only_c_surface():
+    """v3.3 (REQ-V3.3-001): C 词族只打 .c surface (lang 过滤联动)。"""
+    import tempfile as _t
+    repo = _t.mkdtemp()
+    open(os.path.join(repo, "a.c"), "w").write(
+        "void h(void) {\n  char *p = malloc(remote_len());\n}\n")
+    open(os.path.join(repo, "b.rs"), "w").write(
+        "fn h() { let p = unsafe { 1 }; }\n")
+    idx = sm.build_project_index(repo)
+    sigs = signature_lib.load()["signatures"]
+    cs = {"id": "S-C", "type": "data_input", "lang": "c",
+          "entry_points": [{"file": os.path.join(repo, "a.c"), "line": 2}]}
+    rs = {"id": "S-R", "type": "data_input", "lang": "rust",
+          "entry_points": [{"file": os.path.join(repo, "b.rs"), "line": 1}]}
+    hits = sm.match_signatures([cs, rs], sigs, idx)
+    c_ids = {h["sig_id"] for h in hits if h["surface_id"] == "S-C"}
+    r_ids = {h["sig_id"] for h in hits if h["surface_id"] == "S-R"}
+    assert "SIG-C-ALLOC-001" in c_ids
+    assert "SIG-C-ALLOC-001" not in r_ids

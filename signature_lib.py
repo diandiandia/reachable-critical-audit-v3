@@ -146,6 +146,7 @@ def load_fixture_instances(path=FIXTURE_INSTANCES_PATH):
 def integrity_selfcheck(data):
     """v3.2.2 (REQ-V3.2.2-005): 非 fixture 仓库的 R0 自检语义——
     签名库完整性: validate + lang 完备 + 去项目化 0 命中 + 全部 grep 可编译。
+    v3.3 (REQ-V3.3-004): 追加 L2 词族 ↔ harness_manuals 覆盖对齐检查。
     返回 (ok, detail_lines)。"""
     lines = []
     ok, errors = validate(data)
@@ -163,9 +164,31 @@ def integrity_selfcheck(data):
             _compile_grep(sig["detection_hints"]["grep"])
         except ValueError as e:
             lines.append(f"{sig['sig_id']}: {e}")
+    for missed in l2_manual_alignment(data):
+        lines.append(missed)
     if lines:
         return False, lines
-    return True, [f"integrity OK: {len(data['signatures'])} signatures (lang/cwe/deproject 完备)"]
+    return True, [f"integrity OK: {len(data['signatures'])} signatures (lang/cwe/deproject/manual 对齐完备)"]
+
+
+def l2_manual_alignment(data):
+    """v3.3 (REQ-V3.3-004, SWR-V3.3-011): L2 词族语言 ↔ harness_manuals 覆盖对齐。
+    返回缺失行列表（空=对齐）。"""
+    here = os.path.dirname(os.path.abspath(__file__))
+    manuals = set()
+    mdir = os.path.join(here, "harness_manuals")
+    if os.path.isdir(mdir):
+        for fn in os.listdir(mdir):
+            if fn.endswith(".md"):
+                manuals.add(fn[:-3])
+    missed = []
+    langs = {s.get("lang") for s in data.get("signatures", [])
+             if (s.get("tier") or s.get("level")) == "L2"
+             and s.get("lang") not in (None, "any")}
+    for lang in sorted(langs):
+        if lang not in manuals:
+            missed.append(f"L2 词族 {lang} 无 harness_manuals/{lang}.md")
+    return missed
 
 
 def smoke_test(data, repo_paths):
