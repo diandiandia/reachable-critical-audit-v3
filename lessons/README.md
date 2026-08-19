@@ -50,3 +50,4 @@
 | [SKILL_LESSONS_mixed-fixture.md](SKILL_LESSONS_mixed-fixture.md) | 自动 | mixed-fixture | 2026-08-17 | R6 机械生成: 13 条问题证据 |
 | [SKILL_LESSONS_Lersosa.md](SKILL_LESSONS_Lersosa.md) | 自动 | Lersosa | 2026-08-17 | R6 机械生成: 36 条问题证据 |
 | [SKILL_LESSONS_mbedtls.md](SKILL_LESSONS_mbedtls.md) | 自动 | mbedtls | 2026-08-17 | R6 机械生成: 1 条问题证据 |
+| [SKILL_LESSONS_lua.md](SKILL_LESSONS_lua.md) | 自动 | lua | 2026-08-19 | R6 机械生成: 1 条问题证据 |

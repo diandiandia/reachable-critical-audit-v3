@@ -35,6 +35,8 @@ done
 find "$DST" -maxdepth 1 -name "*.py" | while read -r f; do
   [ -e "$SRC/$(basename "$f")" ] || rm -f "$f"
 done
+# v3.2.3: 顶层 SKILL_V2.1.md 为 v2.1 时代陈旧重复 (权威副本在 docs/legacy/)
+[ -e "$DST/SKILL_V2.1.md" ] && rm -f "$DST/SKILL_V2.1.md"
 
 # 清理缓存
 find "$DST" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true

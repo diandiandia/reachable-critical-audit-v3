@@ -50,8 +50,10 @@ VERDICT_SCHEMA = {
         # v3.2.2 (REQ-V3.2.2-017): claim_type 仅 REACHABLE 有意义——
         # "声称"(漏洞声称)只属于可达裁决; UNREACHABLE 填 claim 会被 collect
         # 机械置 null (claim_nulled_by=collect-claim-null-v3.2.2)
+        # v3.2.3 (Lua 审计): 补 rce (env→dlopen/代码执行类, 此前无匹配类别
+        # 被迫判 null) 与 other (兜底); null 仅留给 UNREACHABLE 置空语义
         "claim_type": {"enum": ["crash", "panic", "oom", "unbounded", "xss",
-                                "protocol_dos", "null"]},
+                                "protocol_dos", "rce", "other", "null"]},
     },
 }
 
@@ -266,12 +268,23 @@ def refute_prompt(c, idx):
         toolbox = f"\n证伪工具箱建议: {REFUTER_TOOLBOX['parser']}"
     elif any(k in summary for k in ("代理", "proxy", "分歧", "走私")):
         toolbox = f"\n证伪工具箱建议: {REFUTER_TOOLBOX['proxy/divergence']}"
+    # v3.2.3 (Lua 审计): 截断必须带标记——旧版静默 [:800]/[:8] 曾让证伪者
+    # 在证据中段断句处误读上下文
+    evidence = c.get('evidence', '')
+    if len(evidence) > 800:
+        evidence = (evidence[:800] +
+                    f" ...[截断: 全文 {len(evidence)} 字符, 见 verify_queue.json]")
+    chain = c.get('call_chain', [])
+    chain_note = ""
+    if len(chain) > 8:
+        chain_note = f" ...[截断: 全链 {len(chain)} 跳, 见 verify_queue.json]"
+        chain = chain[:8]
     return (
         f"你是独立证伪者 #{idx}（对抗性复核）。候选 {c['id']} 被判 REACHABLE。\n"
         f"任务: 尽力证伪该结论。默认立场: 有疑问即 refuted=true。\n"
         f"你的证伪视角: {angle}{toolbox}\n\n"
-        f"原判定证据: {c.get('evidence', '')[:800]}\n"
-        f"调用链: {c.get('call_chain', [])[:8]}\n"
+        f"原判定证据: {evidence}\n"
+        f"调用链: {chain}{chain_note}\n"
         f"证据分级: {c.get('evidence_grade')}\n\n"
         f"输出 refuted=true/false + reason（证伪依据或确认理由，附 file:line）。"
         f"发现更强的攻击向量或 verifier 归因错误时分别写入 strengthened / "

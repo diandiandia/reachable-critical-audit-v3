@@ -571,17 +571,36 @@ def _norm_hypothesis_id(hid):
 
 
 def stage_r4_collect(project_root, findings_file):
-    """SWR-V3-055: R4 findings 写回 (merge 语义)。"""
+    """SWR-V3-055: R4 findings 写回 (merge 语义)。
+
+    v3.2.3 (Lua 审计): 任务书模板产出 {"hypotheses":[...]} 包裹结构与
+    裸列表双形态自适应解包; 输入非空但 0 hypothesis_id 提取时 stderr 告警
+    (静默空收曾导致主代理误判 R4 已收集)。"""
     queue = load_queue(project_root)
     findings = json.load(open(findings_file))
-    items = findings if isinstance(findings, list) else [findings]
+    if isinstance(findings, dict) and isinstance(findings.get("hypotheses"), list):
+        items = findings["hypotheses"]
+    elif isinstance(findings, list):
+        items = findings
+    else:
+        items = [findings]
     existing = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", [])}
+    collected = 0
     for f in items:
         hid = _norm_hypothesis_id(f.get("hypothesis_id"))
         if hid:
             f["hypothesis_id"] = hid
             f["status"] = "VERIFIED"
             existing[hid] = f
+            collected += 1
+    if not collected and items:
+        print(json.dumps(
+            {"status": "R4_COLLECT_WARNING",
+             "warning": (f"输入含 {len(items)} 条目但 0 条提取到 hypothesis_id——"
+                         "文件应为裸列表 [{hypothesis_id,...}] 或 "
+                         '{"hypotheses":[...]} 包裹; 未写回任何 finding'),
+             "file": findings_file},
+            ensure_ascii=False), file=sys.stderr)
     queue["r4_findings"] = list(existing.values())
     save_queue(project_root, queue)
     print(json.dumps({"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())},
@@ -808,13 +827,19 @@ def _build_prompt(cand, ctx, project_root):
     """
     is_property_check = cand.get("type") == "PROPERTY_CHECK"
 
+    # v3.2.3 (Lua 审计): category 为 "?" (未分类) 时不再渲染 "(?)"——
+    # 曾误导 verifier 把类别占位符当作 CWE 注释
+    cat = ctx["category"]
+    cwe_line = (f"- **CWE**: {ctx['cwe']}"
+                + (f" (类别: {cat})" if cat and cat != "?" else ""))
+
     prompt = f"""你是一个 vulnerability-verifier 子智能体。你有完整的代码阅读和分析工具（read、grep 等）。
 
 ## 任务上下文
 - **候选 ID**: {cand["id"]}
 - **文件**: {ctx["file"]}:{ctx["line"]}
 - **语言**: {ctx["language"]}
-- **CWE**: {ctx["cwe"]} ({ctx["category"]})
+{cwe_line}
 - **Sink 代码**: `{ctx["sink"]}`
 """
     if ctx["sources_regex"]:
@@ -911,7 +936,7 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
   "cwe": ["CWE-xxx"],
   "evidence_grade": "static_only | edge_proven",
   "edge_evidence": [{"edge": "f1->f2", "proof": "grep 命中: file:line"}],
-  "claim_type": "crash|panic|oom|unbounded|xss|protocol_dos|other"
+  "claim_type": "crash|panic|oom|unbounded|xss|protocol_dos|rce|other"
 }
 ## v3 强制规则（REQ-V3-040/042/046）
 1. call_chain 每相邻两跳必须附 edge_evidence（grep 调用方的命中行）; 缺证据 → evidence_grade=static_only
@@ -1041,9 +1066,17 @@ def main():
         # 目录的 journal.jsonl 提取 schema-validated 结果 (result/value 双字段,
         # W6 §10.3), 免手工拼 --cand-XXX 参数 (mbedtls 审计手工步骤机械化)
         if from_journal:
+            # v3.2.3 (Lua 审计): 区分「目录不存在/传了文件」与「有 journal
+            # 但无 schema 结果」——旧报错把两种形态混为一谈, 误导定位
+            if not os.path.isdir(from_journal):
+                print(f"Error: --from-journal 应为 workflow transcript 目录 "
+                      f"(内含 journal.jsonl), 不是文件/不存在路径: {from_journal}",
+                      file=sys.stderr)
+                sys.exit(1)
             extracted = _extract_journal_verdicts(from_journal)
             if not extracted:
-                print(f"Error: journal 无 schema-validated 结果: {from_journal}",
+                print(f"Error: 目录存在但 journal.jsonl 无 schema-validated 结果: "
+                      f"{from_journal} (检查 journal 行 type=result 且含 id+verdict)",
                       file=sys.stderr)
                 sys.exit(1)
             verdicts.update(extracted)

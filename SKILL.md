@@ -1,3 +1,12 @@
+---
+name: reachable-critical-audit
+description: >-
+  对任意语言、任意项目形态（application/library/hybrid/infra）的代码库进行可达性
+  严重漏洞审计：输入面测绘、假设生成与筛选、LLM 候选验证、独立证伪复核、实证抽验、
+  六门禁与报告。当用户要求审计代码、查找可达性漏洞、梳理攻击面，或做 CVE 评估的
+  前置分析时使用。
+---
+
 # Reachable Critical Audit Skill v3（可达性严重漏洞审计）
 
 ## 🥇 第一原则：通用型 Skill（最高优先，一切修改的第一判据）

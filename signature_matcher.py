@@ -272,8 +272,11 @@ def emit_filter_tasks(hypotheses, batch_size=12):
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "help"
     if cmd == "index":
-        idx = build_project_index(argv[2])
-        out = argv[3] if len(argv) > 3 else "project_index.json"
+        root = argv[2]
+        idx = build_project_index(root)
+        out = argv[3] if len(argv) > 3 else os.path.join(
+            root, ".audit_results", "project_index.json")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
         json.dump(idx, open(out, "w"))
         print(f"index: {len(idx)} callees -> {out}")
         return 0
@@ -282,7 +285,11 @@ def main(argv):
         index = json.load(open(argv[3]))
         sigs = signature_lib.load()["signatures"]
         hits = match_signatures(surfaces["surfaces"], sigs, index)
-        out = argv[4] if len(argv) > 4 else "hits.json"
+        # R0 铁律: 产物必须以 .audit_results/ 为前缀——默认落盘到
+        # surfaces 文件同目录 (即 <project>/.audit_results/)
+        out = argv[4] if len(argv) > 4 else os.path.join(
+            os.path.dirname(os.path.abspath(argv[2])), "hits.json")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
         json.dump({"hits": hits}, open(out, "w"), ensure_ascii=False, indent=2)
         print(f"{len(hits)} hits -> {out}")
         return 0
@@ -290,7 +297,9 @@ def main(argv):
         hits = json.load(open(argv[2]))["hits"]
         sigs = signature_lib.load()["signatures"]
         hyps = gen_hypotheses(hits, sigs)
-        out = argv[3] if len(argv) > 3 else "hypotheses.json"
+        out = argv[3] if len(argv) > 3 else os.path.join(
+            os.path.dirname(os.path.abspath(argv[2])), "hypotheses.json")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
         json.dump(hyps, open(out, "w"), ensure_ascii=False, indent=2)
         print(f"{len(hyps['hypotheses'])} hypotheses + {len(hyps['logic_hypotheses'])} logic -> {out}")
         return 0

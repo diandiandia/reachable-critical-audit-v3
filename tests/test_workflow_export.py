@@ -125,3 +125,22 @@ def test_cli_stage_workflow_script_empty():
     tmp = _mk_project([_cand("A-1", status="VERIFIED", verdict="UNREACHABLE")])
     bv.stage_workflow_script(tmp, mode="verify")
     assert not os.path.exists(os.path.join(tmp, ".audit_results", "workflow_verify.js"))
+
+
+def test_refutation_prompt_truncation_marker():
+    """v3.2.3 (Lua 审计): evidence 超 800 字符截断必须带 [截断] 标记
+    (旧版静默 [:800] 曾在句子中段断句误导证伪者)。"""
+    c = {"id": "CAND-X", "evidence": "x" * 1500,
+         "call_chain": [f"f{i}:1" for i in range(12)],
+         "claim_type": "oom", "summary": "", "evidence_grade": "edge_proven"}
+    p = we.refute_prompt(c, 0)
+    assert "[截断" in p
+    assert "1500" in p
+    assert "全链 12 跳" in p
+
+
+def test_claim_type_enum_has_rce_and_other():
+    """v3.2.3 (Lua 审计): claim_type 枚举补 rce/other——
+    此前 env→dlopen 类声称无匹配类别被迫判 null。"""
+    enum = we.VERDICT_SCHEMA["properties"]["claim_type"]["enum"]
+    assert "rce" in enum and "other" in enum and "null" in enum

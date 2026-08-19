@@ -38,6 +38,11 @@
 "empirical_result":null|"...","mechanism_correction":null|"..."}],
 "coverage_note":"...","default_value_table":"H7 专用: 默认值全表（五维）"}
 
+## 落盘拦截契约（v3.2.3 强制）
+若环境（权限/plan mode）阻止写入 {out}：最终回复**必须**是完整 JSON 且
+末尾附一行 `UNWRITTEN: <原因>` 标注；禁止只写"已保存"而实际未落盘。
+主代理会从最终回复完整恢复（写 recovered_by 字段）。
+
 
 ---
 

@@ -98,3 +98,31 @@ def test_c_def_and_ifdef_not_misattributed():
     assert "_WIN32" not in idx, "ifdef 宏名不得成为索引条目"
     hits = idx.get("other_fn", [])
     assert hits and hits[0]["caller"] == "chunk_buffer_prepare_append", hits
+
+
+def test_cli_outputs_land_in_audit_results():
+    """v3.2.3 (Lua 审计): match/gen 默认产物落盘 .audit_results/ (R0 铁律),
+    不再写进程 CWD——此前 hits.json 落在项目根/调用者 CWD。"""
+    import io, contextlib
+    repo = _mk_repo()
+    ar = os.path.join(repo, ".audit_results")
+    os.makedirs(ar)
+    surf = os.path.join(ar, "input_surface.json")
+    json.dump({"surfaces": [{"id": "S-1", "type": "network",
+                             "entry_points": [{"file": "server.c", "line": 1}]}]},
+              open(surf, "w"))
+    idx = sm.build_project_index(repo)
+    idxf = os.path.join(ar, "project_index.json")
+    json.dump(idx, open(idxf, "w"))
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        sm.main(["sm", "match", surf, idxf])
+    assert os.path.exists(os.path.join(ar, "hits.json"))
+    assert "hits.json" in buf.getvalue()
+    with contextlib.redirect_stdout(buf):
+        sm.main(["sm", "gen", os.path.join(ar, "hits.json")])
+    assert os.path.exists(os.path.join(ar, "hypotheses.json"))
+    # index 默认路径也进 .audit_results/
+    with contextlib.redirect_stdout(buf):
+        sm.main(["sm", "index", repo])
+    assert os.path.exists(os.path.join(ar, "project_index.json"))

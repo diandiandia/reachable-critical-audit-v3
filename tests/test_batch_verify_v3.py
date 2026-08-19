@@ -102,3 +102,32 @@ def test_next_batch_size():
         bv.stage_next(tmp, batch_size=1)
     info = json.loads(buf.getvalue())
     assert info["count"] == 1
+
+
+def test_r4_collect_unwraps_hypotheses_dict():
+    """v3.2.3 (Lua 审计): 任务书模板产出 {"hypotheses":[...]} 包裹时自动解包,
+    不再静默空收 (此前 top-level dict 无 hypothesis_id → 收集 0 条无告警)。"""
+    tmp = _mk_project()
+    wrapped = {"hypotheses": [
+        {"hypothesis_id": "H-1", "verdict": "reviewed_clean", "findings": []},
+        {"hypothesis_id": "H-2", "verdict": "reviewed_clean", "findings": []}]}
+    f = os.path.join(tmp, "_r4_wrapped.json")
+    json.dump(wrapped, open(f, "w"))
+    bv.stage_r4_collect(tmp, f)
+    q = bv.load_queue(tmp)
+    assert len(q["r4_findings"]) == 2
+    assert {x["hypothesis_id"] for x in q["r4_findings"]} == {"H-1", "H-2"}
+
+
+def test_r4_collect_warns_on_zero_extraction():
+    """v3.2.3 (Lua 审计): 输入非空但 0 hypothesis_id → stderr 告警。"""
+    tmp = _mk_project()
+    f = os.path.join(tmp, "_r4_bad.json")
+    json.dump([{"verdict": "reviewed_clean", "findings": []}], open(f, "w"))
+    import io, contextlib
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err):
+        bv.stage_r4_collect(tmp, f)
+    q = bv.load_queue(tmp)
+    assert q["r4_findings"] == []
+    assert "R4_COLLECT_WARNING" in err.getvalue()
