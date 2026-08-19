@@ -286,3 +286,11 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 | 26.3 | **r4_feedback 匹配的镜头难题**：真实文本"tls_enable 代码零值=false（明文），仓库配置=true"中提交值是中文零回指（"仓库配置=true"无 key 相邻），机械 key=value 匹配全部落空；解决 = 窗口双镜头（key 后 50 字符内 配置/仓库/shipped=value 归 committed-lens）+ 候选侧 ±40 窗默认主张词（零值/默认/缺省/明文/开启）归 code-lens | 自然语言断言提取必须先问"该值陈述的是哪个镜头"；window 匹配要在两个方向都留窗（前缀镜头词"代码默认 key=value"形态） |
 | 26.4 | **历史证据残留规范缺失**：r4_feedback 检出的冲突在 correction_record 已纠正后仍存在于 evidence 原文（保留原文以保可追溯性）——告警与纠正的并存关系需要规范（建议: correction_record 注明"该冲突已由裁决 X 纠正"则断言静默） | v3.2.2 候选：r4_feedback 冲突条目加 resolved 标记位 |
 | 26.5 | **补丁版开发模式验证**：不新增阶段/不改门禁语义/不重排流水线，仅就地制度化——20 SWR 一个工作日闭环，90/90 回归无破坏 | 缺陷修复优先补丁版而非版本跳跃；每个补丁必须带"历史队列回放验证"（用旧数据证明新断言能检出旧错误） |
+
+## 29. §18.9 修订记录（v3.3.2, SWR-V3.3.2-072）
+
+> 原 §18.9 "gate ③ 扩展至 R4 confirmed findings" 收窄（2026-08-19）：
+> 强制实证范围 = severity≥Medium 或 claim_type∈forced-claim 类的 finding；
+> Low 且无实证接受 source_fact/机制级（REQ-V3.1-074 语义）。
+> 理由：结构化接线（REQ-V3.3.2-012）会把关键词假运行坐实为真阻断——先收窄义务
+> 再接消费者（义务入库三问第②条）。文本关键词匹配降为 fallback warn。

@@ -33,6 +33,19 @@ BUILD_FILES = ["Package.swift", "Cargo.toml", "pom.xml", "build.gradle",
                "requirements.txt", "Gemfile", "composer.json", "Makefile"]
 
 
+def norm_surface_id(sid):
+    """SWR-V3.3.2-040: surface id 归一化纯函数（SURF- 前缀剥离 + 去空格）。
+    七项目批次实证: R4 agent 产出 SURF-S-001 而 input_surface 为 S-001——
+    对账/校验统一经此函数, 不持久化 aliases（可推导数据不落盘）。
+    非字符串输入原样返回。"""
+    if not isinstance(sid, str):
+        return sid
+    s = sid.strip()
+    if s.startswith("SURF-"):
+        s = s[5:]
+    return s
+
+
 def build_architecture_context(project_root):
     """SWR-V3-001: 从 README/依赖清单/构建文件提取项目背景。"""
     ctx = {
@@ -102,20 +115,35 @@ def _classify_project_kind(root, ctx):
             score["infra"] += 1
             signals.append(f"build_infra:{m}")
     # 信号 2: 可执行入口 (main/监听器, 强信号)
+    # v3.3.2: listener 仅伴随 main 时满 3 分 (独立入口证据), 单独出现
+    # 只计 1 分 (库实现网络能力 ≠ 独立应用, libuv/uwebsockets 实测)
     srcs = _sample_source_files(root)
     has_main, has_listener = _detect_exec_entry(srcs)
     if has_main:
         score["app"] += 3
         signals.append("exec:main")
-    if has_listener:
-        score["app"] += 3
-        signals.append("exec:listener")
-    # 信号 3: 公共 API 主导 (头文件率/导出符号, 强信号)
+        if has_listener:
+            score["app"] += 3
+            signals.append("exec:listener")
+    elif has_listener:
+        score["app"] += 1
+        signals.append("exec:listener(hint)")
+    # 信号 3: 公共 API 主导 (头文件率/include 目录/导出符号, 强信号)
     api_ratio = _public_api_ratio(srcs)
     if api_ratio is not None:
         signals.append(f"api_ratio:{api_ratio:.2f}")
-        if api_ratio >= 0.5:
+        if api_ratio >= 0.35:  # v3.3.2: 0.5→0.35 (cjson 0.40 双文件库形态)
             score["library"] += 2
+    if _has_include_dir(root):
+        score["library"] += 2
+        signals.append("include_dir")
+    # v3.3.2: Go/Java 主导且无 main → library (纯库形态, hikaricp/fasthttp 实测)
+    if _dominant_lang(srcs, ".go") and not has_main:
+        score["library"] += 2
+        signals.append("go_no_main")
+    if _dominant_lang(srcs, ".java") and not has_main:
+        score["library"] += 2
+        signals.append("java_no_main")
     # 判定 (保守倾向: 无法确定归属时按 app)
     if score["app"] >= 3:
         return "app", signals
@@ -128,6 +156,25 @@ def _classify_project_kind(root, ctx):
     return "app", signals
 
 
+def _has_include_dir(root):
+    """v3.3.2: include/ 目录含头文件 = 公共 API 约定 (libuv include/uv/*.h 实测)。"""
+    inc = os.path.join(root, "include")
+    if not os.path.isdir(inc):
+        return False
+    for dirpath, _dirs, files in os.walk(inc):
+        if any(fn.endswith((".h", ".hpp")) for fn in files):
+            return True
+    return False
+
+
+def _dominant_lang(srcs, ext):
+    """v3.3.2: 该扩展名文件是否为主导 (≥60% 且 ≥5 个)。"""
+    if len(srcs) < 5:
+        return False
+    n = sum(1 for p in srcs if p.endswith(ext))
+    return n / len(srcs) >= 0.6
+
+
 _SRC_EXTS = {".c", ".h", ".cpp", ".hpp", ".cc", ".rs", ".go", ".java",
              ".py", ".rb", ".js", ".ts", ".cs", ".swift", ".kt"}
 
@@ -135,15 +182,19 @@ _SRC_EXTS = {".c", ".h", ".cpp", ".hpp", ".cc", ".rs", ".go", ".java",
 def _sample_source_files(root, cap=120):
     """v3.3: 采样源码文件清单 (排除测试/构建/审计产物目录, 上限 cap)。
     misc/example/bench/fuzz/doc 类目录含开发工具与生成物, 其 main/bind 信号
-    会污染分类器 (yyjson 实测: misc/make_tables.c 与 doxygen 产物 resize.js)。"""
+    会污染分类器 (yyjson 实测: misc/make_tables.c 与 doxygen 产物 resize.js)。
+    v3.3.2: 前缀族匹配覆盖进行时/复数变体 (cjson 实测: 'fuzzing' 目录不在
+    精确名 'fuzz/fuzzer' 列表中致 exec:main 误报)。"""
     out = []
-    skip_dirs = {".git", ".audit_results", "test", "tests", "testes", "vendor",
-                 "node_modules", "third_party", "build", "target",
-                 "misc", "example", "examples", "benchmark", "bench",
-                 "fuzz", "fuzzer", "doc", "docs", "doxygen"}
+    exact_skip = {".git", ".audit_results", "vendor", "node_modules",
+                  "third_party", "build", "target"}
+    prefix_skip = ("test", "fuzz", "bench", "example", "sample", "misc",
+                   "doc", "doxygen", "demo")
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in skip_dirs
-                       and not d.startswith(".")]
+        dirnames[:] = [d for d in dirnames
+                       if d not in exact_skip
+                       and not d.startswith(".")
+                       and not d.lower().startswith(prefix_skip)]
         for fn in filenames:
             ext = os.path.splitext(fn)[1].lower()
             if ext in _SRC_EXTS:
@@ -154,11 +205,14 @@ def _sample_source_files(root, cap=120):
 
 
 def _detect_exec_entry(srcs):
-    """v3.3: 可执行入口探测 (main 函数 / 网络监听)。采样读文件头, 廉价。"""
+    """v3.3: 可执行入口探测 (main 函数 / 网络监听)。采样读文件, 廉价。
+    v3.3.2 精化: ①main 模式行首锚定 (排除字符串模板误报——hikaricp
+    JavassistProxyFactory 的 'public static void main' 字节码模板实测)
+    ②监听单独存在只计提示分 (库自身实现网络能力 ≠ 独立入口——libuv
+    src/unix/tcp.c、uwebsockets src/App.h 实测)。"""
     main_pat = re.compile(
-        r"\bint\s+main\s*\(|\bfn\s+main\s*\(|\bfunc\s+main\s*\(|"
-        r"public\s+static\s+void\s+main\s*\(|def\s+main\s*\(|"
-        r"if\s+__name__\s*==\s*['\"]__main__['\"]")
+        r"^[ \t]*(?:int\s+main\s*\(|fn\s+main\s*\(|func\s+main\s*\(|"
+        r"public\s+static\s+void\s+main\s*\(|def\s+main\s*\()")
     listen_pat = re.compile(
         r"\blisten\s*\(|\bServerSocket\s*\(|\bTcpListener\s*::|\bnet\.Listen\s*\(|"
         r"\bbind\s*\(\s*[\"']|socket\.bind\s*\(|createServer\s*\(|"
@@ -177,7 +231,7 @@ def _detect_exec_entry(srcs):
                         head += f.read(4096)
         except OSError:
             continue
-        if not has_main and main_pat.search(head):
+        if not has_main and main_pat.search(head, re.MULTILINE):
             has_main = True
         if not has_listener and listen_pat.search(head):
             has_listener = True

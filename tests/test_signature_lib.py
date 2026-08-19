@@ -105,3 +105,26 @@ def test_v33_l2_manual_alignment():
     """v3.3 (REQ-V3.3-004): L2 词族语言全部有 harness_manuals/<lang>.md。"""
     missed = signature_lib.l2_manual_alignment(signature_lib.load())
     assert missed == [], missed
+
+# ---- SWR-V3.3.2-023: 先例精度门 ----
+def test_prec_precision_gate_host_family_not_injected_for_java_config():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import precedent_library as pl
+    # 模拟 hikaricp CAND-001 形态: Java 配置反射候选, 无 Host 头信号, 无 lang_pair
+    cand = {"id": "CAND-001", "sink_type": "CWE-470",
+            "summary": "PropertyElf Class.forName 任意类实例化", "lang": "java"}
+    hints = pl.self_refutation_hints(cand)
+    ids = [h.split("]")[0].lstrip("[") for h in hints]
+    assert "PREC-HOST-FAMILY-001" not in ids
+    assert "PREC-MULTI-LANG-001" not in ids
+
+def test_prec_precision_gate_host_family_injected_for_host_candidate():
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import precedent_library as pl
+    cand = {"id": "CAND-002", "sink_type": "CWE-601",
+            "summary": "请求 Host 头采信拼接密码重置链接", "lang": "python"}
+    hints = pl.self_refutation_hints(cand)
+    ids = [h.split("]")[0].lstrip("[") for h in hints]
+    assert "PREC-HOST-FAMILY-001" in ids

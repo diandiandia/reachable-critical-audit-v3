@@ -98,8 +98,10 @@ def grade_verdict(v):
     if v.get("evidence_grade") is not None and v["evidence_grade"] not in GRADES:
         errors.append(f"evidence_grade 非法: {v['evidence_grade']}")
     empirical = v.get("empirical")
+    # SWR-V3.3.2-003: status 比较前大小写归一化 (历史实证 "CONFIRMED" 大写与
+    # 小写元组不匹配曾静默降级 edge_proven)
     if empirical and isinstance(empirical, dict) and \
-       empirical.get("status") in CONFIRMED_EMPIRICAL_STATUSES:
+       str(empirical.get("status", "")).lower() in CONFIRMED_EMPIRICAL_STATUSES:
         grade = "empirically_confirmed"
     else:
         chain = v.get("call_chain", [])
@@ -115,6 +117,11 @@ def grade_verdict(v):
                 grade = "edge_proven"
         else:
             grade = "edge_proven" if edges else "static_only"
+    # SWR-V3.3.2-003: stored 与机械结果不一致 → 告警条目 (不再静默)
+    stored = v.get("evidence_grade")
+    if stored in GRADES and stored != grade:
+        errors.append(f"evidence_grade 不一致: stored={stored} mechanical={grade} "
+                      f"(建议写 grade_recomputed_by 标记)")
     return grade, errors
 
 
@@ -156,6 +163,12 @@ def commit(queue, verdict):
                 if verdict["correction"].get("demote_to"):
                     c["verdict"] = verdict["correction"]["demote_to"]
                     c["evidence_grade"] = "static_only"
+                    # SWR-V3.3.2-002: 声称只属 REACHABLE (REQ-V3.2.2-016)——
+                    # demote 分支与 collect 的 claim-null 对称, 否则 NEEDS_REVIEW
+                    # 残留 claim 误触发 gate ③
+                    if c.get("claim_type"):
+                        c["claim_type"] = None
+                        c["claim_nulled_by"] = "commit-demote-v3.3.2"
     if found is None:
         found = {"id": cid}
         queue["candidates"].append(found)
@@ -188,7 +201,10 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         if c.get("verdict") == "REACHABLE" and c.get("evidence_grade") == "static_only":
             violations.append({"gate": "no_static_only_reachable", "id": c.get("id")})
         claim = (c.get("claim_type") or "")
-        if any(k in claim for k in EMPIRICAL_CLAIMS) and \
+        # SWR-V3.3.2-001: gate ③ 前置 verdict==REACHABLE——声称只属 REACHABLE
+        # (REQ-V3.2.2-016), NEEDS_REVIEW/UNREACHABLE 残留 claim 不触发实证门禁
+        if c.get("verdict") == "REACHABLE" and \
+           any(k in claim for k in EMPIRICAL_CLAIMS) and \
            c.get("evidence_grade") != "empirically_confirmed":
             violations.append({"gate": "empirical_required", "id": c.get("id"),
                                "claim": claim})
@@ -220,9 +236,19 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         if any(k in text for k in EMPIRICAL_CLAIMS) and \
            not c.get("resurrection_review"):
             violations.append({"gate": "resurrection_required", "id": c.get("id")})
-    # ③b R4 findings 同受实证类门禁 (W6 §18.9)。
-    # 验收级: empirically_confirmed 或 source_fact(哨兵/算术类, 附 note/blocker,
-    # §17.7/§21.4 源事实级规则)——其余均违规。
+    # v3.3.2 (SWR-V3.3.2-005): 复活改判防漏放——带 re_verify_gap 的候选重验改判
+    # REACHABLE 后必须再经 R3.5 独立证伪 (refutation 字段), 否则违规
+    # (REQ-V3.2-021 修订: 放行方向强制对抗复核)
+    for c in cands:
+        if c.get("re_verify_gap") and c.get("verdict") == "REACHABLE" \
+           and not c.get("refutation"):
+            violations.append({"gate": "post_resurrect_refutation",
+                               "id": c.get("id")})
+
+    # ③b v3.3.2 (SWR-V3.3.2-004): R4 findings 实证门禁——结构化判定 + 义务收窄
+    # (W6 §18.9 修订): 强制范围 = severity≥Medium 或 claim_type∈forced-claim 类;
+    # 接受证据 = confirmed/source_fact/实证; Low 额外接受机制级;
+    # 旧格式 (无 claim_type 字段) 的关键词匹配降为 fallback warn
     for f in r4:
         # gate ③b 只约束 confirmed 假说的 findings——reviewed_clean 的
         # 正向确认/Info 条目 (如 "verified in-bounds") 不是漏洞声称
@@ -230,18 +256,33 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
             continue
         findings = f.get("findings") or []
         for fi in findings:
-            claim = (fi.get("claim_type") or
-                     (fi.get("title") or "") + " " + (fi.get("evidence") or ""))
-            if any(k in claim.lower() for k in EMPIRICAL_CLAIMS):
-                st = fi.get("empirical_status")
-                if st == "empirically_confirmed":
-                    continue
-                if st == "source_fact" and (fi.get("empirical_note") or fi.get("blocker")):
+            sev = (fi.get("severity") or "").strip().lower()
+            ft = (fi.get("claim_type") or "").strip().lower()
+            er = (fi.get("empirical_result") or "").strip()
+            er_l = er.lower()
+            forced = any(k in ft for k in EMPIRICAL_CLAIMS)
+            has_confirmed = any(k in er_l for k in
+                                ("confirmed", "source_fact", "source fact"))                             or "实证" in er or "已实证" in er
+            has_mechanism = er and any(k in er_l for k in
+                                       ("mechanism", "机制级", "静态", "static"))
+            if forced or sev in ("medium", "high", "critical"):
+                if sev in ("low",) and has_mechanism:
+                    continue  # Low 接受机制级 (义务收窄, W6 §18.9 修订)
+                if has_confirmed:
                     continue
                 violations.append({"gate": "empirical_required_r4",
                                    "hypothesis": f.get("hypothesis_id"),
-                                   "finding": fi.get("title", "")[:60],
-                                   "empirical_status": st})
+                                   "finding": (fi.get("title") or "")[:60],
+                                   "severity": sev, "claim_type": ft})
+            elif not ft:
+                # fallback: 无结构化 claim_type → 关键词扫描仅 warn
+                text = ((fi.get("title") or "") + " " +
+                        (fi.get("evidence") or "")).lower()
+                if any(k in text for k in EMPIRICAL_CLAIMS) and not has_confirmed:
+                    violations.append({"gate": "empirical_required_r4_warn",
+                                       "severity": "warn",
+                                       "hypothesis": f.get("hypothesis_id"),
+                                       "finding": (fi.get("title") or "")[:60]})
     # ⑦surface 覆盖 (REQ-V3-095)
     if surface_data is not None:
         total = surface_data.get("total", 0)
@@ -317,6 +358,22 @@ def r4_feedback(queue):
                 cm = commit_ctx_re.search(tail)
                 if cm:
                     h7_committed.setdefault(m.group(1), []).append((cm.group(1), text[:120]))
+    # SWR-V3.3.2-006: 结构化输入——v3.3.2 收缩后的 H7 default_value_table
+    # (list 形态, 每行 {name, default, ...}) 直接作为 committed 侧证据源,
+    # 不再依赖 findings 散文正则提取
+    for h in h7:
+        tbl = h.get("default_value_table")
+        if not isinstance(tbl, list):
+            continue
+        for row in tbl:
+            if not isinstance(row, dict):
+                continue
+            name = row.get("name")
+            val = row.get("default")
+            if name is None or val is None:
+                continue
+            h7_committed.setdefault(str(name), []).append(
+                (str(val), json.dumps(row, ensure_ascii=False)[:120]))
     if not h7_committed:
         return conflicts
     for c in queue.get("candidates", []):

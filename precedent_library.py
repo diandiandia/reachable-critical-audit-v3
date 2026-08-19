@@ -71,6 +71,27 @@ def _cwe_set(candidate):
     return {str(cw).upper()} if cw else set()
 
 
+def _candidate_text(candidate):
+    """SWR-V3.1-030: 候选检索文本（match 与精度门共用）。"""
+    return " ".join(str(candidate.get(k) or "")
+                    for k in ("summary", "sink_type", "claim_type", "verdict",
+                              "blocking_point", "r35_note", "lang", "lang_pair")).lower()
+
+
+def _signals_ok(p, candidate, text):
+    """SWR-V3.3.2-023: 先例精度门——applicability_signals 存在时必须命中才注入；
+    无 signals 的先例不拦截（向后兼容，增量填充）。"""
+    sig = p.get("applicability_signals")
+    if not sig:
+        return True
+    if sig.get("text"):
+        if not any(k.lower() in text for k in sig["text"]):
+            return False
+    if sig.get("requires_lang_pair") and not candidate.get("lang_pair"):
+        return False
+    return True
+
+
 def match(candidate, lib=None):
     """SWR-V3.1-030: 按 cwe 家族/summary 关键词/claim_type 检索先例。
     返回命中先例全文（criterion 与 counterexample 都返回——counterexample 是
@@ -80,9 +101,7 @@ def match(candidate, lib=None):
     hits = []
     seen = set()
     cwe = _cwe_set(candidate)
-    text = " ".join(str(candidate.get(k) or "")
-                    for k in ("summary", "sink_type", "claim_type", "verdict",
-                              "blocking_point", "r35_note", "lang", "lang_pair")).lower()
+    text = _candidate_text(candidate)
     for fam, ids in CWE_FAMILY_MAP.items():
         if cwe & set(fam):
             for pid in ids:
@@ -106,8 +125,12 @@ def match(candidate, lib=None):
 
 def self_refutation_hints(candidate, lib=None, max_hints=2):
     """SWR-V3.1-031: 匹配先例 → 证伪论据模板化（每候选 ≤2 条），
-    注入 verifier 任务书作自证伪提示（W6 §17.10/§19.5 攻击面前置）。"""
+    注入 verifier 任务书作自证伪提示（W6 §17.10/§19.5 攻击面前置）。
+    SWR-V3.3.2-023: 精度门——applicability_signals 不命中的先例不注入
+    （Host 族先例误注入 Java 配置候选的七项目批次教训）。"""
     hits = match(candidate, lib)
+    text = _candidate_text(candidate)
+    hits = [p for p in hits if _signals_ok(p, candidate, text)]
     hints = []
     for p in hits[:max_hints]:
         hints.append(

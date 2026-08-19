@@ -122,7 +122,20 @@
       ],
       "source_lessons": [
         "W6 §23.4"
-      ]
+      ],
+      "applicability_signals": {
+        "text": [
+          "host 头",
+          "host header",
+          "x-forwarded",
+          "authority",
+          "绝对 uri",
+          "绝对url",
+          "host 采信",
+          "redirect",
+          "重定向"
+        ]
+      }
     },
     {
       "id": "PREC-VICTIM-TRIGGER-001",
@@ -284,7 +297,10 @@
       "applications": [],
       "source_lessons": [
         "v3.2 P-B 设计"
-      ]
+      ],
+      "applicability_signals": {
+        "requires_lang_pair": true
+      }
     },
     {
       "id": "PREC-TARGET-KIND-001",

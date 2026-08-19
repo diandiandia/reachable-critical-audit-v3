@@ -94,7 +94,16 @@ IMPORTABILITY_STEPS = {
    空过——可疑时必须用实际执行验证（实际 import/实际编译，stub 仅第三方依赖）
 3. 导入失败 → 该边记 broken_edge，verdict=NEEDS_REVIEW（修复即可达条件候选，
    blocking_point 写明断裂点）——静态链真实 ≠ 运行时存在""",
+    # SWR-V3.3.2-014: 静态编译语言短段——编译期链接下完整预检是仪式
+    # (七项目批次 71 候选零 broken_edge 实证)
+    "static_short": """### 步骤 0.5（build 列表核对）: 构建包含性一行核对
+链首源文件在构建系统源列表内（CMake 源列表/GOPATH/cargo 目标/Makefile）——
+不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
 }
+
+# SWR-V3.3.2-014: 完整预检语言集合——动态导入风险语言；其余静态编译语言
+# (c/cpp/go/rust) 走 static_short（application 目标仍注入完整预检）
+IMPORTABILITY_FULL_LANGS = {"python", "javascript", "java"}
 
 # 扩展名 → 语言 (与 ast_scanner.ASTCoarseScanner.EXTENSION_MAP 保持一致的子集)
 _EXT_LANG = {
@@ -603,8 +612,31 @@ def stage_r4_collect(project_root, findings_file):
             ensure_ascii=False), file=sys.stderr)
     queue["r4_findings"] = list(existing.values())
     save_queue(project_root, queue)
-    print(json.dumps({"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())},
-                     ensure_ascii=False))
+    # SWR-V3.3.2-015: tracked_surfaces id 契约校验——经 norm_surface_id 归一化后
+    # 对照 input_surface 归一化 id 集, 未知 id 产出 warning (不阻断落盘)
+    unknown = []
+    isurf_path = os.path.join(project_root, ".audit_results", "input_surface.json")
+    if os.path.exists(isurf_path):
+        try:
+            import surface_mapper as sm
+            norm = getattr(sm, "norm_surface_id")
+            isurf = json.load(open(isurf_path))
+            known = {norm(s.get("id")) for s in isurf.get("surfaces", [])}
+            for f in queue["r4_findings"]:
+                for fi in f.get("findings", []):
+                    for sid in (fi.get("tracked_surfaces") or []):
+                        if norm(sid) not in known:
+                            unknown.append({"hypothesis": f.get("hypothesis_id"),
+                                            "finding": (fi.get("title") or "")[:60],
+                                            "surface_id": sid})
+        except (ImportError, ValueError) as e:
+            unknown.append({"error": f"id 校验不可用: {e}"})
+    result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
+    if unknown:
+        result["unknown_surface_ids"] = unknown
+        result["warning"] = ("tracked_surfaces 含 input_surface.json 中不存在的 id "
+                             "(归一化后)——任务书要求原样引用 surface id (SWR-V3.3.2-015)")
+    print(json.dumps(result, ensure_ascii=False))
 
 
 def stage_r4_assert(project_root):
@@ -617,6 +649,160 @@ def stage_r4_assert(project_root):
     print(json.dumps({"status": "R4_ASSERT_PASSED" if not missing else "R4_ASSERT_FAILED",
                       "missing": missing}, ensure_ascii=False))
     return 0 if not missing else 1
+
+
+def stage_coverage(project_root):
+    """SWR-V3.3.2-012: 门禁⑦ 覆盖率对账 CLI——tracked 计算 + id 归一化 + 未知 id 告警。
+    输出即 assert_ledger 的 surface_data (七项目批次主代理手写三版对账脚本的机械化)。"""
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    import surface_mapper as sm
+    norm = getattr(sm, "norm_surface_id")
+    root = os.path.join(project_root, ".audit_results")
+    queue = load_queue(project_root)
+    isurf_path = os.path.join(root, "input_surface.json")
+    if not os.path.exists(isurf_path):
+        print(json.dumps({"status": "COVERAGE_ERROR", "error": "input_surface.json 缺失"},
+                         ensure_ascii=False))
+        sys.exit(1)
+    isurf = json.load(open(isurf_path))
+    total = {norm(s.get("id")) for s in isurf.get("surfaces", [])}
+    tracked = set()
+    try:
+        hyps = json.load(open(os.path.join(root, "hypotheses.json")))
+        for h in hyps.get("hypotheses", []) + hyps.get("logic_hypotheses", []):
+            for sid in (h.get("surface_ids") or []):
+                tracked.add(norm(sid))
+    except (FileNotFoundError, ValueError):
+        pass
+    for f in queue.get("r4_findings", []):
+        for fi in f.get("findings", []):
+            for sid in (fi.get("tracked_surfaces") or []):
+                tracked.add(norm(sid))
+    mps = isurf.get("mirror_pairs") or []
+    if isinstance(mps, dict):
+        mps = [mps]
+    for mp in mps:
+        if isinstance(mp, dict):
+            for k in ("primary", "secondary"):
+                if mp.get(k):
+                    tracked.add(norm(mp[k]))
+    bridge = queue.get("coverage_bridge") or []
+    if isinstance(bridge, dict):
+        bridge = [bridge]
+    for b in bridge:
+        for sid in (b.get("surfaces") or []):
+            tracked.add(norm(sid))
+    covered = tracked & total
+    unknown = sorted(tracked - total)
+    missing = sorted(total - tracked)
+    surface_data = {"total": len(total),
+                    "tracked": len(covered),
+                    "tracked_ids": sorted(covered)}
+    print(json.dumps({
+        "status": "COVERAGE_OK" if not missing else "COVERAGE_INCOMPLETE",
+        "total": len(total), "tracked": len(covered),
+        "missing": missing, "unknown_ids": unknown,
+        "surface_data": surface_data,
+        "note": "unknown_ids 为被引用但不存在的 id (归一化后)——R4 任务书 id 契约告警",
+    }, ensure_ascii=False, indent=2))
+    sys.exit(1 if missing else 0)
+
+
+def stage_grade_recheck(project_root):
+    """SWR-V3.3.2-013: 批量逐候选机械复核 (v3.2 分级复核条款的 CLI 载体)。
+    差异写 grade_recomputed_by, 打印差异清单。"""
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    import evidence_ledger as el
+    queue = load_queue(project_root)
+    changed = []
+    warnings = []
+    for c in queue.get("candidates", []):
+        grade, errors = el.grade_verdict(c)
+        for e in errors:
+            warnings.append({"id": c.get("id"), "error": e})
+        if c.get("evidence_grade") not in ("static_only", "edge_proven",
+                                           "empirically_confirmed"):
+            continue
+        if grade != c.get("evidence_grade"):
+            old_grade = c.get("evidence_grade")
+            c["evidence_grade"] = grade
+            c["grade_recomputed_by"] = "main-agent-mechanical-recheck"
+            changed.append({"id": c.get("id"),
+                            "from": old_grade, "to": grade})
+    save_queue(project_root, queue)
+    print(json.dumps({"status": "GRADE_RECHECKED", "changed": changed,
+                      "warnings": warnings}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def stage_r35_collect(project_root, transcript_dir):
+    """SWR-V3.3.2-011: refutation decisions 机械落盘——
+    correction(demote)/strengthened/attribution_correction/note/PoC 文本
+    经 evidence_ledger.commit 落候选 (REQ-V3.1-051 落盘位置收敛:
+    候选 refutation 字段为权威, 报告从队列派生)。"""
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    import evidence_ledger as el
+    import glob as _glob
+    queue = load_queue(project_root)
+    files = _glob.glob(os.path.join(transcript_dir, "journal.jsonl"))
+    if not files:
+        print("Error: journal.jsonl 不存在", file=sys.stderr)
+        return 1
+    decisions = []
+    for line in open(files[0]):
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if rec.get("type") != "result":
+            continue
+        r = rec.get("result") or rec.get("value")
+        if isinstance(r, dict) and r.get("id") and ("refuted" in r):
+            decisions.append(r)
+    if not decisions:
+        print("Error: journal 无 refutation schema 结果 (id+refuted)", file=sys.stderr)
+        return 1
+    by_id = {}
+    for d in decisions:
+        by_id.setdefault(d["id"], []).append(d)
+    for cid, decs in by_id.items():
+        c = next((x for x in queue["candidates"] if x.get("id") == cid), None)
+        if c is None:
+            print(f"Warning: {cid} 不在队列, 跳过", file=sys.stderr)
+            continue
+        refutation = {"by": [d.get("agent") or f"refuter-{i}"
+                             for i, d in enumerate(decs)]}
+        kills = [d for d in decs if d.get("refuted")]
+        poc = "；".join((d.get("note") or "").strip() for d in decs if
+                        d.get("note") and any(k in d["note"] for k in
+                                              ("PoC", "poc", "实测", "实证", "RSS", "exit")))
+        if poc:
+            refutation["poc_evidence"] = poc
+        if kills and len(kills) >= 2:
+            refutation["demote"] = True
+            el.commit(queue, {"id": cid,
+                              "correction": {
+                                  "target": cid, "demote_to": "NEEDS_REVIEW",
+                                  "reason": ("R3.5 双证伪者一致 demote (r35-collect 机械落盘): "
+                                             + (kills[0].get("reason") or "")[:300]),
+                                  "by": "r35-collect"}})
+        strengthened = [d.get("strengthened") for d in decs if d.get("strengthened")]
+        if strengthened:
+            refutation["strengthened"] = strengthened
+        ac = [d.get("attribution_correction") for d in decs if d.get("attribution_correction")]
+        if ac:
+            refutation["attribution_correction"] = ac
+        el.commit(queue, {"id": cid, "refutation": refutation})
+    save_queue(project_root, queue)
+    print(json.dumps({"status": "R35_COLLECTED", "candidates": sorted(by_id)},
+                     ensure_ascii=False))
+    return 0
 
 
 def stage_report(project_root):
@@ -869,6 +1055,12 @@ def _build_prompt(cand, ctx, project_root):
 - platform_precondition（平台限定路径，如 Windows 证书路径）必须显式标注
 """
 
+    # SWR-V3.3.2-014: 步骤 0.5 按型门控——动态导入风险语言或 application 目标
+    # 注入完整预检；静态编译语言降为一行 build 列表核对（71 候选 boilerplate 削减）
+    step05 = (IMPORTABILITY_STEPS.get(ctx["language"], IMPORTABILITY_STEPS["default"])
+              if ctx["language"] in IMPORTABILITY_FULL_LANGS or target_kind == "application"
+              else IMPORTABILITY_STEPS["static_short"])
+
     prompt += f"""
 ## 强制分析步骤（语言无关）
 
@@ -877,7 +1069,7 @@ def _build_prompt(cand, ctx, project_root):
 调用存在性/常量值）。前提断裂 → 立即终止回溯，verdict 按断裂方向判定。
 verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重前提"（W6 §17.10/§19.5）。
 
-{IMPORTABILITY_STEPS.get(ctx["language"], IMPORTABILITY_STEPS["default"])}
+{step05}
 
 ### 步骤 1: 逆向调用链回溯（最小深度 3 层）
 1. 读取 {ctx['file']} L{ctx['line']} 周围代码，确认 sink 点
@@ -948,6 +1140,9 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 2. REACHABLE 且无逐跳边证据 → static_only（不得申报）
 3. 死代码豁免: 无生产调用者 → blocking_point="no production callers", verdict=UNREACHABLE, 不强制凑 3 层链
 4. 前提维度: platform_precondition 无 platform_evidence → NEEDS_REVIEW
+5. claim 与实证自洽 (SWR-V3.3.2-033): 实证结果与 claim_type 矛盾时，必须按实证方向
+   修正 claim 并在 evidence 说明（如实证 exit 0 且确定性崩溃不可达，则不得声明 crash，
+   改 other 并记录实测结果）
 """
     return prompt
 
@@ -976,6 +1171,7 @@ def main():
     sinks_file = None
     sinks_inline = None
     mode = "verify"
+    expect_ids = []
 
     args = sys.argv[2:]
     for i, arg in enumerate(args):
@@ -987,6 +1183,10 @@ def main():
             from_journal = arg.split("=", 1)[1]
         elif arg == "--from-journal" and i + 1 < len(args):
             from_journal = args[i + 1]
+        elif arg.startswith("--expect="):
+            expect_ids = arg.split("=", 1)[1].split(",")
+        elif arg == "--expect" and i + 1 < len(args):
+            expect_ids = args[i + 1].split(",")
         elif arg.startswith("--batch="):
             batch_id = int(arg.split("=", 1)[1])
         elif arg == "--batch" and i + 1 < len(args):
@@ -1084,6 +1284,15 @@ def main():
                       f"{from_journal} (检查 journal 行 type=result 且含 id+verdict)",
                       file=sys.stderr)
                 sys.exit(1)
+            # SWR-V3.3.2-010: --expect 全集校验——journal 提取结果必须覆盖
+            # 派发全集 (防子集误匹配/部分落盘, 七项目批次 journal 张冠李戴教训)
+            if expect_ids:
+                missing = [e for e in expect_ids if e not in extracted]
+                if missing:
+                    print(f"Error: --expect 全集校验失败: journal 缺失 {missing} "
+                          f"(提取到 {sorted(extracted)}), 不落盘",
+                          file=sys.stderr)
+                    sys.exit(1)
             verdicts.update(extracted)
         if not verdicts:
             print("Error: --cand-XXX JSON arguments or --from-journal required for collect",
@@ -1092,6 +1301,16 @@ def main():
         stage_collect(project_root, batch_id or 0, verdicts)
     elif stage == "assert":
         stage_assert(project_root)
+    elif stage == "coverage":
+        sys.exit(stage_coverage(project_root))
+    elif stage == "grade-recheck":
+        sys.exit(stage_grade_recheck(project_root))
+    elif stage == "r35-collect":
+        if not from_journal:
+            print("Error: r35-collect requires --from-journal <transcript_dir>",
+                  file=sys.stderr)
+            sys.exit(1)
+        sys.exit(stage_r35_collect(project_root, from_journal))
     elif stage == "status":
         stage_status(project_root)
     else:

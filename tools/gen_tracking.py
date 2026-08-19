@@ -15,6 +15,7 @@ VERSIONS = [
     ("V3.2.1", "docs/design/REQ_V3_2_1.md", "docs/design/SWR_V3_2_1.md"),
     ("V3.2.2", "docs/design/REQ_V3_2_2.md", "docs/design/SWR_V3_2_2.md"),
     ("V3.3",   "docs/design/REQ_V3_3.md",   "docs/design/SWR_V3_3.md"),
+    ("V3.3.2", "docs/design/REQ_V3_3_2.md", "docs/design/SWR_V3_3_2.md"),
 ]
 DOCS = {f"{k}-{label}": p for label, rp, sp in VERSIONS
         for k, p in (("REQ", rp), ("SWR", sp))}

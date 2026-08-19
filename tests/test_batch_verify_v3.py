@@ -131,3 +131,129 @@ def test_r4_collect_warns_on_zero_extraction():
     q = bv.load_queue(tmp)
     assert q["r4_findings"] == []
     assert "R4_COLLECT_WARNING" in err.getvalue()
+
+# ---- SWR-V3.3.2-033: verifier 任务书 claim 与实证自洽条款 ----
+def test_prompt_claim_empirical_consistency_clause():
+    import tempfile
+    tmp = tempfile.mkdtemp()
+    cand = {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
+            "sink_type": "CWE-770", "language": "c"}
+    ctx = bv._build_context(cand, tmp)
+    prompt = bv._build_prompt(cand, ctx, tmp)
+    assert "claim 与实证自洽" in prompt
+    assert "SWR-V3.3.2-033" in prompt
+
+# ---- SWR-V3.3.2-014: 步骤 0.5 按型门控 ----
+def test_step05_gating_static_lang_short():
+    import tempfile
+    tmp = tempfile.mkdtemp()
+    cand = {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
+            "sink_type": "CWE-770", "language": "c"}
+    ctx = bv._build_context(cand, tmp)
+    prompt = bv._build_prompt(cand, ctx, tmp)
+    assert "build 列表核对" in prompt            # 短段注入
+    assert "模块可导入性预检" not in prompt        # 完整段不注入
+    assert "顶层包解析" not in prompt
+
+def test_step05_gating_dynamic_lang_full():
+    import tempfile
+    tmp = tempfile.mkdtemp()
+    cand = {"id": "CAND-002", "source_file": "a.py", "source_line": 1,
+            "sink_type": "CWE-502", "language": "python"}
+    ctx = bv._build_context(cand, tmp)
+    prompt = bv._build_prompt(cand, ctx, tmp)
+    assert "模块可导入性预检" in prompt            # 完整段保留
+
+def test_step05_gating_application_full_even_static():
+    import tempfile, json, os
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    json.dump({"schema_version": "3.0", "candidates": [],
+               "target_kind": "application"},
+              open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    cand = {"id": "CAND-003", "source_file": "a.c", "source_line": 1,
+            "sink_type": "CWE-770", "language": "c"}
+    ctx = bv._build_context(cand, tmp)
+    prompt = bv._build_prompt(cand, ctx, tmp)
+    assert "模块构建包含性预检" in prompt          # application 目标保留完整段
+
+# ---- SWR-V3.3.2-085/088: coverage 归一化 + journal --expect ----
+import os as _os
+WORK = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+def test_coverage_normalizes_surf_prefix():
+    import tempfile, subprocess, sys, os
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    json.dump({"schema_version": "3.0", "surfaces": [
+        {"id": "S-001", "name": "x", "type": "network_endpoint"}]},
+        open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
+    json.dump({"schema_version": "3.0", "candidates": [],
+               "r4_findings": [{"hypothesis_id": "H-1", "status": "VERIFIED",
+                 "findings": [{"title": "t", "tracked_surfaces": ["SURF-S-001"]}]}]},
+        open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                        tmp, "--stage", "coverage"],
+                       capture_output=True, text=True)
+    out = json.loads(r.stdout)
+    assert out["status"] == "COVERAGE_OK", out
+    assert out["missing"] == []
+    assert r.returncode == 0
+
+def test_journal_expect_full_set_enforced():
+    import tempfile, subprocess, sys, os
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    json.dump({"schema_version": "3.0", "candidates": [
+        {"id": "CAND-001", "status": "PENDING"}]},
+        open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    jdir = tempfile.mkdtemp()
+    # journal 只含 CAND-002 → --expect CAND-001,CAND-002 应报错不落盘
+    with open(os.path.join(jdir, "journal.jsonl"), "w") as f:
+        f.write(json.dumps({"type": "result",
+                            "result": {"id": "CAND-002", "verdict": "UNREACHABLE",
+                                       "reachability_type": "DIRECT",
+                                       "call_chain": ["a", "b", "c"],
+                                       "call_chain_depth": 3, "evidence": "e"}}) + "\n")
+    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                        tmp, "--stage", "collect", "--from-journal", jdir,
+                        "--expect", "CAND-001,CAND-002"],
+                       capture_output=True, text=True)
+    assert r.returncode == 1 and "全集校验失败" in r.stderr
+
+# ---- SWR-V3.3.2-086/087: gap 渲染 + 抽样落盘 ----
+def test_gap_rendered_in_verify_payload():
+    import tempfile, sys, os
+    sys.path.insert(0, WORK)
+    import workflow_export as we
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    json.dump({"schema_version": "3.0", "candidates": [
+        {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
+         "sink_type": "CWE-770", "status": "PENDING", "language": "c",
+         "re_verify_gap": "遗漏 multipart 预解析分支"},
+        {"id": "CAND-002", "source_file": "b.c", "source_line": 1,
+         "sink_type": "CWE-400", "status": "PENDING", "language": "c"}]},
+        open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    r = we.export_script(tmp, mode="verify")
+    by_id = {p["id"]: p["prompt"] for p in r["payload"]}
+    assert "复活复核 gap" in by_id["CAND-001"]
+    assert "multipart" in by_id["CAND-001"]
+    assert "复活复核 gap" not in by_id["CAND-002"]
+
+def test_resurrect_sample_dump():
+    import tempfile, sys, os
+    sys.path.insert(0, WORK)
+    import workflow_export as we
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    json.dump({"schema_version": "3.0", "candidates": [
+        {"id": "CAND-001", "status": "VERIFIED", "verdict": "UNREACHABLE",
+         "claim_type": "crash", "evidence": "x"},
+        {"id": "CAND-002", "status": "VERIFIED", "verdict": "UNREACHABLE",
+         "evidence": "管道语义, 无实证类声称"}]},
+        open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+    r = we.export_script_resurrect(tmp, batch_size=8)
+    assert r["status"] == "WORKFLOW_SCRIPT_READY"
+    doc = json.load(open(os.path.join(tmp, ".audit_results", "_resurrect_sample.json")))
+    assert doc["selected"] == ["CAND-001", "CAND-002"]
+    assert doc["rule"].startswith("声称类")

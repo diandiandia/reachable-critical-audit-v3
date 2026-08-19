@@ -504,3 +504,80 @@
 | SWR-V3.3-082 | test_signature_matcher：新族按 surface.lang 过滤命中用例 | 已完成 |  |
 | SWR-V3.3-083 | test_v33.py：gen_tracking 泛化重建用例（REQ-V3.2.2-001 与 REQ-V3.3-001 均被提取） | 已完成 |  |
 | SWR-V3.3-084 | fixture 扩充：非 Web 系统语言 fixture（C 解析器/系统库形态）作为 v3.3 验收新项目锚点 | 已完成 |  |
+
+## 系统需求（REQ-V3.3.2）（共 24 条）
+
+| 编号 | 需求 | 状态 | 备注 |
+|---|---|---|---|
+| REQ-V3.3.2-001 | wave registry：每波 workflow 派发后登记 `.audit_results/wave_registry.jsonl`（append-only：run_id/mode/project/dispatched/payload_hash）；collect 以注册表对账 | 已完成 |  |
+| REQ-V3.3.2-002 | `--from-journal` 全集校验：提供 `--expect <ids>`（或自动读注册表）时，journal 提取结果必须覆盖 dispatched 全集，不足/多余 → 报错不落盘（复用铁律 1 重试读，仍不足才报错） | 已完成 |  |
+| REQ-V3.3.2-003 | workflow 脚本（verify/refutation/resurrect 三模式）返回补 `project` + `dispatched_ids` 字段（注册表数据源，断 resume 恢复时可直接对账） | 已完成 |  |
+| REQ-V3.3.2-004 | resurrect 抽样决策落盘：export_script_resurrect 产出 selected/unselected/rule（声称类全量+其他 20%，min 2 max 8 的逐项套用记录）。**记录型义务**：消费者=事后问责与报告追溯，无 gate 消费此文件 | 已完成 |  |
+| REQ-V3.3.2-005 | 修订 REQ-V3.2-021：复活重验改判 REACHABLE 且 grade≥edge_proven → 强制入 R3.5 证伪池（放行方向的独立复核义务） | 已完成 |  |
+| REQ-V3.3.2-006 | assert_ledger 新增检查：候选带 re_verify_gap 且 verdict=REACHABLE 且无 refutation 字段 → 违规（沿用 resurrection_required 检查形态，不改六门禁①-⑧判据） | 已完成 |  |
+| REQ-V3.3.2-007 | r35-collect：`--stage r35-collect --from-journal` 把 refutation decisions 机械落候选 `refutation` 字段（correction/strengthened/poc_evidence/note），复用 evidence_ledger.commit merge 语义；修订 REQ-V3.1-051 落盘位置为「候选字段为权威，报告从队列派生」（队列唯一事实源原则） | 已完成 |  |
+| REQ-V3.3.2-008 | verifier 任务书 claim 自洽条款：「实证结果与 claim_type 矛盾时，必须按实证方向修正 claim 并在 evidence 说明」 | 已完成 |  |
+| REQ-V3.3.2-009 | grade_verdict 的 empirical status 比较前大小写归一化；stored grade 与机械结果不一致时输出告警（不再静默） | 已完成 |  |
+| REQ-V3.3.2-010 | gate ③（empirical_required）前置 verdict=="REACHABLE"——NEEDS_REVIEW/UNREACHABLE 携带 claim 不触发实证门禁 | 已完成 |  |
+| REQ-V3.3.2-011 | evidence_ledger.commit 的 demote_to 分支自动清 claim_type + claim_nulled_by 标记（与 collect 的 claim-null 对称） | 已完成 |  |
+| REQ-V3.3.2-012 | gate ③b 结构化：改读 R4 finding 的 empirical_result/claim_type 结构字段；强制范围收窄至 Medium+/forced-claim 类，Low 接受 source_fact/机制级；关键词文本匹配降为 fallback warn（修订 W6 §18.9） | 已完成 |  |
+| REQ-V3.3.2-013 | r4_feedback 消费者接线：读收缩后的 H7 结构化表与 R3 gate 证据 key:value 比对，产出 warn（v3.3 设计以来首次机械运行） | 已完成 |  |
+| REQ-V3.3.2-014 | export verify 模式读候选 re_verify_gap 字段自动渲染「复活复核 gap」段（挂在 checklist/self-refutation 同扩展点）；无 gap 候选不渲染 | 已完成 |  |
+| REQ-V3.3.2-015 | `--stage coverage` CLI：内置 tracked 计算（hypotheses ∪ R4 tracked_surfaces ∪ mirror_pairs ∪ coverage_bridge）+ id 归一化（SURF- 前缀剥离、去空格）+ unknown id 告警；输出即 assert_ledger 的 surface_data | 已完成 |  |
+| REQ-V3.3.2-016 | 共享 norm_surface_id 纯函数（SURF- 前缀剥离+去空格，定义于 surface_mapper，batch_verify 复用）；r4-collect 对 tracked_surfaces 归一化后不在 input_surface 归一化 id 集的告警。**不持久化 aliases**（可推导数据不落盘，防过设计） | 已完成 |  |
+| REQ-V3.3.2-017 | `--stage grade-recheck` CLI：批量逐候选跑 grade_verdict，差异写 grade_recomputed_by（v3.2 已设计条款的机械载体） | 已完成 |  |
+| REQ-V3.3.2-018 | H7 default_value_table 收缩：安全相关默认值清单（tls/auth/listen/password/limits/timeouts 类）≤10 项，schema {name, default, code_point, source_control, risk_dimensions(仅风险行), disposition}；修订 REQ-V3.3 H7 表义务 | 已完成 |  |
+| REQ-V3.3.2-019 | 步骤 0.5 按型门控：动态导入风险语言（python/js/java 反射场景）或 application 目标注入完整预检；静态编译语言（c/cpp/go/rust）降为"build 列表一行核对"短段 | 已完成 |  |
+| REQ-V3.3.2-020 | PREC 自证伪提示精度门：cwe/语言/sink 类三重过滤，匹配不足不注入；先例库主用途回归主代理裁决匹配 | 已完成 |  |
+| REQ-V3.3.2-021 | R2 签名 index/match 降为可选佐证器（SKILL.md 写明）；R0 selfcheck（回归锚点 + 去项目化扫描）不动——第一原则守卫保留 | 已完成 |  |
+| REQ-V3.3.2-022 | 义务入库三问写入 SKILL.md（触发条件/消费者/案例支撑），作为此后所有 REQ 的默认门槛 | 已完成 |  |
+| REQ-V3.3.2-023 | 环境能力探针清单入 harness_manuals 环境陷阱节：机制所需 syscall 探针（io_uring_setup 等）、依赖存在性（头/库/子模块物化）、工具存在性及替代（ss→/proc/net/tcp、time→getrusage）、shell 陷阱（zsh 展开、pkill 自匹配） | 已完成 |  |
+| REQ-V3.3.2-024 | SKILL.md 三处措辞对齐：复活抽样口径（声称类全量+其他 20%，对齐 REQ-V3.2-020/023）、grade-recheck 命令引用、R6 write_lesson 幂等语义 | 已完成 |  |
+
+## 软件需求（SWR-V3.3.2）（共 43 条）
+
+| 编号 | 需求 | 状态 | 备注 |
+|---|---|---|---|
+| SWR-V3.3.2-001 | assert_ledger gate ③（empirical_required）判定前加 `c.get("verdict")=="REACHABLE"` 前置条件 | 已完成 |  |
+| SWR-V3.3.2-002 | commit 的 correction.demote_to 分支：verdict 置为 demote 值的同时清 claim_type + 写 claim_nulled_by="commit-demote-v3.3.2" | 已完成 |  |
+| SWR-V3.3.2-003 | grade_verdict：empirical.status 比较前 `.lower()` 归一化；stored evidence_grade 与机械结果不一致时返回 warn 条目（不再静默） | 已完成 |  |
+| SWR-V3.3.2-004 | assert_ledger ③b 重写：读 R4 finding 的 empirical_result/claim_type 结构字段；强制范围=severity≥Medium 或 claim_type∈forced-claim 类；Low 且无实证接受 source_fact/机制级（REQ-V3.1-074 语义）；旧文本关键词匹配降为 fallback warn | 已完成 |  |
+| SWR-V3.3.2-005 | assert_ledger 新增复活改判检查：候选 `re_verify_gap` 非空 且 verdict==REACHABLE 且无 `refutation` 字段 → 违规（gate 名 post_resurrect_refutation） | 已完成 |  |
+| SWR-V3.3.2-006 | assert_ledger r4_feedback 实现：读 H7 default_value_table（收缩 schema 行）与 R3 REACHABLE gate 证据做 key:value 比对，差异产出 warn（r4_feedback 数组） | 已完成 |  |
+| SWR-V3.3.2-010 | `--from-journal` 增 `--expect <ids>`（逗号分隔或自动读 wave_registry）：journal 提取 id 集合 ⊇ expect 全集才落盘，不足/多余 → stderr 报错 exit≠0 | 已完成 |  |
+| SWR-V3.3.2-011 | 新命令 `--stage r35-collect --from-journal <dir>`：提取 refutation decisions（demote/strengthened/attribution_correction/note/PoC 文本），经 evidence_ledger.commit 落候选（correction 走 demote 语义，其余落 refutation 字段） | 已完成 |  |
+| SWR-V3.3.2-012 | 新命令 `--stage coverage`：tracked = hypotheses.surface_ids ∪ r4_findings[].findings[].tracked_surfaces ∪ mirror_pairs ∪ coverage_bridge.surfaces，全部经 norm_id（SURF- 前缀剥离+去空格）；输出 {total, tracked, missing, unknown_ids, surface_data} | 已完成 |  |
+| SWR-V3.3.2-013 | 新命令 `--stage grade-recheck`：逐候选跑 grade_verdict，grade 与 stored 不一致 → 更新 evidence_grade + grade_recomputed_by="main-agent-mechanical-recheck"，打印差异清单 | 已完成 |  |
+| SWR-V3.3.2-014 | IMPORTABILITY_STEPS 注入门控：`lang ∈ {python, javascript, java}` 或 target_kind==application 时注入完整步骤 0.5；静态编译语言（c/cpp/go/rust）注入一行"build 列表核对"短段 | 已完成 |  |
+| SWR-V3.3.2-015 | r4-collect：对 findings[].tracked_surfaces 逐 id 经 norm_surface_id 归一化后校验（对照 input_surface 归一化 id 集），未知 id 产出 warning 条目（不阻断落盘） | 已完成 |  |
+| SWR-V3.3.2-020 | export verify 模式：候选含 re_verify_gap 字段时在 prompt 追加「复活复核 gap（主代理注入, REQ-V3.2-021）」段（位置：checklist/self-refutation 之后）；无字段不渲染 | 已完成 |  |
+| SWR-V3.3.2-021 | export_script_resurrect：抽样后落盘 `.audit_results/_resurrect_sample.json`（{rule, selected[], unselected[]}），unselected 附抽样规则套用说明 | 已完成 |  |
+| SWR-V3.3.2-022 | 三模式 script 返回增加 project + dispatched_ids 字段（export 时注入模板常量） | 已完成 |  |
+| SWR-V3.3.2-023 | precedent_library.self_refutation_hints 精度门：cwe 交集 / lang 交集 / sink 类别匹配三重过滤，任一维度不匹配不注入；全不匹配返回空 | 已完成 |  |
+| SWR-V3.3.2-030 | biz_hypothesis.md H7 段：default_value_table 收缩 schema（安全相关默认值清单 ≤10 项：{name, default, code_point, source_control, risk_dimensions(仅风险行), disposition}） | 已完成 |  |
+| SWR-V3.3.2-031 | biz_hypothesis.md R4 finding schema 增可选 claim_type 字段（enum 同候选 claim_type） | 已完成 |  |
+| SWR-V3.3.2-032 | biz_hypothesis.md 增「义务入库三问」说明段（触发条件/消费者/案例支撑） | 已完成 |  |
+| SWR-V3.3.2-033 | verifier 任务书输出格式段增条款：实证结果与 claim_type 矛盾时必须按实证方向修正 claim 并在 evidence 说明 | 已完成 |  |
+| SWR-V3.3.2-040 | surface_mapper 定义共享 norm_surface_id(sid)（SURF- 前缀剥离+去空格，纯函数）；batch_verify 复用；不持久化 aliases 字段 | 已完成 |  |
+| SWR-V3.3.2-050 | SKILL.md 编排条款：每波 workflow 派发后登记 wave_registry.jsonl（run_id/mode/project/dispatched/payload_hash）；collect 以注册表+--expect 对账 | 已完成 |  |
+| SWR-V3.3.2-051 | SKILL.md R3.5 触发条款补：「复活重验改判 REACHABLE 且 grade≥edge_proven → 强制入 R3.5 证伪池」（对应 REQ-V3.2-021 修订） | 已完成 |  |
+| SWR-V3.3.2-052 | SKILL.md 三处措辞对齐：复活抽样口径（声称类全量+其他 20%，对齐 REQ-V3.2-020/023）；分级机械复核改引 `--stage grade-recheck` 命令；R6 写明 write_lesson 幂等语义（全量重渲染，--write 与 process_notes 顺序无关） | 已完成 |  |
+| SWR-V3.3.2-053 | SKILL.md R2 节：签名 index/match 降为可选佐证器（"签名命中降为佐证器"表述改为"可选，LLM 主路径不受影响"）；R0 selfcheck 描述不动 | 已完成 |  |
+| SWR-V3.3.2-054 | SKILL.md 增「义务入库三问」条款（触发条件/消费者/案例支撑），置于 REQ 门槛/第一原则区 | 已完成 |  |
+| SWR-V3.3.2-060 | 环境陷阱节增探针清单：机制 syscall 探针（io_uring_setup 等，附 C 探针片段）；依赖存在性（头文件/库/子模块物化）；工具替代（ss→/proc/net/tcp、time→getrusage）；shell 陷阱（zsh 等号展开、pkill -f 自匹配） | 已完成 |  |
+| SWR-V3.3.2-070 | REQ_V3_2.md 增补修订记录：REQ-V3.2-021 追加"重验改判 REACHABLE 且 grade≥edge_proven → 强制入 R3.5 池" | 已完成 |  |
+| SWR-V3.3.2-071 | REQ_V3_3.md 增补修订记录：H7 default_value_table 义务收缩为安全相关默认值清单（≤10 项） | 已完成 |  |
+| SWR-V3.3.2-072 | W6 发现文件 §18.9 修订记录：gate ③ 扩展 R4 收窄为 Medium+/forced-claim 类强制，Low 接受 source_fact/机制级 | 已完成 |  |
+| SWR-V3.3.2-073 | REQ_V3_1.md 增补修订记录：REQ-V3.1-051 落盘位置收敛为候选 refutation 字段（报告从队列派生） | 已完成 |  |
+| SWR-V3.3.2-080 | test_gate3_verdict_condition：NEEDS_REVIEW 带 claim_type=crash → assert 无 empirical_required | 已完成 |  |
+| SWR-V3.3.2-081 | test_commit_demote_clears_claim：demote_to 后 claim_type=null + claim_nulled_by | 已完成 |  |
+| SWR-V3.3.2-082 | test_empirical_status_case：status="CONFIRMED" 机械复核 = empirically_confirmed | 已完成 |  |
+| SWR-V3.3.2-083 | test_gate3b_structured：③b 读结构字段；Low finding 无实证不阻断；Medium+ forced-claim 无实证阻断 | 已完成 |  |
+| SWR-V3.3.2-084 | test_post_resurrect_refutation：re_verify_gap + REACHABLE + 无 refutation → 违规；补 refutation 后放行 | 已完成 |  |
+| SWR-V3.3.2-085 | test_coverage_normalize：SURF-S-001 归一化命中 S-001；unknown id 告警 | 已完成 |  |
+| SWR-V3.3.2-086 | test_gap_render：带 re_verify_gap 候选导出含 gap 段；无 gap 不含 | 已完成 |  |
+| SWR-V3.3.2-087 | test_resurrect_sample_dump：_resurrect_sample.json 存在且 selected/unselected 与 payload 一致 | 已完成 |  |
+| SWR-V3.3.2-088 | test_journal_expect：--expect 全集校验（不足报错/多余报错/恰好通过） | 已完成 |  |
+| SWR-V3.3.2-089 | test_step05_gating：C/Go 候选 prompt 不含完整 0.5 模板；python/application 含 | 已完成 |  |
+| SWR-V3.3.2-090 | test_prec_precision_gate：Host 族先例不注入非 HTTP 候选 | 已完成 |  |
+| SWR-V3.3.2-091 | test_r4_feedback：构造 H7 表与 R3 gate 证据冲突队列 → warn 输出 | 已完成 |  |

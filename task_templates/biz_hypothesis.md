@@ -24,21 +24,38 @@
 ## 强制: 三选一 verdict（confirmed / reviewed_clean / not_applicable）+ 覆盖范围说明
 
 ## v3.1 字段义务（缺失将被拒收）
-1. **tracked_surfaces**: 每个 finding 必须列出审查触及的 SURF- 前缀 surface id 数组
-   （含 coverage_note 中实质审查过的面——门禁⑦覆盖率簿记靠此字段, W6 §4/§9.7）
+1. **tracked_surfaces**: 每个 finding 必须列出审查触及的 surface id 数组——
+   **id 必须原样引用 input_surface.json 的 surface id**（不得自造 SURF- 前缀变体,
+   SWR-V3.3.2-015）；（含 coverage_note 中实质审查过的面——门禁⑦覆盖率簿记靠此字段, W6 §4/§9.7）
 2. **r3_link**: finding 与 R3 候选裁决重叠时引用候选 id + 裁决结论（严重度以 R3.5
    correction_record 为准, W6 §16.12）
 3. **empirical_result / mechanism_correction**: 异常路径描述必须实证抽验；
    实测纠正原证据机制描述时写入（W6 §13.5）
-4. H7 输出必须含「默认值全表」段（五维 × 每默认值）
+4. **claim_type（v3.3.2, SWR-V3.3.2-031）**: finding 声称 crash/oom/unbounded 等
+   实证类后果时必须填 claim_type（枚举同候选 claim_type），供 gate ③b 结构化判定；
+   不涉声称填 null
+5. H7 输出必须含「默认值全表」段——**收缩 schema（v3.3.2, SWR-V3.3.2-030）**：
+   只盘点**安全相关默认值**（tls/auth/listen/password/limits/timeouts 类，
+   编译期安全常量与随机源行计入），**≤10 行**；每行
+   {name, default, code_point, source_control, risk_dimensions(仅风险行填五维),
+   disposition}；全表文字 ≤800 字。非安全相关项进 coverage_note 一句话带过
 
 ## 产出（强制 JSON 写入 {out}，最终回复同 JSON）
 {"hypothesis_id":"{hypothesis_id}","verdict":"confirmed|reviewed_clean|not_applicable",
 "findings":[{"title":"...","cwe":["CWE-xxx"],"severity":"Critical|High|Medium|Low",
 "call_chain":["file:line",...],"evidence":"...","fix":"...",
-"tracked_surfaces":["SURF-..."],"r3_link":null|"CAND-xxx",
+"tracked_surfaces":["<input_surface.json 原样 id>"],"r3_link":null|"CAND-xxx",
+"claim_type":null|"crash|oom|unbounded|protocol_dos|other",
 "empirical_result":null|"...","mechanism_correction":null|"..."}],
-"coverage_note":"...","default_value_table":"H7 专用: 默认值全表（五维）"}
+"coverage_note":"...","default_value_table":[{"name":"...","default":"...",
+"code_point":"...","source_control":"...","risk_dimensions":"仅风险行填五维",
+"disposition":"保留/修改/文档对齐"}]}
+
+## 义务入库三问（v3.3.2, REQ-V3.3.2-022）
+本任务书每项义务（字段/段/表）都经三问校准：①触发条件（何时执行）
+②消费者（谁读它）③案例支撑（无案例的防御性义务已降为 checklist 提示）。
+凡"填了没人读"的产出段（如旧版五维全表）均已收缩——如认为某字段无用，
+在最终回复中附 `obligation_feedback` 说明，主代理裁决是否再裁剪。
 
 ## 落盘拦截契约（v3.2.3 强制）
 若环境（权限/plan mode）阻止写入 {out}：最终回复**必须**是完整 JSON 且

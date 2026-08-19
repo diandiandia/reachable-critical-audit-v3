@@ -34,7 +34,10 @@ def test_selfcheck_command_runs_on_nonfixture_project():
     cmdline = None
     for b in blocks:
         for line in b.splitlines():
-            if "selfcheck" in line and "signature_lib" in line:
+            # 只认命令形态行 (python3 开头)——fence 跨段误配对时散文行
+            # ("- R0 `signature_lib.py selfcheck` 不受影响...") 不得被当命令执行
+            if "selfcheck" in line and "signature_lib" in line \
+               and line.strip().startswith("python3"):
                 cmdline = line.strip()
     assert cmdline, "SKILL.md 无 selfcheck 命令行"
     with tempfile.TemporaryDirectory() as tmp:

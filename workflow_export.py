@@ -324,6 +324,8 @@ const results = await pipeline(
 const decisions = results.map((r, i) => r || null)
 return {
   mode: 'resurrect',
+  project: __PROJECT__,
+  dispatched_ids: args.candidates.map((c) => c.id),
   decisions: decisions.filter(Boolean),
   missing: args.candidates.filter((_, i) => !decisions[i]).map((c) => c.id),
   note: 'revived=true 由主代理回 R3 重验 (附复活者 gap), 不直接改 verdict (REQ-V3.2-021)',
@@ -380,10 +382,25 @@ def export_script_resurrect(project_root, batch_size=8):
     pool = resurrect_pool(queue["candidates"], batch_size)
     if not pool:
         return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "resurrect"}
+    # SWR-V3.3.2-021: 抽样决策落盘 (记录型义务, 消费者=事后问责/报告追溯)
+    selected = [c["id"] for c in pool]
+    unselected = [c["id"] for c in queue["candidates"]
+                  if c.get("status") == "VERIFIED" and c.get("verdict") == "UNREACHABLE"
+                  and not c.get("resurrection_review") and c["id"] not in selected]
+    with open(os.path.join(project_root, ".audit_results",
+                           "_resurrect_sample.json"), "w") as f:
+        json.dump({
+            "rule": "声称类 (crash/panic/oom/unbounded/xss/protocol_dos) UNREACHABLE 全量 + "
+                    "其他类 20% 抽样 (最少 2, 上限 batch_size), 已有 resurrection_review 排除",
+            "selected": selected, "unselected": unselected,
+            "unselected_note": "未入池候选无复活复核义务 (REQ-V3.2-023 只查声称类)",
+        }, f, ensure_ascii=False, indent=2)
     payload = []
     for c in pool:
         payload.append({"id": c["id"], "prompt": resurrect_prompt(c)})
-    js = RESURRECT_SCRIPT.replace("__SCHEMA__", json.dumps(RESURRECT_SCHEMA, ensure_ascii=False))
+    js = _inject_project_marker(
+        RESURRECT_SCRIPT.replace("__SCHEMA__", json.dumps(RESURRECT_SCHEMA, ensure_ascii=False)),
+        project_root)
     script_path = os.path.join(project_root, ".audit_results", "workflow_resurrect.js")
     with open(script_path, "w") as f:
         f.write(js)
@@ -397,6 +414,12 @@ def export_script_resurrect(project_root, batch_size=8):
                       "全部候选落盘 resurrection_review (REQ-V3.2-023)"),
     }
 
+
+
+def _inject_project_marker(js, project_root):
+    """SWR-V3.3.2-022: 返回段 project 字段注入 (静态替换, 非模板插值——
+    遵守 W6 §17.2 顶层 const 禁 ${} 插值条款)。"""
+    return js.replace("__PROJECT__", json.dumps(project_root, ensure_ascii=False))
 
 def _checklist_section(c):
     """SWR-V3.1-044: 绑定家族清单并渲染为 prompt 段。"""
@@ -460,6 +483,16 @@ def export_script(project_root, mode="verify", batch_size=4):
                 prompt += "\n\n" + checklist_section
             if hints:
                 prompt += "\n\n" + hints
+            # SWR-V3.3.2-020: 复活复核 gap 渲染 (REQ-V3.2-021「附复活者证据」的
+            # 机械载体——七项目批次 6 波手工后处理 hack 的制度化)
+            gap = c.get("re_verify_gap")
+            if gap:
+                prompt += (
+                    "\n\n## 复活复核 gap（主代理注入, REQ-V3.2-021）\n"
+                    "这是 R3.5-N 复活攻击后的重验轮次。上一轮 verifier 判定 UNREACHABLE，"
+                    "复活攻击者发现以下阻断缺口。请先在步骤 0 中逐条核实 gap 的 "
+                    "file:line 与机制真伪；gap 成立则必须按其方向重做阻断分析并给出"
+                    "新裁决；gap 不成立则在新 evidence 中明确反驳理由：\n" + gap)
             # Mode W: workflow agent 无文件系统, 心跳契约是 Mode A' 机制;
             # 结构化输出由 schema 强制 (StructuredOutput 自动重试), 收集由主代理落盘
             prompt += (
@@ -475,7 +508,9 @@ def export_script(project_root, mode="verify", batch_size=4):
 
     schema = VERDICT_SCHEMA if mode == "verify" else REFUTATION_SCHEMA
     template = VERIFY_SCRIPT if mode == "verify" else REFUTATION_SCRIPT
-    js = template.replace("__SCHEMA__", json.dumps(schema, ensure_ascii=False))
+    js = _inject_project_marker(
+        template.replace("__SCHEMA__", json.dumps(schema, ensure_ascii=False)),
+        project_root)
     out_rel = f"workflow_{mode}.js"
     script_path = os.path.join(project_root, ".audit_results", out_rel)
     with open(script_path, "w") as f:

@@ -11,6 +11,14 @@ description: >-
 
 ## 🥇 第一原则：通用型 Skill（最高优先，一切修改的第一判据）
 
+> **义务入库三问（v3.3.2, REQ-V3.3.2-022）**：本 skill 此后新增任何强制义务
+> （检查步骤/产出字段/门禁检查）前必须回答：①触发条件是什么（什么目标/语言/
+> 场景才执行）——无条件默认不建；②消费者是谁（哪个 gate/工具/报告段落读它）
+> ——无消费者不建，或先建消费者；③裁掉丢什么（有可回溯的失误案例支撑吗）
+> ——无案例支撑的防御性义务降为 checklist 提示。历史教训：H7 五维全表
+> （有义务无消费者）与步骤 0.5 无条件强制（无触发条件）是义务棘轮的直接产物
+> （W6 §28）。
+
 **目标**：本 skill 是**通用型代码审计 skill**——对任意语言、任意项目形态（application/library/hybrid/infra）、任意平台的任意代码库均可审计。审计能力必须来自通用机制（阶段骨架 / 门禁 / 数据模型 / CWE 锚定的语义族 / 通用检查清单），而不是来自"我们审过哪个项目"。
 
 **禁止项**（违反即视为缺陷，必须修复）：
@@ -109,13 +117,17 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    > ⚠️ **铁律 1（W5 教训 ①）**：agent 完成通知与文件落盘之间存在写读竞态。读任何子智能体产出文件前必须 `json.load` 重试（失败等 1-2s 重试至多 3 次）；重试后仍损坏才按"产出损坏"处理（重派或主代理修复），禁止把竞态误判为 agent 幻觉。
 4. **合并**：`python3 surface_mapper.py merge .audit_results/_r1_*.json --root <project>` → `input_surface.json`（含 conflicts 标注）。主代理复核后写 `reviewed_by`。
 
-## 🎯 R2：面内签名匹配 → 假设 → LLM 筛选
+## 🎯 R2：假设生成（LLM 主路径）→ LLM 筛选
 
-1. **项目索引**：`python3 signature_matcher.py index <project>`（粗粒度调用索引，窗口展开用）。
-2. **窗口匹配**：`python3 signature_matcher.py match .audit_results/input_surface.json <index.json>`。
-   窗口有界（entry 行 ±60 邻域 + BFS 逐层 cap 40 + 总 cap 300）。命中产出 Hit。
-3. **假设生成**：`python3 signature_matcher.py gen <hits.json>` → HYP-xxx（携带语义族/检查清单/sink 提示，**不是**最终候选）。
-4. **LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。筛选理由中的 focus sink（file:line）是后续簇化依据。
+**假设生成主路径**：LLM 直接基于 surface 图生成假设（主代理或限时 agent）。签名匹配是**可选佐证器**（SWR-V3.3.2-053）：
+- 库型/非服务端框架目标签名命中率趋近 0（七项目批次 7/7 项目 0 命中实测），**R2 不强制跑 index/match 链路**；
+- 如需佐证（服务端框架目标、或主代理判断签名面相关），按序运行：
+  1. `python3 signature_matcher.py index <project>`（粗粒度调用索引，窗口展开用）
+  2. `python3 signature_matcher.py match .audit_results/input_surface.json <index.json>`（窗口有界：entry 行 ±60 邻域 + BFS 逐层 cap 40 + 总 cap 300）
+  3. `python3 signature_matcher.py gen <hits.json>` → 佐证 hints（**不是**最终候选）
+- R0 `signature_lib.py selfcheck` 不受影响（回归锚点 + 去项目化扫描是第一原则守卫，仍强制）。
+
+**LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。筛选理由中的 focus sink（file:line）是后续簇化依据。
 
 ## 🔄 R3：候选验证（Mode W 默认）
 
@@ -125,7 +137,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
  "members":[{"id":"HYP-xxx"}],"status":"PENDING","priority":0}
 ```
 
-**Mode W 波次**：
+**Mode W 波次**（SWR-V3.3.2-050 编排条款：每波派发后登记 wave_registry）：
 ```bash
 python3 tools/batch_verify.py <project> --stage workflow-script --mode verify
 # → .audit_results/workflow_verify.js + payload（含逐候选任务书 prompt）
@@ -134,12 +146,23 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode verify
 # 3) missing 中的 id 执行 --stage bump-attempt（attempt≥3 → ESCALATED 主代理裁决）
 # 4) 循环直到队列无 PENDING
 ```
+
+**wave registry 簿记（强制）**：每波 Workflow 派发后向
+`.audit_results/wave_registry.jsonl` append 一行
+`{"run_id": <Workflow 返回 runId>, "mode": "verify|refutation|resurrect",
+  "project": "<绝对路径>", "dispatched": [<候选 id...>], "payload_hash": "<sha256>"}`；
+collect 时 `--from-journal <dir> --expect CAND-001,CAND-002,...` 以注册表全集对账
+（防 journal 张冠李戴/部分落盘，七项目批次教训）。
 - workflow 内 agent 无文件系统：**不要把心跳契约写进 Mode W 任务书**（心跳是 Mode A' 机制）；结构化输出由 schema 强校验（自动重试）。
 - `--stage collect` 落盘字段含 v3 必需项：`claim_type`、`edge_evidence`（实证门禁与分级依赖）。
 
 **Mode A' 降级**（无 Workflow 工具时）：`--stage next` 出队 3~4 候选 → Agent 工具逐候选验证（任务书含心跳契约：先写 `.pending` 占位，完成后写 `_verify_<id>.json`，目标存在且非本人 pending → 追加 `.agent-<id>` 后缀）→ `--stage collect` → 循环。
 
 ## ⚖️ R3.5：独立复核（REACHABLE 且 grade≥edge_proven 强制）
+
+**触发范围（SWR-V3.3.2-051）**：除常规 REACHABLE 外，**复活重验改判 REACHABLE
+且 grade≥edge_proven 的候选强制入池**（REQ-V3.2-021 修订：放行方向必须对抗复核；
+gate post_resurrect_refutation 强制，无 refutation 字段不放行）。
 
 ```bash
 python3 tools/batch_verify.py <project> --stage workflow-script --mode refutation
@@ -273,6 +296,9 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 ### R5 变更: 语言手册 + 环境陷阱自检 + 对照矩阵
 - `harness_manuals/<lang>.md` × 15（工具链探测/版本义务/陷阱清单/阳性模式/网络依赖）
 - 环境陷阱自检（stale 进程清理 + diag 路由 / daemon 线程 / env 传播验证 / PATH 检查）
+- **环境能力探针（v3.3.2, SWR-V3.3.2-060）**：实证前按声称机制跑
+  `harness_manuals/ENVIRONMENT_PROBES.md` 探针清单（syscall/依赖物化/工具替代/
+  shell 陷阱）——探针失败记录 blocker 并触发 R5 可选路径裁决，不实证不申报
 - 对照矩阵模式（默认拒绝 + 弱化接受，W6 §24.4）；源事实级降级规则（哨兵值/算术类，
   网络阻断记录 blocker，W6 §21.4）
 
@@ -308,12 +334,15 @@ akka-http / etcd / actix-web 三项目复跑对照:
 
 ### R2/R3: 语言维度
 - L2 词族按 surface.lang 过滤（C 词族不打 Rust surface）
-- verifier 上下文语言按候选.lang 取；分级机械复核条款（collect 后强制
-  grade_verdict 重算，差异写 grade_recomputed_by）
+- verifier 上下文语言按候选.lang 取；分级机械复核条款（collect 后强制机械复核：
+  `batch_verify.py <project> --stage grade-recheck` 批量逐候选重算，
+  差异写 grade_recomputed_by）
 - CK-FFI-BOUNDARY（第 21 条清单）绑定 ffi/ctypes/extern 类候选
 
 ### R3.5-N（新）: UNREACHABLE 复活攻击
-- 声称类 UNREACHABLE 全量 + 其他 20% 抽样（最少 2，上限 8）做 N=1 尽力复活复核
+- 声称类（crash/panic/oom/unbounded/xss/protocol_dos）UNREACHABLE 全量 + 其他 20%
+  抽样（最少 2，上限 8）做 N=1 尽力复活复核；抽样决策落盘 `_resurrect_sample.json`
+  （selected/unselected/rule）——未入池候选无复活复核义务
 - `workflow_export.export_script_resurrect` 导出；revived=true 回 R3 重验（附 gap），
   不直接改 verdict；全部候选落盘 resurrection_review（六门禁新增检查）
 - **落盘契约（v3.2.2 文档化，REQ-V3.2.2-015）**：`resurrection_review` 必须写为
@@ -404,7 +433,9 @@ python3 lessons_recorder.py <project> --write
 ```
 
 1. 主代理必须**人工补充过程观察段**（agent 行为/工具链陷阱/workflow 缺陷——
-   非结构化数据无法机械提取），用 `write_lesson(project, process_notes=[...])`
+   非结构化数据无法机械提取），用 `write_lesson(project, process_notes=[...])`。
+   幂等语义：write_lesson 全量重渲染（机械提取段 + 过程观察段），
+   与 `--write` 调用顺序无关、重复调用不丢内容
 2. 价值判定：高价值条目（新缺陷模式/语言盲区/裁决先例）当日并入
    W6_MORE_LANGS_FINDINGS.md 或对应语言 lessons；低价值条目留审计轨迹
 3. 索引 lessons/README.md 自动更新；**未执行 R6 的审计不得闭合**（报告阶段门禁）

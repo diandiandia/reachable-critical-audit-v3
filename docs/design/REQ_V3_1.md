@@ -145,3 +145,11 @@
 | P-I 工程健壮 | 080-085 | 已完成（lint/lenient/resume 已实现） |
 | P-J 门禁 | 012/090-094 | 部分（gate③→R4 完成，R0 条件修正未改） |
 | 验收 | 100/101 | 未开始（Phase 3.1.3） |
+
+## 修订记录（v3.3.2, SWR-V3.3.2-073）
+
+- **REQ-V3.1-051 落盘位置收敛**（2026-08-19, 依据七项目批次复盘 §27 A3）：
+  原验收判据"两字段进入报告"收敛为：**strengthened/attribution_correction 经
+  `batch_verify.py --stage r35-collect --from-journal` 机械落候选 `refutation`
+  字段（队列是唯一事实源原则），报告从队列派生**——原判据仍然成立，只是
+  数据流从"手工抄进报告"改为"落盘队列→报告派生"。
