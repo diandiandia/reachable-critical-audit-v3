@@ -620,18 +620,18 @@
 
 | 编号 | 需求 | 状态 | 备注 |
 |---|---|---|---|
-| REQ-V3.4.3-001 | r4-collect schema 自适应：hypotheses 对象形态/findings 顶层数组/evidence 数组/r3_link dict 四类漂移自动归一，写 schema_normalized_by 标记，0 提取告警含形态诊断 | 未开发 | 缺陷 P-A 漂移 |
-| REQ-V3.4.3-002 | R4 任务书注入实际 surface id 清单 + canonical 示例段；surface_mapper merge 前缀归一化 | 未开发 | 缺陷 P-A 自造 id+前缀 |
-| REQ-V3.4.3-003 | prompt 截断标记协议统一：resurrect/refute 共用；关键段必保留，次要段可截且必带标记 | 未开发 | 缺陷 P-A 截断 |
-| REQ-V3.4.3-004 | collect grade 机械重算对齐 SKILL.md，verifier 自报值存 grade_self_reported；回填规范文档化 | 未开发 | 缺陷 P-A grade 口径 |
-| REQ-V3.4.3-005 | gate ③b 结构判定优先：empirical_result 非空+实证特征判定；关键词表补 实测/measured | 未开发 | 缺陷 P-B 关键词表 |
-| REQ-V3.4.3-006 | claim_type 枚举加 "leak"：verifier schema/证伪者工具箱/报告分级/同族断言四处同步 | 未开发 | 缺陷 P-B leak |
-| REQ-V3.4.3-007 | batch_verify --mode resurrect 导出 + --stage r35n-collect 落盘候选级 resurrection_review | 未开发 | 缺陷 P-B resurrect CLI |
-| REQ-V3.4.3-008 | boundary_kind 词汇表加 "capi" | 未开发 | 缺陷 P-B capi |
-| REQ-V3.4.3-009 | checklist_binder 与 PREC 提示共用 applicability_signals 门控；不匹配绑通用资源类清单或空 | 未开发 | 缺陷 P-C 门控 |
-| REQ-V3.4.3-010 | H7 默认值全表预算 800→1200 字 | 未开发 | 缺陷 P-C 预算 |
-| REQ-V3.4.3-011 | export lang 推断优先读队列候选 lang 字段 | 未开发 | 缺陷 P-C lang |
-| REQ-V3.4.3-012 | 制度四项：R4 同事实去重流程/环境陷阱手册/回填规范条款/同族裁决判据先例 | 未开发 | 缺陷 P-D 全部 |
+| REQ-V3.4.3-001 | r4-collect schema 自适应：hypotheses 对象形态/findings 顶层数组/evidence 数组/r3_link dict 四类漂移自动归一，写 schema_normalized_by 标记，0 提取告警含形态诊断 | 已经完成开发 | 缺陷 P-A 漂移 |
+| REQ-V3.4.3-002 | R4 任务书注入实际 surface id 清单 + canonical 示例段；surface_mapper merge 前缀归一化 | 已经完成开发 | 缺陷 P-A 自造 id+前缀 |
+| REQ-V3.4.3-003 | prompt 截断标记协议统一：resurrect/refute 共用；关键段必保留，次要段可截且必带标记 | 已经完成开发 | 缺陷 P-A 截断 |
+| REQ-V3.4.3-004 | collect grade 机械重算对齐 SKILL.md，verifier 自报值存 grade_self_reported；回填规范文档化 | 已经完成开发 | 缺陷 P-A grade 口径 |
+| REQ-V3.4.3-005 | gate ③b 结构判定优先：empirical_result 非空+实证特征判定；关键词表补 实测/measured | 已经完成开发 | 缺陷 P-B 关键词表 |
+| REQ-V3.4.3-006 | claim_type 枚举加 "leak"：verifier schema/证伪者工具箱/报告分级/同族断言四处同步 | 已经完成开发 | 缺陷 P-B leak |
+| REQ-V3.4.3-007 | batch_verify --mode resurrect 导出 + --stage r35n-collect 落盘候选级 resurrection_review | 已经完成开发 | 缺陷 P-B resurrect CLI |
+| REQ-V3.4.3-008 | boundary_kind 词汇表加 "capi" | 已经完成开发 | 缺陷 P-B capi |
+| REQ-V3.4.3-009 | checklist_binder 与 PREC 提示共用 applicability_signals 门控；不匹配绑通用资源类清单或空 | 已经完成开发 | 缺陷 P-C 门控 |
+| REQ-V3.4.3-010 | H7 默认值全表预算 800→1200 字 | 已经完成开发 | 缺陷 P-C 预算 |
+| REQ-V3.4.3-011 | export lang 推断优先读队列候选 lang 字段 | 已经完成开发 | 缺陷 P-C lang |
+| REQ-V3.4.3-012 | 制度四项：R4 同事实去重流程/环境陷阱手册/回填规范条款/同族裁决判据先例 | 已经完成开发 | 缺陷 P-D 全部 |
 
 ## 软件需求（SWR-V3.4.3）（共 28 条）
 
@@ -639,32 +639,32 @@
 
 | 编号 | 需求 | 状态 | 备注 |
 |---|---|---|---|
-| SWR-V3.4.3-001 | stage_r4_collect 自适应解包（四类漂移 + severity 归一 + schema_normalized_by） | 未开发 | M1 |
-| SWR-V3.4.3-002 | tracked_surfaces 前缀模糊映射（未知 id 域前缀互转 + mapped_ids） | 未开发 | M1 |
-| SWR-V3.4.3-003 | --mode resurrect 转调 export_script_resurrect | 未开发 | M1 |
-| SWR-V3.4.3-004 | --stage r35n-collect --from-journal 落盘候选级 resurrection_review + 幂等 + --expect | 未开发 | M1 |
-| SWR-V3.4.3-005 | collect 写 grade_self_reported + 机械重算 + 标记 | 未开发 | M1 |
-| SWR-V3.4.3-010 | gate ③b 结构判定优先（实证特征正则）+ 关键词 fallback 补 实测/measured | 未开发 | M2 |
-| SWR-V3.4.3-011 | grade 口径注释对齐 | 未开发 | M2 |
-| SWR-V3.4.3-020 | _truncate_evidence 共用截断函数（关键段保留 + 有标记） | 未开发 | M3 |
-| SWR-V3.4.3-021 | export lang 推断优先级（候选 lang → 扩展名 → inventory） | 未开发 | M3 |
-| SWR-V3.4.3-022 | claim_type 枚举加 leak + 证伪者工具箱同步 | 未开发 | M3 |
-| SWR-V3.4.3-030 | merge 前缀归一化 + normalized_ids 元数据 | 未开发 | M4 |
-| SWR-V3.4.3-031 | BOUNDARY_KINDS 加 capi + validate 接受 | 未开发 | M4 |
-| SWR-V3.4.3-040 | checklist_binder applicability_signals 门控 + CK-GENERIC-RESOURCE 兜底 | 未开发 | M5 |
-| SWR-V3.4.3-041 | _self_refutation_section 同款 signals 过滤 | 未开发 | M5 |
-| SWR-V3.4.3-042 | CK-GENERIC-RESOURCE 新增 + CK-WS-MATERIALIZE 补 signals | 未开发 | M5 |
-| SWR-V3.4.3-043 | precedent_library +PREC-FAMILY-CONSISTENCY-001 | 未开发 | M5 |
-| SWR-V3.4.3-050 | R4 任务书 surface_id_list 占位符 + canonical 示例段 | 未开发 | M6 |
-| SWR-V3.4.3-051 | H7 表预算 800→1200（任务书+校验器） | 未开发 | M6 |
-| SWR-V3.4.3-060 | SKILL.md R4 同事实去重流程 | 未开发 | M7 |
-| SWR-V3.4.3-061 | SKILL.md 回填规范条款 | 未开发 | M7 |
-| SWR-V3.4.3-062 | SKILL.md claim_type 枚举表加 leak | 未开发 | M7 |
-| SWR-V3.4.3-063 | SKILL.md 契约同步 | 未开发 | M7 |
-| SWR-V3.4.3-070 | go.md 环境陷阱（pgrep/ss/CLI 交互/getrusage） | 未开发 | M8 |
-| SWR-V3.4.3-071 | c.md 环境陷阱（连接洪泛黄金证据） | 未开发 | M8 |
-| SWR-V3.4.3-080 | test_r4_collect_adaptive 四形态 | 未开发 | M9 |
-| SWR-V3.4.3-081 | test_surface_prefix_map | 未开发 | M9 |
-| SWR-V3.4.3-082 | test_resurrect_cli | 未开发 | M9 |
-| SWR-V3.4.3-083..089 | grade_self_reported / gate 结构判定 / leak 枚举 / capi 校验 / signals 门控 / 截断协议 / lang 优先 | 未开发 | M9 |
-| SWR-V3.4.3-090 | 全量回归 + 三锚点零回退 | 未开发 | M9 |
+| SWR-V3.4.3-001 | stage_r4_collect 自适应解包（四类漂移 + severity 归一 + schema_normalized_by） | 已经完成开发 | M1 |
+| SWR-V3.4.3-002 | tracked_surfaces 前缀模糊映射（未知 id 域前缀互转 + mapped_ids） | 已经完成开发 | M1 |
+| SWR-V3.4.3-003 | --mode resurrect 转调 export_script_resurrect | 已经完成开发 | M1 |
+| SWR-V3.4.3-004 | --stage r35n-collect --from-journal 落盘候选级 resurrection_review + 幂等 + --expect | 已经完成开发 | M1 |
+| SWR-V3.4.3-005 | collect 写 grade_self_reported + 机械重算 + 标记 | 已经完成开发 | M1 |
+| SWR-V3.4.3-010 | gate ③b 结构判定优先（实证特征正则）+ 关键词 fallback 补 实测/measured | 已经完成开发 | M2 |
+| SWR-V3.4.3-011 | grade 口径注释对齐 | 已经完成开发 | M2 |
+| SWR-V3.4.3-020 | _truncate_evidence 共用截断函数（关键段保留 + 有标记） | 已经完成开发 | M3 |
+| SWR-V3.4.3-021 | export lang 推断优先级（候选 lang → 扩展名 → inventory） | 已经完成开发 | M3 |
+| SWR-V3.4.3-022 | claim_type 枚举加 leak + 证伪者工具箱同步 | 已经完成开发 | M3 |
+| SWR-V3.4.3-030 | merge 前缀归一化 + normalized_ids 元数据 | 已经完成开发 | M4 |
+| SWR-V3.4.3-031 | BOUNDARY_KINDS 加 capi + validate 接受 | 已经完成开发 | M4 |
+| SWR-V3.4.3-040 | checklist_binder applicability_signals 门控 + CK-GENERIC-RESOURCE 兜底 | 已经完成开发 | M5 |
+| SWR-V3.4.3-041 | _self_refutation_section 同款 signals 过滤 | 已经完成开发 | M5 |
+| SWR-V3.4.3-042 | CK-GENERIC-RESOURCE 新增 + CK-WS-MATERIALIZE 补 signals | 已经完成开发 | M5 |
+| SWR-V3.4.3-043 | precedent_library +PREC-FAMILY-CONSISTENCY-001 | 已经完成开发 | M5 |
+| SWR-V3.4.3-050 | R4 任务书 surface_id_list 占位符 + canonical 示例段 | 已经完成开发 | M6 |
+| SWR-V3.4.3-051 | H7 表预算 800→1200（任务书+校验器） | 已经完成开发 | M6 |
+| SWR-V3.4.3-060 | SKILL.md R4 同事实去重流程 | 已经完成开发 | M7 |
+| SWR-V3.4.3-061 | SKILL.md 回填规范条款 | 已经完成开发 | M7 |
+| SWR-V3.4.3-062 | SKILL.md claim_type 枚举表加 leak | 已经完成开发 | M7 |
+| SWR-V3.4.3-063 | SKILL.md 契约同步 | 已经完成开发 | M7 |
+| SWR-V3.4.3-070 | go.md 环境陷阱（pgrep/ss/CLI 交互/getrusage） | 已经完成开发 | M8 |
+| SWR-V3.4.3-071 | c.md 环境陷阱（连接洪泛黄金证据） | 已经完成开发 | M8 |
+| SWR-V3.4.3-080 | test_r4_collect_adaptive 四形态 | 已经完成开发 | M9 |
+| SWR-V3.4.3-081 | test_surface_prefix_map | 已经完成开发 | M9 |
+| SWR-V3.4.3-082 | test_resurrect_cli | 已经完成开发 | M9 |
+| SWR-V3.4.3-083..089 | grade_self_reported / gate 结构判定 / leak 枚举 / capi 校验 / signals 门控 / 截断协议 / lang 优先 | 已经完成开发 | M9 |
+| SWR-V3.4.3-090 | 全量回归 + 三锚点零回退 | 已经完成开发 | M9 |
