@@ -668,3 +668,23 @@
 | SWR-V3.4.3-082 | test_resurrect_cli | 已经完成开发 | M9 |
 | SWR-V3.4.3-083..089 | grade_self_reported / gate 结构判定 / leak 枚举 / capi 校验 / signals 门控 / 截断协议 / lang 优先 | 已经完成开发 | M9 |
 | SWR-V3.4.3-090 | 全量回归 + 三锚点零回退 | 已经完成开发 | M9 |
+
+## 软件需求（SWR-V3.4.4）（共 10 条）
+
+> 来源: v3.4.3 验收项目 jsrsasign 全流程实测暴露缺陷（设计文档 SWR_V3_4_4.md）。
+> 系统需求: 无新增（修复批不改变阶段骨架与门禁语义）。
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| SWR-V3.4.4-001 | 信号关键词词边界匹配（checklist_binder + precedent_library `_kw_match`，ASCII 词边界 / CJK 子串） | 已经完成开发 | M1 |
+| SWR-V3.4.4-002 | r4-collect 保留主代理裁决字段（已裁决强制保留 + 未裁决兜底 + evidence 裁决尾追加 + finding 级 adjudication_preserved_from） | 已经完成开发 | M1 |
+| SWR-V3.4.4-003 | refutation 导出 qualified_total + truncated/advice 截断告警 | 已经完成开发 | M1 |
+| SWR-V3.4.4-004 | collect 对 refutation journal 报错指引 --stage r35-collect | 已经完成开发 | M1 |
+| SWR-V3.4.4-005 | R4 任务书部署布局义务（发布产物零包含 → claim 置空） | 已经完成开发 | M2 |
+| SWR-V3.4.4-006 | R4 任务书 empirical_result CONFIRMED:/REFUTED:/SOURCE_FACT: 前缀契约 | 已经完成开发 | M2 |
+| SWR-V3.4.4-007 | verifier 任务书计数类观测不做可复现证据 | 已经完成开发 | M2 |
+| SWR-V3.4.4-008 | tooling 版本一致性守卫（TOOLING_VERSION 注入导出脚本 + collect 三入口比对告警） | 已经完成开发 | M3 |
+| SWR-V3.4.4-009 | lessons_recorder 项目名绝对化 | 已经完成开发 | M3 |
+| SWR-V3.4.4-010 | workflow_export CLI --mode resurrect 路由 + docstring | 已经完成开发 | M3 |
+
+验收: test_v344.py 10 项全绿；全量 169 passed；jsrsasign 队列复跑零回退。

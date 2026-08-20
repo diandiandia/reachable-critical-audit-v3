@@ -11,6 +11,7 @@
 """
 import json
 import os
+import re
 import sys
 
 DEFAULT_LIB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -78,6 +79,15 @@ def _candidate_text(candidate):
                               "blocking_point", "r35_note", "lang", "lang_pair")).lower()
 
 
+def _kw_match(kw, text):
+    """SWR-V3.4.4-001: 关键词匹配——ASCII 关键词按词边界 (防 "ws" 误配
+    "jws"); CJK 关键词保持子串语义 (与 checklist_binder._kw_match 同构)。"""
+    kw = str(kw).lower()
+    if kw.isascii():
+        return re.search(r"(?<![a-z0-9])" + re.escape(kw) + r"(?![a-z0-9])", text) is not None
+    return kw in text
+
+
 def _signals_ok(p, candidate, text):
     """SWR-V3.3.2-023: 先例精度门——applicability_signals 存在时必须命中才注入；
     无 signals 的先例不拦截（向后兼容，增量填充）。
@@ -87,7 +97,7 @@ def _signals_ok(p, candidate, text):
     if not sig:
         return True
     if sig.get("text"):
-        if not any(k.lower() in text for k in sig["text"]):
+        if not any(_kw_match(k, text) for k in sig["text"]):
             return False
     if sig.get("requires_lang_pair") and not candidate.get("lang_pair"):
         return False
@@ -103,7 +113,7 @@ def _signals_ok(p, candidate, text):
         if not isinstance(langs, list):
             langs = [langs]
         clang = str(candidate.get("lang") or candidate.get("language") or "").lower()
-        if not any(str(l).lower() in clang for l in langs):
+        if not any(_kw_match(l, clang) for l in langs):
             return False
     return True
 

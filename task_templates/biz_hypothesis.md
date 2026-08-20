@@ -58,6 +58,15 @@ evidence 为单字符串、r3_link 为字符串或 null）：
 4. **claim_type（v3.3.2, SWR-V3.3.2-031）**: finding 声称 crash/oom/unbounded 等
    实证类后果时必须填 claim_type（枚举同候选 claim_type），供 gate ③b 结构化判定；
    不涉声称填 null
+6. **部署布局义务（v3.4.4, SWR-V3.4.4-005）**: 实证必须在**部署布局**执行——
+   npm main/bundle/官方构建产物（实际 require/import），vm 全量加载 src
+   不构成部署布局实证；模块不在任何发布产物（npm files/Makefile/bundle grep
+   三查零命中）→ 不构成可达声称，按源码卫生缺陷记录且 claim_type 置 null
+   （jsrsasign H7-F5 先例: pkcs5pkey 模块零发布被 vm 加载实证误判 REACHABLE crash）
+7. **empirical_result 前缀契约（v3.4.4, SWR-V3.4.4-006）**: empirical_result 必须以
+   `CONFIRMED:` / `REFUTED:` / `SOURCE_FACT:` 前缀开头——gate ③b 结构判定只识别
+   该前缀（真实实证缺前缀会被机械拦截, 主代理复验才放行; jsrsasign 5 条实证
+   finding 被误拦截实测）
 5. H7 输出必须含「默认值全表」段——**收缩 schema（v3.3.2, SWR-V3.3.2-030）**：
    只盘点**安全相关默认值**（tls/auth/listen/password/limits/timeouts 类，
    编译期安全常量与随机源行计入），**≤10 行**；每行

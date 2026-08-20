@@ -22,7 +22,10 @@ LESSONS_DIR = os.path.join(SKILL_ROOT, "lessons")
 def collect(project_root):
     """SWR-V3.2-080: 从审计产物机械提取问题证据。返回 {project, issues[]}。"""
     d = os.path.join(project_root, ".audit_results")
-    project = os.path.basename(project_root.rstrip("/"))
+    # SWR-V3.4.4-009: 项目名绝对化——相对路径 "." 曾产出空/异常文件名
+    # (SKILL_LESSONS_..md 实测事故)
+    project = os.path.basename(os.path.abspath(project_root)) or \
+        os.path.basename(os.path.abspath(os.getcwd()))
     issues = []
     # 1. verify_queue.json: 裁决纠正/复活/裁决注记
     try:

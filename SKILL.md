@@ -504,3 +504,45 @@ python3 lessons_recorder.py <project> --write
 ### 验收判据（Phase 3.4.3）
 三锚点复跑零回退 + 17 缺陷各自可测闭环 + 一个未审新项目全流程（选题优先
 coverage-ledger 缺口格），三条件满足才合并 main + install。
+
+## 🆕 v3.4.4 增量（2026-08-21，v3.4.3 验收项目实测暴露缺陷修复）
+
+> 设计文档: `docs/design/SWR_V3_4_4.md`（10 SWR）。修复批：不改变阶段骨架与门禁语义。
+
+### R3/R3.5: 导出与收集契约修补
+- **信号关键词词边界匹配**（SWR-V3.4.4-001）：checklist/precedent 的
+  applicability_signals.text 与 requires_lang——ASCII 关键词按词边界
+  （`(?<![a-z0-9])kw(?![a-z0-9])`），CJK 关键词保持子串语义
+  （"ws" 不再误配 "jws"；"c" 不再误配 "scala"）
+- **refutation 导出截断告警**（SWR-V3.4.4-003）：结果附 `qualified_total`
+  与截断时 `truncated/exported/advice`——batch_size 静默截断曾致主代理
+  误判资格全集
+- **collect 报错指引**（SWR-V3.4.4-004）：对 refutation journal 误跑 collect
+  时指引 `--stage r35-collect`
+- **tooling 版本守卫**（SWR-V3.4.4-008）：导出脚本内嵌 TOOLING_VERSION，
+  collect/r35-collect/r35n-collect 比对本地版本，漂移输出 warn
+  （导出/收集两端代码版本不一致的机械防线）
+- workflow_export.py CLI 支持 `--mode resurrect`（SWR-V3.4.4-010）
+
+### R3.5: 任务书防误报条款
+- verifier 任务书新增：**计数类观测不做可复现证据**（SWR-V3.4.4-007）——
+  几何随机变量（素性试除次数等）单次观测方向可翻转，只标"数量级参考"
+
+### R4: 收集语义与任务书修补
+- **r4-collect 保留主代理裁决字段**（SWR-V3.4.4-002）：按 finding title 匹配，
+  已裁决 finding（claim_nulled_by/empirical_verified_by/correction_record）
+  的裁决字段强制保留、empirical_result 的 CONFIRMED/REFUTED 标记强制保留、
+  evidence 裁决尾追加——重复 collect 不再抹掉主代理裁决
+- R4 任务书新增**部署布局义务**（SWR-V3.4.4-005）：实证必须在部署布局
+  （npm main/bundle/官方构建产物）执行，vm 全量加载 src 不构成部署布局实证；
+  模块不在任何发布产物 → 不构成可达声称（claim_type 置空，源码卫生缺陷）
+- R4 任务书 **empirical_result 前缀契约**（SWR-V3.4.4-006）：
+  `CONFIRMED:`/`REFUTED:`/`SOURCE_FACT:` 前缀——gate ③b 结构判定只识别该前缀，
+  消除真实实证缺标记被误拦截整类问题
+
+### R6: lessons_recorder 项目名绝对化（SWR-V3.4.4-009）
+相对路径 "." 不再产出空/异常文件名。
+
+### 验收判据（Phase 3.4.4）
+test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶段复跑零回退，
+三条件满足才合并 main + install。

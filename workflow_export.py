@@ -9,11 +9,17 @@
 用法:
     python3 workflow_export.py <project_root> --mode verify [--batch-size N]
     python3 workflow_export.py <project_root> --mode refutation [--batch-size N]
+    python3 workflow_export.py <project_root> --mode resurrect [--batch-size N]
 """
 import json
 import os
 import re
 import sys
+
+# SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
+# 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
+# installed 旧版收集的实测事故)
+TOOLING_VERSION = "3.4.4"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -204,6 +210,7 @@ const results = await pipeline(
 const verdicts = results.map((r, i) => r || null)
 return {
   mode: 'verify',
+  tooling_version: __TOOLING_VERSION__,
   verified: verdicts.filter(Boolean),
   missing: args.candidates.filter((_, i) => !verdicts[i]).map((c) => c.id),
   note: 'missing 保持 PENDING 并 attempt+1; verified 由主代理 --stage collect 落盘',
@@ -247,6 +254,7 @@ const perCand = args.candidates.map((c) => async () => {
 const decisions = await parallel(perCand)
 return {
   mode: 'refutation',
+  tooling_version: __TOOLING_VERSION__,
   decisions,
   note: 'demote=true 的候选由主代理降级并写 correction_record (evidence_ledger.commit); strengthened/attribution_corrections 写入报告 (W6 §13.6/§12.5)',
 }
@@ -359,6 +367,7 @@ const decisions = results.map((r, i) => r || null)
 return {
   mode: 'resurrect',
   project: __PROJECT__,
+  tooling_version: __TOOLING_VERSION__,
   dispatched_ids: args.candidates.map((c) => c.id),
   decisions: decisions.filter(Boolean),
   missing: args.candidates.filter((_, i) => !decisions[i]).map((c) => c.id),
@@ -452,8 +461,12 @@ def export_script_resurrect(project_root, batch_size=8):
 
 def _inject_project_marker(js, project_root):
     """SWR-V3.3.2-022: 返回段 project 字段注入 (静态替换, 非模板插值——
-    遵守 W6 §17.2 顶层 const 禁 ${} 插值条款)。"""
-    return js.replace("__PROJECT__", json.dumps(project_root, ensure_ascii=False))
+    遵守 W6 §17.2 顶层 const 禁 ${} 插值条款)。
+    SWR-V3.4.4-008: 同时注入 tooling 版本——collect 侧对比本模块版本,
+    不一致告警 (导出/收集两端代码版本漂移守卫, jsrsasign 验收实测事故)。"""
+    return (js.replace("__PROJECT__", json.dumps(project_root, ensure_ascii=False))
+              .replace("__TOOLING_VERSION__",
+                       json.dumps(TOOLING_VERSION, ensure_ascii=False)))
 
 def _checklist_section(c):
     """SWR-V3.1-044: 绑定家族清单并渲染为 prompt 段。"""
@@ -491,19 +504,28 @@ def _self_refutation_section(c):
 def export_script(project_root, mode="verify", batch_size=4):
     queue = bv.load_queue(project_root)
     candidates = queue["candidates"]
+    # SWR-V3.4.4-003: 截断前记录资格全集——batch_size 静默截断曾致主代理
+    # 误判"仅 N 个合格" (jsrsasign R3.5 波次实测); 结果附 qualified_total +
+    # truncated 标记 (verify 波次截断为设计行为, 计数同样有用)
+    qualified_total = 0
     if mode == "verify":
-        pool = [c for c in candidates if c.get("status") == "PENDING"][:batch_size]
+        qualified = [c for c in candidates if c.get("status") == "PENDING"]
+        qualified_total = len(qualified)
+        pool = qualified[:batch_size]
     elif mode == "refutation":
         # W6/ohmyzsh 发现: 多波复核时已复核候选 (落盘了 refutation 字段) 须排除,
         # 否则每波重复出队前 4 个
-        pool = [c for c in candidates
-                if c.get("status") == "VERIFIED" and c.get("verdict") == "REACHABLE"
-                and c.get("evidence_grade") in ("edge_proven", "empirically_confirmed")
-                and "refutation" not in c][:batch_size]
+        qualified = [c for c in candidates
+                     if c.get("status") == "VERIFIED" and c.get("verdict") == "REACHABLE"
+                     and c.get("evidence_grade") in ("edge_proven", "empirically_confirmed")
+                     and "refutation" not in c]
+        qualified_total = len(qualified)
+        pool = qualified[:batch_size]
     else:
         raise ValueError(f"unknown mode {mode}")
     if not pool:
-        return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": mode}
+        return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": mode,
+                "qualified_total": qualified_total}
 
     payload = []
     for c in pool:
@@ -558,10 +580,11 @@ def export_script(project_root, mode="verify", batch_size=4):
                     "prompts": [refute_prompt(c, i) for i in range(2)]}
                    for c in pool]
 
-    return {
+    result = {
         "status": "WORKFLOW_SCRIPT_READY",
         "mode": mode,
         "count": len(payload),
+        "qualified_total": qualified_total,
         "script_path": f".audit_results/{out_rel}",
         "payload_key": "candidates",
         "payload": payload,
@@ -580,6 +603,13 @@ def export_script(project_root, mode="verify", batch_size=4):
             f"strengthened/attribution_corrections 写入报告 (W6 §13.6/§12.5)。"
         ),
     }
+    # SWR-V3.4.4-003: 截断告警 (资格全集 > 本波导出数)
+    if len(payload) < qualified_total:
+        result["truncated"] = True
+        result["exported"] = len(payload)
+        result["advice"] = (f"资格候选 {qualified_total} 个, 本波仅导出 {len(payload)} 个 "
+                            f"(batch_size={batch_size})——若需全集请 --batch-size {qualified_total}")
+    return result
 
 
 def lint_script(js):
@@ -614,6 +644,13 @@ def main(argv):
         mode = argv[argv.index("--mode") + 1]
     if "--batch-size" in argv:
         batch_size = int(argv[argv.index("--batch-size") + 1])
+    # SWR-V3.4.4-010: resurrect 路由——原仅 batch_verify 入口可导出复活波,
+    # 直接 CLI 调用抛 unknown mode (两入口不一致实测)
+    if mode == "resurrect":
+        print(json.dumps(export_script_resurrect(project_root,
+                                                 batch_size=batch_size),
+                         indent=2, ensure_ascii=False))
+        return 0
     print(json.dumps(export_script(project_root, mode=mode, batch_size=batch_size),
                      indent=2, ensure_ascii=False))
     return 0

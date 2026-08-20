@@ -51,7 +51,9 @@ def test_export_verify_script():
 def test_export_verify_empty_pool():
     tmp = _mk_project([_cand("A-1", status="VERIFIED", verdict="UNREACHABLE")])
     r = we.export_script(tmp, mode="verify")
-    assert r == {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "verify"}
+    # v3.4.4 (SWR-V3.4.4-003): 空池也报 qualified_total (资格全集=0)
+    assert r == {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "verify",
+                 "qualified_total": 0}
 
 
 def test_export_refutation_pool_selection():

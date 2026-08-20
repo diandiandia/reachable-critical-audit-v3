@@ -415,6 +415,9 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
         }
         updated += 1
     save_queue(project_root, queue)
+    tw = _tooling_version_warning(project_root)
+    if tw:
+        print(f"Warning (SWR-V3.4.4-008): {tw}", file=sys.stderr)
     print(json.dumps({"status": "R35N_COLLECTED",
                       "updated": updated, "skipped_existing": skipped,
                       "candidates": [d["id"] for d in decisions]},
@@ -566,6 +569,66 @@ def _extract_journal_verdicts(transcript_dir):
         if isinstance(r, dict) and r.get("id") and r.get("verdict"):
             out[r["id"]] = r
     return out
+
+
+def _refutation_journal_hint(transcript_dir):
+    """SWR-V3.4.4-004: 检测 journal 是否含 refutation schema 结果
+    (id+refuted), 是则返回 r35-collect 指引。"""
+    jp = os.path.join(transcript_dir, "journal.jsonl")
+    if not os.path.exists(jp):
+        return ""
+    try:
+        for line in open(jp):
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("type") != "result":
+                continue
+            r = rec.get("result") or rec.get("value")
+            if isinstance(r, dict) and r.get("id") and "refuted" in r:
+                return ("——该 journal 为 refutation 结果 (id+refuted 形态), "
+                        "请用 --stage r35-collect")
+    except OSError:
+        return ""
+    return ""
+
+
+def _tooling_version_warning(project_root):
+    """SWR-V3.4.4-008: 导出脚本内嵌 TOOLING_VERSION vs 本模块版本比对——
+    不一致时返回 warn 文本 (不阻断, 主代理裁决)。导出/收集两端代码版本
+    漂移曾致 jsrsasign 验收 collect 误用旧版 (实测事故)。"""
+    audit = os.path.join(project_root, ".audit_results")
+    if not os.path.isdir(audit):
+        return None
+    local = None
+    try:
+        import importlib.util
+        parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec = importlib.util.spec_from_file_location(
+            "workflow_export", os.path.join(parent, "workflow_export.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        local = getattr(mod, "TOOLING_VERSION", None)
+    except Exception:
+        pass
+    warnings = []
+    for name in ("workflow_verify.js", "workflow_refutation.js",
+                 "workflow_resurrect.js"):
+        p = os.path.join(audit, name)
+        if not os.path.exists(p):
+            continue
+        try:
+            m = re.search(r"tooling_version:\s*([\"'])([0-9.]+)\1",
+                          open(p).read())
+        except OSError:
+            continue
+        if not m:
+            continue
+        if local and m.group(2) != local:
+            warnings.append(f"{name} 由 v{m.group(2)} 导出, 当前代码 v{local} "
+                            f"——collect 结果与导出端版本不一致, 请核对")
+    return "; ".join(warnings) if warnings else None
 
 
 def _safe_name(key):
@@ -739,6 +802,62 @@ def _map_surface_id(sid, known):
     return sid, False
 
 
+# SWR-V3.4.4-002: 主代理裁决字段——r4-collect 重跑时按 finding title 匹配
+# 保留旧记录中的裁决痕迹 (agent 新产出显式携带的字段优先)。
+_R4_ADJUDICATION_FIELDS = (
+    "claim_type", "claim_nulled_by", "empirical_verified_by",
+    "correction_record", "mapped_surface_ids",
+)
+
+
+def _preserve_adjudication(old, new):
+    """返回被保留字段列表 (供 adjudication_preserved_from 追溯)。
+
+    SWR-V3.4.4-002 语义: 重新 collect 的输入文件是 agent 原始产出 (不含裁决),
+    必然携带 claim_type 等原始值——已裁决 finding 的裁决字段须**强制保留**
+    (裁决信号 = claim_nulled_by/empirical_verified_by/correction_record);
+    未裁决 finding 仅在新值缺失时用旧值兜底。"""
+    preserved = []
+    old_fi = {fi.get("title"): fi for fi in (old.get("findings") or [])}
+    for fi in (new.get("findings") or []):
+        ofi = old_fi.get(fi.get("title"))
+        if not ofi:
+            continue
+        fi_preserved = []
+        adjudicated = bool(ofi.get("claim_nulled_by")
+                           or ofi.get("empirical_verified_by")
+                           or ofi.get("correction_record"))
+        if adjudicated:
+            for k in _R4_ADJUDICATION_FIELDS:
+                if k in ofi:
+                    fi[k] = ofi[k]
+                    fi_preserved.append(k)
+        else:
+            for k in _R4_ADJUDICATION_FIELDS:
+                if ofi.get(k) and not fi.get(k):
+                    fi[k] = ofi[k]
+                    fi_preserved.append(k)
+        # empirical_result: 旧值带 CONFIRMED/REFUTED 主代理标记 → 强制保留
+        # (前缀标记即主代理复验信号, 原始输入不可能携带)
+        oer = ofi.get("empirical_result") or ""
+        ner = fi.get("empirical_result") or ""
+        if oer and (oer.upper().startswith(("CONFIRMED", "REFUTED"))
+                    or (not ner)):
+            fi["empirical_result"] = oer
+            fi_preserved.append("empirical_result")
+        # evidence: 旧值含主代理裁决段而新值无 → 追加裁决段 (不整段覆写)
+        oev = ofi.get("evidence") or ""
+        nev = fi.get("evidence") or ""
+        idx = oev.find("主代理裁决")
+        if idx >= 0 and "主代理裁决" not in nev:
+            fi["evidence"] = nev + "\n" + oev[idx:]
+            fi_preserved.append("evidence(adjudication-tail)")
+        if fi_preserved:
+            fi["adjudication_preserved_from"] = list(fi_preserved)
+            preserved.extend(fi_preserved)
+    return preserved
+
+
 def stage_r4_collect(project_root, findings_file):
     """SWR-V3-055: R4 findings 写回 (merge 语义)。
 
@@ -766,6 +885,14 @@ def stage_r4_collect(project_root, findings_file):
             f["status"] = "VERIFIED"
             if norm_flags:
                 f["schema_normalized_by"] = list(norm_flags)
+            # SWR-V3.4.4-002: 保留既有 finding 的主代理裁决字段——重复 collect
+            # 不得抹掉 claim 置空/实证标记/裁决记录 (jsrsasign H7-F5 实测事故)
+            old = existing.get(hid)
+            if old:
+                preserved = _preserve_adjudication(old, f)
+                if preserved:
+                    f.setdefault("adjudication_preserved_from", []) \
+                     .extend(preserved)
             existing[hid] = f
             collected += 1
     if not collected and items:
@@ -1002,6 +1129,9 @@ def stage_r35_collect(project_root, transcript_dir):
             refutation["attribution_correction"] = ac
         el.commit(queue, {"id": cid, "refutation": refutation})
     save_queue(project_root, queue)
+    tw = _tooling_version_warning(project_root)
+    if tw:
+        print(f"Warning (SWR-V3.4.4-008): {tw}", file=sys.stderr)
     print(json.dumps({"status": "R35_COLLECTED", "candidates": sorted(by_id)},
                      ensure_ascii=False))
     return 0
@@ -1482,6 +1612,10 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 5. claim 与实证自洽 (SWR-V3.3.2-033): 实证结果与 claim_type 矛盾时，必须按实证方向
    修正 claim 并在 evidence 说明（如实证 exit 0 且确定性崩溃不可达，则不得声明 crash，
    改 other 并记录实测结果）
+6. 计数类观测不做可复现证据 (SWR-V3.4.4-007): 素性试除次数、重试次数等
+   几何随机变量单次观测波动大（同输入两次运行方向可翻转）——只标注
+   "单次观测, 数量级参考", 不得作为可复现证据引用（jsrsasign CAND-010
+   MR 计数 79/48 vs 55/69 实测翻转）
 """
     return prompt
 
@@ -1619,12 +1753,19 @@ def main():
                 sys.exit(1)
             extracted = _extract_journal_verdicts(from_journal)
             if not extracted:
+                # SWR-V3.4.4-004: journal 为 refutation 结果时指引正确入口
+                # (jsrsasign R3.5 收集时对反证 journal 误跑 collect 实测绕路)
+                hint = _refutation_journal_hint(from_journal)
                 print(f"Error: 目录存在但 journal.jsonl 无 schema-validated 结果: "
-                      f"{from_journal} (检查 journal 行 type=result 且含 id+verdict)",
+                      f"{from_journal} (检查 journal 行 type=result 且含 id+verdict)"
+                      f"{hint}",
                       file=sys.stderr)
                 sys.exit(1)
             # SWR-V3.3.2-010: --expect 全集校验——journal 提取结果必须覆盖
             # 派发全集 (防子集误匹配/部分落盘, 七项目批次 journal 张冠李戴教训)
+            tw = _tooling_version_warning(project_root)
+            if tw:
+                print(f"Warning (SWR-V3.4.4-008): {tw}", file=sys.stderr)
             if expect_ids:
                 missing = [e for e in expect_ids if e not in extracted]
                 if missing:

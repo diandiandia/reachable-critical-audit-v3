@@ -45,6 +45,15 @@ def _candidate_text(candidate):
                     for k in ("sink_type", "summary", "snippet", "title", "claim"))
 
 
+def _kw_match(kw, text):
+    """SWR-V3.4.4-001: 关键词匹配——ASCII 关键词按词边界 (防 "ws" 误配
+    "jws", jsrsasign CAND-001 实测); CJK 关键词保持子串语义 (无词边界概念)。"""
+    kw = str(kw).lower()
+    if kw.isascii():
+        return re.search(r"(?<![a-z0-9])" + re.escape(kw) + r"(?![a-z0-9])", text) is not None
+    return kw in text
+
+
 def _signals_ok(sig, candidate, text):
     """SWR-V3.4.3-040: 清单适用性门控——applicability_signals 存在时必须命中
     才绑定 (CK-WS-MATERIALIZE 经 cwe CWE-400 误绑纯 JWT 库的 P1/P2 教训)。
@@ -53,14 +62,14 @@ def _signals_ok(sig, candidate, text):
         return True
     tl = text.lower()
     if sig.get("text"):
-        if not any(str(k).lower() in tl for k in sig["text"]):
+        if not any(_kw_match(k, tl) for k in sig["text"]):
             return False
     if sig.get("requires_lang"):
         langs = sig["requires_lang"]
         if not isinstance(langs, list):
             langs = [langs]
         clang = str(candidate.get("lang") or candidate.get("language") or "").lower()
-        if not any(str(l).lower() in clang for l in langs):
+        if not any(_kw_match(l, clang) for l in langs):
             return False
     if sig.get("requires_claim"):
         claims = sig["requires_claim"]
