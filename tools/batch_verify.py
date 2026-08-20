@@ -585,6 +585,12 @@ def stage_r4_collect(project_root, findings_file):
     v3.2.3 (Lua 审计): 任务书模板产出 {"hypotheses":[...]} 包裹结构与
     裸列表双形态自适应解包; 输入非空但 0 hypothesis_id 提取时 stderr 告警
     (静默空收曾导致主代理误判 R4 已收集)。"""
+    # v3.4.2: sys.path bootstrap——v3.3.2 为新 stage 统一加 bootstrap 时漏掉
+    # r4_collect, 从 workspace 外运行 (cwd=/root) 时 import surface_mapper
+    # 失败且被误报为 "tracked_surfaces 未知 id" 告警 (P0 三锚点复跑实测)
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
     queue = load_queue(project_root)
     findings = json.load(open(findings_file))
     if isinstance(findings, dict) and isinstance(findings.get("hypotheses"), list):
@@ -629,8 +635,8 @@ def stage_r4_collect(project_root, findings_file):
                             unknown.append({"hypothesis": f.get("hypothesis_id"),
                                             "finding": (fi.get("title") or "")[:60],
                                             "surface_id": sid})
-        except (ImportError, ValueError) as e:
-            unknown.append({"error": f"id 校验不可用: {e}"})
+        except ValueError as e:
+            unknown.append({"error": f"input_surface.json 校验失败: {e}"})
     result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
     if unknown:
         result["unknown_surface_ids"] = unknown

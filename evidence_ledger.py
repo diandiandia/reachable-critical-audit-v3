@@ -114,8 +114,10 @@ def grade_verdict(v):
        (status in CONFIRMED_EMPIRICAL_STATUSES or scope_infer):
         grade = "empirically_confirmed"
     else:
-        chain = v.get("call_chain", [])
-        edges = v.get("edge_evidence", [])
+        # v3.4.2: 旧队列显式 null (JSON null → None) 守卫——actix-web 复跑
+        # CAND-010 edge_evidence=None 曾致 TypeError (None 不可迭代)
+        chain = v.get("call_chain") or []
+        edges = v.get("edge_evidence") or []
         for e in edges:
             if "edge" not in e or "proof" not in e or not str(e.get("proof", "")).strip():
                 errors.append(f"边证据缺 proof: {e}")
@@ -191,13 +193,16 @@ def commit(queue, verdict):
 TERMINAL_STATUSES = {"VERIFIED", "ESCALATED", "NEEDS_REVIEW"}
 
 
-def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind=True):
+def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind=True,
+                  require_resurrection=True):
     """SWR-V3-034 + REQ-V3-093/095/096 + SWR-V3.2.1-004/040: 门禁。
     ①no_pending ②REACHABLE 无 static_only ③实证类 100% ④H1-H7 全 VERIFIED
     ⑤对账零差异 (dispatched 提供时: 每个已派发 id 必须有终态)
     ⑥escalated=0 或主代理签收 (escalated_signed_off)
     ⑦surface 覆盖率=100% (surface_data 提供时)
     ⑧target_kind_required (v3.2.1, require_target_kind=False 仅复跑兼容)
+    ③c 复活攻击完成度 (v3.2): require_resurrection=False 仅复跑 v3.2 机制发布前
+    旧队列时豁免 (产出 warn 级豁免注记, 同 ⑧ 先例; v3.4.2)
     r4_feedback (v3.2.1, warn 级): H-7 默认值盘点与 R3 REACHABLE gate 证据冲突检测
     返回 (ok, violations)。dispatched/surface_data 为 None 时对应门禁跳过并记 skip_note。
     ⑧/r4_feedback 之外的 warn 级违规不阻断 PASS (v3.2.1 起 ok 只计 blocking)。"""
@@ -238,14 +243,23 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         violations.append({"gate": "escalated_unsigned", "ids": escalated})
     # ③c v3.2 (SWR-V3.2-051): R3.5-N 复活攻击完成度——声称类 UNREACHABLE
     # 必须有 resurrection_review (防漏放, 313 验收 etcd 三连救回的制度化)
-    for c in cands:
-        if c.get("verdict") != "UNREACHABLE":
-            continue
-        text = " ".join(str(c.get(k) or "")
-                        for k in ("claim_type", "evidence", "summary")).lower()
-        if any(k in text for k in EMPIRICAL_CLAIMS) and \
-           not c.get("resurrection_review"):
-            violations.append({"gate": "resurrection_required", "id": c.get("id")})
+    # v3.4.2: 复跑 v3.2 机制发布前的旧队列 (无 resurrection_review 字段
+    # 且 R3.5 波不覆盖 UNREACHABLE 方向) 时豁免——P0 三锚点复跑实测;
+    # 豁免产出 warn 注记 (不阻断), 不伪造复活记录
+    if require_resurrection:
+        for c in cands:
+            if c.get("verdict") != "UNREACHABLE":
+                continue
+            text = " ".join(str(c.get(k) or "")
+                            for k in ("claim_type", "evidence", "summary")).lower()
+            if any(k in text for k in EMPIRICAL_CLAIMS) and \
+               not c.get("resurrection_review"):
+                violations.append({"gate": "resurrection_required", "id": c.get("id")})
+    else:
+        violations.append({"gate": "resurrection_exempted", "severity": "warn",
+                           "note": "③c 豁免: 旧队列复跑 (require_resurrection=False), "
+                                   "队列为 v3.2 复活机制发布前产物, 不伪造复活记录 "
+                                   "(同 ⑧ target_kind 豁免先例, v3.4.2)"})
     # v3.3.2 (SWR-V3.3.2-005): 复活改判防漏放——带 re_verify_gap 的候选重验改判
     # REACHABLE 后必须再经 R3.5 独立证伪 (refutation 字段), 否则违规
     # (REQ-V3.2-021 修订: 放行方向强制对抗复核)
@@ -286,8 +300,10 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
                                    "severity": sev, "claim_type": ft})
             elif not ft:
                 # fallback: 无结构化 claim_type → 关键词扫描仅 warn
+                # v3.4.2: evidence 可为旧 schema dict 形态 (lighttpd 复跑
+                # 实测), str() 归一化防 TypeError
                 text = ((fi.get("title") or "") + " " +
-                        (fi.get("evidence") or "")).lower()
+                        str(fi.get("evidence") or "")).lower()
                 if any(k in text for k in EMPIRICAL_CLAIMS) and not has_confirmed:
                     violations.append({"gate": "empirical_required_r4_warn",
                                        "severity": "warn",
@@ -342,11 +358,13 @@ def r4_feedback(queue):
     V_c ≠ V_h → 冲突 (主代理裁决)。动机: Lersosa H-7 f1 (仓库配置=true) 在
     CAND-008 原判定 (代码默认 tls_enable=false→明文) 出错处是对的。"""
     conflicts = []
+    # v3.4.2: (?<!\.) 负向断言——文件行号引用 "codec.rs:89" 曾被误当
+    # key:value 赋值 (P0 actix 复跑: key="rs" 89≠53 假冲突)
     assign_re = re.compile(
-        r"([a-z_][a-z0-9_]*)\s*[=:]\s*(true|false|\"[^\"]{1,40}\"|\d+)")
+        r"(?<!\.)([a-z_][a-z0-9_]*)\s*[=:]\s*(true|false|\"[^\"]{1,40}\"|\d+)")
     # key + 可选镜头词 + 可选赋值符 + value ("tls_enable 零值 false" 形态)
     gap_val_re = re.compile(
-        r"([a-z_][a-z0-9_]*)\s*(?:零值|默认|缺省)\s*[=:]?\s*"
+        r"(?<!\.)([a-z_][a-z0-9_]*)\s*(?:零值|默认|缺省)\s*[=:]?\s*"
         r"(true|false|\"[^\"]{1,40}\"|\d+)")
     commit_ctx_re = re.compile(
         r"(?:配置|仓库|shipped|committed|实际值)\s*[=:]\s*"
@@ -366,7 +384,7 @@ def r4_feedback(queue):
                 h7_committed.setdefault(m.group(1), []).append((m.group(2), text[:120]))
             # 形态2: key 出现后 50 字符内的 (配置|仓库|shipped|...)=value 零回指
             # ("tls_enable 代码零值=false（明文），仓库配置=true", W6 §25.4 真实形态)
-            for m in re.finditer(r"([a-z_][a-z0-9_]+)", text):
+            for m in re.finditer(r"(?<!\.)([a-z_][a-z0-9_]+)", text):
                 tail = text[m.end(): m.end() + 50]
                 cm = commit_ctx_re.search(tail)
                 if cm:

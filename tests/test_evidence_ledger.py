@@ -25,6 +25,18 @@ def test_edge_without_proof_errors():
     _, errors = el.grade_verdict(v)
     assert any("proof" in e for e in errors)
 
+def test_grade_null_edge_evidence_guarded():
+    # v3.4.2: 旧队列 JSON 显式 null → None, 不得 TypeError (actix CAND-010 复跑崩溃)
+    v = {"verdict": "UNREACHABLE", "call_chain": None, "edge_evidence": None}
+    grade, _ = el.grade_verdict(v)
+    assert grade == "static_only"
+
+def test_grade_null_call_chain_guarded():
+    v = {"verdict": "REACHABLE",
+         "edge_evidence": [{"edge": "a->b", "proof": "grep hit"}]}
+    grade, _ = el.grade_verdict(v)
+    assert grade == "edge_proven"
+
 def test_preconditions_platform_evidence():
     v = {"platform_precondition": "linux_only"}
     issues = el.check_preconditions(v)
@@ -284,3 +296,40 @@ def test_r4_feedback_single_char_key_filtered():
     ok, violations = el.assert_ledger(q)
     assert ok
     assert not any(v.get("gate") == "r4_feedback" for v in violations)
+
+def test_r4_feedback_file_line_ref_not_assignment():
+    # v3.4.2: "codec.rs:89" / "multipart.rs:53" 文件行号引用不得匹配为
+    # key:value 赋值 (P0 actix 复跑假冲突 key="rs" 89≠53)
+    q = {"target_kind": "application",
+         "candidates": [
+            {"id": "C-1", "status": "VERIFIED", "verdict": "REACHABLE",
+             "evidence_grade": "empirically_confirmed", "claim_type": "other",
+             "evidence": "默认: Codec::new() max_size=65_536 (codec.rs:89)"}],
+         "r4_findings": [
+            {"hypothesis_id": f"H-{i}", "status": "VERIFIED"}
+            for i in range(1, 8)] + [
+            {"hypothesis_id": "H-7", "status": "VERIFIED", "verdict": "confirmed",
+             "default_value_table": [
+                 {"name": "rs", "default": "53", "code_point": "x",
+                  "disposition": "保留"}]}]}
+    ok, violations = el.assert_ledger(q)
+    assert ok
+    assert not any(v.get("gate") == "r4_feedback" for v in violations)
+
+def test_assert_resurrection_exemption_warn():
+    # v3.4.2: require_resurrection=False → ③c 豁免产出 warn 注记, 不阻断
+    q = {"target_kind": "application",
+         "candidates": [
+            {"id": "C-1", "status": "VERIFIED", "verdict": "UNREACHABLE",
+             "evidence_grade": "edge_proven",
+             "claim_type": "protocol_dos", "evidence": "协议 DoS 已证伪"}],
+         "r4_findings": [
+            {"hypothesis_id": f"H-{i}", "status": "VERIFIED"}
+            for i in range(1, 8)]}
+    ok, violations = el.assert_ledger(q, require_resurrection=False)
+    assert ok
+    assert any(v.get("gate") == "resurrection_exempted" for v in violations)
+    # 默认 True 时同队列应触发 ③c
+    ok2, violations2 = el.assert_ledger(q)
+    assert not ok2
+    assert any(v.get("gate") == "resurrection_required" for v in violations2)

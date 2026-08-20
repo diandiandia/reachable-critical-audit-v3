@@ -308,3 +308,54 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 >    真实数据上点火即噪音。修复：committed/候选两侧 key 长度 ≥2 守卫。
 > 教训：新门禁/新命令上线后必须对**旧版本审计产物**复跑——本次三个缺口全是
 > "新工具 × 旧数据"方向，而 v3.4 验收只测了新数据方向。
+
+## 31. P0 三锚点复跑发现（sinatra/lighttpd1.4/actix-web 旧队列 × v3.4.1 工具链，2026-08-20）
+
+> 测试计划 TEST_PLAN_V332_V34.md §1 的执行。三锚点六门禁全部 ok=True，但暴露
+> 5 项代码缺陷（v3.4.2 修复）+ 4 项旧队列兼容裁决（主代理路径）。
+
+### 31.1 v3.4.2 代码缺陷（5 项，已修复 + 测试）
+
+| # | 缺陷 | 形态 | 修复 |
+|---|---|---|---|
+| F1 | grade_verdict 对 `edge_evidence=None`（JSON 显式 null）无守卫 → TypeError 整批崩溃 | actix CAND-010 | `edges = v.get("edge_evidence") or []`（call_chain 同） |
+| F2 | stage_r4_collect 缺 sys.path bootstrap（v3.3.2 为新 stage 统一加时漏掉）→ `No module named 'surface_mapper'` 且被误报为 unknown-id 告警 | 三锚点全中 | bootstrap 补齐 + ImportError 不再伪装成 unknown |
+| F3 | assert_ledger ③b fallback 拼 `fi["evidence"]` 未 str() → dict 形态（旧 schema）TypeError | lighttpd | `str(...)` 归一化 |
+| F4 | ③c 复活检查对 v3.2 机制发布前的旧队列（无 resurrection_review 字段）恒违规——回填会伪造复活记录，重跑复活会改变审计结论（P0=工具链验证非重审计） | 三锚点全中 | `require_resurrection=False` 豁免参数（warn 注记，同 ⑧ 先例） |
+| F5 | r4_feedback lens 把文件行号引用 `codec.rs:89` / `multipart.rs:53` 误当 key:value 赋值 → key="rs" 89≠53 假冲突（单字符守卫管不住 2 字符扩展名） | actix | 三处正则加 `(?<!\.)` 负向断言 |
+
+### 31.2 旧队列兼容裁决（主代理路径，非代码）
+
+1. **实证回填**：旧审计把实证证据存在自由文本（evidence/edge_evidence/report 节），
+   stored=empirically_confirmed 但 empirical 字段为空 → 机械复核静默降级 edge_proven。
+   裁决：按证据文本逐候选回填结构化 empirical dict（status/scope/scope_note 引原文 +
+   backfilled_by 标记）——sinatra 6 / lighttpd 2 / actix CAND-004（状态词归一化
+   blocked_all_vectors→confirmed）。**§17.7 范围纪律**：actix CAND-003 的
+   function_body 级实证封顶 edge_proven（status 归一化 confirmed_mechanism_only 淬灭告警）。
+   回填依据必须真实可查（旧报告 r4 节 empirical 列 / v2.2 empirical_tests.md 实测表 /
+   empirical_tests.md T1-T4 PASS 映射），不得凭空构造。
+2. **覆盖桥接**：旧 hypotheses.json 用 `surface_id` 单数且与最终 input_surface id
+   体系**重编号不匹配**（covered=0）、_r2_filter 条目只有 {id,reason} 无 surface 引用、
+   R4 findings 无 tracked_surfaces → 机械 tracked=0。裁决：coverage_bridge 按
+   surface_coverage_signoff.json 签收记录桥接全部 surface（basis 说明重编号事实）。
+   教训：v3.4.1 的 _r2_filter 读取只在 id 未重编号的队列（Lua）有效，不可假设普适。
+3. **R4 findings 回填**：旧 findings 缺 empirical_result/claim_type → gate ③b 对
+   Medium+ 恒阻断。裁决：逐条回填 empirical_result（confirmed: 引实测依据 /
+   source_fact: 引静态核实），claim_type 仅回填明显声称类（unbounded/protocol_dos）。
+   注意"未实测/无实测"否定词守卫（lighttpd H-1 "未实测" 不得分类为 confirmed）。
+4. **r4-collect 收编**：旧 R4 产物在 `_r4_merged.json`（{hypotheses:[...]} 包裹或
+   裸列表双形态）而非队列内——r4-collect --file 机械收编 H1-H7 + status=VERIFIED 正常。
+
+### 31.3 复跑结果（零回退判据）
+
+- sinatra：10 候选 2 REACHABLE（不变），grades 4 edge + 6 empirical（旧分级恢复），
+  六门禁 ok=True（③c 豁免注记）
+- lighttpd：10 候选 2 REACHABLE（不变），8 edge + 2 empirical，ok=True
+- actix：10 候选 2 REACHABLE（不变），7 edge + 1 empirical + 2 static_only，ok=True
+- coverage-ledger --write 三家均 LEDGER_IDEMPOTENT_SKIP（账本幂等生效）
+- stage_report coverage_ledger 段渲染 43 缺口格
+
+> 教训：v3.4.1 的 Lua 复跑抓到 3 个缺口后，三锚点复跑又抓出 5 个——**旧队列兼容
+> 的缺口密度说明"新工具 × 旧数据"方向必须成为每版本发布前的固定验证项**（不止
+> 单项目抽验），且回填类兼容动作必须走主代理裁决路径（证据真实可查），代码只修
+> 崩溃/噪音/豁免语义。

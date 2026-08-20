@@ -223,7 +223,11 @@ print(ok, v)"
 ∪ 主代理签收的 `verify_queue.coverage_bridge`——relay 中继面[套接字层/示例程序中转]的正式通道，
 每条 bridge 必附 basis 说明，REQ-V3.2.2-020/021）
 ⑧ target_kind_required（v3.2.1：R0 未签收 target_kind 不放行；旧队列复跑
-`require_target_kind=False` 豁免）。另输出 `r4_feedback` 告警（warn 级不阻断 PASS）：
+`require_target_kind=False` 豁免）。
+③c 复活攻击完成度（v3.2：声称类 UNREACHABLE 必须有 resurrection_review；复跑 v3.2
+机制发布前的旧队列（无 resurrection_review 字段）以 `require_resurrection=False`
+豁免——产出 warn 注记不阻断，禁止伪造复活记录，同 ⑧ 先例，v3.4.2）。
+另输出 `r4_feedback` 告警（warn 级不阻断 PASS）：
 R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主代理裁决纠正（W6 §25.6）。
 
 ## 📊 报告
