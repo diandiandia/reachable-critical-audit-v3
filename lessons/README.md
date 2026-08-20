@@ -51,3 +51,6 @@
 | [SKILL_LESSONS_Lersosa.md](SKILL_LESSONS_Lersosa.md) | 自动 | Lersosa | 2026-08-17 | R6 机械生成: 36 条问题证据 |
 | [SKILL_LESSONS_mbedtls.md](SKILL_LESSONS_mbedtls.md) | 自动 | mbedtls | 2026-08-17 | R6 机械生成: 1 条问题证据 |
 | [SKILL_LESSONS_lua.md](SKILL_LESSONS_lua.md) | 自动 | lua | 2026-08-19 | R6 机械生成: 1 条问题证据 |
+| [SKILL_LESSONS_pyjwt.md](SKILL_LESSONS_pyjwt.md) | 自动 | pyjwt | 2026-08-20 | R6 机械生成: 6 条问题证据 |
+| [SKILL_LESSONS_jsonwebtoken.md](SKILL_LESSONS_jsonwebtoken.md) | 自动 | jsonwebtoken | 2026-08-20 | R6 机械生成: 2 条问题证据 |
+| [SKILL_LESSONS_orjson.md](SKILL_LESSONS_orjson.md) | 自动 | orjson | 2026-08-20 | R6 机械生成: 7 条问题证据 |

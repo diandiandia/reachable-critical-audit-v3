@@ -359,3 +359,36 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 > 的缺口密度说明"新工具 × 旧数据"方向必须成为每版本发布前的固定验证项**（不止
 > 单项目抽验），且回填类兼容动作必须走主代理裁决路径（证据真实可查），代码只修
 > 崩溃/噪音/豁免语义。
+
+## 32. P1 主验证批次发现（PyJWT/jsonwebtoken/orjson 新项目 × v3.4.2，2026-08-20）
+
+> 三项目全流程（R0-R6）六门禁全 PASS、复活闭环真实走通、4 个 CVE 级崩溃原语实证。
+> 过程中发现 8 项 skill 缺陷（v3.4.3 候选）与 4 项裁决教训。
+
+### 32.1 skill 缺陷（v3.4.3 候选，按严重度）
+
+| # | 缺陷 | 形态 | 候选修复 |
+|---|---|---|---|
+| 1 | **checklist binder 缺适用性门控** | CK-WS-MATERIALIZE（WS 分片物化清单）经 cwe-match:['CWE-400'] 绑到纯 JWT 库（PyJWT 3 候选 + jsonwebtoken 1 候选任务书含 WS 问题域清单）——CWE-400 是通用码但清单是协议专属问题域 | checklist_library 条目加 applicability_signals（text/requires_lang），binder 按候选上下文过滤（先例库机制复用） |
+| 2 | **BOUNDARY_KINDS 词汇缺口** | orjson 手写 CPython C-API 胶水形态，agent 自然产出 capi-* 词族被校验器全拒（14/14 surface）——Python C-API 扩展模块是主流 FFI 形态，词汇表 12 词无覆盖 | 词汇加 "capi"（通用，覆盖 Python/Lua C-API）或按 lang_pair 细分 |
+| 3 | **collect 机械重算与 verifier 自报 grade 簿记口径不一致** | verifier 自报 empirically_confirmed（证据在 evidence 文本）但无结构化 empirical dict → collect 存 verifier 值、grade-recheck 再机械降级——两阶段口径漂移，SKILL.md "collect 自动重算" 描述与实现不符（实际是 grade-recheck 承担） | collect 落盘时直接机械重算并写 grade_recomputed_by（与 SKILL.md 对齐），或 verifier schema 增 empirical 字段 |
+| 4 | **claim_type 枚举语义模糊** | R4 两 agent obligation_feedback: "leak"（泄漏类）与 "mechanism" 不在枚举内被降为 other/null，语义丢失 | 枚举增 "leak"；claim_type 使用指南（声称≠后果类别）写入任务书 |
+| 5 | **refutation prompt 证据截断** | workflow_export 对 prompt 内 evidence 截断并写 "[截断: 见 verify_queue.json]"——Mode W agent 可读磁盘兜底，但自包含任务书设计被削弱（两次波次均现） | 截断策略改为按段优先级（调用链+阻断点摘要必全量，仅截清单执行记录） |
+| 6 | **H7 默认值表 800 字预算压缩过度** | orjson H7 agent 反馈: 10 行×6 字段下五维压缩到每维 ≤8 字（"红旗:255层"），code_point/source_control 被迫冗余压缩 | 预算放宽到 ≤1400 字或 risk_dimensions 改自由文本 |
+| 7 | **export lang 推断未用队列 lang 字段** | CAND-006 锚点 Cargo.toml 无扩展名 → 语言渲染 "unknown"（队列里 lang=rust 被忽略） | export 优先读候选 lang 字段，文件扩展名仅兜底 |
+| 8 | **resurrect 模式无 CLI 入口** | --stage workflow-script --mode resurrect → ValueError unknown mode；实际调用为 export_script_resurrect 直调——SKILL.md 未注明调用形态差异 | CLI 接线或 SKILL.md 注明直调 |
+
+### 32.2 裁决教训
+
+1. **线性时间成本 ≠ 无 DoS（jsonwebtoken CAND-001 复活案例）**: verifier 以"时间线性+瞬态释放"判 UNREACHABLE，
+   复活者抓到内存放大维度（8-13x 峰值堆）+ GC 痕迹证伪"瞬态"（throw 后 904MB 保持）→ 改判。
+   教训: 资源类候选必须时间/内存/GC 生命周期三维全查；"瞬态"判定需 GC 痕迹实证。
+2. **"宿主自身即 DoS 面"是部署层前提被当默认阻断的又一实例**: 有界堆宿主（容器标准形态）下
+   库放大把限额内请求变成整进程崩溃（死亡阈值 ~1/10 堆上限）——阻断判定必须按有界/无界宿主双形态。
+3. **防御性注释倒读为攻击模型（PyJWT CAND-001 降级案例）**: jwks_client.py:73-76 注释明示
+   "caller passing an attacker-influenced URL" 是对调用方误用的防护声明，verifier 倒读为库的
+   攻击模型并判 ACROSS_BOUNDARY——R3.5 证伪者 1/2 拦截，主代理采信。'公共 API 静态存在即攻击面'
+   若扩展至构造参数则任何 URL 库均 SSRF。
+4. **collect 存 verifier 自报 grade 是实证门禁的薄弱环**: P0/P1 共 9 个候选的实证记录在
+   evidence 文本而非结构化 empirical dict，机械重算降级后需主代理回填——回填依据必须真实
+   （实测数字/崩溃日志），gate ③ 的最终权威是主代理裁决 + 结构化字段。
