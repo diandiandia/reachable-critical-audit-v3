@@ -392,3 +392,76 @@ AWStats 4 个候选中有 3 个带部署前提：CAND-001（AWSTATS_ENABLE_CONFI
 4. **collect 存 verifier 自报 grade 是实证门禁的薄弱环**: P0/P1 共 9 个候选的实证记录在
    evidence 文本而非结构化 empirical dict，机械重算降级后需主代理回填——回填依据必须真实
    （实测数字/崩溃日志），gate ③ 的最终权威是主代理裁决 + 结构化字段。
+
+## 33. P2 补格批次发现（cpp-httplib/devise/cosign/java-jwt × v3.4.2，2026-08-20）
+
+### 33.1 skill 缺陷（v3.4.3 候选追加，按严重度）
+
+1. **R4 任务书 schema 漂移（高）**: cpp-httplib H1-H4 agent 产出非 canonical 形态——
+   hypotheses 对象键（非列表）+ findings 顶层数组（id=FX）+ evidence 数组 + r3_link 嵌套
+   dict {candidate,note}。r4-collect 0 提取告警后主代理手工转换（evidence join/r3_link 展平/
+   severity capitalize/tracked_surfaces 从 hypothesis 级下放）。候选修复: r4-collect 自适应
+   schema（对象形态/hypotheses、evidence 数组、r3_link dict 展平），R4 任务书加输出自查段。
+2. **R4 tracked_surfaces 自造 id（高）**: 同 agent 用 SURF-DATA-00X（R1 测绘自身为
+   SURF-DAT-00X 混合前缀）——SWR-V3.3.2-015 再违反, r4-collect 告警 unknown_surface_ids。
+   候选修复: R4 任务书附实际 surface id 清单（指令"原样引用"不够），或 r4-collect 前缀模糊映射。
+3. **resurrect 模式无 CLI（中, §32 #8 再现）**: batch_verify --mode resurrect 报错, 需
+   workflow_export.export_script_resurrect 直调 + 主代理手工落盘 resurrection_review。
+4. **resurrect_prompt 1200 字符静默截断（中, §32 #5 变体）**: 无标记（refute_prompt 800
+   有标记版更糟）——P2 全部复活/证伪波由主代理重建完整证据 args, registry 记
+   full-evidence-rebuilt 注记。候选修复: resurrect_prompt 统一截断标记协议。
+5. **R1 surface id 前缀不一致（低）**: cpp-httplib SURF-DATA-001 与 SURF-DAT-002..008 并存
+   ——surface_mapper merge 未归一化前缀, 下游对照频繁误配。候选修复: merge 时前缀归一化。
+6. **R4 双 agent 跨假说同事实重复（流程, 非代码）**: java-jwt H2/H7 两 agent 各自独立发现
+   同一 DateTimeException 逃逸——主代理 r3_link 去重（H2 承载主申报, H7 条目共享实证）,
+   报告阶段需显式同事实映射。
+
+### 33.2 复活攻击效能（P2 最大机制产出）
+
+8 出 5 revived（63%）: devise CAND-002（bcrypt 存储 hash cost 指数放大, verifier 零证据
+纯断言+stretches 事实错误被逐一证伪——复活维度 2/3 教科书案例）、cpp-httplib 4/4
+（Windows fullwidth 穿越=平台前提惯例假设 / SSL 构建前提为假 / SIZE_MAX 守卫 no-op /
+state-0 O(N²) 与 verifier 自身实证矛盾）。教训: verifier 的"唯一读取点/唯一路径"类
+普适断言是复活攻击最高产攻击面; 平台限定结论必须有该平台构建实证, 惯例假设一律可攻。
+P1 判据"复活闭环是新数据方向首验"在 P2 升级为"复活是 REACHABLE 产出的主要来源之一"。
+
+### 33.3 裁决教训
+
+1. **条件式 REACHABLE + gate 记录型（devise CAND-002 终态形态）**: 写原语 gate 属宿主
+   部署面（stock ParameterSanitizer 默认关, 已核实）——按 library 型"部署前提不适用"+
+   前提显式记录判 REACHABLE, blocking_point 记录 gate, 不主张默认可达。PREC-CONFIG-FLIP-001
+   实际用于裁决（gate 翻转既非必然亦非警告操作 → 条件式而非二元）。
+2. **复活者指正 verifier 枚举计数缺陷不自动复活（cosign CAND-001）**: 8 vs 实际 12 调用点,
+   遗漏处仍被同款约束覆盖——枚举完整性属结论质量维度, 记入报告不复活。
+3. **R4 实证版本替代**: java-jwt H1-H4 agent 用 jackson 2.19.1（网络受限）替代 2.22.1,
+   机制与约束默认值一致——机制级实证可接受, 报告标注。
+4. **R5 实证环境陷阱**: /usr/bin/time 缺失→getrusage(RUSAGE_CHILDREN); cosign verify-blob
+   blob 为位置参数且 --signature 需配 --key; generate-key-pair 密码交互静默挂起 10 分钟
+   （stdin 喂空修复）——go 语言手册应补 CLI 交互陷阱三连。
+
+### 33.4 P2 收尾追加缺陷与教训
+
+7. **gate ③b 关键词表缺陷（中, v3.4.3 候选）**: R4 H-5 Medium finding 的 empirical_result
+   含真实 g++ 实测（route_calls=0 三次复跑）但关键词表只认 "实证/已实证/confirmed" 不认
+   "实测" — 误报 empirical_required_r4 后主代理加 "实证确认" 前缀修复。候选修复:
+   关键词表加 实测/measured。
+8. **R5 实证环境陷阱（go/c 手册补充）**: 本机无 ss 命令; pgrep -f 自匹配含模式的 sh 进程
+   致 fd 计数错读（读到 shell 自身的 5 fds）——用 /proc/<pid>/fd 直接计数;
+   连接洪泛类实证的黄金证据是"合法请求饿死"（flood 期间 GET 超时）+ fd 数≈连接数。
+9. **P2 复活峰值数据**: 8 出 5 revived（63%），其中 4 改判 REACHABLE 全带实测量化——
+   复活攻击从 P1 的教科书案例升级为 REACHABLE 产出的主要通道之一;
+   verifier 单配置实证（明文 TCP+Linux）与行号切分（同函数不同 state）是两大突破口。
+
+## 34. P2 批次收官（2026-08-20）
+
+四项目（cpp-httplib/devise/cosign/java-jwt）六门禁全 PASS，覆盖格补齐判定成立：
+- AUTHN×cpp: cpp-httplib R4 H-5 Medium（静态文件遮蔽鉴权路由, route_calls=0 实证）
+- AUTHN×ruby: devise CAND-001/004（CWE-203/204）+ R4 H-6（CWE-307 锁定 DoS）
+- DATA-INTEGRITY×go: cosign R4 H-1（bundle 无界读取 High 实证）/H-2（证书链 panic ×3 实证）
+- CRYPTO×java: java-jwt R4 H-7 密码学默认审查 + CAND-002 验签路径
+- RESOURCE-DOS×c/cpp: cpp-httplib 4 候选（SIGBUS/解压/队列/二次方）
+- 最终聚合以 coverage-ledger --write 为准（四项目 ledger 全部写入）
+
+REACHABLE 汇总（P2 净增 12）: java-jwt 1（oom 9.4-18x）+ cosign 3 + devise 2 + cpp-httplib 6。
+其中复活改判 4（devise cost 炸弹 + cpp SIGBUS/解压/二次方），R5 主代理实证 2（cosign
+verify-blob RSS 线性 + cpp 队列洪泛饿死），全部声称类候选达到 empirically_confirmed。
