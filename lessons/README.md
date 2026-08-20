@@ -54,3 +54,5 @@
 | [SKILL_LESSONS_pyjwt.md](SKILL_LESSONS_pyjwt.md) | 自动 | pyjwt | 2026-08-20 | R6 机械生成: 6 条问题证据 |
 | [SKILL_LESSONS_jsonwebtoken.md](SKILL_LESSONS_jsonwebtoken.md) | 自动 | jsonwebtoken | 2026-08-20 | R6 机械生成: 2 条问题证据 |
 | [SKILL_LESSONS_orjson.md](SKILL_LESSONS_orjson.md) | 自动 | orjson | 2026-08-20 | R6 机械生成: 7 条问题证据 |
+| [SKILL_LESSONS_..md](SKILL_LESSONS_..md) | 自动 | . | 2026-08-21 | R6 机械生成: 4 条问题证据 |
+| [SKILL_LESSONS_jsrsasign.md](SKILL_LESSONS_jsrsasign.md) | 自动 | jsrsasign | 2026-08-21 | R6 机械生成: 4 条问题证据 |
