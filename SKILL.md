@@ -192,13 +192,21 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 | H6 | 多租户 owner 比对缺失（CWE-639/285：锁/会话/缓存归属） |
 | H7 | **信任边界专项（v3 新增）**：① 同 UID/IPC 高危操作 ② 路径语义（.. 上溯/symlink/空路径回退）越界 ③ 鉴权谓词弱化（前缀/子串/hash 替代全名） |
 
-任务书模板 `task_templates/biz_hypothesis.md`。锚点 = R1 测绘的相关 surface（file:line 可直接 grep）。
+任务书模板 `task_templates/biz_hypothesis.md`（v3.4.3 起注入实际 surface id 清单
+`{surface_id_list}` + canonical 输出示例；H7 默认值全表预算 ≤1200 字）。
+锚点 = R1 测绘的相关 surface（file:line 可直接 grep）。
 收集：`python3 tools/batch_verify.py <project> --stage r4-collect --file <合并 findings json>`；
 断言：`--stage r4-assert`（H1-H7 全部 VERIFIED，exit 0）。
+**同事实去重（v3.4.3, SWR-V3.4.3-060）**：r4-collect 后主代理按 title 跨假说
+同事实去重——主申报方承载 severity，其余条目 `r3_link` 标「同事实共享实证」
+（java-jwt H2/H7 双 agent 各自发现同一 DateTimeException 逃逸的实战形态）。
 
 ## 🧪 R5：实证抽验（声称类强制，REQ-V3-004/060）
 
-**触发判定**：verdict=REACHABLE 且 `claim_type ∈ {crash,panic,oom,unbounded,xss,protocol_dos,rce}` 且 `evidence_grade ≠ empirically_confirmed` → **强制实证，否则六门禁 ③ 不放行**（可选路径：主代理裁决降级 NEEDS_REVIEW，不实证不申报——v3.3 起此为明示条款：NEEDS_REVIEW 是合法终态而非降级耻辱，成因须注明「保守裁决」或「证据不足」）。源事实级降级规则（哨兵值/算术类，网络阻断记录 blocker，W6 §21.4）继续有效。
+**触发判定**：verdict=REACHABLE 且 `claim_type ∈ {crash,panic,oom,unbounded,xss,protocol_dos,rce,leak}` 且 `evidence_grade ≠ empirically_confirmed` → **强制实证，否则六门禁 ③ 不放行**（可选路径：主代理裁决降级 NEEDS_REVIEW，不实证不申报——v3.3 起此为明示条款：NEEDS_REVIEW 是合法终态而非降级耻辱，成因须注明「保守裁决」或「证据不足」）。源事实级降级规则（哨兵值/算术类，网络阻断记录 blocker，W6 §21.4）继续有效。
+**实证回填规范（v3.4.3, SWR-V3.4.3-061）**：主代理回填 `empirical` 结构化 dict 只允许发生在
+verifier/证伪者证据文本含真实实测的场景——必须带 `backfilled_by` 标记 + 实测数字依据
+（成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
 
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
@@ -244,7 +252,7 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 ## 📏 数据模型速查
 
-- **verify_queue.json**：`{schema_version:"3.0", candidates:[{id,source_file,source_line,sink_type,members[],status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,blocking_point,claim_type,attempt,correction_record[],empirical{}}], r4_findings:[{hypothesis_id,verdict,findings[],coverage_note}], escalated_signed_off}`
+- **verify_queue.json**：`{schema_version:"3.0", candidates:[{id,source_file,source_line,sink_type,members[],status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},attempt,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[],coverage_note,schema_normalized_by[]}], coverage_bridge[], escalated_signed_off}`
 - **input_surface.json**：`{schema_version:"3.0", surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[]}`
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`
 
@@ -453,3 +461,46 @@ python3 lessons_recorder.py <project> --write
 2. 价值判定：高价值条目（新缺陷模式/语言盲区/裁决先例）当日并入
    W6_MORE_LANGS_FINDINGS.md 或对应语言 lessons；低价值条目留审计轨迹
 3. 索引 lessons/README.md 自动更新；**未执行 R6 的审计不得闭合**（报告阶段门禁）
+
+## 🆕 v3.4.3 增量（2026-08-20，P0/P1/P2 验收缺陷闭环）
+
+> 设计文档：`docs/design/SYSTEM_DESIGN_V3_4_3.md`（12 REQ）+ `SW_DESIGN_V3_4_3.md` + `SWR_V3_4_3.md`。
+> 缺陷修复版：不新增阶段、不改六门禁①-⑧判据语义。17 项缺陷（12 代码 + 5 制度）制度化，
+> 教训回填 lessons/W6 §32/§33。
+
+### 收集链（P-A 修复）
+- **r4-collect 自适应**（REQ-V3.4.3-001）：hypotheses 对象形态 / findings 顶层数组 /
+  evidence 数组 / r3_link dict 四类漂移自动归一，写 `schema_normalized_by` 标记；
+  0 提取告警含形态诊断。canonical 输入零变化
+- **surface id 前缀归一化**（REQ-V3.4.3-002）：surface_mapper merge 统一域前缀
+  （SURF-DAT-*→SURF-DATA-* 等，写 normalized_ids）；r4-collect tracked_surfaces
+  前缀模糊映射（写 mapped_surface_ids）；R4 任务书注入实际 id 清单 `{surface_id_list}`
+  + canonical 输出示例
+- **截断标记协议统一**（REQ-V3.4.3-003）：resurrect/refute 共用 `_truncate_evidence`——
+  承重前提/实证/阻断/结论关键段必保留，次要段截断必带标记；消灭 1200 字符静默截断
+- **grade 口径对齐**（REQ-V3.4.3-004）：collect 机械重算 `grade_verdict` 为唯一权威，
+  verifier 自报值存 `grade_self_reported` 仅追溯；回填规范（backfilled_by + 实测数字）明示条款
+
+### 门禁判定链（P-B 修复）
+- **gate ③b 结构判定优先**（REQ-V3.4.3-005）：empirical_result 非空 + 实证特征
+  （数字/输出/exit code）判定有实证，关键词表补「实测/measured」仅作 fallback
+- **claim_type 加 "leak"**（REQ-V3.4.3-006）：信息泄露/env 反射类结构化表达
+- **resurrect CLI**（REQ-V3.4.3-007）：`--stage workflow-script --mode resurrect` 导出 +
+  `--stage r35n-collect --from-journal` 落盘候选级 resurrection_review（幂等）
+- **boundary_kind 加 "capi"**（REQ-V3.4.3-008）
+
+### 提示资产链（P-C 修复）
+- **清单/PREC 适用性门控**（REQ-V3.4.3-009）：applicability_signals
+  （text/requires_lang/requires_claim）作用于 checklist_binder 与先例自证伪提示；
+  资源族信号不匹配 → 绑 CK-GENERIC-RESOURCE 兜底
+- **H7 默认值全表预算 800→1200 字**（REQ-V3.4.3-010）
+- **export lang 优先候选 lang 字段**（REQ-V3.4.3-011，_build_context 修复）
+
+### 制度项（P-D）
+- R4 同事实去重流程（SWR-V3.4.3-060）；实证回填规范（SWR-V3.4.3-061）；
+  go/c 手册环境陷阱（SWR-V3.4.3-070/071）；先例 PREC-FAMILY-CONSISTENCY-001
+  （跨项目同族判据：放大比是否常数因子 × 物化责任归属）
+
+### 验收判据（Phase 3.4.3）
+三锚点复跑零回退 + 17 缺陷各自可测闭环 + 一个未审新项目全流程（选题优先
+coverage-ledger 缺口格），三条件满足才合并 main + install。

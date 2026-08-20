@@ -91,7 +91,10 @@ def extract_empirical_marker(v):
 def grade_verdict(v):
     """SWR-V3-030/031: 分级规则 + 边证据校验。
     返回 (grade, errors)。REACHABLE 无逐跳 edge_evidence → static_only;
-    边证据项缺 proof → 报错; empirical 字段非空 → empirically_confirmed。"""
+    边证据项缺 proof → 报错; empirical 字段非空 → empirically_confirmed。
+    SWR-V3.4.3-011 (口径对齐): 本函数为 grade 唯一权威——collect 落盘时机械
+    重算 (证据链/empirical 结构化字段), verifier 自报值存 grade_self_reported
+    仅追溯, 不参与判定。"""
     errors = []
     if v.get("verdict") not in VERDICTS:
         errors.append("verdict 非法")
@@ -285,8 +288,16 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
             er = (fi.get("empirical_result") or "").strip()
             er_l = er.lower()
             forced = any(k in ft for k in EMPIRICAL_CLAIMS)
-            has_confirmed = any(k in er_l for k in
-                                ("confirmed", "source_fact", "source fact"))                             or "实证" in er or "已实证" in er
+            # SWR-V3.4.3-010: 结构判定优先——empirical_result 含实测数字/命令
+            # 输出/exit code 特征即视为有实证 (关键词表曾漏 "实测" 致 P2 误报
+            # empirical_required_r4); 关键词仅作降级 fallback
+            has_structural = bool(re.search(r"\d+", er)) and any(
+                k in er_l for k in ("实测", "measured", "test", "复现", "repro",
+                                    "exit", "秒", "ms", "mb", "gb", "kb", "ops",
+                                    "rss", "pid", "vmhwm"))
+            has_confirmed = has_structural or any(
+                k in er_l for k in ("confirmed", "source_fact", "source fact",
+                                    "实证", "已实证", "实测", "measured"))
             has_mechanism = er and any(k in er_l for k in
                                        ("mechanism", "机制级", "静态", "static"))
             if forced or sev in ("medium", "high", "critical"):

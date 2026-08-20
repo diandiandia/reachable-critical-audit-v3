@@ -12,6 +12,7 @@
 """
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
@@ -52,8 +53,10 @@ VERDICT_SCHEMA = {
         # 机械置 null (claim_nulled_by=collect-claim-null-v3.2.2)
         # v3.2.3 (Lua 审计): 补 rce (env→dlopen/代码执行类, 此前无匹配类别
         # 被迫判 null) 与 other (兜底); null 仅留给 UNREACHABLE 置空语义
+        # SWR-V3.4.3-022: 补 leak (信息泄露/env 反射类, cosign 批次实证
+        # 此前被迫归 other 失去语义)
         "claim_type": {"enum": ["crash", "panic", "oom", "unbounded", "xss",
-                                "protocol_dos", "rce", "other", "null"]},
+                                "protocol_dos", "rce", "leak", "other", "null"]},
     },
 }
 
@@ -177,6 +180,7 @@ REFUTER_TOOLBOX = {
     "interval/boundary": "区间/边界类: 小规模参照模型实现 + 百万级随机对拍差分 (W6 §21.1)",
     "parser": "解析类: 真实构件(jar/库)+畸形输入矩阵+触发计数——『sink 分支行为死代码』一击致命 (W6 §19.4)",
     "proxy/divergence": "代理/解析分歧类: 标准基础设施(nginx/HAProxy)配置片段实测标准部署行为 (W6 §16.10)",
+    "leak/disclosure": "信息泄露类: 逐通道枚举泄露出口 (stderr/日志/错误串/网络侧流量/缓存头), 验证掩码/截断/白名单是否存在; 信任边界几何 (输入控制者 vs 环境控制者 vs 输出读者) 三方核对 (cosign env 反射实证形态)",
 }
 
 VERIFY_SCRIPT = r"""export const meta = {
@@ -249,6 +253,39 @@ return {
 """
 
 
+# SWR-V3.4.3-020: 截断协议统一——关键段(承重前提/实证/阻断/结论)必保留,
+# 次要段截断且必带标记。旧版 resurrect_prompt 1200 字符静默截断 (无标记)
+# 曾致复活者误读证据中段 (P0-P2 全部波次由主代理重建完整证据 args 规避)。
+# 锚定段首 (防止粘连段中后段关键词泄漏到次要段分类)
+_TRUNC_KEY_HEAD = re.compile(
+    r"^【?(?:步骤 ?0|承重前提|实证|阻断|结论|claim 与实证|gap 核实|核对)")
+
+
+def _truncate_evidence(evidence, budget=None):
+    """关键段保留的分级截断。budget=None 时不截关键段 (复活者要全文关键段),
+    只丢弃次要段并附标记; budget 给定且结果仍超预算时硬截并附标记。"""
+    if not evidence or (budget and len(evidence) <= budget):
+        return evidence
+    segments = re.split(r"(?<=\n)(?=【|\[)", evidence)
+    if len(segments) <= 1:
+        out = evidence
+        if budget:
+            half = max(budget // 2, 200)
+            out = evidence[:half] + evidence[-half:]
+        return out + (f" ...[截断: 全文 {len(evidence)} 字符, 见 verify_queue.json]"
+                      if len(evidence) > len(out) else "")
+    key, minor = [], []
+    for seg in segments:
+        (key if _TRUNC_KEY_HEAD.match(seg) else minor).append(seg)
+    out = "".join(key)
+    if minor:
+        out += (f" ...[截断: 次要段 {sum(len(s) for s in minor)} 字符, "
+                f"全文 {len(evidence)} 字符, 见 verify_queue.json]")
+    if budget and len(out) > budget:
+        out = out[:budget] + f" ...[截断: 全文 {len(evidence)} 字符, 见 verify_queue.json]"
+    return out
+
+
 def refute_prompt(c, idx):
     """N 证伪者差异化视角 (同 prompt 会导致缓存复用=伪独立; perspective-diverse verify)。
     v3.1: 按声称类别注入证伪者实证工具箱 (W6 §21.1/§19.4/§16.10)。"""
@@ -268,12 +305,9 @@ def refute_prompt(c, idx):
         toolbox = f"\n证伪工具箱建议: {REFUTER_TOOLBOX['parser']}"
     elif any(k in summary for k in ("代理", "proxy", "分歧", "走私")):
         toolbox = f"\n证伪工具箱建议: {REFUTER_TOOLBOX['proxy/divergence']}"
-    # v3.2.3 (Lua 审计): 截断必须带标记——旧版静默 [:800]/[:8] 曾让证伪者
-    # 在证据中段断句处误读上下文
-    evidence = c.get('evidence', '')
-    if len(evidence) > 800:
-        evidence = (evidence[:800] +
-                    f" ...[截断: 全文 {len(evidence)} 字符, 见 verify_queue.json]")
+    # SWR-V3.4.3-020: 截断协议统一——关键段(承重前提/实证/阻断/结论)必保留,
+    # 次要段截断且必带标记 (旧版静默 [:800] 曾让证伪者误读上下文)
+    evidence = _truncate_evidence(c.get('evidence', ''), budget=800)
     chain = c.get('call_chain', [])
     chain_note = ""
     if len(chain) > 8:
@@ -369,7 +403,7 @@ def resurrect_prompt(c):
         f"  3. 三层默认语义是否误用（部署层前提被当默认关）\n"
         f"  4. 死代码豁免是否误用（'无生产调用者'是否漏了动态/反射调用）\n"
         f"  5. 平台前提是否有实证（platform_excluded 是否凭惯例假设）\n\n"
-        f"原判定证据: {c.get('evidence', '')[:1200]}\n"
+        f"原判定证据: {_truncate_evidence(c.get('evidence', ''))}\n"
         f"调用链: {c.get('call_chain', [])[:8]}\n\n"
         f"输出 revived=true/false + reason（附 file:line）；revived=true 时 "
         f"gap 字段写 verifier 的具体缺口。"

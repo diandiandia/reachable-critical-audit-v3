@@ -45,18 +45,53 @@ def _candidate_text(candidate):
                     for k in ("sink_type", "summary", "snippet", "title", "claim"))
 
 
+def _signals_ok(sig, candidate, text):
+    """SWR-V3.4.3-040: 清单适用性门控——applicability_signals 存在时必须命中
+    才绑定 (CK-WS-MATERIALIZE 经 cwe CWE-400 误绑纯 JWT 库的 P1/P2 教训)。
+    形态: {text:[关键词], requires_lang:[lang], requires_claim:[claim 子串]}。"""
+    if not sig:
+        return True
+    tl = text.lower()
+    if sig.get("text"):
+        if not any(str(k).lower() in tl for k in sig["text"]):
+            return False
+    if sig.get("requires_lang"):
+        langs = sig["requires_lang"]
+        if not isinstance(langs, list):
+            langs = [langs]
+        clang = str(candidate.get("lang") or candidate.get("language") or "").lower()
+        if not any(str(l).lower() in clang for l in langs):
+            return False
+    if sig.get("requires_claim"):
+        claims = sig["requires_claim"]
+        if not isinstance(claims, list):
+            claims = [claims]
+        cclaim = str(candidate.get("claim_type") or "").lower()
+        if not any(str(k).lower() in cclaim for k in claims):
+            return False
+    return True
+
+
+# SWR-V3.4.3-040: 资源族 cwe 命中专属清单但信号不匹配时的通用兜底
+_RESOURCE_CWES = {"CWE-400", "CWE-789", "CWE-770", "CWE-401", "CWE-833"}
+
+
 def bind(candidate, lib=None):
     """SWR-V3.1-050/051: 按 binding 规则匹配清单。返回 [(checklist_id, matched_rule)]。
     binding 支持两种形态：结构化 dict {cwe:[], keywords:[], verdict_context?}
-    （v3.1 标准）或字符串（兼容旧格式，按引号/括号提取关键词）。"""
+    （v3.1 标准）或字符串（兼容旧格式，按引号/括号提取关键词）。
+    v3.4.3 (SWR-V3.4.3-040): applicability_signals 门控 + 资源族信号不匹配时
+    绑 CK-GENERIC-RESOURCE 兜底 (不再把 WS 专属清单绑给非 WS 候选)。"""
     lib = lib or load_library()
     cwe = _cwe_set(candidate)
     text = _candidate_text(candidate)
     verdict = candidate.get("verdict")
     bound = []
+    resource_mismatch = False
     for ck in lib.get("checklists", []):
         rule = ck.get("binding", "")
         matched = []
+        want = set()
         if isinstance(rule, dict):
             want = {str(w).upper() for w in (rule.get("cwe") or [])}
             if want & cwe:
@@ -85,7 +120,15 @@ def bind(candidate, lib=None):
                 if any(a.lower() in text.lower() for a in alts):
                     matched.append(f"kw:{kw}")
         if matched:
+            # SWR-V3.4.3-040: 信号门控——cwe 命中但问题域不匹配 → 不绑定
+            if ck.get("applicability_signals") and \
+                    not _signals_ok(ck["applicability_signals"], candidate, text):
+                if want & _RESOURCE_CWES:
+                    resource_mismatch = True
+                continue
             bound.append((ck.get("id"), matched))
+    if resource_mismatch and not bound:
+        bound.append(("CK-GENERIC-RESOURCE", ["signal-mismatch-fallback"]))
     return bound
 
 

@@ -17,6 +17,11 @@
 - R0 平台/构建可行性预检结果与降级策略落盘（SKILL_LESSONS_SWIFT_GO §10.1）
 
 ## 3. 常见陷阱清单
+- pgrep -f 自匹配：fd/进程计数命令自身含匹配词（pgrep -f cand006_server 会匹配到正在执行它的 sh 进程，读到 shell 自身 5 个 fd）——fd 计数用 `len(os.listdir(f'/proc/<pid>/fd'))` 直读，监听进程 PID 用 `ls /proc | grep -c '^[0-9]'` 反查或启动时打印（P2 cosign/cpp-httplib R5 实证实测）
+- ss 缺失：精简容器可能无 ss/netstat——监听端口核对用 /proc/net/tcp 或直接 connect 探测（P2 实测）
+- CLI 密码交互静默挂起：generate-key-pair 类命令无 --stdin 时等待密码输入可挂起整个实证脚本 10 分钟——`printf '\n\n\n' | timeout 30 <cmd>` 喂空 stdin + 硬超时双保险（P2 cosign R5 实测）
+- /usr/bin/time 缺失：RSS 峰值测量用 python `resource.getrusage(RUSAGE_CHILDREN).ru_maxrss` 包装 subprocess（P2 实测 3GB blob → 6.41GB RSS 线性缩放）
+- verify-blob 类命令参数形态：blob 为位置参数而非 --blob；--signature 需配 --key 才过验证材料校验（先 --help 核对，别信旧版文档）（P2 实测）
 - proxy.golang.org + google.golang.org 双不可达 → 实机 etcd 构建失败（W6 §21.4）
 - "无上限"声称常是"未找到上限"：CAND-004 的"事件缓冲无上限"被证伪——chanBufLen=128 + victim 每 watcher ≤1 批 + ctrlStreamBufLen=16 逐级背压；"无上限"必须枚举队列/通道的每一跳容量常量，"未找到"≠"不存在"（W6 §21.2）
 - 哨兵值陷阱：数值默认值审计必须查下游依赖对该值的哨兵处理（MAX_VALUE/-1/0/MaxUint32 分别问"库把它当什么"），不能只看数值（W6 §21.3）

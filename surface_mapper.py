@@ -21,7 +21,8 @@ DOMAINS = ["network", "data", "process", "storage"]
 # v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
 BOUNDARY_DOMAIN = "boundary"
 BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-other",
-               "proto", "http-service", "subprocess", "grpc", "cli")
+               "proto", "http-service", "subprocess", "grpc", "cli",
+               "capi")  # SWR-V3.4.3-031: C-API 扩展模块胶水 (Python C-API/Lua C-API/N-API)
 
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown",
@@ -44,6 +45,25 @@ def norm_surface_id(sid):
     if s.startswith("SURF-"):
         s = s[5:]
     return s
+
+
+# SWR-V3.4.3-030: 域前缀缩写 → 标准前缀 (cpp-httplib 批次实证 SURF-DAT-* 与
+# SURF-DATA-* 混用致下游 tracked_surfaces 对照频繁误配)
+_DOMAIN_ABBREV = {"DAT": "DATA", "PRC": "PROC", "STR": "STOR", "NET": "NET",
+                  "PRO": "PROC"}
+
+
+def canonical_surface_id(sid):
+    """SWR-V3.4.3-030: surface id 域前缀归一化。返回 (new_id, changed)。
+    只归一 SURF-<域>-NNN 形态的域段 (3 字母缩写 → 全称), 其余原样返回。"""
+    if not isinstance(sid, str):
+        return sid, False
+    m = re.match(r"^SURF-([A-Z]{3,4})-(\d+)$", sid.strip())
+    if not m:
+        return sid, False
+    dom = _DOMAIN_ABBREV.get(m.group(1), m.group(1))
+    new = f"SURF-{dom}-{m.group(2)}"
+    return new, new != sid
 
 
 def build_architecture_context(project_root):
@@ -746,10 +766,16 @@ def merge_surfaces(files, project_root=None):
     门禁⑦ tracked 计算自动传播镜像面覆盖 (mbedtls 审计 15 冲突对手写 bridge 制度化)。"""
     merged = {"schema_version": "3.0", "surfaces": [], "conflicts": [],
               "mirror_pairs": []}
+    # SWR-V3.4.3-030: 域前缀归一化映射 (只记变更项, 供下游追溯)
+    normalized_ids = {}
     keymap = {}
     for f in files:
         data = normalize_surfaces(json.load(open(f)), project_root) or {"surfaces": []}
         for s in data.get("surfaces", []):
+            new_id, changed = canonical_surface_id(s.get("id", ""))
+            if changed:
+                normalized_ids[s["id"]] = new_id
+                s["id"] = new_id
             for ep in s.get("entry_points", []):
                 key = (ep["file"], ep["line"])
                 if key in keymap:
@@ -786,6 +812,8 @@ def merge_surfaces(files, project_root=None):
         seen_pairs.add(k)
         mps.append([a, b])
     merged["mirror_pairs"] = mps
+    if normalized_ids:
+        merged["normalized_ids"] = normalized_ids
     return merged
 
 

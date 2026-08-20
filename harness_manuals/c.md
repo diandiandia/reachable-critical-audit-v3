@@ -17,6 +17,12 @@
 - 复审计项目先读旧审计终稿（报告/report json）：v2 终稿已把 ssi.exec 降级 Low hardening，不能凭记忆或草稿级 artifact（_r4_merged.json 与终稿不一致时以终稿为准）（W6 §22.2）
 
 ## 3. 常见陷阱清单
+- 连接洪泛类实证的黄金证据（SWR-V3.4.3-071, P2 cpp-httplib R5 实测）：
+  ① 接受率——N/N 裸连接全部被 accept+enqueue（无连接数/队列深度检查）；
+  ② fd 计数——flood 期间 `len(os.listdir('/proc/<pid>/fd'))` ≈ 连接数（队列深度 1:1）；
+  ③ 合法请求饿死——flood 期间正常 GET 超时（worker 全被钉住），排空只在超时后发生。
+  三项同现才是"无界队列"的完整证明，单项（仅接受率高）不构成 DoS 证据。
+  注意 pgrep -f 自匹配陷阱与 ss 缺失（见 go.md 同批追加）
 - R1 证据质量最差语言：process agent 4 处 paraphrased snippet（行号漂移 ±45 + 细节臆造如 "last_sigterm_info = *si" 非真实行内容）；network 首版产出 30 surfaces 超模板——snippet 必须逐字符复制、禁臆造细节、表面数超模板视为 agent 失控信号（W6 §22.1）
 - "configure && make 成功 ≠ 功能可测"：SSI 实测被 mod_staticfile 抢先 handler_module 阻断——harness 失败先怀疑"该功能本就是非默认路径"而非环境问题（W6 §22.5）
 - "默认开启"三层语义：ssi_exec=1 是代码层默认值；mod_ssi 加载与 ssi.extension 配置是模块层默认（关）；写入原语是部署层前提（需另一漏洞）——verifier 只看到第一层；三层全开才算默认可达（W6 §22.3）

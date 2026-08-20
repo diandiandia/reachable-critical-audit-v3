@@ -80,7 +80,9 @@ def _candidate_text(candidate):
 
 def _signals_ok(p, candidate, text):
     """SWR-V3.3.2-023: 先例精度门——applicability_signals 存在时必须命中才注入；
-    无 signals 的先例不拦截（向后兼容，增量填充）。"""
+    无 signals 的先例不拦截（向后兼容，增量填充）。
+    v3.4.3 (SWR-V3.4.3-041): 增补 requires_claim/requires_lang 形态 (与
+    checklist_binder._signals_ok 同构, 两套提示器共用一套适用性语义)。"""
     sig = p.get("applicability_signals")
     if not sig:
         return True
@@ -89,6 +91,20 @@ def _signals_ok(p, candidate, text):
             return False
     if sig.get("requires_lang_pair") and not candidate.get("lang_pair"):
         return False
+    if sig.get("requires_claim"):
+        claims = sig["requires_claim"]
+        if not isinstance(claims, list):
+            claims = [claims]
+        cclaim = str(candidate.get("claim_type") or "").lower()
+        if not any(str(k).lower() in cclaim for k in claims):
+            return False
+    if sig.get("requires_lang"):
+        langs = sig["requires_lang"]
+        if not isinstance(langs, list):
+            langs = [langs]
+        clang = str(candidate.get("lang") or candidate.get("language") or "").lower()
+        if not any(str(l).lower() in clang for l in langs):
+            return False
     return True
 
 

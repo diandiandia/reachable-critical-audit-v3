@@ -325,12 +325,25 @@ def stage_collect(project_root, batch_id, verdicts):
         # Preserve CWE from rule if not overridden
         if v.get("cwe"):
             entry["cwe"] = v["cwe"]
-        # SWR-V3-057: 缺字段填充 (evidence_grade 默认按分级推导)
+        # SWR-V3.4.3-004/005: verifier 自报 grade 存 grade_self_reported 仅追溯;
+        # evidence_grade 由 grade_verdict 机械重算为唯一权威 (对齐 SKILL.md
+        # 原意——P0/P1 共 9+ 候选自报 empirically 而无结构化实证, 机械重算后
+        # 主代理按证据文本回填, collect 侧口径漂移是回填频发的根因)
         if v.get("evidence_grade"):
-            entry["evidence_grade"] = v["evidence_grade"]
-        elif entry.get("evidence_grade") is None:
-            entry["evidence_grade"] = ("edge_proven" if call_chain and depth >= MIN_CALL_CHAIN_DEPTH
-                                       else "static_only")
+            entry["grade_self_reported"] = v["evidence_grade"]
+        try:
+            _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if _parent not in sys.path:
+                sys.path.insert(0, _parent)
+            import evidence_ledger as _el
+            _g, _gerrs = _el.grade_verdict(entry)
+            entry["evidence_grade"] = _g
+            if entry.get("grade_self_reported") and _g != entry["grade_self_reported"]:
+                entry["grade_recomputed_by"] = "collect-mechanical-recompute"
+        except Exception:
+            if entry.get("evidence_grade") is None:
+                entry["evidence_grade"] = ("edge_proven" if call_chain and depth >= MIN_CALL_CHAIN_DEPTH
+                                           else "static_only")
         # SWR-V3-057: language 缺失时按扩展名推断
         if not entry.get("language"):
             src = entry.get("source_file", "")
@@ -349,6 +362,64 @@ def stage_collect(project_root, batch_id, verdicts):
         "progress_pct": round((1 - remaining / len(candidates)) * 100, 1) if candidates else 0
     }
     print(json.dumps(result, ensure_ascii=False))
+
+
+def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
+    """SWR-V3.4.3-004: resurrect decisions 机械落盘——候选级
+    resurrection_review dict {revived, outcome} (REQ-V3.2.2-015 落盘契约)。
+    幂等: 已有 resurrection_review 的候选跳过。--expect 全集对账同 collect。"""
+    queue = load_queue(project_root)
+    files = []
+    for name in ("journal.jsonl",):
+        p = os.path.join(transcript_dir, name)
+        if os.path.isfile(p):
+            files.append(p)
+    if not files:
+        print("Error: journal.jsonl 不存在 (--from-journal 应为 workflow "
+              "transcript 目录)", file=sys.stderr)
+        return 1
+    decisions = []
+    for line in open(files[0]):
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if rec.get("type") != "result":
+            continue
+        r = rec.get("result") or rec.get("value")
+        if isinstance(r, dict) and r.get("id") and "revived" in r:
+            decisions.append(r)
+    if not decisions:
+        print("Error: journal 无 resurrect schema 结果 (id+revived)", file=sys.stderr)
+        return 1
+    extracted = {d["id"] for d in decisions}
+    if expect_ids:
+        missing = [e for e in expect_ids if e not in extracted]
+        if missing:
+            print(f"Error: --expect 全集校验失败: journal 缺失 {missing} "
+                  f"(提取到 {sorted(extracted)}), 不落盘", file=sys.stderr)
+            return 1
+    updated = 0
+    skipped = 0
+    for d in decisions:
+        c = next((x for x in queue["candidates"] if x.get("id") == d["id"]), None)
+        if c is None:
+            print(f"Warning: {d['id']} 不在队列, 跳过", file=sys.stderr)
+            continue
+        if c.get("resurrection_review"):
+            skipped += 1
+            continue
+        c["resurrection_review"] = {
+            "revived": bool(d.get("revived")),
+            "outcome": (d.get("reason") or d.get("gap") or "").strip(),
+        }
+        updated += 1
+    save_queue(project_root, queue)
+    print(json.dumps({"status": "R35N_COLLECTED",
+                      "updated": updated, "skipped_existing": skipped,
+                      "candidates": [d["id"] for d in decisions]},
+                     ensure_ascii=False))
+    return 0
 
 
 def stage_assert(project_root):
@@ -579,12 +650,104 @@ def _norm_hypothesis_id(hid):
     return h
 
 
+def _adapt_r4_finding(f):
+    """SWR-V3.4.3-001: 单 finding 漂移归一 (evidence 数组/r3_link dict/severity/
+    recommendation)。返回 (finding, flags)。"""
+    flags = []
+    out = dict(f)
+    ev = out.get("evidence")
+    if isinstance(ev, list):
+        out["evidence"] = "; ".join(str(x) for x in ev)
+        flags.append("evidence-array")
+    r3 = out.get("r3_link")
+    if isinstance(r3, dict):
+        cand, note = r3.get("candidate"), r3.get("note")
+        out["r3_link"] = (f"{cand} ({note[:60]})" if cand and note
+                          else (cand or (note[:60] if note else None)))
+        flags.append("r3-link-dict")
+    sev = out.get("severity")
+    if isinstance(sev, str) and sev and sev != sev.capitalize():
+        out["severity"] = sev.capitalize()
+        flags.append("severity-normalized")
+    if "recommendation" in out and not out.get("fix"):
+        out["fix"] = out.pop("recommendation")
+        flags.append("recommendation->fix")
+    return out, flags
+
+
+def _normalize_r4_payload(raw):
+    """SWR-V3.4.3-001: 文件级漂移归一——hypotheses 对象形态 + findings 顶层数组。
+    返回 (items, norm_flags)。canonical 输入零变化 (回归锚)。"""
+    flags = []
+    if isinstance(raw, dict) and isinstance(raw.get("hypotheses"), list):
+        return raw["hypotheses"], flags
+    if isinstance(raw, dict) and isinstance(raw.get("hypotheses"), dict):
+        hyps = raw["hypotheses"]
+        items = []
+        for k, hbody in hyps.items():
+            item = {"hypothesis_id": k, **hbody}
+            items.append(item)
+        flags.append("hypotheses-dict")
+        # findings 顶层数组形态: {id, hypothesis, ...} 按 hypothesis 归位
+        top = raw.get("findings")
+        if isinstance(top, list) and items:
+            by_hyp = {}
+            for f in top:
+                by_hyp.setdefault(f.get("hypothesis"), []).append(f)
+            for item in items:
+                adapted = []
+                for f in by_hyp.get(item.get("hypothesis_id"), []):
+                    nf, ff = _adapt_r4_finding(f)
+                    flags.extend(f"finding:{ff}" for ff in ff)
+                    adapted.append(nf)
+                if adapted:
+                    item["findings"] = adapted
+                # hypothesis 级 tracked_surfaces 下放 (cpp-httplib H1-H4 形态)
+                hts = item.get("tracked_surfaces") or []
+                for fi in item.get("findings", []):
+                    if not fi.get("tracked_surfaces") and hts:
+                        fi["tracked_surfaces"] = list(hts)
+                        flags.append("tracked-from-hypothesis")
+            flags.append("top-level-findings")
+        return items, flags
+    if isinstance(raw, list):
+        items = []
+        for f in raw:
+            nf, ff = _adapt_r4_finding(f)
+            flags.extend(f"finding:{x}" for x in ff)
+            items.append(nf)
+        return items, flags
+    return [raw], flags
+
+
+def _map_surface_id(sid, known):
+    """SWR-V3.4.3-002: tracked_surfaces 域前缀互转映射 (SURF-DAT-* ↔
+    SURF-DATA-* 等; cpp-httplib 批次 R1 混合前缀致 agent 自造 id 高频误配)。
+    known 为 norm_surface_id 归一化后集合 (无 SURF- 前缀)。
+    返回 (mapped_id, changed)。"""
+    m = re.match(r"^SURF-([A-Z]{3,4})-(\d+)$", sid or "")
+    if not m:
+        return sid, False
+    dom, num = m.group(1), m.group(2)
+    if f"{dom}-{num}" in known:
+        return sid, False
+    alt = {"DAT": "DATA", "DATA": "DAT", "PRC": "PROC", "PROC": "PRC",
+           "STR": "STOR", "STOR": "STR"}
+    cand_dom = alt.get(dom, "")
+    if cand_dom and f"{cand_dom}-{num}" in known:
+        return f"SURF-{cand_dom}-{num}", True
+    return sid, False
+
+
 def stage_r4_collect(project_root, findings_file):
     """SWR-V3-055: R4 findings 写回 (merge 语义)。
 
     v3.2.3 (Lua 审计): 任务书模板产出 {"hypotheses":[...]} 包裹结构与
     裸列表双形态自适应解包; 输入非空但 0 hypothesis_id 提取时 stderr 告警
-    (静默空收曾导致主代理误判 R4 已收集)。"""
+    (静默空收曾导致主代理误判 R4 已收集)。
+    v3.4.3 (SWR-V3.4.3-001/002): 四类漂移自适应 (hypotheses 对象形态/
+    findings 顶层数组/evidence 数组/r3_link dict) + tracked_surfaces 前缀
+    映射; canonical 输入零变化。"""
     # v3.4.2: sys.path bootstrap——v3.3.2 为新 stage 统一加 bootstrap 时漏掉
     # r4_collect, 从 workspace 外运行 (cwd=/root) 时 import surface_mapper
     # 失败且被误报为 "tracked_surfaces 未知 id" 告警 (P0 三锚点复跑实测)
@@ -593,12 +756,7 @@ def stage_r4_collect(project_root, findings_file):
         sys.path.insert(0, _parent)
     queue = load_queue(project_root)
     findings = json.load(open(findings_file))
-    if isinstance(findings, dict) and isinstance(findings.get("hypotheses"), list):
-        items = findings["hypotheses"]
-    elif isinstance(findings, list):
-        items = findings
-    else:
-        items = [findings]
+    items, norm_flags = _normalize_r4_payload(findings)
     existing = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", [])}
     collected = 0
     for f in items:
@@ -606,21 +764,29 @@ def stage_r4_collect(project_root, findings_file):
         if hid:
             f["hypothesis_id"] = hid
             f["status"] = "VERIFIED"
+            if norm_flags:
+                f["schema_normalized_by"] = list(norm_flags)
             existing[hid] = f
             collected += 1
     if not collected and items:
+        diag = ""
+        if isinstance(findings, dict):
+            diag = (f" (顶层 keys={sorted(findings.keys())[:6]}, "
+                    f"hypotheses 类型={type(findings.get('hypotheses')).__name__})")
         print(json.dumps(
             {"status": "R4_COLLECT_WARNING",
              "warning": (f"输入含 {len(items)} 条目但 0 条提取到 hypothesis_id——"
                          "文件应为裸列表 [{hypothesis_id,...}] 或 "
                          '{"hypotheses":[...]} 包裹; 未写回任何 finding'),
+             "diagnosis": diag,
              "file": findings_file},
             ensure_ascii=False), file=sys.stderr)
     queue["r4_findings"] = list(existing.values())
     save_queue(project_root, queue)
-    # SWR-V3.3.2-015: tracked_surfaces id 契约校验——经 norm_surface_id 归一化后
-    # 对照 input_surface 归一化 id 集, 未知 id 产出 warning (不阻断落盘)
+    # SWR-V3.3.2-015: tracked_surfaces id 契约校验——前缀映射后经 norm 对照
+    # input_surface 已知集, 仍未知才告警 (不阻断落盘)
     unknown = []
+    mapped = []
     isurf_path = os.path.join(project_root, ".audit_results", "input_surface.json")
     if os.path.exists(isurf_path):
         try:
@@ -630,18 +796,35 @@ def stage_r4_collect(project_root, findings_file):
             known = {norm(s.get("id")) for s in isurf.get("surfaces", [])}
             for f in queue["r4_findings"]:
                 for fi in f.get("findings", []):
-                    for sid in (fi.get("tracked_surfaces") or []):
+                    ids = fi.get("tracked_surfaces") or []
+                    new_ids = []
+                    for sid in ids:
+                        mapped_sid, changed = _map_surface_id(sid, known)
+                        if changed:
+                            mapped.append({"hypothesis": f.get("hypothesis_id"),
+                                           "finding": (fi.get("title") or "")[:60],
+                                           "from": sid, "to": mapped_sid})
+                            fi.setdefault("mapped_surface_ids", {})[sid] = mapped_sid
+                        new_ids.append(mapped_sid)
+                    fi["tracked_surfaces"] = new_ids
+                    for sid in new_ids:
                         if norm(sid) not in known:
                             unknown.append({"hypothesis": f.get("hypothesis_id"),
                                             "finding": (fi.get("title") or "")[:60],
                                             "surface_id": sid})
+            if mapped:
+                save_queue(project_root, queue)
         except ValueError as e:
             unknown.append({"error": f"input_surface.json 校验失败: {e}"})
     result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
+    if norm_flags:
+        result["schema_normalized_by"] = norm_flags
+    if mapped:
+        result["mapped_surface_ids"] = mapped
     if unknown:
         result["unknown_surface_ids"] = unknown
         result["warning"] = ("tracked_surfaces 含 input_surface.json 中不存在的 id "
-                             "(归一化后)——任务书要求原样引用 surface id (SWR-V3.3.2-015)")
+                             "(前缀映射+归一化后)——任务书要求原样引用 surface id (SWR-V3.3.2-015)")
     print(json.dumps(result, ensure_ascii=False))
 
 
@@ -1008,7 +1191,9 @@ def stage_bump_attempt(project_root, candidate_id):
 def stage_workflow_script(project_root, mode="verify", batch_size=4):
     """REQ-V3-091: 从当前队列导出 Mode W workflow 脚本 (转调 workflow_export.py,
     避免循环 import)。workflow 脚本只验证并返回 verdicts; 主代理用
-    --stage collect / --stage bump-attempt 落盘, 队列是唯一事实源。"""
+    --stage collect / --stage bump-attempt 落盘, 队列是唯一事实源。
+    v3.4.3 (SWR-V3.4.3-003): mode=resurrect 转调 export_script_resurrect
+    (此前无 CLI 入口, 需 workflow_export 直调 + 主代理手工落盘)。"""
     export_py = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                              "workflow_export.py")
     if not os.path.exists(export_py):
@@ -1019,7 +1204,10 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
     spec = importlib.util.spec_from_file_location("workflow_export", export_py)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    result = mod.export_script(project_root, mode=mode, batch_size=batch_size)
+    if mode == "resurrect":
+        result = mod.export_script_resurrect(project_root, batch_size=batch_size)
+    else:
+        result = mod.export_script(project_root, mode=mode, batch_size=batch_size)
     # v3.2.2 (REQ-V3.2.2-018/019): 入队前 scope diff——R0 快照 vs 现状,
     # 子模块物化/目录变化时附 scope_changed 提示 (mbedtls 审计: R4 智能体
     # submodule update 使 R2 drop 理由作废, 需复活重验)
@@ -1107,7 +1295,10 @@ def _build_context(cand, project_root=None):
             pass
     if not sink:
         sink = cand.get("sink_type") or ""
-    language = cand.get("language")
+    # SWR-V3.4.3-021: 优先候选级 lang 字段 (v3.2 数据模型), language 为旧形态
+    # 兼容; 均缺才按扩展名推断 (cpp-httplib 批次实证: .h/.cpp 扩展名映射
+    # 缺失致 C++ 项目被推断 unknown, 任务书语言分片失效)
+    language = cand.get("lang") or cand.get("language")
     if not language:
         language = _EXT_LANG.get(os.path.splitext(str(src))[1].lower(), "unknown")
     ctx = {
@@ -1461,6 +1652,13 @@ def main():
                   file=sys.stderr)
             sys.exit(1)
         sys.exit(stage_r35_collect(project_root, from_journal))
+    elif stage == "r35n-collect":
+        if not from_journal:
+            print("Error: r35n-collect requires --from-journal <transcript_dir>",
+                  file=sys.stderr)
+            sys.exit(1)
+        sys.exit(stage_r35n_collect(project_root, from_journal,
+                                    expect_ids=expect_ids))
     elif stage == "status":
         stage_status(project_root)
     else:
