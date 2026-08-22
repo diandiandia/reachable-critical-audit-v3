@@ -688,3 +688,18 @@
 | SWR-V3.4.4-010 | workflow_export CLI --mode resurrect 路由 + docstring | 已经完成开发 | M3 |
 
 验收: test_v344.py 10 项全绿；全量 169 passed；jsrsasign 队列复跑零回退。
+
+## 软件需求（SWR-V3.4.5）（共 5 条）
+
+> 来源: gRPC 全流程审计（2026-08-22）运行实录暴露缺陷（设计文档 SYSTEM_DESIGN_V3_4_5.md / SWR_V3_4_5.md）。
+> 系统需求: 无新增（修复批不改变阶段骨架与门禁语义）。
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| SWR-V3.4.5-001 | signature_matcher gen 输出独立文件 hypotheses_gen.json + hypotheses.json 存在性 warn（文件所有权分离） | 未开发 | M1 |
+| SWR-V3.4.5-002 | workflow 脚本顶层 args 形态容忍（verify/refutation/resurrect/shipped-config 四处 Array.isArray 包装） | 未开发 | M1 |
+| SWR-V3.4.5-003 | surface_mapper merge 域内 id 序列空洞告警（非阻断 warn） | 未开发 | M1 |
+| SWR-V3.4.5-004 | 清单库新增 CK-PINNED-DEP（vendored/钉住依赖实证核对四步） | 未开发 | M2 |
+| SWR-V3.4.5-005 | 编排层铁律四：args 派发形态纪律条款 + README 同步 | 未开发 | M2 |
+
+验收: test_signature_matcher / test_workflow_export / test_surface_mapper 新增用例全绿；全量测试无回退；三锚点 selfcheck 零回退；新项目验收（覆盖格 +1）后落 ACCEPTANCE_V3_4_5.md。
