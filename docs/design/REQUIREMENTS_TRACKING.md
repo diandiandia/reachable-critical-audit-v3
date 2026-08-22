@@ -696,10 +696,11 @@
 
 | 编号 | 内容 | 状态 | 里程碑 |
 |---|---|---|---|
-| SWR-V3.4.5-001 | signature_matcher gen 输出独立文件 hypotheses_gen.json + hypotheses.json 存在性 warn（文件所有权分离） | 未开发 | M1 |
-| SWR-V3.4.5-002 | workflow 脚本顶层 args 形态容忍（verify/refutation/resurrect/shipped-config 四处 Array.isArray 包装） | 未开发 | M1 |
-| SWR-V3.4.5-003 | surface_mapper merge 域内 id 序列空洞告警（非阻断 warn） | 未开发 | M1 |
-| SWR-V3.4.5-004 | 清单库新增 CK-PINNED-DEP（vendored/钉住依赖实证核对四步） | 未开发 | M2 |
-| SWR-V3.4.5-005 | 编排层铁律四：args 派发形态纪律条款 + README 同步 | 未开发 | M2 |
+| SWR-V3.4.5-001 | signature_matcher gen 输出独立文件 hypotheses_gen.json + hypotheses.json 存在性 warn（文件所有权分离） | 已经完成开发 | M1 |
+| SWR-V3.4.5-002 | workflow 脚本顶层 args 形态容忍（verify/refutation/resurrect/shipped-config 四处 Array.isArray 包装） | 已经完成开发 | M1 |
+| SWR-V3.4.5-003 | surface_mapper merge 域内 id 序列空洞告警（非阻断 warn） | 已经完成开发 | M1 |
+| SWR-V3.4.5-004 | 清单库新增 CK-PINNED-DEP（vendored/钉住依赖实证核对四步） | 已经完成开发 | M2 |
+| SWR-V3.4.5-005 | 编排层铁律四：args 派发形态纪律条款 + README 同步 | 已经完成开发 | M2 |
 
 验收: test_signature_matcher / test_workflow_export / test_surface_mapper 新增用例全绿；全量测试无回退；三锚点 selfcheck 零回退；新项目验收（覆盖格 +1）后落 ACCEPTANCE_V3_4_5.md。
+> ✅ 2026-08-23: 全部验收完成（170 测试全绿 / quic-go 新项目验收 / ACCEPTANCE_V3_4_5.md）。SWR-V3.4.5-001 在 quic-go R2 实战验证（gen warn + 独立文件）。

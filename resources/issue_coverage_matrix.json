@@ -117,7 +117,7 @@
       "langs": {
         "perl": 7,
         "rust": 6,
-        "go": 23,
+        "go": 28,
         "csharp": 8,
         "scala": 3,
         "python": 7,
@@ -181,7 +181,8 @@
         "javascript": 1,
         "cpp": 2,
         "other": 3,
-        "swift": 2
+        "swift": 2,
+        "go": 2
       }
     },
     {
@@ -189,7 +190,7 @@
       "langs": {
         "perl": 17,
         "python": 41,
-        "go": 28,
+        "go": 32,
         "csharp": 4,
         "powershell": 5,
         "rust": 30,
@@ -210,7 +211,7 @@
       "family": "RACE",
       "langs": {
         "perl": 2,
-        "go": 3,
+        "go": 4,
         "csharp": 3,
         "powershell": 4,
         "rust": 3,
@@ -227,7 +228,7 @@
       "family": "RESOURCE-DOS",
       "langs": {
         "perl": 3,
-        "go": 33,
+        "go": 41,
         "csharp": 11,
         "powershell": 1,
         "rust": 26,
@@ -249,7 +250,7 @@
       "langs": {
         "perl": 8,
         "python": 7,
-        "go": 3,
+        "go": 6,
         "csharp": 1,
         "powershell": 2,
         "rust": 5,
@@ -298,7 +299,8 @@
     "/root/yyjson",
     "/root/pyjwt",
     "/root/jsonwebtoken",
-    "/root/orjson"
+    "/root/orjson",
+    "/root/quic-go"
   ],
-  "updated_at": "2026-08-19"
+  "updated_at": "2026-08-23"
 }
