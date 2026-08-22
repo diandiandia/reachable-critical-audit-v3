@@ -121,11 +121,42 @@ def test_cli_outputs_land_in_audit_results():
     assert "hits.json" in buf.getvalue()
     with contextlib.redirect_stdout(buf):
         sm.main(["sm", "gen", os.path.join(ar, "hits.json")])
-    assert os.path.exists(os.path.join(ar, "hypotheses.json"))
+    # SWR-V3.4.5-001: gen 输出独立文件 hypotheses_gen.json (文件所有权分离)
+    assert os.path.exists(os.path.join(ar, "hypotheses_gen.json"))
     # index 默认路径也进 .audit_results/
     with contextlib.redirect_stdout(buf):
         sm.main(["sm", "index", repo])
     assert os.path.exists(os.path.join(ar, "project_index.json"))
+
+
+def test_gen_warns_and_keeps_main_hypotheses():
+    """v3.4.5 (SWR-V3.4.5-001): LLM 主路径 hypotheses.json 已存在时,
+    gen 打印 warn 且不覆盖 (gRPC 审计: gen 曾覆盖 28 条 LLM 假设)。"""
+    import io, contextlib
+    repo = _mk_repo()
+    ar = os.path.join(repo, ".audit_results")
+    os.makedirs(ar)
+    surf = os.path.join(ar, "input_surface.json")
+    json.dump({"surfaces": [{"id": "S-1", "type": "network",
+                             "entry_points": [{"file": "server.c", "line": 1}]}]},
+              open(surf, "w"))
+    idx = sm.build_project_index(repo)
+    idxf = os.path.join(ar, "project_index.json")
+    json.dump(idx, open(idxf, "w"))
+    hitsf = os.path.join(ar, "hits.json")
+    with contextlib.redirect_stdout(io.StringIO()):
+        sm.main(["sm", "match", surf, idxf])
+    # LLM 主路径产物先存在
+    main_hyp = os.path.join(ar, "hypotheses.json")
+    json.dump({"hypotheses": [{"id": "HYP-L1", "source": "llm-main-path"}]},
+              open(main_hyp, "w"))
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        sm.main(["sm", "gen", hitsf])
+    assert os.path.exists(os.path.join(ar, "hypotheses_gen.json"))
+    assert "warn" in buf.getvalue() and "合并而非覆盖" in buf.getvalue()
+    kept = json.load(open(main_hyp))
+    assert kept["hypotheses"][0]["id"] == "HYP-L1", "主路径产物未被覆盖"
 
 
 def test_v33_c_l2_hits_only_c_surface():

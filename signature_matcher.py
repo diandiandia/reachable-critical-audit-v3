@@ -319,9 +319,16 @@ def main(argv):
         hits = json.load(open(argv[2]))["hits"]
         sigs = signature_lib.load()["signatures"]
         hyps = gen_hypotheses(hits, sigs)
+        # SWR-V3.4.5-001: 文件所有权分离——佐证器输出独立文件
+        # hypotheses_gen.json, 禁止与 LLM 主路径共享 hypotheses.json
+        # (gRPC 审计: gen 曾覆盖主代理先写的 LLM 假设清单)
         out = argv[3] if len(argv) > 3 else os.path.join(
-            os.path.dirname(os.path.abspath(argv[2])), "hypotheses.json")
+            os.path.dirname(os.path.abspath(argv[2])), "hypotheses_gen.json")
         os.makedirs(os.path.dirname(out), exist_ok=True)
+        main_hyp = os.path.join(os.path.dirname(out), "hypotheses.json")
+        if os.path.exists(main_hyp):
+            print(f"warn: {main_hyp} 已存在 (属 LLM 主路径产物), "
+                  f"佐证器输出至 {os.path.basename(out)}, 主代理需合并而非覆盖")
         json.dump(hyps, open(out, "w"), ensure_ascii=False, indent=2)
         print(f"{len(hyps['hypotheses'])} hypotheses + {len(hyps['logic_hypotheses'])} logic -> {out}")
         return 0

@@ -812,9 +812,34 @@ def merge_surfaces(files, project_root=None):
         seen_pairs.add(k)
         mps.append([a, b])
     merged["mirror_pairs"] = mps
+    # SWR-V3.4.5-003: 域内 id 序列空洞告警 (非阻断)——缺号可能是 agent
+    # 整段漏报的信号, 主代理复核决定是否重派 (gRPC 审计: boundary 缺 003)
+    _warn_id_gaps(merged["surfaces"])
     if normalized_ids:
         merged["normalized_ids"] = normalized_ids
     return merged
+
+
+def _warn_id_gaps(surfaces):
+    """SWR-V3.4.5-003: 按归一化域前缀 (SURF-<DOMAIN>-NNN) 检测编号序列空洞,
+    输出 warn 到 stderr (不阻断合并, 不改变返回值)。"""
+    per_domain = {}
+    for s in surfaces:
+        # 域前缀不限长度 (NETWORK/BOUNDARY 等长域; canonical 归一化管短域错写)
+        m = re.match(r"^SURF-([A-Z]+)-(\d+)$", s.get("id", ""))
+        if m:
+            per_domain.setdefault(m.group(1), []).append(int(m.group(2)))
+    for domain, nums in sorted(per_domain.items()):
+        uniq = sorted(set(nums))
+        if not uniq:
+            continue
+        missing = sorted(set(range(uniq[0], uniq[-1] + 1)) - set(uniq))
+        if missing:
+            shown = ",".join(f"{n:03d}" for n in missing[:3])
+            if len(missing) > 3:
+                shown += f"...(+{len(missing) - 3})"
+            print(f"[merge] warn: surface id 序列空洞 SURF-{domain}-{shown} "
+                  f"missing ({len(uniq)} 条在册)", file=sys.stderr)
 
 
 def scope_snapshot(project_root):

@@ -877,6 +877,34 @@
    "source_lessons": [
     "W6 §33 (CK-WS-MATERIALIZE 误绑制度化兜底)"
    ]
+  },
+  {
+   "id": "CK-PINNED-DEP",
+   "name": "钉住依赖实证核对检查",
+   "family": "vendored-deps",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "pin",
+     "vendored",
+     "submodule",
+     "锁定版本",
+     "依赖版本",
+     "钉住",
+     "pinned"
+    ],
+    "note": "v3.4.5 (SWR-V3.4.5-004): 声称机制位于第三方钉住依赖时的实证核对指引——不自动全绑, 关键词命中才绑定"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "依赖声明点定位: 在构建文件/锁文件 (go.mod/Cargo.lock/package-lock/bazel deps 等) 中找到声称机制所在依赖的钉住版本或 commit",
+    "pin 解析: 获取该确切版本/commit 的源码 (本地 vendored 目录或下载对应 commit), 禁止用任意最新版核对",
+    "常量/上限/开关核对: 声称机制涉及的常量、上限、开关在 pin 版源码中的实际值——注意条件值分支语义 (如仅某配置生效的更大上限)",
+    "阻断点证据: 记录 pin 值 + 源码出处 (file:line), 作为阻断点证据——不可用 README/CHANGELOG 声明替代源码事实"
+   ]
   }
  ]
 }

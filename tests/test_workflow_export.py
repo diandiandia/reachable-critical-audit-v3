@@ -146,3 +146,36 @@ def test_claim_type_enum_has_rce_and_other():
     此前 env→dlopen 类声称无匹配类别被迫判 null。"""
     enum = we.VERDICT_SCHEMA["properties"]["claim_type"]["enum"]
     assert "rce" in enum and "other" in enum and "null" in enum
+
+
+def test_export_scripts_args_shape_tolerance():
+    """v3.4.5 (SWR-V3.4.5-002): 四处 JS 模板含裸数组形态容忍包装
+    (gRPC 审计: resurrect 裸数组派发失败实录)。"""
+    tmp = _mk_project([_cand("A-1")])
+    # verify (PENDING 候选)
+    r = we.export_script(tmp, mode="verify")
+    assert r["status"] == "WORKFLOW_SCRIPT_READY"
+    script = open(os.path.join(tmp, ".audit_results", "workflow_verify.js")).read()
+    assert "Array.isArray(args)" in script
+    # refutation (REACHABLE+edge_proven 候选)
+    q = bv.load_queue(tmp)
+    q["candidates"][0].update({"status": "VERIFIED", "verdict": "REACHABLE",
+                               "evidence_grade": "edge_proven"})
+    bv.save_queue(tmp, q)
+    r = we.export_script(tmp, mode="refutation")
+    assert r["status"] == "WORKFLOW_SCRIPT_READY"
+    script = open(os.path.join(tmp, ".audit_results", "workflow_refutation.js")).read()
+    assert "Array.isArray(args)" in script
+    # resurrect (需要 UNREACHABLE 声称类候选入池)
+    q["candidates"][0].update({"status": "VERIFIED", "verdict": "UNREACHABLE",
+                               "claim_type": "unbounded"})
+    bv.save_queue(tmp, q)
+    r = we.export_script_resurrect(tmp)
+    assert r["status"] == "WORKFLOW_SCRIPT_READY"
+    script = open(os.path.join(tmp, ".audit_results", "workflow_resurrect.js")).read()
+    assert "Array.isArray(args)" in script
+    # shipped-config
+    r = we.export_script_shipped_config(tmp, [{"name": "web", "prompt": "p"}])
+    assert r["status"] == "WORKFLOW_SCRIPT_READY"
+    script = open(os.path.join(tmp, ".audit_results", "workflow_shipped_config.js")).read()
+    assert "Array.isArray(args)" in script

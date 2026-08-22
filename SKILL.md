@@ -254,13 +254,14 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 - **verify_queue.json**：`{schema_version:"3.0", candidates:[{id,source_file,source_line,sink_type,members[],status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},attempt,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[],coverage_note,schema_normalized_by[]}], coverage_bridge[], escalated_signed_off}`
 - **input_surface.json**：`{schema_version:"3.0", surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[]}`
-- **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`
+- **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
 
-## ⚠️ 编排层三条铁律（W5 回归教训，强制执行）
+## ⚠️ 编排层四条铁律（W5 回归教训，强制执行）
 
 1. **写读竞态**：读子智能体产出前必须重试校验；通知到达 ≠ 文件已 flush。
 2. **schema 契约**：任务书内嵌 canonical schema（见 R1），校验器归一化是兜底不是依赖。
 3. **证据裁决**：证据不匹配时不静默放行也不盲目拒收——suggested_line/suggested_lines 交主代理裁决，证据重写必带 `*_by: main-agent` 标记。
+4. **args 形态纪律（v3.4.5, SWR-V3.4.5-005）**：派发 Workflow 时 args 必须按导出 `next_step` 声明的形态（对象包裹，`args={"candidates": <payload>}`）传递；裸数组是派发错误——脚本已容忍自动包装（机械兜底，SWR-V3.4.5-002），纪律上禁止依赖兜底（gRPC 复活波裸数组误传失败实录）。
 
 ## 📚 附录：资产地图
 

@@ -76,3 +76,18 @@ def test_lessons_recorder_lenient_resurrection_review():
         assert callable(fn), "lessons_recorder 无 collect 入口"
         out = fn(tmp)  # str 形态不再 AttributeError 即为通过
         assert isinstance(out, dict) and "issues" in out
+
+
+def test_checklist_pinned_dep_entry():
+    """v3.4.5 (SWR-V3.4.5-004): CK-PINNED-DEP 条目结构完整 + 去项目化
+    (第一原则: 资产不得携带项目专属名, 来源只留追溯字段)。"""
+    import json as _json
+    p = os.path.join(WORKSPACE, "resources", "checklist_library.json")
+    d = _json.load(open(p))
+    entry = next(c for c in d["checklists"] if c["id"] == "CK-PINNED-DEP")
+    assert entry["family"] == "vendored-deps"
+    assert entry["applies_to"] == ["verifier", "refuter"]
+    assert len(entry["steps"]) == 4
+    blob = _json.dumps(entry, ensure_ascii=False).lower()
+    for name in ("grpc", "boringssl", "jsrsasign", "sinatra", "lighttpd", "mbedtls"):
+        assert name not in blob, f"CK-PINNED-DEP 含项目专属名 {name}"

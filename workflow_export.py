@@ -105,7 +105,10 @@ SHIPPED_CONFIG_SCRIPT = r"""export const meta = {
   phases: [{ title: 'Inventory', detail: 'committed value vs code default per component' }],
 }
 
-if (!args || !args.components) {
+// SWR-V3.4.5-002: 裸数组形态容忍 (派发侧误传自动包装)
+if (Array.isArray(args)) { args = { components: args }; }
+else { args = args || {}; }
+if (!args.components) {
   return { mode: 'shipped-config', error: 'args.components 缺失 (resume 须携带与首跑一致的 args, W6 §5)' }
 }
 
@@ -196,7 +199,10 @@ VERIFY_SCRIPT = r"""export const meta = {
 }
 
 // v3.1 (W6 §5): resume 必须携带与首跑一致的 args; 缺失时脚本内防御不崩溃
-if (!args || !args.candidates) {
+// SWR-V3.4.5-002: 裸数组形态容忍 (派发侧误传自动包装, gRPC 复活波失败实录)
+if (Array.isArray(args)) { args = { candidates: args }; }
+else { args = args || {}; }
+if (!args.candidates) {
   return { mode: 'verify', error: 'args.candidates 缺失 (resume 必须携带与首跑一致的 args, W6 §5)' }
 }
 
@@ -224,7 +230,10 @@ REFUTATION_SCRIPT = r"""export const meta = {
 }
 
 // v3.1 (W6 §5): resume args 防御
-if (!args || !args.candidates) {
+// SWR-V3.4.5-002: 裸数组形态容忍 (派发侧误传自动包装)
+if (Array.isArray(args)) { args = { candidates: args }; }
+else { args = args || {}; }
+if (!args.candidates) {
   return { mode: 'refutation', error: 'args.candidates 缺失 (resume 必须携带与首跑一致的 args, W6 §5)' }
 }
 
@@ -352,7 +361,10 @@ RESURRECT_SCRIPT = r"""export const meta = {
   phases: [{ title: 'Resurrect', detail: 'one revival attacker per candidate' }],
 }
 
-if (!args || !args.candidates) {
+// SWR-V3.4.5-002: 裸数组形态容忍 (派发侧误传自动包装)
+if (Array.isArray(args)) { args = { candidates: args }; }
+else { args = args || {}; }
+if (!args.candidates) {
   return { mode: 'resurrect', error: 'args.candidates 缺失 (W6 §5)' }
 }
 

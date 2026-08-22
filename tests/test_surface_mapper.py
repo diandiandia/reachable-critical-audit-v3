@@ -295,3 +295,25 @@ def test_v331_normalize_surface_lang():
     d2 = {"surfaces": [dict(d["surfaces"][0], lang="ts")]}
     norm2 = sm.normalize_surfaces(d2)
     assert norm2["surfaces"][0]["lang"] == "typescript"
+
+
+def test_merge_warns_id_gap():
+    """v3.4.5 (SWR-V3.4.5-003): 域内 id 序列空洞告警 (非阻断)——缺号可能是
+    agent 整段漏报的信号 (gRPC 审计: boundary 域缺 003)。"""
+    import io, contextlib
+    with tempfile.TemporaryDirectory() as tmp:
+        f1 = os.path.join(tmp, "_r1_boundary.json")
+        json.dump({"surfaces": [
+            {"id": "SURF-BOUNDARY-001", "type": "boundary",
+             "entry_points": [{"file": "a.c", "line": 1}]},
+            {"id": "SURF-BOUNDARY-002", "type": "boundary",
+             "entry_points": [{"file": "b.c", "line": 2}]},
+            {"id": "SURF-BOUNDARY-004", "type": "boundary",
+             "entry_points": [{"file": "c.c", "line": 3}]},
+        ]}, open(f1, "w"))
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            merged = sm.merge_surfaces([f1])
+        assert len(merged["surfaces"]) == 3, "空洞不阻断合并"
+        assert "SURF-BOUNDARY-003" in err.getvalue(), err.getvalue()
+        assert "missing" in err.getvalue()

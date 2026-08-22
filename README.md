@@ -146,7 +146,8 @@ python3 -m pytest <skill_dir>/tests/ -q
 # R0   目录守卫 + 签名库冒烟 (hit_rate<1.0 且 testable>0 才阻止) + maturity 判定
 # R1   输入面测绘: surface_mapper.py context/tasks → 分域 agent → validate/merge
 #      → input_surface.json (每 surface 附 entry_points 源码证据)
-# R2   假设: signature_matcher 窗口匹配(佐证) + LLM 假设(主路径) → hypotheses.json
+# R2   假设: signature_matcher 窗口匹配(佐证) + LLM 假设(主路径)
+#      → hypotheses.json (LLM 主路径) + hypotheses_gen.json (佐证器 gen, v3.4.5 文件所有权分离)
 # R3   验证: Workflow 波次 → verify_queue.json (边证据/证据分级/家族清单/自证伪)
 # R3.5 复核: N=2 证伪者多数决 → 裁决(先例库匹配 + 同族一致性断言)
 # R4   业务假说 H1-H7 (mature framework 与 R3 并行; H7=默认值全表五维盘点)
