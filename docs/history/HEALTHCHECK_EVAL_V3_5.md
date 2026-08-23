@@ -21,12 +21,12 @@
 ### 中（12 处）
 - signature_library.json:38,345 tier_note/semantic 项目名
 - checklist_library.json:71,216,273,737,782（ktor/etdd 拼写错/kses_init/ETagHashes/uwebsockets/hikaricp）
-- issue_coverage_matrix.json sources 35 条 /root 路径（仅幂等去重用 → sha256 摘要化）
-- anchor_registry.json:36,64,72 fastjson2/tengine/xquic 审计产物锚点
-- task_templates 例证（biz_hypothesis/hypothesis_filter/verifier_edge_proof）
-- signature_lib.py DEPROJECT_BLACKLIST 项目名注释+token（token 保留、注释剥离）
-- surface_mapper.py:698,707 rationale 运行时输出含项目名；tools/target_kind.py:166-167 Dubbo BeanContainerManager/actix ActixSystem 启动链正则
-- SKILL.md:73,93,140,213,275 现行指令引用项目；harness 模板 docstring
+- ~~issue_coverage_matrix.json sources 35 条 /root 路径~~ → **v3.5.1 已修**（sha256 摘要化, 见对照表）
+- anchor_registry.json:36,64,72 fastjson2/tengine/xquic 审计产物锚点（未修, CVE 描述字段）
+- task_templates 例证（biz_hypothesis/hypothesis_filter/verifier_edge_proof）（未修）
+- signature_lib.py DEPROJECT_BLACKLIST 项目名注释+token（token 保留=守卫弹药, 注释已剥离）
+- ~~surface_mapper.py:698,707 rationale 运行时输出含项目名~~ → **v3.5 已修**; 漏网 :714 sinatra → **v3.5.1 已修**; tools/target_kind.py:192-193 Dubbo BeanContainerManager/actix ActixSystem 启动链正则（未修）
+- SKILL.md:140 quic-go 实录 + :410-422 Lersosa（均处版本增量段=changelog 追溯, 判合法保留）
 
 ### 低（~50 处）
 - 根模块/tools 溯源型注释 → 统一 W6 § 引用；anchor_registry CVE 括号名；SKILL.md changelog 段（允许）
@@ -153,8 +153,16 @@
 | 防回退 | test_deproject_assets.py + selfcheck _scan_runtime_assets + 资产计数 lint + fixture 完整性测试 |
 | 附加 | target_kind/surface_mapper 路径遍历子串匹配 bug（路径含 target/build 子串漏扫）修复（测试基线暴露） |
 
+### 已修（v3.5.1 追加, 2026-08-23）
+| 项 | 修复 |
+|---|---|
+| 残留中: issue_coverage_matrix sources | 36 条历史项目绝对路径 → 项目路径 sha256 前 16 hex（幂等身份去项目化; 读端/写端同步 hash 化 + 旧数据同函数迁移; 追溯由 docs/design/ACCEPTANCE_* 承担） |
+| 残留中: rationale 漏网 :714 | size_tier 运行时输出 `(sinatra 20 surfaces 2 agents)` → `(成熟框架 20 surfaces 2 agents 档位校准)`（保留 W6 §24.7 教训引用） |
+| 自检盲区 | `_scan_runtime_assets` 扫描范围补 resources/（仅拦 /root/ 绝对路径; source_lessons/cve 描述等合法追溯字段豁免黑名单）——修复 36 条 /root/ 曾通过 R0 的盲区 |
+| 防回退追加 | test_selfcheck_flags_resources_root_residue + test_ledger_sources_hashed（192 passed） |
+
 ### 未修（下轮依据）
-- 中优先级全部（残留 12 中 + 偏见 8 中 + 低 5）
+- 中优先级剩余（残留: anchor_registry CVE 描述 3 处 / checklist_library 5 处 / task_templates 例证 / target_kind.py 启动链正则 Dubbo+actix; 偏见 8 中 + 低 5）
 - B 裁决 10 项（上表）
 - 附带发现：SKILL.md 计数类已修；harness_runner 默认 rust、env 陷阱 7/16、L2 词族 5 语言缺失等
 
