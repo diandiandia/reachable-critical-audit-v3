@@ -28,7 +28,8 @@ SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build",
 
 LISTEN_PATTERN = re.compile(
     r"0\.0\.0\.0|Listen\(|Server::builder|uvicorn\.run|app\.listen|net\.Listen|"
-    r"http\.ListenAndServe|grpc\.NewServer|axum::serve|hyper::Server",
+    r"http\.ListenAndServe|grpc\.NewServer|axum::serve|hyper::Server|"
+    r"HttpListener|TCPServer|stream_socket_server|IO::Socket::INET",
     re.IGNORECASE)
 
 SCAN_SWALLOW_PATTERN = re.compile(
@@ -71,7 +72,9 @@ def determine_target_kind(project_root):
     signals = []
 
     if not _scan_files(root, {".py", ".go", ".rs", ".c", ".js", ".ts",
-                              ".java", ".rb", ".php", ".scala", ".cpp"}, 3):
+                              ".java", ".rb", ".php", ".scala", ".cpp",
+                              ".swift", ".kt", ".kts", ".cs", ".pl", ".pm",
+                              ".ps1", ".sh"}, 3):
         return {"recommendation": "application", "signals": signals,
                 "component_kinds": {}, "confidence": "low",
                 "note": "无源码文件, 默认 application (保守)"}
@@ -126,6 +129,25 @@ def determine_target_kind(project_root):
                     add("package-manifest", "app", f"{rel}: package main", 0.6)
                 elif txt.strip().startswith("module"):
                     add("package-manifest", "lib", f"{rel}: module 声明", 0.5)
+            elif bf == "pom.xml":
+                if ("spring-boot-maven-plugin" in txt or "<mainClass>" in txt
+                        or "<packaging>war</packaging>" in txt):
+                    add("package-manifest", "app", f"{rel}: 可执行打包信号", 0.8)
+                elif "<packaging>pom</packaging>" not in txt:
+                    add("package-manifest", "lib", f"{rel}: 库型 jar 打包", 0.4)
+            elif bf == "composer.json":
+                if '"bin"' in txt:
+                    add("package-manifest", "app", f"{rel}: bin 可执行入口", 0.8)
+                elif '"autoload"' in txt:
+                    add("package-manifest", "lib", f"{rel}: autoload 无 bin", 0.5)
+            elif bf == "Gemfile":
+                if re.search(r"gem ['\"](puma|unicorn|rackup|passenger|webrick)['\"]", txt):
+                    add("package-manifest", "app", f"{rel}: 含服务器 gem", 0.6)
+            elif bf == "*.gemspec":
+                if ".executables" in txt:
+                    add("package-manifest", "app", f"{rel}: gemspec executables", 0.8)
+                elif ".name" in txt:
+                    add("package-manifest", "lib", f"{rel}: gemspec 库声明", 0.5)
 
     # 2. 监听器 (决定性强信号)
     # v3.2.2 (REQ-V3.2.2-022): 路径分域——测试/脚本/文档/库目录/示例目录命中不得计

@@ -91,3 +91,32 @@ def test_checklist_pinned_dep_entry():
     blob = _json.dumps(entry, ensure_ascii=False).lower()
     for name in ("grpc", "boringssl", "jsrsasign", "sinatra", "lighttpd", "mbedtls"):
         assert name not in blob, f"CK-PINNED-DEP 含项目专属名 {name}"
+
+
+# ---------------- v3.5 (P5) 资产计数防漂移 ----------------
+
+def test_asset_counts_current():
+    """SKILL.md 资产地图计数 = 磁盘实况 (20/29/25/4/3/18)。
+    根因: SKILL.md 长期写 13 签名/19 清单/19 先例/3 模板/15 手册 (v3.5 体检低#1)。"""
+    import glob
+    sigs = len(json.load(open(os.path.join(WORKSPACE, "resources", "signature_library.json")))["signatures"])
+    cks = len(json.load(open(os.path.join(WORKSPACE, "resources", "checklist_library.json")))["checklists"])
+    precs = len(json.load(open(os.path.join(WORKSPACE, "resources", "precedent_library.json")))["precedents"])
+    tmpls = len([f for f in os.listdir(os.path.join(WORKSPACE, "templates", "harness"))
+                 if f.endswith((".py", ".pl"))])
+    tasks = len([f for f in os.listdir(os.path.join(WORKSPACE, "task_templates"))
+                 if f.endswith(".md")])
+    manuals = len(glob.glob(os.path.join(WORKSPACE, "harness_manuals", "*.md")))
+    text = open(SKILL_MD).read()
+    assert f"{sigs} 个签名" in text, "SKILL.md 签名计数漂移"
+    assert f"{precs} 条裁决先例" in text, "SKILL.md 先例计数漂移"
+    assert f"{cks} 条检查清单" in text, "SKILL.md 清单计数漂移"
+    assert f"{tmpls} 个实证模板" in text, "SKILL.md 模板计数漂移"
+    assert f"{tasks} 个任务书模板" in text, "SKILL.md 任务书计数漂移"
+    assert f"共 {manuals} 个" in text, "SKILL.md 手册计数漂移"
+
+
+def test_readme_wc_line():
+    """README 手册计数行 = 磁盘实况 (v3.5 低#1 同根)。"""
+    readme = open(os.path.join(WORKSPACE, "README.md")).read()
+    assert "期望 18" in readme, "README 手册 wc 行漂移"

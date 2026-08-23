@@ -12,6 +12,7 @@ mkdir -p "$DST/tools" "$DST/resources" "$DST/task_templates" "$DST/templates" "$
 
 # 运行时 + 规范 (安装目录与开发仓库保持一致; .venv 不随安装管理)
 cp "$SRC"/SKILL.md "$DST/"
+cp "$SRC"/README.md "$DST/"
 cp "$SRC"/docs/legacy/SKILL_V2.1.md "$DST/docs/legacy/"
 cp "$SRC"/surface_mapper.py "$SRC"/signature_lib.py "$SRC"/signature_matcher.py \
    "$SRC"/evidence_ledger.py "$SRC"/harness_runner.py "$SRC"/workflow_export.py \

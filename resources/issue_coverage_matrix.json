@@ -1,5 +1,4 @@
 {
-  "schema_version": "3.4",
   "note": "CWE 族 x 语言审计覆盖账本 (范围守护, REQ-V3.4-001)。rows 计数来源=候选级 cwe x lang 聚合 + R4 findings 按项目主导语言近似计入; sources=已回填项目 (幂等去重)。统计口径与缺口打印见 batch_verify --stage coverage-ledger。",
   "langs": [
     "perl",
@@ -127,7 +126,7 @@
         "javascript": 14,
         "other": 6,
         "swift": 9,
-        "php": 3
+        "php": 9
       }
     },
     {
@@ -137,7 +136,8 @@
         "python": 3,
         "c": 3,
         "ruby": 1,
-        "rust": 1
+        "rust": 1,
+        "php": 1
       }
     },
     {
@@ -183,7 +183,8 @@
         "cpp": 2,
         "other": 3,
         "swift": 2,
-        "go": 8
+        "go": 8,
+        "php": 3
       }
     },
     {
@@ -205,7 +206,7 @@
         "shell": 2,
         "ruby": 6,
         "swift": 34,
-        "php": 8
+        "php": 13
       }
     },
     {
@@ -243,7 +244,7 @@
         "cpp": 9,
         "ruby": 1,
         "swift": 14,
-        "php": 3
+        "php": 22
       }
     },
     {
@@ -302,7 +303,8 @@
     "/root/jsonwebtoken",
     "/root/orjson",
     "/root/quic-go",
-    "/root/rpcx"
+    "/root/rpcx",
+    "/root/phpseclib"
   ],
   "updated_at": "2026-08-19"
 }

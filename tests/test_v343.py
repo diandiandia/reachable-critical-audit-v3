@@ -26,7 +26,7 @@ def test_r4_collect_adaptive_drift_forms():
     proj = _mk_proj()
     raw = {
         "hypotheses": {
-            "H1": {"verdict": "confirmed", "coverage_note": "覆盖 x",
+            "H1": {"verdict": "confirmed",
                    "tracked_surfaces": ["SURF-DATA-001"]},
         },
         "findings": [
@@ -49,11 +49,11 @@ def test_r4_collect_adaptive_drift_forms():
     assert fi["r3_link"].startswith("CAND-004")
     assert fi["fix"] == "拒绝 0 值"
     assert fi["tracked_surfaces"] == ["SURF-DATA-001"]  # hypothesis 级下放
-    assert "hypotheses-dict" in f["schema_normalized_by"]
+    assert "schema_normalized_by" not in f  # v3.5: 归一化标记字段已删
     # canonical 输入零变化
     proj2 = _mk_proj()
     canon = {"hypotheses": [{"hypothesis_id": "H2", "verdict": "reviewed_clean",
-                             "findings": [], "coverage_note": ""}]}
+                             "findings": []}]}
     json.dump(canon, open(os.path.join(proj2, ".audit_results", "_r4c.json"), "w"),
               ensure_ascii=False)
     bv.stage_r4_collect(proj2, os.path.join(proj2, ".audit_results", "_r4c.json"))
@@ -71,8 +71,7 @@ def test_surface_prefix_map():
         ensure_ascii=False)
     raw = {"hypotheses": [{"hypothesis_id": "H2", "verdict": "reviewed_clean",
                            "findings": [{"title": "t", "severity": "Low",
-                                         "tracked_surfaces": ["SURF-DATA-003"]}],
-                           "coverage_note": ""}]}
+                                         "tracked_surfaces": ["SURF-DATA-003"]}]}]}
     json.dump(raw, open(os.path.join(proj, ".audit_results", "_r4m.json"), "w"),
               ensure_ascii=False)
     bv.stage_r4_collect(proj, os.path.join(proj, ".audit_results", "_r4m.json"))
@@ -133,7 +132,7 @@ def test_gate_structural_empirical():
              "empirical_result": "本机 g++ 实测: GET /admin/ -> 200, "
                                  "route_calls=0, 三次复跑"}
     q["r4_findings"] = [{"hypothesis_id": "H-5", "verdict": "confirmed",
-                         "findings": [fi_ok], "coverage_note": ""}]
+                         "findings": [fi_ok]}]
     bv.save_queue(proj, q)
     ok, v = el.assert_ledger(bv.load_queue(proj), dispatched=[],
                              surface_data={"total": 0, "tracked": 0})

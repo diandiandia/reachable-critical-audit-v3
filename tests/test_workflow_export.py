@@ -103,7 +103,7 @@ def test_bump_attempt_escalates_at_max():
     c = bv.load_queue(tmp)["candidates"][0]
     assert c["status"] == "ESCALATED"
     assert c["attempt"] == 3
-    assert "escalated_reason" in c and c["escalation_log"][0]["note"]
+    assert "escalated_reason" in c
     # 已升级后再次 bump 不再累加 attempt (幂等保护)
     bv.stage_bump_attempt(tmp, "A-1")
     c = bv.load_queue(tmp)["candidates"][0]

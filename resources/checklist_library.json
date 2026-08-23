@@ -1,5 +1,4 @@
 {
- "schema_version": "3.1",
  "description": "检查清单库 — 15 语言战役中证伪者的攻击面固化为 verifier/refuter/H7 的强制自查项。每个清单带 applies_to 与 binding（绑定条件：按 cwe/语义家族/sink 形态自动挂到候选）。",
  "checklists": [
   {

@@ -167,7 +167,7 @@ def test_tooling_version_guard():
     with open(os.path.join(tmp, ".audit_results", "workflow_verify.js"), "w") as f:
         f.write('const x = 1\nreturn { mode: "verify", tooling_version: "9.9.9" }\n')
     w = bv._tooling_version_warning(tmp)
-    assert w is not None and "9.9.9" in w and "3.4.4" in w
+    assert w is not None and "9.9.9" in w and we.TOOLING_VERSION in w
     # 无脚本/无版本字段 → 无告警
     tmp2 = _mk_project([])
     assert bv._tooling_version_warning(tmp2) is None

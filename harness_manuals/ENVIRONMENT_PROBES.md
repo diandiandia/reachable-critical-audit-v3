@@ -26,7 +26,7 @@ printf("queue_init=%d\n", r); if(!r) io_uring_queue_exit(&ring); return 0; }
 
 - 头文件/库：`ls /usr/include/<lib>.h` / `ldconfig -p | grep <lib>`——可 apt 安装 ≠ 可链接（liburing-dev 案例）
 - 子模块物化：`git submodule status` + 目录非空检查（lsquic 空目录案例：目录存在 ≠ 源码在场）
-- 语言工具链：cargo/rustc 常不在 PATH（/root/.cargo/bin），go/gcc 版本义务见各语言手册
+- 语言工具链：cargo/rustc 常不在 PATH（$HOME/.cargo/bin），go/gcc 版本义务见各语言手册
 
 ## 3. 工具存在性及替代
 

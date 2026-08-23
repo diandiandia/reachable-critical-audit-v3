@@ -2,11 +2,10 @@
 """D-COMP-10 checklist_binder — 假设/候选 → 家族检查清单自动绑定 (v3.1 新增)。
 
 满足: REQ-V3.1-050 (家族清单绑定), REQ-V3.1-051 (绑定规则: cwe/语义家族/关键词),
-      REQ-V3.1-052 (任务书清单注入), REQ-V3.1-053 (H7 默认值模板绑定).
+      REQ-V3.1-052 (任务书清单注入).
 
 用法:
     python3 checklist_binder.py bind <candidate.json>   # 输出绑定的清单 id 列表
-    python3 checklist_binder.py bind-all <verify_queue.json>  # 全队列绑定并写回
 """
 import json
 import os
@@ -141,40 +140,12 @@ def bind(candidate, lib=None):
     return bound
 
 
-def bind_all(queue, lib=None):
-    """SWR-V3.1-052: 全队列绑定，checklist_ids 写回候选（不覆盖已有）。"""
-    lib = lib or load_library()
-    for c in queue.get("candidates", []):
-        bound = bind(c, lib)
-        if bound:
-            c.setdefault("checklist_ids", [])
-            for cid, why in bound:
-                if cid not in c["checklist_ids"]:
-                    c["checklist_ids"].append(cid)
-            c.setdefault("checklist_bindings", []).append(
-                {cid: why for cid, why in bound})
-    return queue
-
-
-def h7_template_bind():
-    """SWR-V3.1-053: H7 默认值全表模板绑定（固定集合）。"""
-    return ["CK-DEFAULT-VALUE-TABLE", "CK-DEFAULT-3LAYER", "CK-SENTINEL-SEMANTICS"]
-
-
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "help"
     if cmd == "bind":
         cand = json.load(open(argv[2]))
         for cid, why in bind(cand):
             print(f"{cid}: {why}")
-        return 0
-    if cmd == "bind-all":
-        path = argv[2]
-        queue = json.load(open(path))
-        bind_all(queue)
-        json.dump(queue, open(path, "w"), ensure_ascii=False, indent=1)
-        n = sum(1 for c in queue.get("candidates", []) if c.get("checklist_ids"))
-        print(f"bound {n} candidates")
         return 0
     print(__doc__)
     return 1

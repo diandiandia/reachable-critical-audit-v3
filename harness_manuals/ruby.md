@@ -1,6 +1,6 @@
 # Ruby 实证工具链手册 (v3.1)
 
-> 适用战役：sinatra（Ruby v3 首审，10 候选 2 REACHABLE、R3.5 拦截 50%，top-15 战役收官）。
+> 适用战役：Ruby v3 首审（10 候选 2 REACHABLE、R3.5 拦截 50%，top-15 战役收官）。
 > 事实来源：W6_MORE_LANGS_FINDINGS.md §24（主）、§21.4（网络交叉）。
 
 ## 1. 工具链探测

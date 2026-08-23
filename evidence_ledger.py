@@ -327,7 +327,7 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         if tracked_ids:
             # v3.2.2 (REQ-V3.2.2-020): mirror_pairs 镜像自动传播——
             # kept-first 多域冲突对中任一 surface 被 tracked, 对端镜像同样视为覆盖
-            # (mbedtls 审计: 15 冲突对曾需主代理手写 coverage_bridge)
+            # (mbedtls 审计: 15 冲突对曾需主代理手写中继覆盖, mirror_pairs 机制化)
             mps = surface_data.get("mirror_pairs") or []
             for a, b in mps:
                 if a in tracked_ids or b in tracked_ids:

@@ -128,7 +128,7 @@ python3 -c "import sys; sys.path.insert(0,'<skill_dir>'); import surface_mapper,
 
 # 2) 资产完整（v3.1 三资产）
 python3 -c "import json; json.load(open('<skill_dir>/resources/precedent_library.json')); json.load(open('<skill_dir>/resources/checklist_library.json')); print('ok')"
-ls <skill_dir>/harness_manuals/ | wc -l    # 期望 15
+ls <skill_dir>/harness_manuals/ | wc -l    # 期望 18
 
 # 3) 测试全绿
 python3 -m pytest <skill_dir>/tests/ -q
@@ -167,12 +167,12 @@ python3 -m pytest <skill_dir>/tests/ -q
 ├── *.py  × 9                 运行时模块（v3 六核心 + v3.1 三件套）
 ├── tools/                    batch_verify（队列编排）/ r05_diff_archaeology（R0.5）
 │                             / ast_scanner（L0 按需）/ gen_tracking（文档工具）
-├── resources/                signature_library（13 签名）/ precedent_library（19 先例）
-│                             / checklist_library（19 清单）/ security_profiles + anchor_registry（L0 按需）
-├── harness_manuals/          15 语言实证工具链手册（v3.1 机器资产）
+├── resources/                signature_library（20 签名）/ precedent_library（25 先例）
+│                             / checklist_library（29 清单）/ security_profiles + anchor_registry（L0 按需）
+├── harness_manuals/          16 语言 + 2 通用实证手册，共 18 个（v3.1 机器资产）
 ├── task_templates/  ×7       子智能体任务书（测绘/筛选/验证/证伪/H1-H7/实证/JSON 自检）
 ├── templates/harness/  ×3    实证模板（ws_frame_alloc / ws_frame_accum / xss_path_sim）
-├── tests/  ×9                73 个测试（改模块后必须全绿）
+├── tests/  ×16               190 个测试（改模块后必须全绿）
 ├── lessons/                  全部历史教训（W5/W6/按语言）——机器资产的上游证据源
 └── docs/
     ├── design/               文档级联: SYSTEM_DESIGN → REQ → SW_DESIGN → SWR → TRACKING
@@ -185,9 +185,9 @@ python3 -m pytest <skill_dir>/tests/ -q
 
 | 资产 | 内容 | 作用 |
 |---|---|---|
-| `precedent_library.json` | 19 条裁决先例（criterion/counterexample/applicability_scope/applications） | R3.5 裁决与自证伪提示的机器化依据——同一前提形态在 15 语言给出同一裁决 |
-| `checklist_library.json` | 19 条检查清单（结构化 binding: cwe/keywords/verdict_context） | verifier 强制自查项——15 语言证伪者攻击面固化 |
-| `harness_manuals/*.md` | 15 语言工具链手册 | 实证成本从"每项目重付陷阱清单"降为一次性入册 |
+| `precedent_library.json` | 25 条裁决先例（criterion/counterexample/applicability_scope/applications） | R3.5 裁决与自证伪提示的机器化依据——同一前提形态在 16 语言给出同一裁决 |
+| `checklist_library.json` | 29 条检查清单（结构化 binding: cwe/keywords/verdict_context） | verifier 强制自查项——16 语言证伪者攻击面固化 |
+| `harness_manuals/*.md` | 16 语言 + 2 通用手册（共 18 个） | 实证成本从"每项目重付陷阱清单"降为一次性入册 |
 
 三者随审计进化（先例 applications 回填 / 新先例追加 / 清单回填），是 skill 的知识层。
 

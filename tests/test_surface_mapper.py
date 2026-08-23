@@ -359,3 +359,56 @@ def test_merge_same_file_cross_domain_hint():
         ]}, open(f1, "w"))
         merged = sm.merge_surfaces([f1])
         assert merged["same_file_cross_domain_pairs"] == []
+
+
+# ---------------- v3.5 (B3) 语言门补全防回退 ----------------
+
+def test_exec_entry_kotlin_csharp_swift():
+    """v3.5 (B3): main 模式补 Kotlin fun main/C# static void Main/Swift @main。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        p = os.path.join(tmp, "Main.kt")
+        open(p, "w").write("package app\n\nfun main() {\n}\n")
+        assert sm._detect_exec_entry([p])[0]
+        p = os.path.join(tmp, "Program.cs")
+        open(p, "w").write("public static void Main(string[] args) {\n}\n")
+        assert sm._detect_exec_entry([p])[0]
+        p = os.path.join(tmp, "App.swift")
+        open(p, "w").write("@main\nstruct App {\n}\n")
+        assert sm._detect_exec_entry([p])[0]
+
+
+def test_listen_new_vocab():
+    """v3.5 (B3): listen 模式补 C# HttpListener/Ruby TCPServer/PHP
+    stream_socket_server/Perl IO::Socket::INET。"""
+    cases = ("HttpListener l = new();", "server = TCPServer.new",
+             "stream_socket_server('tcp://0.0.0.0:80')",
+             "IO::Socket::INET->new(LocalAddr => '0.0.0.0')")
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, snippet in enumerate(cases):
+            p = os.path.join(tmp, f"f{i}.txt")
+            open(p, "w").write(snippet + "\n")
+            assert sm._detect_exec_entry([p])[1], snippet
+
+
+def test_src_exts_covers_16_langs():
+    """v3.5 (B3): _SRC_EXTS 覆盖全部 16 预设语言扩展名。"""
+    for ext in (".scala", ".php", ".pl", ".pm", ".ps1", ".sh",
+                ".kt", ".cs", ".swift", ".ts", ".rb"):
+        assert ext in sm._SRC_EXTS, ext
+
+
+def test_no_main_generalized():
+    """v3.5 (B3): 无 main → library 泛化到脚本/JVM/.NET 系; shell 排除保持保守。"""
+    ctx = {"build_files": []}
+    with tempfile.TemporaryDirectory() as tmp:
+        for i in range(6):
+            open(os.path.join(tmp, f"m{i}.php"), "w").write("<?php function f() {}\n")
+        kind, signals = sm._classify_project_kind(tmp, ctx)
+        assert "php_no_main" in signals
+        assert kind == "library"
+    with tempfile.TemporaryDirectory() as tmp:
+        for i in range(6):
+            open(os.path.join(tmp, f"m{i}.sh"), "w").write("#!/bin/sh\necho hi\n")
+        kind, signals = sm._classify_project_kind(tmp, ctx)
+        assert "shell_no_main" not in signals  # shell 保守排除
+        assert kind in ("app", "framework", "infra", "library")

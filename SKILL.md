@@ -93,7 +93,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    - **library**：公共 API 即信任边界（Newtonsoft.Json 先例）；仓内调用者缺失不是阻断；死代码豁免不适用
    - **hybrid**：按组件分别装载；无法确定归属时按 application（保守）
    未签收 → 门禁⑧ target_kind_required 不放行（旧队列复跑以 `require_target_kind=False` 豁免）。
-5. 初始化空 `verify_queue.json`：`{"schema_version":"3.0","candidates":[]}`。
+5. 初始化空 `verify_queue.json`：`{"candidates":[]}`。
 
 ## 🗺️ R1：输入面测绘（审计起点，禁止全库轰炸）
 
@@ -153,7 +153,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 **入队**：筛选 kept 的假设按 focus sink 簇化（同 sink 合并为一条簇级候选），写入 `verify_queue.json`：
 ```json
 {"id":"CAND-001","source_file":"...","source_line":N,"sink_type":"CWE-xxx",
- "members":[{"id":"HYP-xxx"}],"status":"PENDING","priority":0}
+ "status":"PENDING","priority":0}
 ```
 
 **Mode W 波次**（SWR-V3.3.2-050 编排条款：每波派发后登记 wave_registry）：
@@ -231,16 +231,19 @@ import sys; sys.path.insert(0,'<skill_dir>'); sys.path.insert(0,'<skill_dir>/too
 import evidence_ledger as el, batch_verify as bv, json
 q=bv.load_queue('<project>')
 surfaces=json.load(open('<project>/.audit_results/input_surface.json'))['surfaces']
-tracked=...  # R2 假设覆盖 ∪ R4 假说追踪的 surface id
+tracked_ids=...  # R2 假设 surface_ids ∪ R4 findings.tracked_surfaces ∪ relay 中继面
 ok,v=el.assert_ledger(q, dispatched=[c['id'] for c in q['candidates']],
-                      surface_data={'total':len(surfaces),'tracked':len(tracked)})
+                      surface_data={'total':len(surfaces['surfaces']),
+                                    'tracked_ids':sorted(tracked_ids),
+                                    'mirror_pairs':surfaces.get('mirror_pairs') or []})
 print(ok, v)"
 ```
 ① no_pending ② REACHABLE 无 static_only ③ 实证类声称 100% empirically_confirmed ④ H1-H7 全 VERIFIED
 ⑤ 对账零差异（dispatched 全部终态）⑥ escalated=0 或主代理签收 ⑦ surface 覆盖率 100%
-（v3.2.2：tracked 计算 = R2/R4 直接覆盖 ∪ input_surface.json `mirror_pairs` 镜像自动传播
-∪ 主代理签收的 `verify_queue.coverage_bridge`——relay 中继面[套接字层/示例程序中转]的正式通道，
-每条 bridge 必附 basis 说明，REQ-V3.2.2-020/021）
+（v3.5：tracked_ids = R2 假设 surface_ids ∪ R4 findings.tracked_surfaces ∪
+relay 中继面[套接字层/示例程序中转]直接并入 tracked_ids——覆盖依据写入 R4 finding
+evidence 文本；`mirror_pairs` 镜像由 assert_ledger 自动传播；coverage_bridge
+字段已删，REQ-V3.2.2-020/021 语义保留）
 ⑧ target_kind_required（v3.2.1：R0 未签收 target_kind 不放行；旧队列复跑
 `require_target_kind=False` 豁免）。
 ③c 复活攻击完成度（v3.2：声称类 UNREACHABLE 必须有 resurrection_review；复跑 v3.2
@@ -263,8 +266,8 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 ## 📏 数据模型速查
 
-- **verify_queue.json**：`{schema_version:"3.0", candidates:[{id,source_file,source_line,sink_type,members[],status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},attempt,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[],coverage_note,schema_normalized_by[]}], coverage_bridge[], escalated_signed_off}`
-- **input_surface.json**：`{schema_version:"3.0", surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[]}`
+- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
+- **input_surface.json**：`{surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[], mirror_pairs[]}`
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
 
 ## ⚠️ 编排层四条铁律（W5 回归教训，强制执行）
@@ -279,9 +282,9 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/r05_diff_archaeology.py`：R0.5 差异考古（REQ-V3-012~016，非默认路径）；`tools/ast_scanner.py`：L0 扫描器（REQ-V3-002 禁止其作为默认路径，按需使用）；`tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：13 个签名（7 L3 语义族 + 6 L2 语言词族，含 known_instances，R0 冒烟强制可复现）；`resources/precedent_library.json`：19 条裁决先例；`resources/checklist_library.json`：19 条检查清单
-- `task_templates/`：7 个任务书模板；`templates/harness/`：3 个实证模板；`harness_manuals/`：15 语言工具链手册
-- `tests/`：73 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
+- `resources/signature_library.json`：20 个签名（9 L3 语义族 + 11 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall）；`resources/precedent_library.json`：25 条裁决先例；`resources/checklist_library.json`：29 条检查清单
+- `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：4 个实证模板；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
+- `tests/`：190 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---
@@ -314,7 +317,7 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 ### R3 变更: verifier v3.1（步骤 0 + 清单 + 自证伪）
 - **步骤 0 承重前提验证**（W6 §17.10）——前提断裂立即终止
 - `checklist_binder.py` 按 cwe/关键词自动绑定家族检查清单（checklist_library.json
-  19 条 CK-*，15 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
+  29 条 CK-*，16 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
 - 自证伪提示: 候选附先例库匹配的最可能证伪论据，verifier 自查（目标: R3.5 拦截率
   从 ~50% 收敛到 <30%）
 - 轻量实证白名单 + `empirical` 字段结构化 + 范围分级
@@ -323,7 +326,7 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 ### R3.5 变更: 工具箱 + 裁决先例库
 - 证伪者实证工具箱按声称类别注入（区间类=参照模型+百万对拍 §21.1 / 解析类=真实
   构件+畸形矩阵 §19.4 / 代理分歧类=标准部署实测 §16.10）
-- `precedent_library.json`（19 条先例）裁决匹配 + `evidence_ledger.py consistency`
+- `precedent_library.json`（25 条先例）裁决匹配 + `evidence_ledger.py consistency`
   同族一致性断言（W6 §18.3 从证伪者武器升级为系统断言）
 - refutation 结果 schema 新增 strengthened/attribution_correction/note（W6 §13.6/§12.5）
 
@@ -428,7 +431,7 @@ fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退
 ### 签名资产: 去 Web 化/系统语言扩充（P-A）
 - L2 词族新增 **c/go/rust/java** 4 族（malloc 无上限家族/流式累积/unsafe-FFI/
   反序列化）；L3 新增 **SIG-STATE-RACE**（CWE-362/367）与 **SIG-CRYPTO-WEAK**
-  （CWE-327/330）；既有 L3 补系统形态 grep hints——签名库 19 条
+  （CWE-327/330）；既有 L3 补系统形态 grep hints——签名库 20 条
 - integrity_selfcheck 新增 L2 词族 ↔ harness_manuals 覆盖对齐检查
   （cs↔csharp 命名不一致存量缺陷已修）
 
@@ -482,8 +485,8 @@ python3 lessons_recorder.py <project> --write
 
 ### 收集链（P-A 修复）
 - **r4-collect 自适应**（REQ-V3.4.3-001）：hypotheses 对象形态 / findings 顶层数组 /
-  evidence 数组 / r3_link dict 四类漂移自动归一，写 `schema_normalized_by` 标记；
-  0 提取告警含形态诊断。canonical 输入零变化
+  evidence 数组 / r3_link dict 四类漂移自动归一（v3.5 起不落 schema_normalized_by
+  标记字段）；0 提取告警含形态诊断。canonical 输入零变化
 - **surface id 前缀归一化**（REQ-V3.4.3-002）：surface_mapper merge 统一域前缀
   （SURF-DAT-*→SURF-DATA-* 等，写 normalized_ids）；r4-collect tracked_surfaces
   前缀模糊映射（写 mapped_surface_ids）；R4 任务书注入实际 id 清单 `{surface_id_list}`
@@ -558,3 +561,73 @@ coverage-ledger 缺口格），三条件满足才合并 main + install。
 ### 验收判据（Phase 3.4.4）
 test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶段复跑零回退，
 三条件满足才合并 main + install。
+
+---
+
+## 🆕 v3.5 增量（2026-08-23，三项体检修复：偏见 / 过设计 / 项目残留）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_5.md` + `docs/design/SWR_V3_5.md`（15 SWR）。
+> 评估报告: `docs/history/HEALTHCHECK_EVAL_V3_5.md`（含 B 裁决 10 项，本轮不修，只记入报告）。
+> 范围: 高优先级发现（残留 3 + 偏见 5）+ 过设计 A 清单死资产 + 文档漂移。
+> 修复后三项体检逐条机器守卫（tests/test_deproject_assets.py 等），防回退。
+
+### 去项目化（三禁止机器化）
+- **先例库形状抽象**（SWR-V3.5-001）：precedent_library 五字段
+  （name/criterion/counterexample/applicability_scope/applications）零项目 token——
+  self_refutation_hints() 注入 verifier 任务书的内容全部为机制形态描述，
+  项目名只留 source_lessons 追溯字段
+- **xss_path_sim 去项目化**（SWR-V3.5-002）：AWStats 专属复刻整文件移入
+  `tests/fixtures/xss_path_sim_awstats_anchor.pl`（fixture 豁免区）；
+  templates/harness/xss_path_sim.pl 重写为参数化通用骨架（argv 读 JSON 链描述）；
+  模板名不变，全部接线保持
+- **手册抽象**（SWR-V3.5-003）：harness_manuals 项目名 → 机制形态 + W6 § 引用；
+  6 处 /root/ 绝对路径 → $HOME/环境变量占位
+- **运行时资产残留扫描**（SWR-V3.5-015）：signature_lib `_scan_runtime_assets()`
+  遍历 templates/ + harness_manuals/（黑名单 token 大小写不敏感 + /root/ 路径），
+  挂入 R0 selfcheck 完整性分支——模板/手册残留回退被机器拦截
+
+### 偏见修复
+- **harness 端口参数化**（SWR-V3.5-004）：ws_frame_alloc/accum 的 ktor/actix
+  历史端口 18083/18084 → `python3 ws_frame_*.py <host> <port>` 必传参数
+- **step 0.5 static_short 按语言家族分派**（SWR-V3.5-005）：c/cpp 措辞保留；
+  go/rust/jvm（sourceSet）/dotnet（.csproj）/swift（Package.swift）/script 族
+  （require/include/use/source 加载闭包核对）各得语义——不再对库型候选派发
+  纯 C 系词汇（CMake/GOPATH/cargo/Makefile）
+- **R0 形态分类语言门补全**（SWR-V3.5-006/007）：target_kind 扩展名白名单补
+  .swift/.kt/.cs/.pl/.pm/.ps1/.sh，包清单解析补 pom.xml/composer.json/
+  Gemfile/gemspec；surface_mapper _SRC_EXTS 补 6 扩展名、main 模式补
+  Kotlin `fun main(`/C# `static void Main`/Swift `@main`（MULTILINE 移入
+  compile）、listen 模式补 HttpListener/TCPServer/stream_socket_server/
+  IO::Socket::INET；Go/Java 独享无-main 特判 → LANG_NO_MAIN_LIBRARY 泛化
+  11 语言（排除 shell/c/cpp 保持保守，go/java 行为不变）
+- **签名 fixture 全覆盖**（SWR-V3.5-008）：20/20 签名 confirmed 锚点
+  （tests/fixtures/known_instances.json，L3 系补 7、L2 词族 6 个 line=1 假占位
+  换真实项目锚点、4 条漂移锚点重定位）；smoke_test 多实例回退；存量正则缺陷
+  `[ScriptBlock]::Create` 转义修复
+- **覆盖账本格压力提示**（SWR-V3.5-009）：pressure_cells（count≥15 标
+  saturated）+ family_skew（top_share 降序）+ 选题提示「优先补零格；
+  saturated 格不建议再选题」——无新门禁/无新持久字段/无新强制义务
+
+### 过设计 A 清单死资产删除
+- 死 stage（next-cluster/cluster-collect/coverage + r15 分支 + 4 CLI 参数）
+  / 死函数（bind_all/h7_template_bind/record_application/add_precedent/
+  emit_filter_tasks）/ 死字段 13（含 coverage_bridge）/ 死模板 4/7 /
+  multipart_align 悬空注册 / repair_stats 死读（SWR-V3.5-010~013）
+- **门禁⑦ 语义保留**（SWR-V3.5-012）：coverage_bridge 载体删除但覆盖率簿记
+  保留——门禁代码块改传 `tracked_ids` + `mirror_pairs`（此前文档路径只传计数
+  导致镜像传播被静默跳过）；relay 中继面直接并入 tracked_ids，覆盖依据写入
+  R4 finding evidence 文本
+
+### 文档与测试
+- 资产地图/README 计数更新为磁盘实况：20 签名（9 L3 + 11 L2）、25 先例、
+  29 清单、4 实证模板、3 任务书、18 手册、190 测试（SWR-V3.5-014）；
+  TOOLING_VERSION → "3.5"
+- 新增 tests/test_deproject_assets.py 5 用例 + 各模块防回退断言
+  （SWR-V3.5-015）——文档计数、家族措辞、语言门、ledger 压力、fixture 全
+  覆盖全部有测试守
+
+### 验收判据（Phase 3.5）
+190 测试全绿（172 + 18 新增/改写）+ `signature_lib.py selfcheck` 对 18 个
+锚点项目 `hit_rate=100% testable=20` + 自身仓库完整性零违规 + phpseclib
+新项目验收（六门禁全 PASS + coverage-ledger --write 回填 php×CRYPTO 零格）
+三条件满足才 install + 提交。

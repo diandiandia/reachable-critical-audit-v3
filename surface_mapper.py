@@ -162,13 +162,18 @@ def _classify_project_kind(root, ctx):
     if _has_include_dir(root):
         score["library"] += 2
         signals.append("include_dir")
-    # v3.3.2: Go/Java 主导且无 main → library (纯库形态, hikaricp/fasthttp 实测)
-    if _dominant_lang(srcs, ".go") and not has_main:
-        score["library"] += 2
-        signals.append("go_no_main")
-    if _dominant_lang(srcs, ".java") and not has_main:
-        score["library"] += 2
-        signals.append("java_no_main")
+    # v3.5 (偏见 B3): 无 main → library 泛化——Go/Java 独享特判是语言偏见
+    # (库型项目普遍无 main, 不仅 Go/Java)。泛化集排除 shell/c/cpp 保持保守:
+    # shell 脚本常无 main 且多为应用形态; C/C++ 无 main 时库与固件形态混杂。
+    LANG_NO_MAIN_LIBRARY = {"go", "java", "kotlin", "scala", "csharp", "swift",
+                            "php", "ruby", "perl", "powershell", "typescript"}
+    _EXT_OF = {"go": ".go", "java": ".java", "kotlin": ".kt", "scala": ".scala",
+               "csharp": ".cs", "swift": ".swift", "php": ".php", "ruby": ".rb",
+               "perl": ".pl", "powershell": ".ps1", "typescript": ".ts"}
+    for lang in LANG_NO_MAIN_LIBRARY:
+        if _dominant_lang(srcs, _EXT_OF[lang]) and not has_main:
+            score["library"] += 2
+            signals.append(f"{lang}_no_main")
     # 判定 (保守倾向: 无法确定归属时按 app)
     if score["app"] >= 3:
         return "app", signals
@@ -201,7 +206,8 @@ def _dominant_lang(srcs, ext):
 
 
 _SRC_EXTS = {".c", ".h", ".cpp", ".hpp", ".cc", ".rs", ".go", ".java",
-             ".py", ".rb", ".js", ".ts", ".cs", ".swift", ".kt"}
+             ".py", ".rb", ".js", ".ts", ".cs", ".swift", ".kt", ".scala",
+             ".php", ".pl", ".pm", ".ps1", ".sh"}
 
 
 def _sample_source_files(root, cap=120):
@@ -235,13 +241,18 @@ def _detect_exec_entry(srcs):
     JavassistProxyFactory 的 'public static void main' 字节码模板实测)
     ②监听单独存在只计提示分 (库自身实现网络能力 ≠ 独立入口——libuv
     src/unix/tcp.c、uwebsockets src/App.h 实测)。"""
+    # v3.5: re.MULTILINE 移入 compile——原 search(head, re.MULTILINE) 把
+    # flags 当 pos 传入 (跳过前 8 字节), 行首锚定在短文件上失效 (fun main/@main
+    # 位于文件头部时漏检, B3 扩展模式实证暴露)。
     main_pat = re.compile(
         r"^[ \t]*(?:int\s+main\s*\(|fn\s+main\s*\(|func\s+main\s*\(|"
-        r"public\s+static\s+void\s+main\s*\(|def\s+main\s*\()")
+        r"(?:public\s+)?static\s+void\s+(?:Main|main)\s*\(|def\s+main\s*\(|"
+        r"fun\s+main\s*\(|@main)", re.MULTILINE)
     listen_pat = re.compile(
         r"\blisten\s*\(|\bServerSocket\s*\(|\bTcpListener\s*::|\bnet\.Listen\s*\(|"
         r"\bbind\s*\(\s*[\"']|socket\.bind\s*\(|createServer\s*\(|"
-        r"http\.Server\s*\(")
+        r"http\.Server\s*\(|HttpListener|TCPServer|stream_socket_server|"
+        r"IO::Socket::INET")
     has_main = has_listener = False
     for p in srcs:
         try:
@@ -256,7 +267,7 @@ def _detect_exec_entry(srcs):
                         head += f.read(4096)
         except OSError:
             continue
-        if not has_main and main_pat.search(head, re.MULTILINE):
+        if not has_main and main_pat.search(head):
             has_main = True
         if not has_listener and listen_pat.search(head):
             has_listener = True
@@ -769,7 +780,7 @@ def merge_surfaces(files, project_root=None):
     project_root 统一解析相对路径 (否则相对/绝对混用导致多域归属检测失效)。
     v3.2.2 (REQ-V3.2.2-020): 产出 mirror_pairs——kept-first 冲突对,
     门禁⑦ tracked 计算自动传播镜像面覆盖 (mbedtls 审计 15 冲突对手写 bridge 制度化)。"""
-    merged = {"schema_version": "3.0", "surfaces": [], "conflicts": [],
+    merged = {"surfaces": [], "conflicts": [],
               "mirror_pairs": []}
     # SWR-V3.4.3-030: 域前缀归一化映射 (只记变更项, 供下游追溯)
     normalized_ids = {}
@@ -824,7 +835,7 @@ def merge_surfaces(files, project_root=None):
     # 不重叠"形态 (quic-go: token_store.go 被 data/storage 两域测绘不同函数) 不产生
     # conflict → mirror 检测漏对 → 覆盖传播缺口且无人工核对提示。只提示不自动成对
     # (自动配对会引入误耦合——同文件不同入口可能是完全独立的两个面), 主代理裁决
-    # 补 mirror_pairs 或 coverage_bridge
+    # 补 mirror_pairs 或主代理手动核对 (v3.5: coverage_bridge 字段已删)
     merged["same_file_cross_domain_pairs"] = _hint_same_file_cross_domain(
         merged["surfaces"])
     if normalized_ids:
@@ -903,7 +914,7 @@ def scope_snapshot(project_root):
     动机: mbedtls 审计中 R4 智能体自行 submodule update 物化 tf-psa-crypto,
     R1 的"子模块空目录"scope 判定与 R2 drop 理由当场作废; 快照供各阶段 diff。"""
     import subprocess
-    snap = {"schema_version": "3.2.2", "submodules": {}, "key_dirs": {}}
+    snap = {"submodules": {}, "key_dirs": {}}
     try:
         out = subprocess.run(["git", "-C", project_root, "submodule", "status"],
                              capture_output=True, text=True, timeout=15).stdout

@@ -265,32 +265,6 @@ def gen_hypotheses(hits, signatures):
             "reading_hints": reading_hints}
 
 
-def emit_filter_tasks(hypotheses, batch_size=12):
-    """SWR-V3-024: LLM 快速筛选任务书（排除常量/白名单/死代码场景）。"""
-    tasks = []
-    all_hyps = hypotheses.get("hypotheses", []) + hypotheses.get("logic_hypotheses", [])
-    for i in range(0, len(all_hyps), batch_size):
-        batch = all_hyps[i:i + batch_size]
-        tasks.append({
-            "template": "hypothesis_filter",
-            "batch": i // batch_size + 1,
-            "hypotheses": [{
-                "id": h["id"], "surface_id": h["surface_id"],
-                "semantic_family": h["semantic_family"],
-                "hit_sites": h["hit_sites"][:5],
-                "checklist": h["checklist"],
-            } for h in batch],
-            "exclude_criteria": [
-                "hit 行是常量/字面量参数（硬编码路径/白名单字面量）",
-                "代码位于死代码分支（#if 0 / 无生产调用者）",
-                "hit 行在测试/示例/构建工具代码",
-                "语义族与项目平台不匹配",
-            ],
-            "output": {"keep": ["HYP-xxx"], "drop": [{"id": "HYP-xxx", "reason": "..."}]},
-        })
-    return tasks
-
-
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "help"
     if cmd == "index":

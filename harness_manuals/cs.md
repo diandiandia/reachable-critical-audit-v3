@@ -1,11 +1,11 @@
 # C# 实证工具链手册 (v3.1)
 
-> 来源：W6_MORE_LANGS_FINDINGS.md（Newtonsoft.Json 批次，§13）。实证工件：`/root/Newtonsoft.Json/.audit_results/empirical_harness/`（Program.cs、harness.csproj、empirical_harness_run.txt）。
+> 来源：W6_MORE_LANGS_FINDINGS.md（§13）。实证工件：审计项目内 `.audit_results/empirical_harness/`（Program.cs、harness.csproj、empirical_harness_run.txt）。
 
 ## 1. 工具链探测
-- 审计现场可能**无 .NET 运行时**——Newtonsoft.Json 批次从零构建：dotnet-install 脚本安装 SDK（记录 SDK 版本，批次为 8.0.4xx），**单 TFM 构建** `-p:LibraryFrameworks=net8.0`（W6 §13.3）——"无运行时"不得豁免实证（§13.3 先例），探测 = `dotnet --list-sdks` + 全盘核对安装路径（§16.2 路径遮蔽教训通用：勿假定单一安装）。
-- harness 工程形态：`harness.csproj`（`<TargetFramework>net8.0</TargetFramework>` + `<Reference>` HintPath 直指审计源码构建出的 dll `/root/Newtonsoft.Json/Src/Newtonsoft.Json/bin/Release/net8.0/Newtonsoft.Json.dll`）——**构建审计版本源码而非引用 NuGet 包**（W6 §13.3）。
-- 测试路径约定：`.Tests` 点前缀形态（`Newtonsoft.Json.Tests`）须入 R1 过滤映射表（SKILL_LESSONS §1.2）。
+- 审计现场可能**无 .NET 运行时**——.NET 批次从零构建：dotnet-install 脚本安装 SDK（记录 SDK 版本，批次为 8.0.4xx），**单 TFM 构建** `-p:LibraryFrameworks=net8.0`（W6 §13.3）——"无运行时"不得豁免实证（§13.3 先例），探测 = `dotnet --list-sdks` + 全盘核对安装路径（§16.2 路径遮蔽教训通用：勿假定单一安装）。
+- harness 工程形态：`harness.csproj`（`<TargetFramework>net8.0</TargetFramework>` + `<Reference>` HintPath 直指审计源码构建出的 dll（审计项目内相对路径））——**构建审计版本源码而非引用 NuGet 包**（W6 §13.3）。
+- 测试路径约定：`.Tests` 点前缀形态（审计目标测试工程名）须入 R1 过滤映射表（SKILL_LESSONS §1.2）。
 - 反序列化类声称的依赖事实：Json.NET 零第三方依赖，restore 仅 SourceLink 需版本属性注入（W6 §13.3）——依赖面小是 C# 库审计的常态特征，实证成本集中在 SDK 安装。
 
 ## 2. 版本记录义务
@@ -23,7 +23,7 @@
 - **主代理修复脚本自伤**：批量重写逻辑把"本来就匹配"的 entry 也标了证据标记，窗口匹配误清空 snippet（W6 §9.5 同构）——实证 harness 相关文件的人工批量修改同样须逐 entry 对照。
 
 ## 4. 阳性模式（战役验证过的做法）
-- **实证 harness 从零构建模板**（可复制）：dotnet-install → 单 TFM 构建审计源码 → csproj HintPath 引用 dll → `dotnet run`——Newtonsoft 5 REACHABLE 全实证（$type 家族 + JPath ReDoS 2^n），T1a/T1b/T1c/T1d/T2/T3 六测试一次跑通（empirical_harness_run.txt）。
+- **实证 harness 从零构建模板**（可复制）：dotnet-install → 单 TFM 构建审计源码 → csproj HintPath 引用 dll → `dotnet run`——.NET 批次 5 REACHABLE 全实证（$type 家族 + JPath ReDoS 2^n），T1a/T1b/T1c/T1d/T2/T3 六测试一次跑通（empirical_harness_run.txt）。
 - **对照矩阵**：T2 $type 激活——`TypeNameHandling.Objects` marker=True vs 默认设置 marker=False（gate 默认关闭）——默认拒绝/配置接受双侧对照（§24.4 模式）；T1d benign n=28 0ms（无害输入零耗时）作为缩放实证的同图对照，证明耗时只随攻击输入结构增长（empirical_harness_run.txt）。
 - **refuter 补强向量**：CAND-008 证伪者 #1 发现 ParseSide 允许 =~ 两侧任一为路径表达式——固定 path 下 pattern 亦来自攻击者 JSON 树（比 verifier 场景更强的 pattern 控制向量）——refutation.strengthened 字段落盘进报告（W6 §13.6）。
 - **声明长度先分配后校验**（T3）：BSON 16 字节 payload 声明 32M chars → tokens=2、private delta ~64MB——解码器/解析器类声称用"真实类 + 最小输入"实证（§18.5 模式）。

@@ -2,12 +2,9 @@
 """M11 precedent_library — 先例检索 + 自证伪提示生成 + 应用回填 (v3.1 新增)。
 
 满足: SWR-V3.1-030 (match 检索), SWR-V3.1-031 (self_refutation_hints),
-      SWR-V3.1-032 (record_application 幂等回填), SWR-V3.1-033 (add_precedent).
-
 用法:
     python3 precedent_library.py match <candidate.json>
     python3 precedent_library.py hints <candidate.json>
-    python3 precedent_library.py record <precedent_id> <application.json>
 """
 import json
 import os
@@ -165,49 +162,6 @@ def self_refutation_hints(candidate, lib=None, max_hints=2):
     return hints
 
 
-def record_application(precedent_id, application, path=None):
-    """SWR-V3.1-032: 审计后回填 applications[]（幂等: 按 application.id 去重）。"""
-    path = path or DEFAULT_LIB
-    lib = load(path)
-    found = None
-    for p in lib.get("precedents", []):
-        if p["id"] == precedent_id:
-            found = p
-            break
-    if found is None:
-        raise KeyError(f"precedent {precedent_id} 不存在")
-    found.setdefault("applications", [])
-    key = application.get("id") or application.get("candidate")
-    if key and any(a.get("id") == key or a.get("candidate") == key
-                   for a in found["applications"]):
-        return lib
-    found["applications"].append(application)
-    _write(path, lib)
-    return lib
-
-
-def add_precedent(precedent, path=None):
-    """SWR-V3.1-033: schema 校验后追加新先例（主代理自由裁量回填）。"""
-    path = path or DEFAULT_LIB
-    lib = load(path)
-    required = ("id", "name", "criterion", "counterexample",
-                "applicability_scope", "applications", "source_lessons")
-    missing = [k for k in required if k not in precedent]
-    if missing:
-        raise ValueError(f"先例缺字段: {missing}")
-    ids = {p["id"] for p in lib.get("precedents", [])}
-    if precedent["id"] in ids:
-        raise ValueError(f"先例 {precedent['id']} 已存在")
-    lib.setdefault("precedents", []).append(precedent)
-    _write(path, lib)
-    return lib
-
-
-def _write(path, lib):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(lib, f, ensure_ascii=False, indent=1)
-
-
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "help"
     if cmd == "match":
@@ -219,11 +173,6 @@ def main(argv):
         cand = json.load(open(argv[2]))
         for h in self_refutation_hints(cand):
             print("-", h)
-        return 0
-    if cmd == "record":
-        app = json.load(open(argv[3]))
-        record_application(argv[2], app)
-        print(f"recorded into {argv[2]}")
         return 0
     print(__doc__)
     return 1

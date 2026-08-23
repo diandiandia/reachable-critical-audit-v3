@@ -57,15 +57,6 @@ def test_gen_hypotheses_dedup_and_logic():
     assert len(hyps["hypotheses"]) == 1
     assert hyps["hypotheses"][0]["checklist"]  # checklist 随假设携带
 
-def test_filter_tasks():
-    hyps = {"hypotheses": [{"id": "HYP-001", "surface_id": "S", "semantic_family": "x",
-                             "hit_sites": [], "checklist": []}],
-            "logic_hypotheses": []}
-    tasks = sm.emit_filter_tasks(hyps)
-    assert tasks and tasks[0]["template"] == "hypothesis_filter"
-    assert "exclude_criteria" in tasks[0]
-
-
 def test_ruby_bang_and_parenless_calls_indexed():
     """回归发现 (W5/sinatra): Ruby !/? 后缀方法名与无括号裸调用必须被索引
     (dispatch!/call!/error_block!; invoke { dispatch! })。"""

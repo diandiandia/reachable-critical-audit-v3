@@ -71,15 +71,7 @@ def collect(project_root):
     if q.get("target_kind"):
         issues.append({"stage": "R0", "kind": "target_kind",
                        "detail": f"审计目标类型 = {q['target_kind']}"})
-    # 2. R1 修复统计 (repair stats 若已落盘)
-    try:
-        stats = json.load(open(os.path.join(d, "repair_stats.json")))
-    except Exception:
-        stats = None
-    if stats:
-        issues.append({"stage": "R1", "kind": "repair_stats",
-                       "detail": json.dumps(stats, ensure_ascii=False)})
-    # 3. 门禁违规历史
+    # 2. 门禁违规历史
     try:
         gates = json.load(open(os.path.join(d, "_phase313", "acceptance.json")))
     except Exception:

@@ -1,17 +1,17 @@
 # C 实证工具链手册 (v3.1)
 
-> 适用战役：lighttpd 1.4.85（C 首审，10 候选 2 REACHABLE、2/2 票证伪 2 条，R3.5 拦截 50% 含 2 降级）。
-> 事实来源：W6_MORE_LANGS_FINDINGS.md §22（主）；SKILL_LESSONS_C.md（lighttpd 实测，HEAD 2ddc5138）。
+> 适用战役：C 首审（10 候选 2 REACHABLE、2/2 票证伪 2 条，R3.5 拦截 50% 含 2 降级）。
+> 事实来源：W6_MORE_LANGS_FINDINGS.md §22（主）；SKILL_LESSONS_C.md（C 实测）。
 
 ## 1. 工具链探测
-- gcc + make 可用且实机构建成功：lighttpd ./configure && make 全流程通过（W6 §22.5；SKILL_LESSONS_C §0）
+- gcc + make 可用且实机构建成功：./configure && make 全流程通过（W6 §22.5；SKILL_LESSONS_C §0）
 - 探测命令：`gcc --version && make --version && which cc`
 - gcc -E 预处理是死代码/宏分支判定的实证武器：`gcc -E -P -I src -I src/ls-hpack lshpack.c` 验证 `#if LS_HPACK_USE_LARGE_TABLES` 等宏分支是否编译进产物，把"死代码"判定从猜测升级为实证（SKILL_LESSONS_C §1.5）
 - 并发模式：10~20 并发 + 簇级任务书（每 agent 一个 file×CWE 簇）为 Mode A' 官方形态，157 个 collect 批次无丢失（SKILL_LESSONS_C §1.4.7）
 - R0.5 差异考古工具纪律：输出必须传 `-o` 落盘（不传不落盘）；grep 词表分级（security 关键词 vs 通用 fix 词）避免 1688 commit 全被标安全相关（SKILL_LESSONS_C §1.4.5）
 
 ## 2. 版本记录义务
-- 精确版本 + commit 成对记录：lighttpd 1.4.85（HEAD 2ddc5138）先例（SKILL_LESSONS_C §0）
+- 精确版本 + commit 成对记录：C 项目先例（SKILL_LESSONS_C §0）
 - 上游负向验证需版本成对记录：1.4.85 vs upstream 1.4.86 逐字节比对（SKILL_LESSONS_C §1.5）
 - 构建配置影响功能可达性：configure 参数/module 顺序改变结论（SSI 被 mod_staticfile 抢先 handler_module），构建产物与结论必须绑定配置记录（W6 §22.5）
 - 复审计项目先读旧审计终稿（报告/report json）：v2 终稿已把 ssi.exec 降级 Low hardening，不能凭记忆或草稿级 artifact（_r4_merged.json 与终稿不一致时以终稿为准）（W6 §22.2）
@@ -29,7 +29,7 @@
 - env 注入三原语枚举：名消毒（HTTP_[A-Z0-9_]+ 使 PATH/LD_* 不可达）+ HTTP_PROXY 抑制 + CR/LF/NUL 解析层 400 + envp NUL 截断无夹带——"注入"类假设必须逐一枚举注入原语（换行/空字节/名污染）并验证各自阻断（W6 §22.4）
 - L0 规则 89% 伪影：CWE-476 `(pointer_expression)` 命中每个指针解引用（7,062 条）、CWE-416 命中每个 free()（373 条）、CWE-908 正则命中注释行（1,551+ 条）——10,097 原始命中 ~9,000 伪影（SKILL_LESSONS_C §1.1）
 - 路径过滤漏洞：`src/t/`（目录名 "t" 不匹配 test 词元）、`src/lemon.c`（构建时代码生成器 ~332 候选）、`packdist.sh`（14 候选）、`NEWS`（文档，2 候选）均漏网——路径过滤应 glob 化 + 构建系统感知（区分运行时目标 vs 代码生成器）（SKILL_LESSONS_C §1.2）
-- R1.5 wrapper_detection 平台错配：osi_*/STREAM_TO_*/Unretained 是 Android Bluetooth 生态，lighttpd 真实 wrapper 全靠提取器 agent 兜底——wrapper 规则须按平台 profile（服务端/嵌入式/桌面）拆分（SKILL_LESSONS_C §1.3）
+- R1.5 wrapper_detection 平台错配：部分 wrapper 形态属特定平台生态，C 服务端项目真实 wrapper 全靠提取器 agent 兜底——wrapper 规则须按平台 profile（服务端/嵌入式/桌面）拆分（SKILL_LESSONS_C §1.3）
 - 工具链坑：`--cand-` 解析器强制 CAND- 前缀（R05-* 候选无法 collect，需手工改 JSON）；ast_scanner 重跑整体覆写 verify_queue.json（应 merge 语义）；`| head` SIGPIPE 致 exit 1 误判失败（SKILL_LESSONS_C §1.4）
 - assert 阶段 null blocking_point 报错："常规同步 free 无后续使用"没有单点阻断，69 个候选被断言拒绝——允许 "N/A" + evidence 解释的合法组合（SKILL_LESSONS_C §1.4.3）
 

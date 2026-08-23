@@ -105,6 +105,49 @@ IMPORTABILITY_STEPS = {
 # (c/cpp/go/rust) 走 static_short（application 目标仍注入完整预检）
 IMPORTABILITY_FULL_LANGS = {"python", "javascript", "java"}
 
+# v3.5 (偏见 B2): static_short 按语言家族分派——原措辞纯 C 系词汇
+# (CMake/GOPATH/cargo/Makefile), 派发给 kotlin/scala/csharp/php/ruby/swift/
+# perl/powershell/shell 的库型候选是语言错配 (脚本语言无构建系统, JVM/.NET
+# 无 CMake/GOPATH)。各家族措辞均为同一通用语义: 链首模块在部署布局下能否被
+# 构建/加载 (模块存在 ≠ 被包含)。未知语言回退 IMPORTABILITY_STEPS["static_short"]。
+STATIC_SHORT_BY_FAMILY = {
+    "c": IMPORTABILITY_STEPS["static_short"],
+    "cpp": IMPORTABILITY_STEPS["static_short"],
+    "go": """### 步骤 0.5（go.mod 核对）: 构建包含性一行核对
+链首包在 go.mod 模块依赖树内（或被 main 包引用），且不在测试/示例目录——
+不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "rust": """### 步骤 0.5（cargo 核对）: 构建包含性一行核对
+链首 crate 在 Cargo.toml 依赖树内（[[bin]] 或 src/ 被 lib 引用），且不在
+tests/示例目录——不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "kotlin": """### 步骤 0.5（构建单元核对）: 构建包含性一行核对
+链首源文件在 Gradle sourceSet/Maven module 源码集内且被主源码集编译包含——
+不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "scala": """### 步骤 0.5（构建单元核对）: 构建包含性一行核对
+链首源文件在 Gradle sourceSet/Maven module 源码集内且被主源码集编译包含——
+不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "csharp": """### 步骤 0.5（工程核对）: 构建包含性一行核对
+链首源文件在 .csproj/.sln 编译包含集内（未被 <Compile Remove> 排除）且被
+主程序集引用——不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "swift": """### 步骤 0.5（Package.swift 核对）: 构建包含性一行核对
+链首源文件在 Package.swift target 源目录内且未被 exclude 排除——
+不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "php": """### 步骤 0.5（加载闭包核对）: 模块存在 ≠ 被加载
+链首模块是否被实际 require/include（composer autoload/显式 require），且不在
+死代码分支/测试目录——未被加载则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "ruby": """### 步骤 0.5（加载闭包核对）: 模块存在 ≠ 被加载
+链首模块是否被实际 require（Gemfile bundle 内/显式 require），且不在死代码
+分支/测试目录——未被加载则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "perl": """### 步骤 0.5（加载闭包核对）: 模块存在 ≠ 被加载
+链首模块是否被实际 use/require（cpanfile/显式 use），且不在死代码分支/测试
+目录——未被加载则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "powershell": """### 步骤 0.5（加载闭包核对）: 模块存在 ≠ 被加载
+链首脚本/模块是否被实际 Import-Module/dot-source（PSModulePath 内），且不在
+死代码分支/测试目录——未被加载则记 broken_edge → verdict=NEEDS_REVIEW。""",
+    "shell": """### 步骤 0.5（加载闭包核对）: 脚本存在 ≠ 被执行
+链首脚本是否被实际 source/调用（主脚本引用链），且不在测试目录——
+未被调用则记 broken_edge → verdict=NEEDS_REVIEW。""",
+}
+
 # 扩展名 → 语言 (与 ast_scanner.ASTCoarseScanner.EXTENSION_MAP 保持一致的子集)
 _EXT_LANG = {
     ".java": "java", ".cpp": "cpp", ".cc": "cpp", ".cxx": "cpp", ".c": "c",
@@ -203,14 +246,14 @@ def load_queue(project_root):
         raw = json.load(f)
     if isinstance(raw, dict) and "candidates" in raw:
         return raw
-    return {"schema_version": "2.0", "candidates": raw}
+    return {"candidates": raw}
 
 
 def save_queue(project_root, queue):
     path = os.path.join(project_root, ".audit_results", "verify_queue.json")
     # Normalize to dict form if needed
     if isinstance(queue, list):
-        queue = {"schema_version": "2.0", "candidates": queue}
+        queue = {"candidates": queue}
     with open(path, "w") as f:
         json.dump(queue, f, indent=2, ensure_ascii=False)
 
@@ -369,9 +412,6 @@ def stage_collect(project_root, batch_id, verdicts):
         entry["blocking_point"] = v.get("blocking_point")
         if v.get("blocking_point_autofilled"):
             entry["blocking_point_autofilled"] = True
-        entry["path_count"] = v.get("path_count", 0)
-        entry["paths_analyzed"] = v.get("paths_analyzed", [])
-        entry["verified_at"] = __import__("datetime").datetime.now().isoformat()
         # W5 回归发现: v3 字段必须落盘——claim_type (实证门禁 ③ 依赖)
         # 与 edge_evidence (分级证据链); 此前被 v2 字段白名单静默丢弃
         # v3.2.2 (REQ-V3.2.2-016): "声称"只属于 REACHABLE——
@@ -552,63 +592,6 @@ def stage_assert(project_root):
     }))
 
 
-def stage_next_cluster(project_root, batch_size=BATCH_SIZE, group_by_file=False):
-    """SWR-V3-053/054: 簇级出队——按 file×sink_type 聚合候选为簇任务书。
-    group_by_file=True 时进一步按文件合并（同文件不同 sink 族也合入同一任务）。"""
-    queue = load_queue(project_root)
-    candidates = queue["candidates"]
-    pending = [c for c in candidates if c.get("status") == "PENDING"]
-    if not pending:
-        print(json.dumps({"status": "ALL_DONE", "message": "No pending candidates remaining"}))
-        return
-
-    priority_key = lambda c: c.get("priority", 99)
-    pending.sort(key=priority_key)
-
-    # 聚合键
-    def cluster_key(c):
-        f = c.get("source_file", c.get("file_path", "?"))
-        if group_by_file:
-            return (f,)
-        return (f, c.get("sink_type", "?"))
-
-    clusters = {}
-    for c in pending:
-        clusters.setdefault(cluster_key(c), []).append(c)
-
-    # 每簇一个任务; 一次出队 batch_size 个簇
-    cluster_items = sorted(clusters.items(),
-                           key=lambda kv: min(x.get("priority", 99) for x in kv[1]))
-    batch = cluster_items[:batch_size]
-    tasks = []
-    for i, (key, members) in enumerate(batch):
-        out_rel = f"_cluster_{_safe_name(key)}.json"
-        task = {
-            "index": i,
-            "cluster_key": list(key),
-            "cluster_size": len(members),
-            "members": [{"id": m["id"], "source_file": m.get("source_file", "?"),
-                         "source_line": m.get("source_line", "?"),
-                         "sink_type": m.get("sink_type", "?"),
-                         "source_pattern": m.get("source_pattern", "?")} for m in members],
-            "out_file": f".audit_results/{out_rel}",
-            "prompt": _build_cluster_prompt(key, members, project_root),
-        }
-        # SWR-V3-058: 任务书落盘 (含 members) 供 cluster-collect 恢复成员
-        os.makedirs(os.path.join(project_root, ".audit_results"), exist_ok=True)
-        with open(os.path.join(project_root, ".audit_results", out_rel), "w") as f:
-            json.dump(task, f, ensure_ascii=False, indent=2)
-        tasks.append(task)
-    print(json.dumps({
-        "status": "CLUSTER_READY",
-        "batch_id": _next_batch_id(project_root),
-        "count": len(tasks),
-        "total_pending": len(pending),
-        "total_clusters": len(clusters),
-        "tasks": tasks,
-    }, indent=2, ensure_ascii=False))
-
-
 def _extract_journal_verdicts(transcript_dir):
     """v3.2.2 (REQ-V3.2.2-024): 从 workflow transcript 目录的 journal.jsonl
     提取 schema-validated 最终返回 (result/value 双字段兼容, W6 §10.3)。
@@ -690,75 +673,6 @@ def _tooling_version_warning(project_root):
             warnings.append(f"{name} 由 v{m.group(2)} 导出, 当前代码 v{local} "
                             f"——collect 结果与导出端版本不一致, 请核对")
     return "; ".join(warnings) if warnings else None
-
-
-def _safe_name(key):
-    import hashlib
-    return hashlib.md5("|".join(key).encode()).hexdigest()[:12]
-
-
-def _build_cluster_prompt(key, members, project_root):
-    member_list = "\n".join(
-        f"  - {m['id']} @ {m['source_file']}:{m['source_line']} [{m['sink_type']}] {m.get('source_pattern','')}"
-        for m in members[:30])
-    return (
-        "你是 vulnerability-verifier 子智能体（簇级验证）。项目: "
-        f"{project_root}\n\n## 候选簇: {key}\n{member_list}\n\n"
-        "## 任务\n"
-        "1. 抽查各命中行确认 sink 语义与误报性质\n"
-        "2. 独立搜索本簇语义家族的真实 sink（不受命中限制）\n"
-        "3. 真实 sink 追调用链 ≥3 层（每跳附 grep 调用点证据）；"
-        "无真实 sink 则簇判 UNREACHABLE\n"
-        "4. 死代码豁免: 无生产调用者 → blocking_point=\"no production callers\"\n\n"
-        "## 输出（强制 JSON，先写 <out>.pending 心跳文件再写结果文件）\n"
-        '{"cluster":"...","verdict":"UNREACHABLE","verdict_map":"all",'
-        '"call_chain":["file:line:func",...],"call_chain_depth":N,'
-        '"blocking_point":"...","evidence":"...","cwe":["CWE-xxx"],'
-        '"exceptions":[{"id":"...","verdict":"REACHABLE","call_chain":[...],'
-        '"edge_evidence":[{"edge":"f1->f2","proof":"grep 命中"}]}]}'
-    )
-
-
-def stage_cluster_collect(project_root, cluster_file, verdict):
-    """SWR-V3-053: 簇级 verdict 广播到成员候选; exceptions 单独覆盖。"""
-    queue = load_queue(project_root)
-    cand_map = {c.get("id"): c for c in queue["candidates"]}
-    # 从任务书 out_file 恢复成员 (cluster_file 中记录 members)
-    info = json.load(open(cluster_file)) if os.path.exists(cluster_file) else {}
-    members = info.get("members") or []
-    updated, errors = 0, []
-    exceptions = {e["id"]: e for e in verdict.get("exceptions", [])}
-    for m in members:
-        cid = m.get("id")
-        if cid not in cand_map:
-            errors.append(f"unknown member {cid}")
-            continue
-        entry = cand_map[cid]
-        if cid in exceptions:
-            ex = exceptions[cid]
-            errs = _validate_verdict_payload(cid, ex)
-            if errs:
-                errors.extend(errs)
-                continue
-            for k, val in ex.items():
-                entry[k] = val
-        else:
-            entry["verdict"] = verdict.get("verdict", "UNREACHABLE")
-            entry["reachability_type"] = verdict.get("reachability_type", "INDIRECT")
-            entry["call_chain"] = verdict.get("call_chain", [])
-            entry["call_chain_depth"] = verdict.get("call_chain_depth", len(entry["call_chain"]))
-            entry["blocking_point"] = verdict.get("blocking_point")
-            entry["evidence"] = verdict.get("evidence", "") + " [cluster-verified]"
-            entry["clustered_verified"] = True
-            if verdict.get("cwe"):
-                entry["cwe"] = verdict["cwe"]
-        entry["status"] = "VERIFIED"
-        entry["verified_at"] = __import__("datetime").datetime.now().isoformat()
-        updated += 1
-    save_queue(project_root, queue)
-    remaining = len([c for c in queue["candidates"] if c.get("status") == "PENDING"])
-    print(json.dumps({"status": "CLUSTER_COLLECTED", "updated": updated,
-                      "errors": errors, "remaining_pending": remaining}, ensure_ascii=False))
 
 
 def _norm_hypothesis_id(hid):
@@ -944,8 +858,6 @@ def stage_r4_collect(project_root, findings_file):
         if hid:
             f["hypothesis_id"] = hid
             f["status"] = "VERIFIED"
-            if norm_flags:
-                f["schema_normalized_by"] = list(norm_flags)
             # SWR-V3.4.4-002: 保留既有 finding 的主代理裁决字段——重复 collect
             # 不得抹掉 claim 置空/实证标记/裁决记录 (jsrsasign H7-F5 实测事故)
             old = existing.get(hid)
@@ -1005,8 +917,6 @@ def stage_r4_collect(project_root, findings_file):
         except ValueError as e:
             unknown.append({"error": f"input_surface.json 校验失败: {e}"})
     result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
-    if norm_flags:
-        result["schema_normalized_by"] = norm_flags
     if mapped:
         result["mapped_surface_ids"] = mapped
     if unknown:
@@ -1026,78 +936,6 @@ def stage_r4_assert(project_root):
     print(json.dumps({"status": "R4_ASSERT_PASSED" if not missing else "R4_ASSERT_FAILED",
                       "missing": missing}, ensure_ascii=False))
     return 0 if not missing else 1
-
-
-def stage_coverage(project_root):
-    """SWR-V3.3.2-012: 门禁⑦ 覆盖率对账 CLI——tracked 计算 + id 归一化 + 未知 id 告警。
-    输出即 assert_ledger 的 surface_data (七项目批次主代理手写三版对账脚本的机械化)。"""
-    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if _parent not in sys.path:
-        sys.path.insert(0, _parent)
-    import surface_mapper as sm
-    norm = getattr(sm, "norm_surface_id")
-    root = os.path.join(project_root, ".audit_results")
-    queue = load_queue(project_root)
-    isurf_path = os.path.join(root, "input_surface.json")
-    if not os.path.exists(isurf_path):
-        print(json.dumps({"status": "COVERAGE_ERROR", "error": "input_surface.json 缺失"},
-                         ensure_ascii=False))
-        sys.exit(1)
-    isurf = json.load(open(isurf_path))
-    total = {norm(s.get("id")) for s in isurf.get("surfaces", [])}
-    tracked = set()
-    try:
-        hyps = json.load(open(os.path.join(root, "hypotheses.json")))
-        for h in hyps.get("hypotheses", []) + hyps.get("logic_hypotheses", []):
-            for sid in (h.get("surface_ids") or []):
-                tracked.add(norm(sid))
-    except (FileNotFoundError, ValueError):
-        pass
-    # v3.4.1: 旧 schema 兼容——v3.2.2 前的 R2 产物把 surface_ids 写在
-    # _r2_filter.json 的 keep/drop/boundary_confirmations 记录里, 而
-    # hypotheses.json 的 surface_ids 为空 (Lua 复跑实测: 8 面未计)
-    try:
-        r2 = json.load(open(os.path.join(root, "_r2_filter.json")))
-        for k in (r2.get("keep") or []) + (r2.get("boundary_confirmations") or []):
-            for sid in (k.get("surface_ids") or []):
-                tracked.add(norm(sid))
-        for d in (r2.get("drop") or []):
-            for sid in (d.get("surface_ids") or []):
-                tracked.add(norm(sid))
-    except (FileNotFoundError, ValueError):
-        pass
-    for f in queue.get("r4_findings", []):
-        for fi in f.get("findings", []):
-            for sid in (fi.get("tracked_surfaces") or []):
-                tracked.add(norm(sid))
-    mps = isurf.get("mirror_pairs") or []
-    if isinstance(mps, dict):
-        mps = [mps]
-    for mp in mps:
-        if isinstance(mp, dict):
-            for k in ("primary", "secondary"):
-                if mp.get(k):
-                    tracked.add(norm(mp[k]))
-    bridge = queue.get("coverage_bridge") or []
-    if isinstance(bridge, dict):
-        bridge = [bridge]
-    for b in bridge:
-        for sid in (b.get("surfaces") or []):
-            tracked.add(norm(sid))
-    covered = tracked & total
-    unknown = sorted(tracked - total)
-    missing = sorted(total - tracked)
-    surface_data = {"total": len(total),
-                    "tracked": len(covered),
-                    "tracked_ids": sorted(covered)}
-    print(json.dumps({
-        "status": "COVERAGE_OK" if not missing else "COVERAGE_INCOMPLETE",
-        "total": len(total), "tracked": len(covered),
-        "missing": missing, "unknown_ids": unknown,
-        "surface_data": surface_data,
-        "note": "unknown_ids 为被引用但不存在的 id (归一化后)——R4 任务书 id 契约告警",
-    }, ensure_ascii=False, indent=2))
-    sys.exit(1 if missing else 0)
 
 
 def stage_grade_recheck(project_root):
@@ -1198,6 +1036,33 @@ def stage_r35_collect(project_root, transcript_dir):
     return 0
 
 
+SATURATED_CELL_THRESHOLD = 15   # v3.5 B5: 单格候选数 >= 15 视为饱和, 不建议再选题
+
+
+def _ledger_pressure(ledger):
+    """v3.5 B5: 账本格压力统计 (无新门禁/无新持久字段, 触发=ledger 读取/选题时,
+    消费者=主代理; 背景: 波次式同格灌水无提示, RESOURCE-DOS x go 单格 55)。
+    - pressure_cells: 非零格按 count 降序, >= SATURATED_CELL_THRESHOLD 标 saturated
+    - family_skew: 每族最大格占比 (族内集中度信号)"""
+    fams = {r["family"]: (r.get("langs") or {}) for r in ledger.get("rows", [])}
+    cells, skew = [], []
+    for fam, ls in fams.items():
+        tot = sum(ls.values())
+        if tot == 0:
+            continue
+        for lg, n in ls.items():
+            if n > 0:
+                cells.append({"cell": f"{fam} x {lg}", "count": n,
+                              "saturated": n >= SATURATED_CELL_THRESHOLD})
+        top_lg, top_n = max(ls.items(), key=lambda kv: kv[1])
+        skew.append({"family": fam, "top_cell": f"{fam} x {top_lg}",
+                     "top_count": top_n, "family_total": tot,
+                     "top_share": round(top_n / tot, 3)})
+    cells.sort(key=lambda c: -c["count"])
+    skew.sort(key=lambda s: -s["top_share"])
+    return {"pressure_cells": cells, "family_skew": skew}
+
+
 def stage_coverage_ledger(project_root, write=False):
     """SWR-V3.4-001/002/003: 覆盖账本——CWE 族 x 语言审计覆盖追踪 (范围守护)。
     --write: 从 verify_queue 聚合候选级 cwe x lang (+ R4 findings 按项目主导语言
@@ -1258,12 +1123,16 @@ def stage_coverage_ledger(project_root, write=False):
                     gaps.append((fam, lg))
                 elif n == 1:
                     low.append((fam, lg))
+        pressure = _ledger_pressure(ledger)
         print(json.dumps({
             "status": "LEDGER_GAPS",
             "gap_cells": [f"{f} x {l}" for f, l in gaps],
             "low_depth_cells": [f"{f} x {l}" for f, l in low],
+            "pressure_cells": pressure["pressure_cells"],
+            "family_skew": pressure["family_skew"],
             "note": ("缺口格 = 该 CWE 族 x 该语言从未审计 (0 覆盖)。"
-                     "批次选题优先缺口格 (REQ-V3.4-006)。"),
+                     "批次选题优先缺口格 (REQ-V3.4-006); "
+                     "saturated 格 (count>=15) 不建议再选题 (v3.5 B5)。"),
         }, ensure_ascii=False, indent=2))
         return 0
 
@@ -1333,10 +1202,15 @@ def stage_report(project_root):
                 for lg in langs:
                     if (row.get("langs") or {}).get(lg, 0) == 0:
                         gap.append(f"{row['family']} x {lg}")
+            pressure = _ledger_pressure(ledger)
             coverage_ledger = {"status": "LEDGER_GAP_SUMMARY",
                                "gap_cell_count": len(gap),
                                "gap_cells": gap[:30],
-                               "note": "批次选题优先缺口格 (REQ-V3.4-006)"}
+                               "pressure_cells": pressure["pressure_cells"][:30],
+                               "saturated_cell_count": sum(
+                                   1 for c in pressure["pressure_cells"] if c["saturated"]),
+                               "note": ("批次选题优先缺口格 (REQ-V3.4-006); "
+                                        "saturated 格 (count>=15) 不建议再选题 (v3.5 B5)")}
     except (OSError, ValueError):
         coverage_ledger = {"status": "LEDGER_UNAVAILABLE"}
     report = {
@@ -1349,7 +1223,7 @@ def stage_report(project_root):
         "correction_records": sum(len(c.get("correction_record", [])) for c in verified),
         "coverage_ledger": coverage_ledger,
         "r4_hypotheses_verified": len([f for f in r4 if f.get("status") == "VERIFIED"]),
-        "input_surface_coverage_note": "input_surface.json 追踪见 surface_mapper; 覆盖门禁由编排器断言",
+        "input_surface_note": "input_surface.json 追踪见 surface_mapper; 覆盖门禁由编排器断言",
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
@@ -1370,9 +1244,6 @@ def stage_bump_attempt(project_root, candidate_id):
             if c["attempt"] >= MAX_ATTEMPTS:
                 c["status"] = "ESCALATED"
                 c["escalated_reason"] = f"attempt >= {MAX_ATTEMPTS} (验证失败/失联)"
-                c.setdefault("escalation_log", []).append(
-                    {"at": "workflow-missing-or-collect-error",
-                     "note": "升级主代理裁决"})
             break
     save_queue(project_root, queue)
     print(json.dumps({"status": "ATTEMPT_BUMPED", "id": candidate_id}))
@@ -1588,7 +1459,8 @@ def _build_prompt(cand, ctx, project_root):
     # 注入完整预检；静态编译语言降为一行 build 列表核对（71 候选 boilerplate 削减）
     step05 = (IMPORTABILITY_STEPS.get(ctx["language"], IMPORTABILITY_STEPS["default"])
               if ctx["language"] in IMPORTABILITY_FULL_LANGS or target_kind == "application"
-              else IMPORTABILITY_STEPS["static_short"])
+              else STATIC_SHORT_BY_FAMILY.get(ctx["language"],
+                                              IMPORTABILITY_STEPS["static_short"]))
 
     prompt += f"""
 ## 强制分析步骤（语言无关）
@@ -1656,8 +1528,6 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
   "call_chain": ["file:line:function", "file:line:function", "file:line:function", ...],
   "call_chain_depth": <int>,
   "blocking_point": "file:line / no production callers / N/A",
-  "path_count": <int>,
-  "paths_analyzed": ["path1 description", ...],
   "evidence": "包含调用链和每层数据流路径分析的说明",
   "cwe": ["CWE-xxx"],
   "evidence_grade": "static_only | edge_proven",
@@ -1695,9 +1565,6 @@ def main():
     stage = None
     batch_id = None
     batch_size = None
-    group_by_file = False
-    cluster_file = None
-    cluster_verdict = None
     findings_file = None
     from_journal = None
     verdicts = {}
@@ -1734,18 +1601,10 @@ def main():
             batch_size = int(arg.split("=", 1)[1])
         elif arg == "--batch-size" and i + 1 < len(args):
             batch_size = int(args[i + 1])
-        elif arg == "--group-by-file":
-            group_by_file = True
         elif arg.startswith("--mode="):
             mode = arg.split("=", 1)[1]
         elif arg == "--mode" and i + 1 < len(args):
             mode = args[i + 1]
-        elif arg.startswith("--cluster="):
-            cluster_file = arg.split("=", 1)[1]
-        elif arg == "--cluster" and i + 1 < len(args):
-            cluster_file = args[i + 1]
-        elif arg.startswith("--cluster-verdict="):
-            cluster_verdict = _load_lenient_json(arg.split("=", 1)[1])
         elif arg.startswith("--file="):
             findings_file = arg.split("=", 1)[1]
         elif arg == "--file" and i + 1 < len(args):
@@ -1768,24 +1627,12 @@ def main():
         print("Error: --stage is required", file=sys.stderr)
         sys.exit(1)
 
-    if stage == "r15" or stage == "r15-collect":
-        print("stage_r15 已移除: v2.1 R1.5 已升格为 v3 R1 surface_mapper (surface_mapper.py tasks/validate/merge)")
-        return 1
-    elif stage == "next":
+    if stage == "next":
         # SWR-V3-054: --batch-size 生效于逐候选出队
         if batch_size and batch_size != BATCH_SIZE:
             stage_next(project_root, batch_size=batch_size)
         else:
             stage_next(project_root)
-    elif stage == "next-cluster":
-        stage_next_cluster(project_root, batch_size=batch_size or BATCH_SIZE,
-                           group_by_file=group_by_file)
-    elif stage == "cluster-collect":
-        if not cluster_file or cluster_verdict is None:
-            print("Error: cluster-collect requires --cluster <taskfile> --cluster-verdict '{...}'",
-                  file=sys.stderr)
-            sys.exit(1)
-        stage_cluster_collect(project_root, cluster_file, cluster_verdict)
     elif stage == "r4-collect":
         if not findings_file:
             print("Error: r4-collect requires --file findings.json", file=sys.stderr)
@@ -1841,8 +1688,6 @@ def main():
         stage_collect(project_root, batch_id or 0, verdicts)
     elif stage == "assert":
         stage_assert(project_root)
-    elif stage == "coverage":
-        sys.exit(stage_coverage(project_root))
     elif stage == "grade-recheck":
         sys.exit(stage_grade_recheck(project_root))
     elif stage == "coverage-ledger":

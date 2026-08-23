@@ -1,5 +1,4 @@
 {
- "schema_version": "1.0",
  "comment": "Ground-truth CVE attack-surface anchors per language (REQ-24). ast_scanner.py --self-check must hit ALL anchors for a language or that language's rule library FAILs. Also serves as regression set for rule-library changes.",
  "anchors": {
   "php": [

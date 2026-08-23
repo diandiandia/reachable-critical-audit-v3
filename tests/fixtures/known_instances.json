@@ -89,22 +89,6 @@
    "sig_id": "SIG-TRUNC-CAST-004"
   },
   {
-   "project": "fastjson2",
-   "file": "com/alibaba/fastjson2/util/TypeUtils.java",
-   "line": 1,
-   "confirmed": true,
-   "note": "checkAutoType hash 白名单绕过 (2.0.62/2.0.63)",
-   "sig_id": "SIG-LOGIC-WEAKEN-005"
-  },
-  {
-   "project": "AWStats",
-   "file": "wwwroot/cgi-bin/awstats.pl",
-   "line": 18062,
-   "confirmed": true,
-   "note": "pluginmode 分发先于安全检查 → 鉴权绕过",
-   "sig_id": "SIG-LOGIC-WEAKEN-005"
-  },
-  {
    "project": "AWStats",
    "file": "wwwroot/cgi-bin/awstats.pl",
    "line": 8303,
@@ -129,62 +113,124 @@
    "sig_id": "SIG-HEADER-INJ-006"
   },
   {
-   "project": "django",
-   "file": "django/middleware/csrf.py",
-   "line": 282,
+   "project": "mbedtls",
+   "file": "library/ssl_cache.c",
+   "line": 185,
    "confirmed": true,
-   "note": "CSRF Origin 锚定 Host header",
-   "sig_id": "SIG-AUTHZ-BOUND-007"
+   "note": "会话缓存条目 calloc 分配点 (C-ALLOC 语义族锚点, v3.5 B4 补)",
+   "sig_id": "SIG-C-ALLOC-001"
   },
   {
-   "project": "sinatra",
-   "file": "lib/sinatra/base.rb",
-   "line": 1958,
+   "project": "uWebSockets",
+   "file": "src/TopicTree.h",
+   "line": 169,
    "confirmed": true,
-   "note": "会话 secret 跨子类共享",
-   "sig_id": "SIG-AUTHZ-BOUND-007"
+   "note": "Topic 节点 new 分配点 (CPP-ALLOC 语义族锚点, v3.5 B4 补)",
+   "sig_id": "SIG-CPP-ALLOC-001"
+  },
+  {
+   "project": "quic-go",
+   "file": "retransmission_queue.go",
+   "line": 35,
+   "confirmed": true,
+   "note": "crypto 流重传数据 append 累积点 (GO-ACCUM 语义族锚点, v3.5 B4 补)",
+   "sig_id": "SIG-GO-ACCUM-001"
+  },
+  {
+   "project": "orjson",
+   "file": "src/lib.rs",
+   "line": 101,
+   "confirmed": true,
+   "note": "init_typerefs unsafe 块 (RS-UNSAFE 语义族锚点, v3.5 B4 补)",
+   "sig_id": "SIG-RS-UNSAFE-001"
+  },
+  {
+   "project": "dubbo",
+   "file": "dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/Hessian2ObjectInput.java",
+   "line": 99,
+   "confirmed": true,
+   "note": "Hessian2 反序列化 readObject 入口 (JAVA-DESER 语义族锚点, v3.5 B4 补)",
+   "sig_id": "SIG-JAVA-DESER-001"
+  },
+  {
+   "project": "libuv",
+   "file": "src/unix/fs.c",
+   "line": 364,
+   "confirmed": true,
+   "note": "open() 系统调用点 (STATE-RACE 语义族锚点; Go 无大小写敏感匹配, v3.5 B4 补)",
+   "sig_id": "SIG-STATE-RACE-001"
+  },
+  {
+   "project": "mbedtls",
+   "file": "library/ssl_ciphersuites.c",
+   "line": 235,
+   "confirmed": true,
+   "note": "SHA1 摘要密码套件条目 (CRYPTO-WEAK 语义族锚点; pyjwt 无弱密码学零命中, v3.5 B4 补)",
+   "sig_id": "SIG-CRYPTO-WEAK-001"
   },
   {
    "project": "Pester",
-   "file": "src/functions/TestDrive.Tests.ps1",
-   "confirmed": false,
-   "line": 1,
-   "sig_id": "SIG-PS-SCRIPTBLOCK-001"
+   "file": "src/functions/New-MockObject.ps1",
+   "line": 153,
+   "confirmed": true,
+   "sig_id": "SIG-PS-SCRIPTBLOCK-001",
+   "note": "v3.5: 真实锚点替换 v3.1 占位——ScriptBlock::Create 动态脚本执行"
   },
   {
    "project": "ohmyzsh",
-   "file": "lib/functions.zsh",
-   "confirmed": false,
-   "line": 1,
-   "sig_id": "SIG-SH-EVAL-001"
+   "file": "plugins/wd/wd.plugin.zsh",
+   "line": 15,
+   "confirmed": true,
+   "sig_id": "SIG-SH-EVAL-001",
+   "note": "v3.5: eval 注入形态 (wd 别名生成)"
   },
   {
    "project": "Newtonsoft.Json",
-   "file": "Src/Newtonsoft.Json/Serialization/JsonSerializerInternalReader.cs",
-   "confirmed": false,
-   "line": 1,
-   "sig_id": "SIG-CS-DESER-001"
+   "file": "Src/Newtonsoft.Json/JsonSerializerSettings.cs",
+   "line": 94,
+   "confirmed": true,
+   "sig_id": "SIG-CS-DESER-001",
+   "note": "v3.5: TypeNameHandling 反序列化类型选择"
   },
   {
    "project": "django",
-   "file": "django/core/handlers/asgi.py",
-   "confirmed": false,
-   "line": 1,
-   "sig_id": "SIG-PY-PICKLE-001"
+   "file": "django/core/cache/backends/db.py",
+   "line": 102,
+   "confirmed": true,
+   "sig_id": "SIG-PY-PICKLE-001",
+   "note": "v3.5: pickle.loads 缓存反序列化"
   },
   {
-   "project": "nest",
-   "file": "packages/microservices/context/rpc-context-creator.ts",
-   "confirmed": false,
-   "line": 1,
-   "sig_id": "SIG-TS-ACCUM-001"
+   "project": "ws",
+   "file": "lib/websocket.js",
+   "line": 253,
+   "confirmed": true,
+   "sig_id": "SIG-TS-ACCUM-001",
+   "note": "v3.5: socket data 事件逐块累积形态 (JS/TS 通用)"
   },
   {
    "project": "ktor",
-   "file": "ktor-shared/ktor-websockets/common/src/io/ktor/websocket/Frame.kt",
-   "confirmed": false,
-   "line": 1,
-   "sig_id": "SIG-KT-RECEIVE-001"
+   "file": "ktor-shared/ktor-websockets/common/src/io/ktor/websocket/RawWebSocketCommon.kt",
+   "line": 63,
+   "confirmed": true,
+   "sig_id": "SIG-KT-RECEIVE-001",
+   "note": "v3.5: 通道 receive 无上限消费"
+  },
+  {
+   "project": "sinatra",
+   "file": "rack-protection/lib/rack/protection/host_authorization.rb",
+   "line": 15,
+   "confirmed": true,
+   "sig_id": "SIG-AUTHZ-BOUND-007",
+   "note": "v3.5: 锚点重定位——Host/X-Forwarded 头信任边界 (原 base.rb:1958 已在 master 漂移)"
+  },
+  {
+   "project": "django",
+   "file": "django/core/validators.py",
+   "line": 234,
+   "confirmed": true,
+   "sig_id": "SIG-LOGIC-WEAKEN-005",
+   "note": "v3.5: 锚点重定位——domain_allowlist 谓词 (原 awstats.pl:18062/fastjson2:1 漂移或假锚)"
   }
  ]
 }

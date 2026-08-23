@@ -1,22 +1,66 @@
 {
-  "schema_version": "3.2.2",
   "note": "harness 覆盖矩阵 (REQ-V3.2.2-009): 声称类别 × 语言。R5 无模板时的现场构造必须引用本矩阵缺口 (缺口是记录项而非阻断项)。",
-  "claims": ["crash", "panic", "oom", "unbounded", "xss", "protocol_dos"],
+  "claims": [
+    "crash",
+    "panic",
+    "oom",
+    "unbounded",
+    "xss",
+    "protocol_dos"
+  ],
   "matrix": {
-    "crash": {"c": ["parser_fuzz"], "cpp": ["parser_fuzz"], "other": []},
-    "panic": {"other": []},
-    "oom": {"kotlin": ["ws_frame_alloc"], "rust": ["ws_frame_alloc"]},
-    "unbounded": {"rust": ["ws_frame_accum"], "kotlin": ["ws_frame_accum"],
-                  "scala": ["ws_frame_accum"], "python": ["multipart_align"]},
-    "xss": {"perl": ["xss_path_sim"], "php": ["xss_path_sim"],
-            "python": ["xss_path_sim"]},
-    "protocol_dos": {"other": []}
+    "crash": {
+      "c": [
+        "parser_fuzz"
+      ],
+      "cpp": [
+        "parser_fuzz"
+      ],
+      "other": []
+    },
+    "panic": {
+      "other": []
+    },
+    "oom": {
+      "kotlin": [
+        "ws_frame_alloc"
+      ],
+      "rust": [
+        "ws_frame_alloc"
+      ]
+    },
+    "unbounded": {
+      "rust": [
+        "ws_frame_accum"
+      ],
+      "kotlin": [
+        "ws_frame_accum"
+      ],
+      "scala": [
+        "ws_frame_accum"
+      ],
+      "python": []
+    },
+    "xss": {
+      "perl": [
+        "xss_path_sim"
+      ],
+      "php": [
+        "xss_path_sim"
+      ],
+      "python": [
+        "xss_path_sim"
+      ]
+    },
+    "protocol_dos": {
+      "other": []
+    }
   },
   "coverage": {
     "crash": "partial (C/C++ 解析器类)",
     "panic": "none",
     "oom": "partial (ws 预分配)",
-    "unbounded": "partial (ws 累积/multipart 对齐)",
+    "unbounded": "partial (ws 累积)",
     "xss": "partial (路径模拟)",
     "protocol_dos": "none"
   }

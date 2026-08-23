@@ -41,13 +41,6 @@ TEMPLATES = {
         "judgement": "载荷完整存活于输出属性 → XSS 确认",
         "script": "templates/harness/xss_path_sim.pl",
     },
-    "multipart_align": {
-        "langs": ["python"],
-        "attack": "构造对齐模式 multipart body + 解析器节奏插桩",
-        "metrics": ["peakRSS_growth", "handler_received", "rhythm_trace"],
-        "judgement": "累积发生且 handler 收到 0 字节 → 确认；对齐必然恢复 → 证伪",
-        "script": "templates/harness/multipart_align.py",
-    },
     # v3.2.2 (REQ-V3.2.2-008): parser-fuzz——C/C++ 解析器 crash 声称类。
     # mbedtls 审计实战模板化 (asn1_get_len ASan harness 2M+ 输入零越界)
     "parser_fuzz": {

@@ -143,10 +143,39 @@ def load_fixture_instances(path=FIXTURE_INSTANCES_PATH):
     return {}
 
 
+def _scan_runtime_assets(base=None):
+    """v3.5 (P5): 去项目化扫描扩展至运行时资产目录 (templates/harness + harness_manuals)。
+    R0 selfcheck 完整性分支必须拦截模板/手册的项目残留回退——v3.5 体检实测模板曾
+    硬编码 ktor/actix 端口与 AWStats 专属逻辑 (黑名单只扫签名资产是覆盖盲区)。
+    返回 [(相对路径, 命中项)]。base 参数仅供测试注入临时目录。"""
+    here = base or os.path.dirname(os.path.abspath(__file__))
+    hits = []
+    for rel in ("templates", "harness_manuals"):
+        base_dir = os.path.join(here, rel)
+        if not os.path.isdir(base_dir):
+            continue
+        for root, dirs, files in os.walk(base_dir):
+            dirs[:] = [d for d in dirs if d != "__pycache__"]
+            for fn in files:
+                p = os.path.join(root, fn)
+                try:
+                    text = open(p, errors="ignore").read()
+                except OSError:
+                    continue
+                low = text.lower()
+                for tok in DEPROJECT_BLACKLIST:
+                    if tok in low:
+                        hits.append((os.path.relpath(p, here), tok))
+                if "/root/" in text:
+                    hits.append((os.path.relpath(p, here), "绝对路径 /root/"))
+    return hits
+
+
 def integrity_selfcheck(data):
     """v3.2.2 (REQ-V3.2.2-005): 非 fixture 仓库的 R0 自检语义——
     签名库完整性: validate + lang 完备 + 去项目化 0 命中 + 全部 grep 可编译。
     v3.3 (REQ-V3.3-004): 追加 L2 词族 ↔ harness_manuals 覆盖对齐检查。
+    v3.5 (P5): 去项目化扫描扩展至 templates/harness + harness_manuals。
     返回 (ok, detail_lines)。"""
     lines = []
     ok, errors = validate(data)
@@ -166,9 +195,11 @@ def integrity_selfcheck(data):
             lines.append(f"{sig['sig_id']}: {e}")
     for missed in l2_manual_alignment(data):
         lines.append(missed)
+    for f, tok in _scan_runtime_assets():
+        lines.append(f"{f}: 运行时资产残留 {tok}")
     if lines:
         return False, lines
-    return True, [f"integrity OK: {len(data['signatures'])} signatures (lang/cwe/deproject/manual 对齐完备)"]
+    return True, [f"integrity OK: {len(data['signatures'])} signatures (lang/cwe/deproject/runtime-assets/manual 对齐完备)"]
 
 
 def l2_manual_alignment(data):
@@ -205,21 +236,23 @@ def smoke_test(data, repo_paths):
                                     "instance": None,
                                     "detail": "tests/fixtures/known_instances.json 缺失或空"}
     for sig in data["signatures"]:
-        inst = next((x for x in fixture.get(sig["sig_id"], []) if x.get("confirmed")), None)
+        # v3.5 (P5): 多实例回退——某签名的 confirmed 锚点可能有多个项目 (v3.1 三锚点
+        # 回归 + B4 扩军), 第一个 confirmed 的项目不在本次传入 repos 时继续尝试其余
+        # 实例 (旧逻辑: 只试第一个, ktor jvm 锚点会让 Newtonsoft.Json 锚点不可达)。
+        inst = fpath = None
+        for cand_inst in fixture.get(sig["sig_id"], []):
+            if not cand_inst.get("confirmed"):
+                continue
+            for repo in repo_paths:
+                cand = os.path.join(repo, cand_inst["file"])
+                if os.path.exists(cand):
+                    inst, fpath = cand_inst, cand
+                    break
+            if fpath:
+                break
         if inst is None:
             results[sig["sig_id"]] = {"hit": False, "instance": None,
-                                      "detail": "no confirmed fixture instance", "skipped": True}
-            continue
-        fpath = None
-        for repo in repo_paths:
-            cand = os.path.join(repo, inst["file"])
-            if os.path.exists(cand):
-                fpath = cand
-                break
-        if fpath is None:
-            results[sig["sig_id"]] = {"hit": False, "skipped": True,
-                                      "instance": f"{inst['file']}:{inst['line']}",
-                                      "detail": "instance not located in provided repos"}
+                                      "detail": "no confirmed fixture instance located in repos", "skipped": True}
             continue
         testable += 1
         lines = open(fpath, errors="ignore").read().splitlines()

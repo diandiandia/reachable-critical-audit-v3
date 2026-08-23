@@ -1,12 +1,12 @@
 # Swift 实证工具链手册 (v3.1)
 
-> 事实来源：W6_MORE_LANGS_FINDINGS.md §16（Vapor 批次，Swift 首审）与
+> 事实来源：W6_MORE_LANGS_FINDINGS.md §16（Swift 首审批次）与
 > SKILL_LESSONS_SWIFT_VAPOR.md §1.4/§1.5/§3.1/§3.2（v2.1 实证抽验手册素材）。
 > 战役战绩：17 候选 6 REACHABLE；实证抽验 3 候选 2 CONFIRMED 1 REFUTED（33% 误判率纠偏）。
 
 ## 1. 工具链探测
 
-- swiftly 安装器在 Ubuntu 26.04 报 "Unsupported Linux platform" → 用官方 tarball 直装（SWIFT_VAPOR §3.1）。
+- 工具链安装器在 Ubuntu 26.04 报 "Unsupported Linux platform" → 用官方 tarball 直装（SWIFT_VAPOR §3.1）。
 - 下载 URL 命名含平台段：`ubuntu2404/swift-6.3-RELEASE/...` 404，正确路径含 `ubuntu2404-aarch64` 段；先 `curl -r 0-0` 探测 206 再下载（SWIFT_VAPOR §3.1）。
 - R0 bootstrap 必须先读 `Package.swift` swift-tools-version + `Package.resolved` pins 再选工具链（§16.1）。
 - find 全盘 swift 安装逐一核对版本（§16.2）；`swift-env.sh` 类脚本是线索。
@@ -15,9 +15,9 @@
 ## 2. 版本记录义务
 
 - harness 元数据必须记录精确 `swift --version`（§16.1）。
-- 代际陷阱：vapor 5.0.0-alpha.2 依赖 swift-http-server 声明 tools 6.4（未发正式版），稳定目录只有 6.2/6.3；6.2 构建报 tools 版本墙；预编译 binary 在 6.2 runtime 符号不兼容（FoundationEssentials `_Representation`）（§16.1）。
+- 代际陷阱：框架 alpha 版依赖 HTTP 服务器声明 tools 6.4（未发正式版），稳定目录只有 6.2/6.3；6.2 构建报 tools 版本墙；预编译 binary 在 6.2 runtime 符号不兼容（§16.1）。
 - 多代工具链路径遮蔽：/opt/swift-6.4（6.4-dev 快照）被后解压的 /opt/swift（6.2）遮蔽，浪费整轮下载探测（§16.2）。
-- 平台支持声明必须记录：Package.swift platforms、CI matrix（test.yml/codeql.yml 仅 ubuntu/macos）——Vapor 5 无 Windows（SWIFT_VAPOR §1.4）。
+- 平台支持声明必须记录：Package.swift platforms、CI matrix（test.yml/codeql.yml 仅 ubuntu/macos）——目标框架无 Windows（SWIFT_VAPOR §1.4）。
 
 ## 3. 常见陷阱清单
 
@@ -26,7 +26,7 @@
 - `$!` 与后台复合命令陷阱：`cd x && VAR=v cmd &` 的 $! 是 bash 子 shell 而非 cmd，/proc/$P/environ 全是子 shell 环境（§16.6）。
 - 采样线程非 daemon + 无 try/finally → 采样 fn 抛异常后死循环，进程卡死在解释器 shutdown（§16.3）。
 - LD_LIBRARY_PATH 必须含 swift runtime 目录（§16.14）。
-- 遗留服务占端口（lighttpd 实例占 8080/8081，curl 响应实为 lighttpd）——禁止仅凭 HTTP 码判断（SWIFT_VAPOR §3.1/3.2）。
+- 遗留服务占端口（历史实例占 8080/8081，curl 响应实为遗留服务）——禁止仅凭 HTTP 码判断（对应 lessons §3.1/3.2）。
 - 多分支 getter 控制流推断错误：Request.swift:74-83 是 if/else-if 链，`try?` 失败返回 nil 终结，XFF 回退分支不可达（§16.9）。
 
 ## 4. 阳性模式（战役验证过的做法）

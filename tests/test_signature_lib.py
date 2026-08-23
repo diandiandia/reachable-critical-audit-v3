@@ -143,3 +143,32 @@ def test_checklist_crypto_bind():
     ids2 = [i for i, _ in r2]
     assert "CK-CRYPTO-MISUSE" not in ids2
     assert "CK-CHECKPOINT-AFTER-ACCUM" in ids2
+
+
+# ---------------- v3.5 (B4/P5) 防回退 ----------------
+
+def test_all_signatures_have_confirmed_fixture():
+    """v3.5 (B4): 7 新增 fixture 后每签名 ≥1 confirmed 实例——R0 冒烟零 skipped
+    兜底 (c/cpp/go 三种账本最重语言曾在 fixtures 零代表)。"""
+    import signature_lib
+    d = signature_lib.load()
+    fixture = signature_lib.load_fixture_instances()
+    missing = [s["sig_id"] for s in d["signatures"]
+               if not any(x.get("confirmed") for x in fixture.get(s["sig_id"], []))]
+    assert missing == [], f"零 confirmed fixture 的签名: {missing}"
+
+
+def test_selfcheck_flags_template_residue(tmp_path):
+    """v3.5 (P5): _scan_runtime_assets 注入违规内容 → 命中——模板/手册项目残留
+    回退会被 R0 selfcheck 完整性分支拦截。"""
+    import signature_lib
+    d = tmp_path / "templates" / "harness"
+    d.mkdir(parents=True)
+    (d / "ok.py").write_text("import socket\nsock.sendall(b'x')\n")
+    assert signature_lib._scan_runtime_assets(base=str(tmp_path)) == []
+    (d / "bad_tok.py").write_text("cleanxss = 1  # 项目专属 API\n")
+    hits = signature_lib._scan_runtime_assets(base=str(tmp_path))
+    assert any(f.endswith("bad_tok.py") and tok == "cleanxss" for f, tok in hits)
+    (d / "bad_root.py").write_text("root = '/root/secret'\n")
+    hits = signature_lib._scan_runtime_assets(base=str(tmp_path))
+    assert any(f.endswith("bad_root.py") and "绝对路径" in tok for f, tok in hits)

@@ -263,3 +263,48 @@ def test_filter_result_surface_ids_fidelity():
         {"boundary_confirmations": [{"id": "HYP-999", "confirmed_defense": "x"}]}, {})
     assert out2["boundary_confirmations"][0].get("surface_ids") is None
     assert restored2 == []
+
+
+# ---------------- v3.5 (B3) 语言门补全防回退 ----------------
+
+def test_target_kind_scans_new_extensions():
+    """v3.5 (B3): .kt/.cs/.swift/.pl/.ps1/.sh 源码被扫描——不再落入
+    「无源码文件 → 默认 application」的语言门盲区 (Swift 库曾与 C 库置信度不对称)。"""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        for fn, content in (("lib.kt", "package lib\n"),
+                            ("lib.cs", "namespace L {}\n"),
+                            ("app.swift", "print(1)\n"),
+                            ("lib.pl", "use strict;\n"),
+                            ("x.ps1", "Write-Host hi\n"),
+                            ("s.sh", "#!/bin/sh\n")):
+            open(os.path.join(d, fn), "w").write(content)
+        r = determine_target_kind(d)
+        assert "无源码文件" not in r.get("note", ""), "新语言扩展名未入扫"
+
+
+def test_target_kind_manifest_signals():
+    """v3.5 (B3): pom/composer/gemspec 解析信号——spring-boot/bin/executables → app。"""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        open(os.path.join(d, "pom.xml"), "w").write(
+            "<project><build><plugins><plugin>"
+            "<artifactId>spring-boot-maven-plugin</artifactId>"
+            "</plugin></plugins></build></project>")
+        open(os.path.join(d, "Main.java"), "w").write("class Main {}\n")
+        r = determine_target_kind(d)
+        assert any(s.get("signal") == "package-manifest" and s["direction"] == "app"
+                   for s in r["signals"]), r["signals"]
+    with tempfile.TemporaryDirectory() as d:
+        open(os.path.join(d, "composer.json"), "w").write('{"bin": ["bin/cli.php"]}')
+        open(os.path.join(d, "src.php"), "w").write("<?php\n")
+        r = determine_target_kind(d)
+        assert any(s.get("signal") == "package-manifest" and s["direction"] == "app"
+                   for s in r["signals"]), r["signals"]
+    with tempfile.TemporaryDirectory() as d:
+        open(os.path.join(d, "x.gemspec"), "w").write(
+            "Gem::Specification.new do |s|\n  s.executables = ['x']\nend\n")
+        open(os.path.join(d, "lib.rb"), "w").write("module X; end\n")
+        r = determine_target_kind(d)
+        assert any(s.get("signal") == "package-manifest" and s["direction"] == "app"
+                   for s in r["signals"]), r["signals"]

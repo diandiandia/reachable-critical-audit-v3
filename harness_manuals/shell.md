@@ -1,12 +1,12 @@
 # Shell 实证工具链手册 (v3.1)
 
-> 来源：W6_MORE_LANGS_FINDINGS.md（ohmyzsh 批次，§11-§12）与 SKILL_LESSONS_10LANG_CAMPAIGN.md（§1.4）。实证工件：`/root/ohmyzsh/.audit_results/`（refute_sf6.py、reachable_vulnerabilities_report.md）。
+> 来源：W6_MORE_LANGS_FINDINGS.md（§11-§12）与 SKILL_LESSONS_10LANG_CAMPAIGN.md（§1.4）。实证工件：审计项目内 `.audit_results/`（refute_sf6.py、reachable_vulnerabilities_report.md）。
 
 ## 1. 工具链探测
-- 目标运行时是 **zsh**（oh-my-zsh 载体）：实证用 zsh 5.9（refute_sf6.py 运行事实）；zsh 5.8.1（2021-12）已被批次记为废止版本——探测 `zsh --version` 并核对与目标项目声明的兼容 zsh 版本（ohmyzsh 结果文件记录 zsh 5.x 全谱系行为差异）。
+- 目标运行时是 **zsh**（shell 框架载体）：实证用 zsh 5.9（refute_sf6.py 运行事实）；zsh 5.8.1（2021-12）已被批次记为废止版本——探测 `zsh --version` 并核对与目标项目声明的兼容 zsh 版本（结果文件记录 zsh 5.x 全谱系行为差异）。
 - 无本地 zsh 或需特定版本时**从源码构建 zsh**（SKILL_LESSONS §1.4：git.zsh/vcs_info verifier 构建 zsh 5.8 源码 + CVE-2021-45444 PWN 标记法实证矩阵，耗时 3595s 产出质量极高）——构建产物路径记录进 harness 元数据。
 - 实证 driver 用 Python 起 pty 驱动交互式 zsh（refute_sf6.py 模式：`ZDOTDIR/.zshrc` 启用目标插件 → compinit + 插件加载 → pty 键入行**不带换行** → TAB 触发补全 eval），`python3` 是 Shell 实证工具链的一级成员。
-- 测试路径约定：ohmyzsh 批次未暴露新测试形态（SKILL_LESSONS §1.2 语言映射表无 shell 条目）——按仓库实际目录人工确认。
+- 测试路径约定：shell 批次未暴露新测试形态（SKILL_LESSONS §1.2 语言映射表无 shell 条目）——按仓库实际目录人工确认。
 
 ## 2. 版本记录义务
 - 记录三元组：zsh 精确版本（5.9 vs 5.8 行为可完全不同——原生 expand-or-complete 在无插件 `zsh -f -i` 同样执行，W6 §12.5）、oh-my-zsh checkout 的 commit/tag、driver 的 python3 版本。

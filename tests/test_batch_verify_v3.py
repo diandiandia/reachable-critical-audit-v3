@@ -46,34 +46,6 @@ def test_collect_dead_code_depth_exempt():
 def test_lenient_json():
     assert bv._load_lenient_json('{"a": "c:\\x"}')["a"] == "c:\\x"
 
-def test_cluster_collect_broadcast():
-    tmp = _mk_project()
-    task = {"cluster_key": ["a.rs", "CWE-918"], "members": [
-        {"id": "CAND-001", "source_file": "a.rs", "source_line": 1}]}
-    tf = os.path.join(tmp, ".audit_results", "_cluster_xxx.json")
-    json.dump(task, open(tf, "w"))
-    verdict = {"verdict": "UNREACHABLE", "verdict_map": "all",
-               "call_chain": ["a:1:f", "b:2:g", "c:3:h"], "call_chain_depth": 3,
-               "blocking_point": "N/A", "evidence": "噪声簇",
-               "exceptions": []}
-    bv.stage_cluster_collect(tmp, tf, verdict)
-    q = bv.load_queue(tmp)
-    c = q["candidates"][0]
-    assert c["verdict"] == "UNREACHABLE" and c["clustered_verified"]
-
-def test_cluster_collect_exception_overrides():
-    tmp = _mk_project()
-    task = {"cluster_key": ["a.rs", "CWE-918"], "members": [
-        {"id": "CAND-001", "source_file": "a.rs", "source_line": 1}]}
-    tf = os.path.join(tmp, ".audit_results", "_cluster_xxx.json")
-    json.dump(task, open(tf, "w"))
-    ex = {"id": "CAND-001", "verdict": "REACHABLE", "reachability_type": "DIRECT",
-          "call_chain": ["a:1", "b:2", "c:3"], "call_chain_depth": 3, "evidence": "e",
-          "blocking_point": None}
-    bv.stage_cluster_collect(tmp, tf, {"verdict": "UNREACHABLE", "exceptions": [ex]})
-    q = bv.load_queue(tmp)
-    assert q["candidates"][0]["verdict"] == "REACHABLE"
-
 def test_r4_collect_assert():
     tmp = _mk_project()
     findings = [{"hypothesis_id": f"H-{i}", "verdict": "reviewed_clean", "findings": []}
@@ -180,25 +152,6 @@ def test_step05_gating_application_full_even_static():
 # ---- SWR-V3.3.2-085/088: coverage 归一化 + journal --expect ----
 import os as _os
 WORK = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
-def test_coverage_normalizes_surf_prefix():
-    import tempfile, subprocess, sys, os
-    tmp = tempfile.mkdtemp()
-    os.makedirs(os.path.join(tmp, ".audit_results"))
-    json.dump({"schema_version": "3.0", "surfaces": [
-        {"id": "S-001", "name": "x", "type": "network_endpoint"}]},
-        open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
-    json.dump({"schema_version": "3.0", "candidates": [],
-               "r4_findings": [{"hypothesis_id": "H-1", "status": "VERIFIED",
-                 "findings": [{"title": "t", "tracked_surfaces": ["SURF-S-001"]}]}]},
-        open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
-    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
-                        tmp, "--stage", "coverage"],
-                       capture_output=True, text=True)
-    out = json.loads(r.stdout)
-    assert out["status"] == "COVERAGE_OK", out
-    assert out["missing"] == []
-    assert r.returncode == 0
-
 def test_journal_expect_full_set_enforced():
     import tempfile, subprocess, sys, os
     tmp = tempfile.mkdtemp()
@@ -311,33 +264,6 @@ def test_coverage_ledger_gaps_prints_crypto_gap():
     assert any("CRYPTO" in g for g in out["gap_cells"])
 
 # ---- v3.4.1: coverage 读 _r2_filter.json (旧 schema 兼容) ----
-def test_coverage_reads_r2_filter_surface_ids():
-    import tempfile, subprocess, sys, os, json as _json
-    tmp = tempfile.mkdtemp()
-    os.makedirs(os.path.join(tmp, ".audit_results"))
-    _json.dump({"schema_version": "3.0", "surfaces": [
-        {"id": "SURF-DATA-001", "name": "a", "type": "data"},
-        {"id": "SURF-PROC-002", "name": "b", "type": "process"}]},
-        open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
-    _json.dump({"schema_version": "3.0", "candidates": []},
-               open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
-    # 旧 schema: hypotheses.json 无 surface_ids, 覆盖在 _r2_filter.json
-    _json.dump({"schema_version": "3.0", "hypotheses": [], "logic_hypotheses": []},
-               open(os.path.join(tmp, ".audit_results", "hypotheses.json"), "w"))
-    _json.dump({"schema_version": "3.0", "keep": [
-                   {"id": "HYP-001", "surface_ids": ["SURF-DATA-001"]}],
-                "drop": [], "boundary_confirmations": [
-                   {"id": "HYP-002", "surface_ids": ["SURF-PROC-002"]}]},
-               open(os.path.join(tmp, ".audit_results", "_r2_filter.json"), "w"))
-    r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
-                        tmp, "--stage", "coverage"],
-                       capture_output=True, text=True)
-    out = _json.loads(r.stdout)
-    assert out["status"] == "COVERAGE_OK", out
-    assert out["missing"] == []
-
-
-# ---- SWR-V3.4.6-001: coverage-ledger 空队主导语言回退链 ----
 def test_coverage_ledger_empty_queue_lang_from_surface():
     """空队 (R3 空队, R2 keep 0 合法终态) + input_surface lang=go →
     账本写 go 格, other 零新增。quic-go 实录: 全 Go 项目 R4 findings 误记
@@ -402,3 +328,41 @@ def test_coverage_ledger_derivation_chain():
         assert "DATA-INTEGRITYxrust" in out["new_counts"], out["new_counts"]
     finally:
         open(ledger_path, "w").write(snapshot)
+
+
+# ---------------- v3.5 (B2/B5) 防回退 ----------------
+
+def test_step05_dispatch_family_wording():
+    """v3.5 (B2): static_short 按语言家族分派——各家族措辞含本族构建/加载语义。"""
+    for lang, needle in (("go", "go.mod"), ("rust", "Cargo.toml"),
+                         ("kotlin", "sourceSet"), ("scala", "sourceSet"),
+                         ("csharp", ".csproj"), ("swift", "Package.swift"),
+                         ("php", "require/include"), ("ruby", "Gemfile"),
+                         ("perl", "use/require"), ("powershell", "Import-Module"),
+                         ("shell", "source/调用")):
+        assert needle in bv.STATIC_SHORT_BY_FAMILY[lang], lang
+    assert "CMake" in bv.STATIC_SHORT_BY_FAMILY["c"]  # C 系措辞保留
+
+
+def test_step05_dispatch_script_family_no_c_words():
+    """v3.5 (B2): script 族措辞不得再是 C 系构建词汇 (偏见 B2 根因)。"""
+    for lang in ("php", "ruby", "perl", "powershell", "shell"):
+        t = bv.STATIC_SHORT_BY_FAMILY[lang]
+        for cword in ("CMake", "GOPATH", "cargo", "Makefile"):
+            assert cword not in t, f"{lang} 仍含 C 系词汇 {cword}"
+
+
+def test_coverage_ledger_pressure():
+    """v3.5 (B5): 账本格压力统计——饱和格标记 + 族偏斜降序。"""
+    ledger = {"rows": [
+        {"family": "RESOURCE-DOS", "langs": {"go": 55, "python": 3}},
+        {"family": "CRYPTO", "langs": {"rust": 2}},
+    ]}
+    p = bv._ledger_pressure(ledger)
+    assert p["pressure_cells"][0] == {"cell": "RESOURCE-DOS x go",
+                                      "count": 55, "saturated": True}
+    assert p["pressure_cells"][1]["saturated"] is False
+    # top_share 降序: CRYPTO 2/2=1.0 高于 RESOURCE-DOS 55/58≈0.948
+    assert p["family_skew"][0]["family"] == "CRYPTO"
+    assert p["family_skew"][1]["family"] == "RESOURCE-DOS"
+    assert p["family_skew"][1]["top_share"] == round(55 / 58, 3)

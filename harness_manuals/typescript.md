@@ -1,6 +1,6 @@
 # TypeScript 实证工具链手册 (v3.1)
 
-> 事实来源：W6_MORE_LANGS_FINDINGS.md §15（NestJS 批次，TS 首审）与 §21.4（网络可达性）。
+> 事实来源：W6_MORE_LANGS_FINDINGS.md §15（TS 首审批次）与 §21.4（网络可达性）。
 > 战役战绩：15 候选 6 REACHABLE，R3.5 拦截率 54%（历批次最高）。
 
 ## 1. 工具链探测
@@ -21,7 +21,7 @@
 ## 3. 常见陷阱清单
 
 - 签名库系统性误报：路径白名单族 85 命中全是路由注册期变换（Nest 无运行期远端驱动的路径门禁）、buffer 族 append 匹配到响应头 API、logic 族命中全在 test/（§15.1）。
-- esbuild 全量 bundle 被 @nestjs 内部 import 阻断（§15.6）。
+- esbuild 全量 bundle 被框架内部 import 阻断（§15.6）。
 - 函数体级实证被误当全链可达：isPatternMatch 机制实证后被 kafkajs 订阅期行为证伪（§15.6）。
 - 只查防护覆盖的一条路径：RpcProxy 有 catch 判 UNREACHABLE，同族 5 个传输（TCP/Redis/MQTT/NATS/RMQ）的 message 监听器全无 catch（§15.5）。
 - verifier 的 empirical 结果未结构化 → 门禁 ③ 假 FAIL，collect 需从 evidence 自动提取实证标记（§15.2）。
@@ -36,7 +36,7 @@
 - 证伪者基准压测实证：CAND-002 基准压测 2.00x、CAND-010 Object.assign 不污染实测、CAND-011 4.43ms vs 1.29ms 实测（§15.3）——"常见配置≠默认"论证模板，R3 verifier 的 gate 声明（"默认开"/"常见配置"）是证伪者首要攻击面。
 - Node 进程崩溃类声称直接起真实服务器实测（§15.5，Node 22 unhandledRejection）。
 - H4 检查清单："reply 通道族"——消息型框架必查 reply-to/回复通道可预测性与头驱动目标；5 传输同构缺陷一次审计全暴露（§15.4）。
-- 签名库应补框架语义族：socket.on('data') 累积、JSON.stringify 无 catch、reply channel 拼接、multer 无 limits 默认（§15.1）。
+- 签名库应补框架语义族：socket.on('data') 累积、JSON.stringify 无 catch、reply channel 拼接、上传中间件无 limits 默认（§15.1）。
 
 ## 5. 网络依赖
 
