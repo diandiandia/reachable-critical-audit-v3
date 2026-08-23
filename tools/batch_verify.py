@@ -430,6 +430,11 @@ def stage_collect(project_root, batch_id, verdicts):
         # Preserve CWE from rule if not overridden
         if v.get("cwe"):
             entry["cwe"] = v["cwe"]
+        # SWR-V3.7-001: 主代理严重程度覆盖透传——机械分级与真实影响不符时,
+        # 覆盖值+理由落盘; 队列 JSON 仍是唯一事实源 (可直接编辑)
+        if v.get("severity_override"):
+            entry["severity_override"] = v["severity_override"]
+            entry["severity_override_reason"] = v.get("severity_override_reason", "")
         # SWR-V3.4.3-004/005: verifier 自报 grade 存 grade_self_reported 仅追溯;
         # evidence_grade 由 grade_verdict 机械重算为唯一权威 (对齐 SKILL.md
         # 原意——P0/P1 共 9+ 候选自报 empirically 而无结构化实证, 机械重算后
@@ -1233,6 +1238,68 @@ def stage_coverage_ledger(project_root, write=False):
     return 0
 
 
+# ---- v3.7 (SWR-V3.7-001): 报告严重程度机械映射 ----
+# 判据: CWE 族映射 (按 resources/issue_coverage_matrix.json 的账本族归并) +
+# claim_type 回退。分级只服务报告呈现; 六门禁判据不依赖本表 (无新门禁)。
+# 义务入库三问: 触发=主代理认为机械分级与真实影响不符时用 severity_override;
+# 消费者=render_report_md 的分组与排序; 悔例=override 无 reason/非法值 → 渲染告警行。
+SEVERITY_ORDER = {"critical": 3, "high": 2, "medium": 1}
+SEVERITY_LABELS = {"critical": "严重", "high": "高", "medium": "中"}
+SEVERITY_BY_CWE = {
+    # 命令/代码注入 + 反序列化 + MEMORY-SAFETY 全族
+    "critical": {78, 94, 77, 502, 787, 125, 416, 415, 476, 190, 129},
+    # SQLi/路径穿越/SSRF + AUTHN 主体 + RESOURCE-DOS 全族 + RACE 全族
+    "high": {89, 74, 22, 918, 862, 863, 639, 306,
+             400, 770, 789, 409, 833, 834, 362, 366, 367},
+    # XSS/开放重定向/CSRF + 鉴权弱项 + CRYPTO 全族 + DATA-INTEGRITY 全族
+    "medium": {79, 601, 352, 285, 287, 926,
+               327, 326, 338, 347, 330, 310, 311, 295, 345, 351, 829},
+}
+CLAIM_TYPE_SEVERITY = {  # 回退: cwe 无命中时 (REQ-V3.4.3-006: leak 已同步)
+    "rce": "critical", "leak": "critical",
+    "crash": "high", "panic": "high", "oom": "high",
+    "unbounded": "high", "protocol_dos": "high",
+    "xss": "medium",
+}
+
+
+def _parse_cwes(entry):
+    """提取候选的 CWE 编号集合: cwe 字段 (list 或 str) + sink_type 全量扫描。"""
+    blob = " ".join([
+        str(entry.get("cwe") or ""),
+        str(entry.get("sink_type") or ""),
+    ])
+    return {int(m) for m in re.findall(r"CWE-(\d+)", blob)}
+
+
+def severity_for(candidate):
+    """SWR-V3.7-001: 返回 (severity, source)。
+    优先级: severity_override (合法值, 附 reason) > cwe 映射 (全部 cwe 取 max)
+    > claim_type 回退 > medium (default)。override 非法值 → (机械值, invalid_override),
+    调用方渲染告警行。"""
+    ov = (candidate.get("severity_override") or "").strip().lower()
+    if ov in SEVERITY_ORDER:
+        return ov, "override"
+    if ov:
+        mech, src = _mechanical_severity(candidate)
+        return mech, "invalid_override"
+    return _mechanical_severity(candidate)
+
+
+def _mechanical_severity(candidate):
+    cwes = _parse_cwes(candidate)
+    hits = sorted(n for n in cwes
+                  if any(n in ids for ids in SEVERITY_BY_CWE.values()))
+    if hits:
+        by_cwe = {sev for sev, ids in SEVERITY_BY_CWE.items() for n in hits if n in ids}
+        top = max(by_cwe, key=lambda s: SEVERITY_ORDER[s])
+        return top, "cwe:" + ",".join(f"CWE-{n}" for n in hits)
+    ct = (candidate.get("claim_type") or "").strip().lower()
+    if ct in CLAIM_TYPE_SEVERITY:
+        return CLAIM_TYPE_SEVERITY[ct], f"claim_type({ct})"
+    return "medium", "default"
+
+
 def stage_report(project_root):
     """SWR-V3-055: 基础量化报告 (过程问责指标)。"""
     queue = load_queue(project_root)
@@ -1284,8 +1351,375 @@ def stage_report(project_root):
         "input_surface_note": "input_surface.json 追踪见 surface_mapper; 覆盖门禁由编排器断言",
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
+    # v3.7 (SWR-V3.7-002): 机械渲染完整报告 md (队列派生, REQ-V3.3.2-007)。
+    # 写入状态走 stderr——stdout 保持纯 JSON 契约 (test_report_outputs 整段 json.loads)。
+    try:
+        path = render_report_md(project_root, report)
+        print(json.dumps({"status": "REPORT_MD_WRITTEN", "path": path},
+                         ensure_ascii=False), file=sys.stderr)
+    except Exception as e:  # 渲染失败不阻断 JSON 报告 (报告仍可读)
+        print(json.dumps({"status": "REPORT_MD_ERROR", "error": str(e)},
+                         ensure_ascii=False), file=sys.stderr)
 
 
+def _problem_summary(c):
+    """问题摘要 = claim_type 前缀 + evidence 首 120 字符 (summary 字段 collect 不落盘)。"""
+    ct = (c.get("claim_type") or "").strip()
+    ev = " ".join(str(c.get("evidence") or "").split())
+    head = ev[:120] + ("…" if len(ev) > 120 else "")
+    return (f"[{ct}] {head}" if ct else head) or "(无 evidence)"
+
+
+def _needs_review_cause(cand):
+    """REQ-V3.3-011: NEEDS_REVIEW 成因双分——关键词启发式 (机械侧近似, 未注明则主代理确认)。"""
+    blob = " ".join([
+        str(cand.get("evidence") or ""),
+        " ".join(str(r) for r in cand.get("correction_record", []) or []),
+    ])
+    if any(k in blob for k in ("保守", "防御充分", "门禁压力", "防御证据充分")):
+        return "保守裁决"
+    if any(k in blob for k in ("证据不足", "无法取证", "无法验证", "前提无法",
+                               "调用边无法", "不可验证")):
+        return "证据不足"
+    return "未注明（主代理确认）"
+
+
+def _refutation_line(c):
+    """R3.5 复核列: refutation.survived → 证伪者结果, else 未复核。"""
+    rf = c.get("refutation")
+    if isinstance(rf, dict) and rf.get("survived") is not None:
+        return f"{rf.get('refute_count', '?')}/{rf.get('votes', '?')} 证伪 survived"
+    return "未复核"
+
+
+def _tracked_ids(project_root, queue, surfaces):
+    """机械 tracked 集 (B.5 六门禁⑦用): hypotheses[].surface_ids ∪
+    r4 findings[].tracked_surfaces ∪ queue.coverage_bridge[].surface
+    (coverage_bridge 实况存在, 渲染侧按实况容忍消费)。"""
+    ids = set()
+    hyp_path = os.path.join(project_root, ".audit_results", "hypotheses.json")
+    if os.path.exists(hyp_path):
+        try:
+            for h in json.load(open(hyp_path)).get("hypotheses", []):
+                ids.update(h.get("surface_ids", []) or [])
+        except (OSError, ValueError):
+            pass
+    for f in queue.get("r4_findings", []) or []:
+        for fi in f.get("findings", []) or []:
+            ids.update(fi.get("tracked_surfaces", []) or [])
+    for e in queue.get("coverage_bridge", []) or []:
+        if isinstance(e, dict) and e.get("surface"):
+            ids.add(e["surface"])
+    return sorted(ids)
+
+
+def _gates_for_report(project_root, queue, surfaces):
+    """机械调用六门禁 (evidence_ledger.assert_ledger)——渲染 ①-⑧ 行, 不新增判据。"""
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    try:
+        import evidence_ledger as _el
+    except ImportError:
+        return [], "evidence_ledger 不可导入"
+    dispatched = [c["id"] for c in queue.get("candidates", []) if c.get("id")]
+    surface_data = None
+    if surfaces is not None:
+        surface_data = {
+            "total": len(surfaces),
+            "tracked_ids": _tracked_ids(project_root, queue, surfaces),
+            "mirror_pairs": surfaces.get("mirror_pairs") or [],
+        }
+    try:
+        ok, violations = _el.assert_ledger(queue, dispatched=dispatched,
+                                           surface_data=surface_data)
+    except Exception as e:  # 六门禁渲染兜底: 断言失败不阻断报告生成
+        return [], f"assert_ledger 不可用: {e}"
+    return violations, None
+
+
+def _render_problem_list(cands):
+    """一、问题清单: 只含 REACHABLE, 按 严重→高→中 三节, 每节表行。"""
+    reachable = [c for c in cands if c.get("verdict") == "REACHABLE"]
+    if not reachable:
+        return "无 REACHABLE 候选（R3 空队为合法终态）。"
+    grouped = {"critical": [], "high": [], "medium": []}
+    for c in reachable:
+        sev, src = severity_for(c)
+        grouped.setdefault(sev if sev in grouped else "medium", []).append((c, src))
+    out = []
+    for sev in ("critical", "high", "medium"):
+        rows = grouped.get(sev, [])
+        if not rows:
+            continue
+        out.append(f"### {SEVERITY_LABELS[sev]}（{len(rows)}）")
+        out.append("| ID | 问题摘要 | 位置 | CWE | 证据等级 | 复核 |")
+        out.append("|---|---|---|---|---|---|")
+        for c, src in sorted(rows, key=lambda x: x[0].get("id", "")):
+            cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
+            sev_note = " ⚠override非法" if src == "invalid_override" else ""
+            out.append(f"| {c.get('id')} | {_problem_summary(c)} | "
+                       f"`{c.get('source_file')}:{c.get('source_line')}` | "
+                       f"{', '.join(cwes) or '-'} | {c.get('evidence_grade', '-')} | "
+                       f"{_refutation_line(c)}{sev_note} |")
+    return "\n".join(out)
+
+
+def _render_problem_details(cands, queue):
+    """二、问题详情: 每条一节 (位置/证据/前提/复核/实证/修复建议占位)。"""
+    reachable = [c for c in cands if c.get("verdict") == "REACHABLE"]
+    if not reachable:
+        return "（无）"
+    r4_fix = {}
+    r4_links = {}
+    for f in queue.get("r4_findings", []) or []:
+        hid = f.get("hypothesis_id")
+        if not hid:
+            continue
+        for fi in f.get("findings", []) or []:
+            if fi.get("fix"):
+                r4_fix.setdefault(hid, fi["fix"])
+            if isinstance(fi.get("r3_link"), str) and fi["r3_link"]:
+                r4_links[hid] = fi["r3_link"]
+    # 同事实去重 (SWR-V3.4.3-060): r3_link 指向主申报方, 无独立 fix 时共享其 fix
+    for hid, link in r4_links.items():
+        r4_fix.setdefault(hid, r4_fix.get(link, ""))
+    out = []
+    for c in sorted(reachable, key=lambda x: x.get("id", "")):
+        sev, src = severity_for(c)
+        out.append(f"### {c.get('id')} — {_problem_summary(c)}"
+                   f"（{SEVERITY_LABELS[sev]}, 来源: {src}）")
+        out.append(f"- 位置/语言: `{c.get('source_file')}:{c.get('source_line')}`"
+                   f"（{c.get('language') or c.get('lang') or '-'}）")
+        cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
+        out.append(f"- CWE / claim_type: {', '.join(cwes) or '-'} / "
+                   f"{c.get('claim_type') or '-'}")
+        grade = c.get("evidence_grade", "-")
+        if c.get("grade_recomputed_by"):
+            grade += f"（{c['grade_recomputed_by']}）"
+        out.append(f"- verdict + 证据分级: {c.get('verdict')} / {grade}")
+        cc = c.get("call_chain") or []
+        if cc:
+            out.append(f"- 调用链（{c.get('call_chain_depth', len(cc))} 跳, "
+                       f"{c.get('reachability_type', '-')}）: `{' -> '.join(cc)}`")
+        if c.get("evidence"):
+            out.append(f"- 证据: {c.get('evidence')}")
+        bp = c.get("blocking_point")
+        if bp:
+            out.append(f"- 前提（PREC-CONDITIONAL-REACHABLE-001）: {bp}")
+        rf = c.get("refutation")
+        if isinstance(rf, dict) and rf:
+            out.append(f"- 独立复核（R3.5）: {_refutation_line(c)}; "
+                       f"votes={rf.get('votes')}, refute_count={rf.get('refute_count')}, "
+                       f"survived={rf.get('survived')}"
+                       + (f"; strengthened={rf.get('strengthened')}"
+                          if rf.get("strengthened") else "")
+                       + (f"; attribution_corrections={rf.get('attribution_corrections')}"
+                          if rf.get("attribution_corrections") else ""))
+        emp = c.get("empirical")
+        if isinstance(emp, dict) and emp:
+            out.append(f"- 实证记录（R5）: outcome={emp.get('outcome')}, "
+                       f"evidence_numbers={emp.get('evidence_numbers')}"
+                       + (f", setup={emp.get('setup')}" if emp.get("setup") else "")
+                       + (f", report={emp.get('report')}" if emp.get("report") else ""))
+        hyp_id = None
+        if c.get("members"):
+            hyp_id = (c.get("members") or [{}])[0].get("id")
+        fix = r4_fix.get(hyp_id or "", "") if hyp_id else ""
+        out.append(f"- 修复建议: {fix or '（主代理补充）'}")
+    return "\n".join(out)
+
+
+def _render_appendix_a_needs_review(queue):
+    """附录 A: NEEDS_REVIEW 清单 + 成因双分 + 同事实映射 (REQ-V3.1-092)。"""
+    nr = [c for c in queue.get("candidates", []) if c.get("status") == "NEEDS_REVIEW"]
+    if not nr:
+        return "无 NEEDS_REVIEW 候选。"
+    hyp_by_id = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", []) or []}
+    out = ["| ID | 成因 | correction_record 理由 | 位置 |", "|---|---|---|---|"]
+    for c in sorted(nr, key=lambda x: x.get("id", "")):
+        cr = c.get("correction_record") or []
+        cr_txt = "; ".join(str(r) for r in cr) or "-"
+        out.append(f"| {c.get('id')} | {_needs_review_cause(c)} | {cr_txt} | "
+                   f"`{c.get('source_file')}:{c.get('source_line')}` |")
+    out.append("")
+    out.append("**同事实映射（REQ-V3.1-092）**: NEEDS_REVIEW ↔ R4 hypothesis/finding")
+    out.append("| NEEDS_REVIEW | 映射的 R4 假说 | 依据 |")
+    out.append("|---|---|---|")
+    for c in sorted(nr, key=lambda x: x.get("id", "")):
+        mem = (c.get("members") or [{}])[0].get("id") if c.get("members") else None
+        if mem and mem in hyp_by_id:
+            out.append(f"| {c.get('id')} | {mem} | members[].id 命中 |")
+        else:
+            out.append(f"| {c.get('id')} | - | 主代理补充 |")
+    return "\n".join(out)
+
+
+def _render_appendix_b_process(project_root, queue, report_json):
+    """附录 B: 规模对照/语言覆盖/FFI/R4 verdict/六门禁/覆盖账本——全部机械源。"""
+    cands = queue.get("candidates", [])
+    out = []
+    # B.1 规模对照
+    total = len(cands)
+    terminal = sum(1 for c in cands if c.get("status") in
+                   ("VERIFIED", "ESCALATED", "NEEDS_REVIEW"))
+    out.append("### B.1 规模对照")
+    out.append(f"- 候选: {total}（闭合率 {terminal}/{total} = "
+               f"{round(terminal / total * 100) if total else 0}% 终态）")
+    hyp_path = os.path.join(project_root, ".audit_results", "hypotheses.json")
+    if os.path.exists(hyp_path):
+        try:
+            out.append(f"- 假设: {len(json.load(open(hyp_path)).get('hypotheses', []))}")
+        except (OSError, ValueError):
+            out.append("- 假设: （hypotheses.json 损坏）")
+    else:
+        out.append("- 假设: （hypotheses.json 未落盘）")
+    sf_path = os.path.join(project_root, ".audit_results", "input_surface.json")
+    surfaces = None
+    if os.path.exists(sf_path):
+        try:
+            surfaces = json.load(open(sf_path))
+            out.append(f"- surface: {len(surfaces.get('surfaces', []))}"
+                       f"（含 conflicts {len(surfaces.get('conflicts', []))}）")
+        except (OSError, ValueError):
+            out.append("- surface: （input_surface.json 损坏）")
+    else:
+        out.append("- surface: （input_surface.json 未落盘）")
+    # B.2 语言覆盖表 (组件角色现场重算)
+    out.append("### B.2 语言覆盖表")
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        import surface_mapper as _sm
+        inv = _sm.language_inventory(project_root)
+        surf_langs = {}
+        if surfaces:
+            for s in surfaces.get("surfaces", []):
+                lg = s.get("lang")
+                if lg:
+                    surf_langs[lg] = surf_langs.get(lg, 0) + 1
+        cand_langs = {}
+        for c in cands:
+            lg = c.get("language") or c.get("lang")
+            if lg:
+                cand_langs[lg] = cand_langs.get(lg, 0) + 1
+        out.append("| 语言 | 文件数 | 组件角色 | surfaces | 候选 | 判据① |")
+        out.append("|---|---|---|---|---|---|")
+        for r in inv:
+            lg = r["lang"]
+            has_sf = surf_langs.get(lg, 0) >= 1
+            has_cand = cand_langs.get(lg, 0) >= 1
+            judge = "✓" if (has_sf and has_cand) else "-"
+            out.append(f"| {lg} | {r['file_count']} | {r['component_role']} | "
+                       f"{surf_langs.get(lg, 0)} | {cand_langs.get(lg, 0)} | {judge} |")
+    except Exception:
+        out.append("（language_inventory 现场重算失败, 角色列由主代理补充）")
+    # B.3 FFI 边界表
+    out.append("### B.3 FFI 边界表")
+    bnd = []
+    if surfaces:
+        bnd = [s for s in surfaces.get("surfaces", [])
+               if s.get("boundary_kind") or s.get("lang_pair")]
+    if not bnd:
+        out.append("无 FFI 边界面（boundary_kind/lang_pair 未标记）。")
+    else:
+        out.append("| surface | lang_pair | boundary_kind | 追踪 | 裁决 |")
+        out.append("|---|---|---|---|---|")
+        tracked = set(_tracked_ids(project_root, queue, surfaces))
+        for s in bnd:
+            t = "✓" if s.get("id") in tracked else "-"
+            out.append(f"| {s.get('id')} | {s.get('lang_pair', '-')} | "
+                       f"{s.get('boundary_kind', '-')} | {t} | 主代理补充 |")
+    # B.4 R4 verdict 表
+    out.append("### B.4 R4 假说 verdict 表")
+    r4 = queue.get("r4_findings", []) or []
+    if not r4:
+        out.append("R4 未运行/未收集。")
+    else:
+        out.append("| 假说 | verdict | findings |")
+        out.append("|---|---|---|")
+        for f in r4:
+            out.append(f"| {f.get('hypothesis_id')} | {f.get('verdict', '-')} | "
+                       f"{len(f.get('findings', []) or [])} |")
+    # B.5 六门禁断言
+    out.append("### B.5 六门禁断言")
+    violations, err = _gates_for_report(project_root, queue, surfaces)
+    if err:
+        out.append(f"（{err}）")
+    else:
+        gate_names = {v.get("gate") for v in violations}
+        gate_rows = [("no_pending", "① no_pending"),
+                     ("no_static_only_reachable", "② REACHABLE 无 static_only"),
+                     ("empirical_required", "③ 实证类 100% confirmed"),
+                     ("r4_all_verified", "④ H1-H7 全 VERIFIED"),
+                     ("dispatched_reconcile", "⑤ 对账零差异"),
+                     ("escalated", "⑥ escalated=0 或签收"),
+                     ("coverage", "⑦ surface 覆盖率 100%"),
+                     ("target_kind", "⑧ target_kind_required"),
+                     ("resurrection", "③c 复活攻击完成度")]
+        out.append("| 门禁 | 结果 | 详情 |")
+        out.append("|---|---|---|")
+        for key, name in gate_rows:
+            hits = [v for v in violations if v.get("gate") == key]
+            if hits:
+                out.append(f"| {name} | FAIL | {hits[0]} |")
+            else:
+                out.append(f"| {name} | PASS | - |")
+        r4f = [v for v in violations if v.get("gate") == "r4_feedback"]
+        if r4f:
+            out.append(f"- r4_feedback 告警（warn 级）: {r4f[0]}")
+    # B.6 覆盖账本
+    out.append("### B.6 覆盖账本（REQ-V3.4-007）")
+    cl = (report_json or {}).get("coverage_ledger")
+    if not cl or cl.get("status") == "LEDGER_UNAVAILABLE":
+        out.append("账本缺失（resources/issue_coverage_matrix.json 不可读）。")
+    else:
+        out.append(f"- 缺口格 {cl.get('gap_cell_count')}: "
+                   f"{'、'.join(cl.get('gap_cells', [])) or '无'}")
+        out.append(f"- 饱和格 {cl.get('saturated_cell_count')}（count≥15 不建议再选题）")
+    return "\n".join(out)
+
+
+def render_report_md(project_root, report_json=None):
+    """SWR-V3.7-002: 机械渲染完整报告 md → .audit_results/reachable_vulnerabilities_report.md。
+    铁律: 所有可选输入缺失时降级渲染占位, 绝不抛异常 (test_end_to_end 最小队列形态)。
+    去项目化: 模板文本零项目名零绝对路径, 内容全部来自队列/R1 产物。"""
+    queue = load_queue(project_root)
+    cands = queue.get("candidates", [])
+    sf_path = os.path.join(project_root, ".audit_results", "input_surface.json")
+    surfaces = None
+    if os.path.exists(sf_path):
+        try:
+            surfaces = json.load(open(sf_path))
+        except (OSError, ValueError):
+            surfaces = None
+    parts = [
+        "# 可达性严重漏洞审计报告（reachable-critical-audit v3）",
+        f"- 生成方式: `--stage report` 机械生成（队列派生, REQ-V3.3.2-007）；"
+        f"主代理仅补充 修复建议/结论/审计基线",
+        f"- 日期: {datetime.date.today().isoformat()}",
+        "- 项目/审计基线: （主代理补充）",
+        "",
+        "## 一、问题清单（按严重程度排序）",
+        _render_problem_list(cands),
+        "",
+        "## 二、问题详情",
+        _render_problem_details(cands, queue),
+        "",
+        "## 三、修复建议与结论（主代理补充）",
+        "> 本段由主代理补充；补充后**不得重跑 `--stage report`**（机械渲染会覆盖本段）。",
+        "",
+        "## 附录 A：NEEDS_REVIEW 清单与同事实映射",
+        _render_appendix_a_needs_review(queue),
+        "",
+        "## 附录 B：审计过程信息",
+        _render_appendix_b_process(project_root, queue, report_json),
+        "",
+    ]
+    md = "\n".join(parts)
+    out_dir = os.path.join(project_root, ".audit_results")
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, "reachable_vulnerabilities_report.md")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(md)
+    return path
 
 
 MAX_ATTEMPTS = 3
