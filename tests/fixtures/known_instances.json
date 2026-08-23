@@ -231,6 +231,46 @@
    "confirmed": true,
    "sig_id": "SIG-LOGIC-WEAKEN-005",
    "note": "v3.5: 锚点重定位——domain_allowlist 谓词 (原 awstats.pl:18062/fastjson2:1 漂移或假锚)"
+  },
+  {
+   "project": "(pending)",
+   "file": "",
+   "line": 0,
+   "confirmed": false,
+   "sig_id": "SIG-RB-EVAL-001",
+   "note": "v3.6: 语言词族新增, 无确认锚点——占位簿记 (不伪造 confirmed)"
+  },
+  {
+   "project": "(pending)",
+   "file": "",
+   "line": 0,
+   "confirmed": false,
+   "sig_id": "SIG-PHP-EVAL-001",
+   "note": "v3.6: 语言词族新增, 无确认锚点——占位簿记 (不伪造 confirmed)"
+  },
+  {
+   "project": "(pending)",
+   "file": "",
+   "line": 0,
+   "confirmed": false,
+   "sig_id": "SIG-PERL-EXEC-001",
+   "note": "v3.6: 语言词族新增, 无确认锚点——占位簿记 (不伪造 confirmed)"
+  },
+  {
+   "project": "(pending)",
+   "file": "",
+   "line": 0,
+   "confirmed": false,
+   "sig_id": "SIG-SCALA-UNSAFE-001",
+   "note": "v3.6: 语言词族新增, 无确认锚点——占位簿记 (不伪造 confirmed)"
+  },
+  {
+   "project": "(pending)",
+   "file": "",
+   "line": 0,
+   "confirmed": false,
+   "sig_id": "SIG-SWIFT-UNSAFE-001",
+   "note": "v3.6: 语言词族新增, 无确认锚点——占位簿记 (不伪造 confirmed)"
   }
  ]
 }

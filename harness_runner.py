@@ -17,7 +17,10 @@ import subprocess
 import sys
 import time
 
-EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos")
+# v3.6 (P1-3): 8 类对齐 binder R5_CLAIM_TYPES 与 SKILL.md R5 触发判定
+# (rce/leak 声称此前能绑定清单却不触发 needs_harness——对称缺口)
+EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos",
+                    "rce", "leak")
 
 TEMPLATES = {
     "ws_frame_alloc": {
@@ -50,6 +53,18 @@ TEMPLATES = {
         "metrics": ["asan_findings", "ubsan_findings", "rounds", "exit"],
         "judgement": "任一 ASan/UBSan 报告 → OOB 确认；零报告 + 拒绝语义正确 → 防御确认",
         "script": "templates/harness/parser_fuzz_c.py",
+    },
+    # v3.6 (P2-⑧): resource_rate_probe——通用协议级速率灌注探针。
+    # 8 语言专属模板裁减后提炼的 1 个协议级通用模板 (langs:["any"] 无机械消费者,
+    # 主代理按声称类选型); 零项目名零 /root/ (argv 必传 host/port)。
+    "resource_rate_probe": {
+        "langs": ["any"],
+        "attack": "并发连接持续投递载荷 + 逐秒 VmRSS 采样 + 拒绝计数 + "
+                  "停止后回落验证——protocol_dos/unbounded/oom 声称的通用实证",
+        "metrics": ["rss_timeline", "rejected", "delivery_rate", "monotonic", "recovers"],
+        "judgement": "RSS 单调上涨无平台期 / 停止后不回落 → 无界累积确认; "
+                     "拒绝计数上升 → 资源边界信号 (verdict 供主代理裁决)",
+        "script": "templates/harness/resource_rate_probe.py",
     },
 }
 
@@ -213,6 +228,28 @@ def check_scope(candidate):
     return violations
 
 
+# v3.6 (P2-⑥): per_lang 提为模块级 + 7→16 语言 (对齐 harness_manuals/ 文件名)。
+# 条目形态: 语言通用环境陷阱 (工具链版本互斥/网络依赖/运行时语义), 零项目名。
+PER_LANG_ENV_TRAPS = {
+    "swift": ["SIGTERM/SIGINT 会被 runtime 转 SIGTRAP; LD_LIBRARY_PATH 必须含 swift runtime 目录"],
+    "rust": ["cargo test 用全路径或显式 PATH; transitive dev-dep 不可见 → 字节内嵌; 不要盲从编译器 help 文本"],
+    "java": ["JDK 版本影响标准库语义 (Inflater gzip 行为 JDK22+ 变更); 记录 java -version"],
+    "go": ["proxy.golang.org 不可达环境 → 源事实级 + blocker 记录"],
+    "ruby": ["ruby -Ilib + Rack::MockRequest 零依赖可跑; 记录 ruby -v"],
+    "c": ["./configure && make 可行; harness 失败先怀疑模块接管顺序而非环境"],
+    "python": ["venv + sys.path 导入源码即可; 无 pip 用 skill venv"],
+    "cpp": ["g++/gcc/make 版本互斥记录 (g++ --version); 容器无界增长走 allocator 非裸 new"],
+    "cs": ["dotnet 版本影响反序列化 gate 语义; 记录 dotnet --info; NuGet 恢复不可达 → blocker 记录"],
+    "typescript": ["esbuild/tsc 全量 bundle 会被框架内部 import 阻断; node_modules 缺失先行报告"],
+    "kotlin": ["JVM 版本语义同 java (Inflater gzip); gradle 依赖解析不可达 → blocker 记录"],
+    "scala": ["sbt/JVM 版本互斥记录; 流式 vs 物化引擎按框架分派确认再测"],
+    "perl": ["perl -Ilib 零依赖可跑; 记录 perl -v; 源码字面 HTML 实体不 unescape"],
+    "php": ["php -S 内置服务端可用; 记录 php -m (extension 依赖); composer 不可达 → blocker"],
+    "powershell": ["PSVersion/ExecutionPolicy 影响脚本语义; Get-Command 预检内置 cmdlet"],
+    "shell": ["bash vs sh 陷阱语义差异; set -e 对 eval 行为影响; PATH 工具链预检"],
+}
+
+
 def env_trap_checklist(lang):
     """SWR-V3.1-062: 环境陷阱自检清单（harness 启动前必跑, W6 §16.5/§16.6/§16.3/§23.3）。"""
     common = [
@@ -222,16 +259,7 @@ def env_trap_checklist(lang):
         "PATH 检查: 工具链二进制可能不在后台 shell PATH",
         "测量点放服务端 (CPU tick/VmHWM), 不要用客户端完成信号",
     ]
-    per_lang = {
-        "swift": ["SIGTERM/SIGINT 会被 runtime 转 SIGTRAP; LD_LIBRARY_PATH 必须含 swift runtime 目录"],
-        "rust": ["cargo test 用全路径或显式 PATH; transitive dev-dep 不可见 → 字节内嵌; 不要盲从编译器 help 文本"],
-        "java": ["JDK 版本影响标准库语义 (Inflater gzip 行为 JDK22+ 变更); 记录 java -version"],
-        "go": ["proxy.golang.org 不可达环境 → 源事实级 + blocker 记录"],
-        "ruby": ["ruby -Ilib + Rack::MockRequest 零依赖可跑; 记录 ruby -v"],
-        "c": ["./configure && make 可行; harness 失败先怀疑模块接管顺序而非环境"],
-        "python": ["venv + sys.path 导入源码即可; 无 pip 用 skill venv"],
-    }
-    return common + per_lang.get(lang, [])
+    return common + PER_LANG_ENV_TRAPS.get(lang, [])
 
 
 def mixed_build_hint(candidate):

@@ -129,3 +129,24 @@ def test_sk_parser_fuzz_listed():
     import harness_runner
     assert "parser_fuzz" in harness_runner.TEMPLATES
     assert "parser_fuzz" in open(SKILL_MD).read()
+
+
+def test_sk_resource_rate_probe_listed():
+    """v3.6 (P2-⑧): 通用速率灌注探针注册在 TEMPLATES (langs:["any"]) 且
+    SKILL.md R5 模板枚举含之 (镜像 test_sk_parser_fuzz_listed 同款防回退)。
+    无参执行 usage exit≠0 (argv 必传 host/port 契约)。"""
+    import subprocess, sys as _sys
+    sys.path.insert(0, WORKSPACE)
+    import harness_runner
+    assert "resource_rate_probe" in harness_runner.TEMPLATES
+    spec = harness_runner.TEMPLATES["resource_rate_probe"]
+    assert spec["langs"] == ["any"]
+    assert "resource_rate_probe" in open(SKILL_MD).read()
+    p = subprocess.run([_sys.executable, os.path.join(WORKSPACE, spec["script"])],
+                       capture_output=True, text=True)
+    assert p.returncode != 0 and "required" in p.stderr
+    # 去项目化: 模板不得携带项目名/绝对路径
+    blob = open(os.path.join(WORKSPACE, spec["script"])).read()
+    for tok in ("ktor", "actix", "awstats", "sinatra", "django", "phpseclib",
+                "/root/"):
+        assert tok not in blob, tok
