@@ -73,10 +73,31 @@ def _mk_full_repo(tmp_path):
          "correction_record": ["证据不足 无法取证"]},
     ], "r4_findings": [{
         "hypothesis_id": "HYP-001", "verdict": "confirmed",
-        "findings": [{"title": "t", "cwe": ["CWE-78"], "severity": "critical",
-                      "claim_type": "rce", "evidence": "e",
-                      "fix": "validate command args, avoid shell",
-                      "tracked_surfaces": ["S-001"]}]}]}
+        "findings": [
+            {"title": "t", "cwe": ["CWE-78"], "severity": "critical",
+             "claim_type": "rce", "evidence": "e",
+             "fix": "validate command args, avoid shell",
+             "tracked_surfaces": ["S-001"]},
+            # R4 独立 High (无 r3_link): 应入清单「高」节
+            {"title": "control endpoint lacks any auth", "cwe": ["CWE-862"],
+             "severity": "High", "claim_type": "other",
+             "evidence": "stop command reachable without token",
+             "fix": "require token by default",
+             "empirical_result": {"outcome": "CONFIRMED"}},
+            # R4 Medium: 应入清单「中」节
+            {"title": "weak header trust", "cwe": ["CWE-20"],
+             "severity": "Medium", "claim_type": "other",
+             "evidence": "forwarded headers trusted",
+             "fix": "validate trusted proxies"},
+            # R4 Low: 不进清单, 留 B.4 表
+            {"title": "minor info leak", "cwe": ["CWE-200"],
+             "severity": "Low", "claim_type": "other",
+             "evidence": "version banner disclosed"},
+            # R4 同事实 = R3 候选: 不重复列, 记去重说明
+            {"title": "same fact as CAND-001", "cwe": ["CWE-789"],
+             "severity": "High", "claim_type": "unbounded",
+             "evidence": "duplicate of candidate", "r3_link": "CAND-001"},
+        ]}]}
     bv.save_queue(repo, queue)
     with open(os.path.join(ar, "hypotheses.json"), "w") as f:
         json.dump({"hypotheses": [
@@ -174,7 +195,7 @@ def test_report_md_minimal_queue_degrades(tmp_path):
     os.makedirs(os.path.join(repo, ".audit_results"), exist_ok=True)
     bv.save_queue(repo, {"schema_version": "3.0", "candidates": []})
     md = _render(repo)                      # 全部可选输入缺失 → 不抛异常
-    assert "无 REACHABLE 候选" in md
+    assert "无确认问题" in md
     assert "（主代理补充）" in md            # 占位文本
     assert "账本缺失" in md
 
@@ -244,3 +265,42 @@ def test_tracked_ids_includes_coverage_bridge(tmp_path):
     assert "S-001" in ids and "S-002" in ids          # hypotheses surface_ids
     assert "S-BRIDGE-1" in ids                        # coverage_bridge
     assert "S-FFI-1" not in ids                       # 未追踪面不混入
+
+
+# ── 11. R4 confirmed (High/Medium) 并入问题清单 ───────────────────────
+def test_report_md_includes_r4_confirmed(tmp_path):
+    md = _render(_mk_full_repo(tmp_path))
+    high_section = md.split("### 高（")[1].split("### 中（")[0]
+    assert "HYP-001-F2" in high_section               # R4 独立 High 进「高」节
+    assert "R4 确认（无 R3.5 复核）" in high_section   # 来源标注
+    med_section = md.split("### 中（")[1].split("## 二、问题详情")[0]
+    assert "HYP-001-F3" in med_section                # R4 Medium 进「中」节
+
+
+# ── 12. r3_link 同事实 R4 条目去重 ────────────────────────────────────
+def test_report_md_r4_dupe_deduped(tmp_path):
+    md = _render(_mk_full_repo(tmp_path))
+    listing = md.split("## 二、问题详情")[0]
+    assert "HYP-001-F5" not in listing.split("\n\n**同事实去重")[0]  # 不占清单行
+    assert "同事实去重（SWR-V3.4.3-060）" in listing
+    assert "HYP-001-F5 ↔ CAND-001" in listing         # 去重说明行
+
+
+# ── 13. R4 Low 不进清单 (留 B.4 表) ───────────────────────────────────
+def test_report_md_r4_low_excluded(tmp_path):
+    md = _render(_mk_full_repo(tmp_path))
+    listing = md.split("## 二、问题详情")[0]
+    assert "HYP-001-F4" not in listing                # Low 不在清单/详情
+    b4 = md.split("### B.4 R4 假说 verdict 表")[1].split("### B.5")[0]
+    assert "| HYP-001 | confirmed | 5 |" in b4        # B.4 假说行, 计数含 Low 条目
+
+
+# ── 14. R4 条目详情段 (无 R3.5 复核标注 + fix) ────────────────────────
+def test_report_md_r4_detail_rendered(tmp_path):
+    md = _render(_mk_full_repo(tmp_path))
+    details = md.split("## 二、问题详情")[1].split("## 三、修复建议与结论")[0]
+    assert "HYP-001-F2" in details
+    assert "R4 业务假说确认（HYP-001）" in details
+    assert "无 R3.5 独立复核" in details
+    assert "require token by default" in details      # R4 fix 渲染
+    assert "empirical_result" in md or "CONFIRMED" in details

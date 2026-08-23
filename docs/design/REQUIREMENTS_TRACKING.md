@@ -720,7 +720,7 @@
 验收: 单测 170+4 全绿；既有机制零回退（fixture 基线对照）；rpcx 新项目验收
 （M1 推导链实战验证 + 覆盖账本缺口格回填 + 六门禁全 PASS）后落 ACCEPTANCE_V3_4_6.md。
 
-## 软件需求（SWR-V3.7）（共 8 条）
+## 软件需求（SWR-V3.7）（共 10 条）
 
 > 来源: 用户重新设计审计报告格式（问题清单按严重程度排序 + 机械生成 + 附录化）
 > ——设计文档 SYSTEM_DESIGN_V3_7.md / SWR_V3_7.md（2026-08-23）。
@@ -736,6 +736,8 @@
 | SWR-V3.7-006 | 附录 B：规模对照/语言覆盖表（角色现场重算）/FFI 边界/R4 verdict/六门禁断言（机械调用 assert_ledger）/覆盖账本（REQ-V3.4-007） | 已完成 | tools/batch_verify.py:1556-1678 |
 | SWR-V3.7-007 | stage_collect 白名单透传 severity_override/severity_override_reason | 已完成 | tools/batch_verify.py:435-437 |
 | SWR-V3.7-008 | 修复建议与结论占位段规范（主代理补充后不得重跑 --stage report 覆盖）+ 头部审计基线占位 | 已完成 | tools/batch_verify.py:1702-1705 + SKILL.md 报告段 |
+| SWR-V3.7-009 | 确认问题全集 = R3 REACHABLE ∪ R4 confirmed findings（High/Medium 申报值归一化并入问题清单；Low 留附录 B；r3_link 指向候选的同事实条目不重复列+尾注去重） | 已完成 | _confirmed_issues/_render_problem_list/_render_problem_details（tools/batch_verify.py）+ tests/test_v37_report.py:11-14 |
+| SWR-V3.7-010 | R4 finding 分级 = 申报值归一化（High→高/Medium→中/Low→低；缺失非法回退机械映射）；R4 详情标注「无 R3.5 独立复核」 | 已完成 | _r4_severity（tools/batch_verify.py）|
 
 验收: 214 测试全绿（204 基线 + 10 新增 test_v37_report）+ signature_lib selfcheck
 exit 0 + puma 真实队列临时副本冒烟（分级/排序/附录真实性人工检查）+ install 后

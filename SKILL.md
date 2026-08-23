@@ -259,15 +259,19 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 （队列派生，REQ-V3.3.2-007：verify_queue.json 是唯一事实源；写入状态走 stderr，
 stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
 
-- **一、问题清单**（只含 verdict=REACHABLE，按严重程度排序）：严重 → 高 → 中
-  三节（机械映射，见下表；行内渲染 severity 来源 → 可问责，REQ-V3-006）。
+- **一、问题清单**（确认问题全集，按严重程度排序）：严重 → 高 → 中三节。
+  来源 = R3 REACHABLE 候选（机械映射，见下表；行内渲染 severity 来源 →
+  可问责，REQ-V3-006）**∪ R4 confirmed findings（severity 申报值归一化
+  High/Medium 并入，行内标 R4:H-x-Fn；Low 留附录 B 表；r3_link 指向候选的
+  同事实条目不重复列，清单尾注去重说明，SWR-V3.4.3-060）**。
   每行 `ID | 问题摘要(claim_type+evidence 首 120 字) | 位置 file:line | CWE |
-  证据等级 | 复核(证伪者结果/未复核)`
-- **二、问题详情**：每条 REACHABLE 一节——位置/语言、CWE/claim_type、
+  证据等级 | 复核(证伪者结果/R4 确认（无 R3.5 复核）)`
+- **二、问题详情**：确认问题全集每条一节——R3 条目：位置/语言、CWE/claim_type、
   verdict+证据分级（grade_recomputed_by 如有）、调用链逐跳+depth+
   reachability_type、证据、blocking_point 前提逐条（PREC-CONDITIONAL-REACHABLE-001）、
   独立复核 refutation{}、实证记录 empirical{}、修复建议（R4 finding fix 命中，
-  否则「（主代理补充）」）
+  否则「（主代理补充）」）；R4 条目：来源（R4 假说确认，无 R3.5 独立复核）、
+  CWE/claim_type、要点、证据、实证结果 empirical_result、追踪 surface、修复建议
 - **三、修复建议与结论（主代理补充）**：仅此段 + 头部审计基线由主代理补写；
   **补充后不得重跑 `--stage report`**（机械渲染会覆盖本段）
 - **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：成因双分
@@ -799,9 +803,14 @@ exit 0 + install 后 DST pytest 全绿 + 分阶段 commit（P1→P2→P3→P4）
   最小队列形态）。
 - **stage_collect 透传**：severity_override/severity_override_reason 白名单
   落盘（队列 JSON 仍是唯一事实源，可直接编辑）。
+- **R4 confirmed 并入问题清单（SWR-V3.7-009/010）**：确认问题全集 = R3
+  REACHABLE 候选 ∪ R4 confirmed findings（High/Medium，申报值归一化；
+  Low 留附录 B——含「正向确认」非漏洞条目自动排除；r3_link 指向候选的同事实
+  条目不重复列，清单尾注去重说明）。puma 实录: no_token 控制端点零鉴权
+  （H-5-F1）与跨用户停服（H-6-F1）从附录表升入「高」节。
 
 ### 验收判据（Phase 3.7）
-214 测试全绿（204 基线 + 10 新增 tests/test_v37_report.py）+ `signature_lib.py
+218 测试全绿（204 基线 + 14 新增 tests/test_v37_report.py）+ `signature_lib.py
 selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级/排序/附录
 真实性人工检查，不覆盖既有报告）+ install 后 DST pytest 全绿 + 分阶段 commit
-（渲染+测试 → 文档+版本链）。
+（渲染+测试 → 文档+版本链 → R4 并入增强）。

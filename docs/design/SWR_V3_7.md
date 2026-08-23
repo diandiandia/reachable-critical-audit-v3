@@ -73,6 +73,24 @@ test_language_coverage_table_roles / test_tracked_ids_includes_coverage_bridge�
 | R6 | 语言覆盖表角色现场重算（language_inventory）不持久化 | 未持久化是既有事实（已核实），渲染侧现场重算零新增存储义务 |
 | R7 | 严重程度用三级（严重/高/中）不加 P0-P3 数字轴 | 用户决策「严重程度排序」= 可问责分级；P0-P3 是任务优先级轴（stage_next 用），混用会引入第二套排序语义 |
 
+## 三、补充：R4 confirmed findings 并入问题清单（SWR-V3.7-009/010）
+
+用户反馈（2026-08-23）：scan-results 归档报告里 R4 确认的漏洞（no_token
+控制端点零鉴权等）散落在按假说分组的表里，未集中、未按危险程度排列。用户两项
+裁决：① 并入 High+Medium（r3_link 指向候选的同事实条目不重复列）；② 分级
+口径 = **R4 申报值归一化**（High→高, Medium→中；Low 不入清单——含「正向确认」
+类非漏洞条目自动排除；申报值缺失/非法回退机械映射）。
+
+- `_r4_severity(fi)`：申报值归一化（用户裁决理由：R4 agent 按实际影响裁定比
+  机械 cwe 映射准——CWE-476/125 族 Low 影响条目走机械映射会误提级）；
+- `_confirmed_issues(queue, cands)`：确认问题全集 = R3 REACHABLE ∪ R4
+  High/Medium，条目带 kind/source（`r4:{hypothesis_id}`）/fid（`{hyp}-F{n}`，
+  findings 无 id 字段，渲染侧按索引编号，可复现）；r3_link 以 CAND- 开头 →
+  记入 dupes 不占清单行，清单尾注「同事实去重（SWR-V3.4.3-060）」；
+- 清单/详情两段同步消费全集；R4 详情含来源标注（R4 业务假说确认，**无 R3.5
+  独立复核**）、要点、证据、实证结果 empirical_result、追踪 surface、修复建议；
+- 测试 +4（R4 并入/同事实去重/Low 排除/详情渲染），218 全绿。
+
 ## 四、勘误
 
 - **SKILL.md 旧文「coverage_bridge 已删除」与实况不符**：puma 真实队列
@@ -83,7 +101,8 @@ test_language_coverage_table_roles / test_tracked_ids_includes_coverage_bridge�
 
 ## 五、验收
 
-214 测试全绿（204 基线 + 10 新增）+ `signature_lib.py selfcheck /root/phpseclib`
+218 测试全绿（204 基线 + 14 新增）+ `signature_lib.py selfcheck /root/phpseclib`
 exit 0 + puma 真实队列临时副本冒烟（`--stage report` 渲染到临时副本不覆盖
-既有报告，分级/排序/附录真实性人工检查）+ ./install.sh → DST pytest 全绿 +
-分阶段 commit（P1 渲染+测试 34d8877 → P2 文档+版本链）。
+既有报告，分级/排序/附录真实性人工检查——R4 并入后「高」节含 CAND-001/002 +
+H-5-F1/H-6-F1 共 4 条实证确认漏洞）+ ./install.sh → DST pytest 全绿 +
+分阶段 commit（P1 渲染+测试 34d8877 → P2 文档+版本链 → P3 R4 并入增强）。

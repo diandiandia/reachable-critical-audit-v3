@@ -1436,15 +1436,64 @@ def _gates_for_report(project_root, queue, surfaces):
     return violations, None
 
 
-def _render_problem_list(cands):
-    """一、问题清单: 只含 REACHABLE, 按 严重→高→中 三节, 每节表行。"""
-    reachable = [c for c in cands if c.get("verdict") == "REACHABLE"]
-    if not reachable:
-        return "无 REACHABLE 候选（R3 空队为合法终态）。"
+def _r4_severity(fi):
+    """SWR-V3.7-010: R4 finding 分级 = 申报值归一化 (High→high, Medium→medium,
+    Low→low)。申报值缺失/非法 → 回退机械映射 (severity_for 兜底 medium)。
+    用户裁决: R4 agent 按实际影响裁定比机械 cwe 映射准 (CWE-476 族 Low 影响
+    的 NoMethodError 走机械映射会误判为严重)。"""
+    sev = (fi.get("severity") or "").strip().lower()
+    if sev in ("high", "medium", "low"):
+        return sev, f"r4:{sev}"
+    return severity_for(fi)
+
+
+def _confirmed_issues(queue, cands):
+    """SWR-V3.7-009: 确认问题全集 = R3 REACHABLE 候选 ∪ R4 confirmed findings
+    (High/Medium)。R4 分级口径=申报值归一化; r3_link 指向候选 (CAND-) 的
+    同事实条目不重复列 (SWR-V3.4.3-060), 记入 dupes 供清单尾部说明。"""
+    issues, dupes = [], []
+    for c in cands:
+        if c.get("verdict") == "REACHABLE":
+            sev, src = severity_for(c)
+            issues.append({"kind": "r3", "obj": c, "severity": sev,
+                           "source": src, "key": c.get("id")})
+    for f in queue.get("r4_findings", []) or []:
+        hid = f.get("hypothesis_id") or "?"
+        for n, fi in enumerate(f.get("findings", []) or [], 1):
+            sev, src = _r4_severity(fi)
+            if sev not in ("high", "medium"):   # Low 留附录 B (含「正向确认」类)
+                continue
+            fid = f"{hid}-F{n}"
+            link = fi.get("r3_link")
+            if isinstance(link, str) and link.startswith("CAND-"):
+                # r3_link 常带裁决注释 (如 "CAND-001 (R3 裁决 VERIFIED...)"), 去重行只显示候选 id
+                dupes.append((fid, link.split()[0], sev))
+                continue
+            issues.append({"kind": "r4", "obj": fi, "hyp": hid, "fid": fid,
+                           "severity": sev, "source": f"r4:{hid}", "key": fid})
+    return issues, dupes
+
+
+def _r4_grade_col(fi):
+    """R4 条目证据等级列: 实证确认 → empirically_confirmed, else R4 申报。"""
+    emp = fi.get("empirical_result")
+    if isinstance(emp, dict) and str(emp.get("outcome", "")).upper() == "CONFIRMED":
+        return "empirically_confirmed"
+    if isinstance(emp, str) and emp.strip():
+        return "r4 实证申报"
+    return "r4 申报"
+
+
+def _render_problem_list(cands, queue):
+    """一、问题清单: 确认问题全集 (R3 REACHABLE ∪ R4 High/Medium),
+    按 严重→高→中 三节, 每节表行 (SWR-V3.7-009)。"""
+    issues, dupes = _confirmed_issues(queue, cands)
+    if not issues:
+        return "无确认问题（R3 空队且 R4 无 High/Medium 确认 findings 为合法终态）。"
     grouped = {"critical": [], "high": [], "medium": []}
-    for c in reachable:
-        sev, src = severity_for(c)
-        grouped.setdefault(sev if sev in grouped else "medium", []).append((c, src))
+    for it in issues:
+        grouped.setdefault(it["severity"] if it["severity"] in grouped else "medium",
+                           []).append(it)
     out = []
     for sev in ("critical", "high", "medium"):
         rows = grouped.get(sev, [])
@@ -1453,20 +1502,35 @@ def _render_problem_list(cands):
         out.append(f"### {SEVERITY_LABELS[sev]}（{len(rows)}）")
         out.append("| ID | 问题摘要 | 位置 | CWE | 证据等级 | 复核 |")
         out.append("|---|---|---|---|---|---|")
-        for c, src in sorted(rows, key=lambda x: x[0].get("id", "")):
-            cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
-            sev_note = " ⚠override非法" if src == "invalid_override" else ""
-            out.append(f"| {c.get('id')} | {_problem_summary(c)} | "
-                       f"`{c.get('source_file')}:{c.get('source_line')}` | "
-                       f"{', '.join(cwes) or '-'} | {c.get('evidence_grade', '-')} | "
-                       f"{_refutation_line(c)}{sev_note} |")
+        for it in sorted(rows, key=lambda x: x["key"]):
+            if it["kind"] == "r3":
+                c = it["obj"]
+                cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
+                sev_note = " ⚠override非法" if it["source"] == "invalid_override" else ""
+                out.append(f"| {c.get('id')} | {_problem_summary(c)} | "
+                           f"`{c.get('source_file')}:{c.get('source_line')}` | "
+                           f"{', '.join(cwes) or '-'} | {c.get('evidence_grade', '-')} | "
+                           f"{_refutation_line(c)}{sev_note} |")
+            else:
+                fi = it["obj"]
+                cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(fi))]
+                out.append(f"| {it['fid']} | {_problem_summary(fi)} | - | "
+                           f"{', '.join(cwes) or '-'} | {_r4_grade_col(fi)} | "
+                           f"R4 确认（无 R3.5 复核） |")
+    if dupes:
+        out.append("")
+        out.append("**同事实去重（SWR-V3.4.3-060）**: "
+                   + "；".join(f"{fid} ↔ {link}（{SEVERITY_LABELS[sev]}）"
+                               for fid, link, sev in dupes)
+                   + " — R4 与 R3 候选同事实共享实证，不重复列。")
     return "\n".join(out)
 
 
 def _render_problem_details(cands, queue):
-    """二、问题详情: 每条一节 (位置/证据/前提/复核/实证/修复建议占位)。"""
-    reachable = [c for c in cands if c.get("verdict") == "REACHABLE"]
-    if not reachable:
+    """二、问题详情: 确认问题全集每条一节 (SWR-V3.7-009)。
+    R3: 位置/证据/前提/复核/实证/修复建议; R4: 申报证据/实证结果/fix。"""
+    issues, _dupes = _confirmed_issues(queue, cands)
+    if not issues:
         return "（无）"
     r4_fix = {}
     r4_links = {}
@@ -1483,48 +1547,69 @@ def _render_problem_details(cands, queue):
     for hid, link in r4_links.items():
         r4_fix.setdefault(hid, r4_fix.get(link, ""))
     out = []
-    for c in sorted(reachable, key=lambda x: x.get("id", "")):
-        sev, src = severity_for(c)
-        out.append(f"### {c.get('id')} — {_problem_summary(c)}"
-                   f"（{SEVERITY_LABELS[sev]}, 来源: {src}）")
-        out.append(f"- 位置/语言: `{c.get('source_file')}:{c.get('source_line')}`"
-                   f"（{c.get('language') or c.get('lang') or '-'}）")
-        cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
-        out.append(f"- CWE / claim_type: {', '.join(cwes) or '-'} / "
-                   f"{c.get('claim_type') or '-'}")
-        grade = c.get("evidence_grade", "-")
-        if c.get("grade_recomputed_by"):
-            grade += f"（{c['grade_recomputed_by']}）"
-        out.append(f"- verdict + 证据分级: {c.get('verdict')} / {grade}")
-        cc = c.get("call_chain") or []
-        if cc:
-            out.append(f"- 调用链（{c.get('call_chain_depth', len(cc))} 跳, "
-                       f"{c.get('reachability_type', '-')}）: `{' -> '.join(cc)}`")
-        if c.get("evidence"):
-            out.append(f"- 证据: {c.get('evidence')}")
-        bp = c.get("blocking_point")
-        if bp:
-            out.append(f"- 前提（PREC-CONDITIONAL-REACHABLE-001）: {bp}")
-        rf = c.get("refutation")
-        if isinstance(rf, dict) and rf:
-            out.append(f"- 独立复核（R3.5）: {_refutation_line(c)}; "
-                       f"votes={rf.get('votes')}, refute_count={rf.get('refute_count')}, "
-                       f"survived={rf.get('survived')}"
-                       + (f"; strengthened={rf.get('strengthened')}"
-                          if rf.get("strengthened") else "")
-                       + (f"; attribution_corrections={rf.get('attribution_corrections')}"
-                          if rf.get("attribution_corrections") else ""))
-        emp = c.get("empirical")
-        if isinstance(emp, dict) and emp:
-            out.append(f"- 实证记录（R5）: outcome={emp.get('outcome')}, "
-                       f"evidence_numbers={emp.get('evidence_numbers')}"
-                       + (f", setup={emp.get('setup')}" if emp.get("setup") else "")
-                       + (f", report={emp.get('report')}" if emp.get("report") else ""))
-        hyp_id = None
-        if c.get("members"):
-            hyp_id = (c.get("members") or [{}])[0].get("id")
-        fix = r4_fix.get(hyp_id or "", "") if hyp_id else ""
-        out.append(f"- 修复建议: {fix or '（主代理补充）'}")
+    for it in sorted(issues, key=lambda x: x["key"]):
+        if it["kind"] == "r3":
+            c = it["obj"]
+            out.append(f"### {c.get('id')} — {_problem_summary(c)}"
+                       f"（{SEVERITY_LABELS[it['severity']]}, 来源: {it['source']}）")
+            out.append(f"- 位置/语言: `{c.get('source_file')}:{c.get('source_line')}`"
+                       f"（{c.get('language') or c.get('lang') or '-'}）")
+            cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
+            out.append(f"- CWE / claim_type: {', '.join(cwes) or '-'} / "
+                       f"{c.get('claim_type') or '-'}")
+            grade = c.get("evidence_grade", "-")
+            if c.get("grade_recomputed_by"):
+                grade += f"（{c['grade_recomputed_by']}）"
+            out.append(f"- verdict + 证据分级: {c.get('verdict')} / {grade}")
+            cc = c.get("call_chain") or []
+            if cc:
+                out.append(f"- 调用链（{c.get('call_chain_depth', len(cc))} 跳, "
+                           f"{c.get('reachability_type', '-')}）: `{' -> '.join(cc)}`")
+            if c.get("evidence"):
+                out.append(f"- 证据: {c.get('evidence')}")
+            bp = c.get("blocking_point")
+            if bp:
+                out.append(f"- 前提（PREC-CONDITIONAL-REACHABLE-001）: {bp}")
+            rf = c.get("refutation")
+            if isinstance(rf, dict) and rf:
+                out.append(f"- 独立复核（R3.5）: {_refutation_line(c)}; "
+                           f"votes={rf.get('votes')}, refute_count={rf.get('refute_count')}, "
+                           f"survived={rf.get('survived')}"
+                           + (f"; strengthened={rf.get('strengthened')}"
+                              if rf.get("strengthened") else "")
+                           + (f"; attribution_corrections={rf.get('attribution_corrections')}"
+                              if rf.get("attribution_corrections") else ""))
+            emp = c.get("empirical")
+            if isinstance(emp, dict) and emp:
+                out.append(f"- 实证记录（R5）: outcome={emp.get('outcome')}, "
+                           f"evidence_numbers={emp.get('evidence_numbers')}"
+                           + (f", setup={emp.get('setup')}" if emp.get("setup") else "")
+                           + (f", report={emp.get('report')}" if emp.get("report") else ""))
+            hyp_id = None
+            if c.get("members"):
+                hyp_id = (c.get("members") or [{}])[0].get("id")
+            fix = r4_fix.get(hyp_id or "", "") if hyp_id else ""
+            out.append(f"- 修复建议: {fix or '（主代理补充）'}")
+        else:
+            fi = it["obj"]
+            out.append(f"### {it['fid']} — {_problem_summary(fi)}"
+                       f"（{SEVERITY_LABELS[it['severity']]}, 来源: {it['source']}）")
+            out.append(f"- 来源: R4 业务假说确认（{it['hyp']}）——"
+                       f"R4 申报值分级，无 R3.5 独立复核")
+            cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(fi))]
+            out.append(f"- CWE / claim_type: {', '.join(cwes) or '-'} / "
+                       f"{fi.get('claim_type') or '-'}")
+            if fi.get("title"):
+                out.append(f"- 要点: {fi.get('title')}")
+            if fi.get("evidence"):
+                out.append(f"- 证据: {fi.get('evidence')}")
+            emp = fi.get("empirical_result")
+            if emp:
+                out.append(f"- 实证结果: {emp}")
+            ts = fi.get("tracked_surfaces") or []
+            if ts:
+                out.append(f"- 追踪 surface: {', '.join(ts)}")
+            out.append(f"- 修复建议: {fi.get('fix') or '（主代理补充）'}")
     return "\n".join(out)
 
 
@@ -1698,7 +1783,7 @@ def render_report_md(project_root, report_json=None):
         "- 项目/审计基线: （主代理补充）",
         "",
         "## 一、问题清单（按严重程度排序）",
-        _render_problem_list(cands),
+        _render_problem_list(cands, queue),
         "",
         "## 二、问题详情",
         _render_problem_details(cands, queue),
