@@ -228,11 +228,14 @@ def _run_ledger_tests():
     import tempfile, subprocess, sys, os, json as _json
     tmp = tempfile.mkdtemp()
     os.makedirs(os.path.join(tmp, ".audit_results"))
+    # v3.6 (P1-4): 回填前置要求 r4_findings H1-H7 全 VERIFIED——fixture 补全
     _json.dump({"schema_version": "3.0", "candidates": [
         {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
          "sink_type": "CWE-770", "status": "VERIFIED", "language": "c", "cwe": ["CWE-770"]},
         {"id": "CAND-002", "source_file": "b.py", "source_line": 1,
-         "sink_type": "CWE-327", "status": "VERIFIED", "language": "python"}]},
+         "sink_type": "CWE-327", "status": "VERIFIED", "language": "python"}],
+        "r4_findings": [{"hypothesis_id": f"H-{i}", "status": "VERIFIED", "findings": []}
+                        for i in range(1, 8)]},
         open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
     r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
                         tmp, "--stage", "coverage-ledger", "--write"],
@@ -242,11 +245,14 @@ def _run_ledger_tests():
     assert out["status"] == "LEDGER_WRITTEN"
     assert "RESOURCE-DOSxc" in out["new_counts"]
     assert "CRYPTOxpython" in out["new_counts"]
-    # 幂等
+    # 幂等 (skip 分支附 would_be_new_counts, v3.6)
     r2 = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
                          tmp, "--stage", "coverage-ledger", "--write"],
                         capture_output=True, text=True)
-    assert _json.loads(r2.stdout)["status"] == "LEDGER_IDEMPOTENT_SKIP"
+    out2 = _json.loads(r2.stdout)
+    assert out2["status"] == "LEDGER_IDEMPOTENT_SKIP"
+    assert "would_be_new_counts" in out2
+    assert "RESOURCE-DOSxc" in out2["would_be_new_counts"]
 
 def test_coverage_ledger_gaps_prints_crypto_gap():
     import tempfile, subprocess, sys, os, json as _json
@@ -280,7 +286,9 @@ def test_coverage_ledger_empty_queue_lang_from_surface():
             {"id": "SURF-DATA-001", "name": "a", "type": "data", "lang": "go"}]},
             open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
         _json.dump({"schema_version": "3.0", "candidates": [],
-                    "r4_findings": [{"hypothesis_id": "H1", "findings": [
+                    "r4_findings": [{"hypothesis_id": f"H-{i}", "status": "VERIFIED",
+                                     "findings": []} for i in range(2, 8)] +
+                    [{"hypothesis_id": "H1", "status": "VERIFIED", "findings": [
                         {"title": "x", "cwe": ["CWE-770"]}]}]},
             open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
         r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
@@ -312,7 +320,9 @@ def test_coverage_ledger_derivation_chain():
             {"id": "CAND-001", "source_file": "a.rs", "source_line": 1,
              "sink_type": "CWE-770", "status": "VERIFIED", "language": "rust",
              "cwe": ["CWE-770"]}],
-            "r4_findings": [{"hypothesis_id": "H2", "findings": [
+            "r4_findings": [{"hypothesis_id": f"H-{i}", "status": "VERIFIED",
+                             "findings": []} for i in range(1, 8) if i != 2] +
+            [{"hypothesis_id": "H2", "status": "VERIFIED", "findings": [
                 {"title": "y", "cwe": ["CWE-345"]}]}]},
             open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
         r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
@@ -350,6 +360,72 @@ def test_step05_dispatch_script_family_no_c_words():
         t = bv.STATIC_SHORT_BY_FAMILY[lang]
         for cword in ("CMake", "GOPATH", "cargo", "Makefile"):
             assert cword not in t, f"{lang} 仍含 C 系词汇 {cword}"
+
+
+def test_coverage_ledger_write_blocked_r4():
+    """v3.6 (P1-4): r4_findings 未全 VERIFIED 时 --write 被机械阻断且不烧 sources key
+    (puma 审计实录: 先回填后补标 cwe 使 INJECTION×ruby 缺口不可回写)。"""
+    import tempfile, subprocess, sys, os, json as _json
+    sys.path.insert(0, WORK)
+    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    snapshot = open(ledger_path).read()
+    try:
+        tmp = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmp, ".audit_results"))
+        # H-7 缺失 (只有 H1-H6 VERIFIED)
+        _json.dump({"schema_version": "3.0", "candidates": [
+            {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
+             "sink_type": "CWE-770", "status": "VERIFIED", "language": "c",
+             "cwe": ["CWE-770"]}],
+            "r4_findings": [{"hypothesis_id": f"H-{i}", "status": "VERIFIED",
+                             "findings": []} for i in range(1, 7)]},
+            open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+        before = open(ledger_path).read()
+        r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                            tmp, "--stage", "coverage-ledger", "--write"],
+                           capture_output=True, text=True)
+        assert r.returncode == 1, r.stdout
+        out = _json.loads(r.stdout)
+        assert out["status"] == "LEDGER_WRITE_BLOCKED_R4"
+        assert "H-7" in out["missing"]
+        # 不烧 sources key: 账本字节级不变
+        assert open(ledger_path).read() == before
+    finally:
+        open(ledger_path, "w").write(snapshot)
+
+
+def test_coverage_ledger_write_blocked_feedback():
+    """v3.6 (P1-4): r4_feedback 未决冲突时 --write 被阻断且不烧 key。
+    冲突构造: H-7 default_value_table 承诺 true vs REACHABLE 候选 evidence
+    声称默认明文 (零值 false)——同 test_v321 r4_feedback 冲突先例。"""
+    import tempfile, subprocess, sys, os, json as _json
+    sys.path.insert(0, WORK)
+    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    snapshot = open(ledger_path).read()
+    try:
+        tmp = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmp, ".audit_results"))
+        _json.dump({"schema_version": "3.0", "candidates": [
+            {"id": "CAND-001", "source_file": "a.go", "source_line": 1,
+             "sink_type": "CWE-400", "status": "VERIFIED", "verdict": "REACHABLE",
+             "language": "go", "cwe": ["CWE-400"],
+             "evidence": "tls_enable 零值 false 默认明文可达 (配置未提交实际值)"}],
+            "r4_findings": [{"hypothesis_id": f"H-{i}", "status": "VERIFIED",
+                             "findings": []} for i in range(1, 7)] +
+            [{"hypothesis_id": "H-7", "status": "VERIFIED", "findings": [],
+              "default_value_table": [{"name": "tls_enable", "default": "true"}]}]},
+            open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+        before = open(ledger_path).read()
+        r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                            tmp, "--stage", "coverage-ledger", "--write"],
+                           capture_output=True, text=True)
+        assert r.returncode == 1, r.stdout
+        out = _json.loads(r.stdout)
+        assert out["status"] == "LEDGER_WRITE_BLOCKED_FEEDBACK"
+        assert any(c.get("key") == "tls_enable" for c in out["conflicts"])
+        assert open(ledger_path).read() == before
+    finally:
+        open(ledger_path, "w").write(snapshot)
 
 
 def test_coverage_ledger_pressure():

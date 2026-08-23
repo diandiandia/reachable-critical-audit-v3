@@ -930,13 +930,19 @@ def stage_r4_collect(project_root, findings_file):
     print(json.dumps(result, ensure_ascii=False))
 
 
-def stage_r4_assert(project_root):
-    """SWR-V3-055: H1-H7 全部 VERIFIED 断言。"""
-    queue = load_queue(project_root)
+def _r4_missing(queue):
+    """v3.6 (P1-4): H1-H7 未 VERIFIED 清单——从 stage_r4_assert 提取,
+    供账本回填前置复用 (同一判定语义, 单一事实源)。"""
     have = {_norm_hypothesis_id(f.get("hypothesis_id"))
             for f in queue.get("r4_findings", [])
             if f.get("status") == "VERIFIED"}
-    missing = [f"H-{i}" for i in range(1, 8) if f"H-{i}" not in have]
+    return [f"H-{i}" for i in range(1, 8) if f"H-{i}" not in have]
+
+
+def stage_r4_assert(project_root):
+    """SWR-V3-055: H1-H7 全部 VERIFIED 断言。"""
+    queue = load_queue(project_root)
+    missing = _r4_missing(queue)
     print(json.dumps({"status": "R4_ASSERT_PASSED" if not missing else "R4_ASSERT_FAILED",
                       "missing": missing}, ensure_ascii=False))
     return 0 if not missing else 1
@@ -1074,19 +1080,13 @@ def _ledger_source_key(project_root):
     return hashlib.sha256(os.path.abspath(project_root).encode("utf-8")).hexdigest()[:16]
 
 
-def stage_coverage_ledger(project_root, write=False):
-    """SWR-V3.4-001/002/003: 覆盖账本——CWE 族 x 语言审计覆盖追踪 (范围守护)。
-    --write: 从 verify_queue 聚合候选级 cwe x lang (+ R4 findings 按项目主导语言
-    近似计入), 项目级幂等 (sources 去重), merge 累加写账本。
-    无参: 打印缺口格 (0 覆盖 + 单项目低深度) 与全矩阵计数表。"""
+def _aggregate_counts(queue, project_root):
+    """v3.6 (P1-4): 从队列聚合 cwe x lang 计数 (候选 + R4 findings 按主导语言
+    近似计入)——从 stage_coverage_ledger 提取, 行为零变化; 供 --write 与
+    IDEMPOTENT_SKIP 的 would_be_new_counts 共用 (只算不写)。"""
     _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if _parent not in sys.path:
-        sys.path.insert(0, _parent)
-    ledger_path = os.path.join(_parent, "resources", "issue_coverage_matrix.json")
-    if not os.path.exists(ledger_path):
-        print("Error: resources/issue_coverage_matrix.json 缺失", file=sys.stderr)
-        return 1
-    ledger = json.load(open(ledger_path))
+    ledger = json.load(open(os.path.join(_parent, "resources",
+                                         "issue_coverage_matrix.json")))
     fam_map = {}
     for fam, spec in (ledger.get("families") or {}).items():
         for code in (spec.get("cwe") or []):
@@ -1123,6 +1123,43 @@ def stage_coverage_ledger(project_root, write=False):
         ext = os.path.splitext(str(c.get("source_file") or ""))[1].lower()
         return _EXT_LANG.get(ext, "other")
 
+    counts = {}
+    lang_freq = {}
+    for c in queue.get("candidates", []):
+        lg = lang_of(c)
+        lang_freq[lg] = lang_freq.get(lg, 0) + 1
+        for code in codes_of(c):
+            counts[(fam_of(code), lg)] = counts.get((fam_of(code), lg), 0) + 1
+    if lang_freq:
+        dom = max(lang_freq, key=lang_freq.get)
+    else:
+        # SWR-V3.4.6-001: 候选空 (R3 空队, R2 keep 0 合法终态) 时主导语言
+        # 回退 R1 产物——否则纯语言项目误记 other 格 (quic-go 验收实录:
+        # 全 Go 项目 R4 findings 记入 *xother 格, 账本失真人工修正)
+        dom = _project_dom_lang(project_root) or "other"
+    for f in queue.get("r4_findings", []):
+        for fi in f.get("findings", []):
+            for code in codes_of(fi):
+                counts[(fam_of(code), dom)] = counts.get((fam_of(code), dom), 0) + 1
+    return counts
+
+
+def stage_coverage_ledger(project_root, write=False):
+    """SWR-V3.4-001/002/003: 覆盖账本——CWE 族 x 语言审计覆盖追踪 (范围守护)。
+    --write: 从 verify_queue 聚合候选级 cwe x lang (+ R4 findings 按项目主导语言
+    近似计入), 项目级幂等 (sources 去重), merge 累加写账本。
+    前置 (v3.6 P1-4): r4-assert 语义 (H1-H7 全 VERIFIED) + r4_feedback 无未决冲突,
+    不满足输出 LEDGER_WRITE_BLOCKED_* 且不烧 sources key。
+    无参: 打印缺口格 (0 覆盖 + 单项目低深度) 与全矩阵计数表。"""
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    ledger_path = os.path.join(_parent, "resources", "issue_coverage_matrix.json")
+    if not os.path.exists(ledger_path):
+        print("Error: resources/issue_coverage_matrix.json 缺失", file=sys.stderr)
+        return 1
+    ledger = json.load(open(ledger_path))
+
     if not write:
         gaps, low = [], []
         langs = ledger.get("langs") or []
@@ -1147,29 +1184,39 @@ def stage_coverage_ledger(project_root, write=False):
         }, ensure_ascii=False, indent=2))
         return 0
 
-    if _ledger_source_key(project_root) in (ledger.get("sources") or []):
-        print(json.dumps({"status": "LEDGER_IDEMPOTENT_SKIP",
-                          "project": project_root}, ensure_ascii=False))
-        return 0
+    key = _ledger_source_key(project_root)
     queue = load_queue(project_root)
-    counts = {}
-    lang_freq = {}
-    for c in queue.get("candidates", []):
-        lg = lang_of(c)
-        lang_freq[lg] = lang_freq.get(lg, 0) + 1
-        for code in codes_of(c):
-            counts[(fam_of(code), lg)] = counts.get((fam_of(code), lg), 0) + 1
-    if lang_freq:
-        dom = max(lang_freq, key=lang_freq.get)
-    else:
-        # SWR-V3.4.6-001: 候选空 (R3 空队, R2 keep 0 合法终态) 时主导语言
-        # 回退 R1 产物——否则纯语言项目误记 other 格 (quic-go 验收实录:
-        # 全 Go 项目 R4 findings 记入 *xother 格, 账本失真人工修正)
-        dom = _project_dom_lang(project_root) or "other"
-    for f in queue.get("r4_findings", []):
-        for fi in f.get("findings", []):
-            for code in codes_of(fi):
-                counts[(fam_of(code), dom)] = counts.get((fam_of(code), dom), 0) + 1
+    if key in (ledger.get("sources") or []):
+        # v3.6 (P1-4): skip 分支附打印 would_be_new_counts (只算不写)——sources 幂等
+        # 身份是机制语义 (每项目只回填一次, 防重复记账); 附当前队列将产生的新计数
+        # 供主代理核对 (先回填后补标 cwe 的缺口格不回写, 由下批选题闭合)。
+        would_be = _aggregate_counts(queue, project_root)
+        print(json.dumps({"status": "LEDGER_IDEMPOTENT_SKIP",
+                          "project": project_root,
+                          "would_be_new_counts": {f"{f}x{l}": n for (f, l), n in
+                                                  sorted(would_be.items())},
+                          "note": "sources 已含本项目 hash, 不重复记账 (v3.6)"},
+                         ensure_ascii=False, indent=2))
+        return 0
+    # v3.6 (P1-4): 回填前置 (a) r4-assert 语义 (H1-H7 全 VERIFIED)
+    missing = _r4_missing(queue)
+    if missing:
+        print(json.dumps({"status": "LEDGER_WRITE_BLOCKED_R4", "missing": missing,
+                          "note": "回填时序: 全部 cwe 修正(含 r4_feedback 裁决)"
+                                  " → r4-assert PASS → 六门禁 → --write (v3.6)"},
+                         ensure_ascii=False, indent=2))
+        return 1
+    # 前置 (b) r4_feedback 无未决冲突 (evidence_ledger 已内置 resolved 过滤)
+    import evidence_ledger as el
+    conflicts = el.r4_feedback(queue)
+    if conflicts:
+        print(json.dumps({"status": "LEDGER_WRITE_BLOCKED_FEEDBACK",
+                          "conflicts": conflicts,
+                          "note": "先裁决 r4_feedback 冲突并落盘 r4_feedback_resolved"
+                                  " 后再回填 (v3.6)"},
+                         ensure_ascii=False, indent=2))
+        return 1
+    counts = _aggregate_counts(queue, project_root)
     rows = {r["family"]: (r.get("langs") or {}) for r in ledger.get("rows", [])}
     for (fam, lg), n in counts.items():
         if fam not in rows:

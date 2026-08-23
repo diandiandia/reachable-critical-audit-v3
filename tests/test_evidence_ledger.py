@@ -150,6 +150,19 @@ def test_gate3_reachable_claim_still_enforced():
     assert not ok
     assert any(v.get("gate") == "empirical_required" for v in violations)
 
+def test_gate3_rce_leak_claims_enforced():
+    """v3.6 (P1-3): EMPIRICAL_CLAIMS 8 类对称——rce/leak 声称强制实证
+    (旧 6 类集不覆盖 rce/leak → gate③ 漏放行)。"""
+    for claim in ("rce", "leak"):
+        q = {"target_kind": "application", "candidates": [
+            {"id": "CAND-1", "status": "VERIFIED", "verdict": "REACHABLE",
+             "claim_type": claim, "evidence_grade": "edge_proven"},
+        ], "r4_findings": [{"hypothesis_id": f"H-{i}", "status": "VERIFIED"}
+                           for i in range(1, 8)]}
+        ok, violations = el.assert_ledger(q)
+        assert not ok
+        assert any(v.get("gate") == "empirical_required" for v in violations), claim
+
 # ---- SWR-V3.3.2-002: demote 清 claim ----
 def test_commit_demote_clears_claim():
     q = {"target_kind": "application",

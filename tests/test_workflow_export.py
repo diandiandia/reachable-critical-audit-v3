@@ -148,6 +148,39 @@ def test_claim_type_enum_has_rce_and_other():
     assert "rce" in enum and "other" in enum and "null" in enum
 
 
+def test_refutation_payload_includes_checklist_section():
+    """v3.6 (P1-1, B9 注入时点修复): refutation 时点 claim_type 已落盘 →
+    _in_r5_semantic_space 可判定 → CK-EMPIRICAL-SCOPE 以 r5-semantic 绑定,
+    家族清单段注入两个证伪者 prompt。puma 审计实录: verify 导出时 PENDING
+    无信号恒空, 旧 refutation 分支不注入 → 清单零到达。"""
+    tmp = _mk_project([_cand("R-1", status="VERIFIED", verdict="REACHABLE",
+                             grade="edge_proven")])
+    q = bv.load_queue(tmp)
+    q["candidates"][0]["claim_type"] = "unbounded"
+    q["candidates"][0]["evidence"] = "ev"
+    bv.save_queue(tmp, q)
+    r = we.export_script(tmp, mode="refutation")
+    p = r["payload"][0]
+    assert "家族检查清单" in p["prompts"][0]
+    assert "家族检查清单" in p["prompts"][1]
+    assert "CK-EMPIRICAL-SCOPE" in p["prompts"][0]
+    assert "CK-EMPIRICAL-SCOPE" in p["prompts"][1]
+
+
+def test_resurrect_prompt_no_checklist():
+    """v3.6 (P1-1 负向防回退): resurrect 分支不注入清单段
+    (复活者语境是找 UNREACHABLE 缺口, 非实证范围分级消费语境)。"""
+    tmp = _mk_project([_cand("U-1", status="VERIFIED", verdict="UNREACHABLE",
+                             grade="edge_proven")])
+    q = bv.load_queue(tmp)
+    q["candidates"][0]["claim_type"] = "unbounded"
+    q["candidates"][0]["evidence"] = "ev"
+    bv.save_queue(tmp, q)
+    r = we.export_script_resurrect(tmp)
+    for p in r["payload"]:
+        assert "家族检查清单" not in p["prompt"]
+
+
 def test_export_scripts_args_shape_tolerance():
     """v3.4.5 (SWR-V3.4.5-002): 四处 JS 模板含裸数组形态容忍包装
     (gRPC 审计: resurrect 裸数组派发失败实录)。"""

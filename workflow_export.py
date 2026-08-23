@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.5.2"
+TOOLING_VERSION = "3.6"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -585,11 +585,21 @@ def export_script(project_root, mode="verify", batch_size=4):
         f.write(js)
 
     if mode == "refutation":
+        # v3.6 (P1-1, B9 注入时点修复): refutation 时点 cwe/claim_type 已由
+        # collect 落盘, _in_r5_semantic_space 可判定 → 复用 _checklist_section
+        # 注入家族清单段 (CK-EMPIRICAL-SCOPE 以 r5-semantic 绑定)。puma 审计
+        # 实测: verify 导出时 PENDING 无信号恒空, refutation 分支原不注入 →
+        # 清单零到达。resurrect 分支与 Mode A' 不加代码 (语境/成本裁决, SWR_V3_6)。
+        def _refutation_checklist_section(c):
+            section = _checklist_section(c)
+            return ("\n\n" + section) if section else ""
+
         payload = [{"id": c["id"], "file": c.get("source_file", "?"),
                     "evidence": c.get("evidence", ""),
                     "call_chain": c.get("call_chain", []),
                     "evidence_grade": c["evidence_grade"],
-                    "prompts": [refute_prompt(c, i) for i in range(2)]}
+                    "prompts": [refute_prompt(c, i) + _refutation_checklist_section(c)
+                                for i in range(2)]}
                    for c in pool]
 
     result = {

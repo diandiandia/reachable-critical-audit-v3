@@ -126,7 +126,8 @@
         "javascript": 14,
         "other": 6,
         "swift": 9,
-        "php": 9
+        "php": 9,
+        "ruby": 7
       }
     },
     {
@@ -184,7 +185,8 @@
         "other": 3,
         "swift": 2,
         "go": 8,
-        "php": 3
+        "php": 3,
+        "ruby": 4
       }
     },
     {
@@ -204,7 +206,7 @@
         "cpp": 3,
         "other": 14,
         "shell": 2,
-        "ruby": 6,
+        "ruby": 19,
         "swift": 34,
         "php": 13
       }
@@ -242,7 +244,7 @@
         "kotlin": 12,
         "javascript": 16,
         "cpp": 9,
-        "ruby": 1,
+        "ruby": 10,
         "swift": 14,
         "php": 22
       }
@@ -304,7 +306,8 @@
     "7306c52badded63a",
     "4ac02f954d882d9d",
     "e7bce01e6efb415d",
-    "a282485e05f5ed8e"
+    "a282485e05f5ed8e",
+    "727d67e5ced4ed03"
   ],
   "updated_at": "2026-08-23"
 }

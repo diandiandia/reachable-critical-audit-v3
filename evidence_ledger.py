@@ -17,7 +17,9 @@ import sys
 
 GRADES = ("static_only", "edge_proven", "empirically_confirmed")
 VERDICTS = ("REACHABLE", "UNREACHABLE", "NEEDS_REVIEW")
-EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos")
+# v3.6 (P1-3): 8 类对齐 binder R5_CLAIM_TYPES 与 SKILL.md R5 触发判定
+EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos",
+                    "rce", "leak")
 HYPOTHESES_IDS = [f"H-{i}" for i in range(1, 8)]
 EMPIRICAL_MARKERS = ("实测", "实证", "empirically", "harness", "rack-test",
                      "cargo test", "curl", "e2e", "端到端", "probe", "pytest")
