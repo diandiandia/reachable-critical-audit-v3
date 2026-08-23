@@ -129,7 +129,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
   3. `python3 signature_matcher.py gen <hits.json>` → 佐证 hints（**不是**最终候选）
 - R0 `signature_lib.py selfcheck` 不受影响（回归锚点 + 去项目化扫描是第一原则守卫，仍强制）。
 
-**LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。筛选理由中的 focus sink（file:line）是后续簇化依据。
+**LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。其中『防御已到位』类裁决必须核查默认权限上下文（文件/目录/umask/监听 socket 权限、环境变量默认值、启动命令注入点）并引用源码证据行（v3.6 实录：默认 token 随机 + state 0644/socket 0777 使防御失效，R4 实证推翻 R2 误 drop）。筛选理由中的 focus sink（file:line）是后续簇化依据。
 
 > **keep=0 抽样复核条款（v3.4.6, SWR-V3.4.6-004）**：筛选结果 keep=0（或
 > boundary_confirmations ≥ 全量 80%）时, 主代理**必须**抽样复核 ≥3 条
@@ -148,7 +148,8 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 `batch_verify.py <任一项目> --stage coverage-ledger` 读覆盖账本缺口格
 （CWE 族 × 语言，`resources/issue_coverage_matrix.json`），**优先选未覆盖
 （语言 × CWE 族）格的项目**；可实证性降为可行性约束而非第一判据。
-审计闭合（R6）时执行 `--stage coverage-ledger --write` 回填账本。
+审计闭合（R6）时执行 `--stage coverage-ledger --write` 回填账本
+（前置与时序见 R6 条款，v3.6 起强制）。
 
 **入队**：筛选 kept 的假设按 focus sink 簇化（同 sink 合并为一条簇级候选），写入 `verify_queue.json`：
 ```json
@@ -219,7 +220,7 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 verifier/证伪者证据文本含真实实测的场景——必须带 `backfilled_by` 标记 + 实测数字依据
 （成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
 
-1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
+1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
 3. 实测确认 → `empirical` 字段 + grade=empirically_confirmed；证伪 → correction_record 降级并回溯 verifier 错误（REQ-V3-051）。
 
@@ -284,9 +285,9 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：20 个签名（9 L3 语义族 + 11 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：29 条检查清单
-- `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：4 个实证模板；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
-- `tests/`：193 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
+- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：29 条检查清单
+- `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：5 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe）；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
+- `tests/`：204 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---
@@ -479,6 +480,13 @@ python3 lessons_recorder.py <project> --write
    W6_MORE_LANGS_FINDINGS.md 或对应语言 lessons；低价值条目留审计轨迹
 3. 索引 lessons/README.md 自动更新；**未执行 R6 的审计不得闭合**（报告阶段门禁）
 
+> **覆盖账本回填时序（v3.6 强制）**：`--stage coverage-ledger --write` 带两道机械前置——
+> r4-assert（H1-H7 全 VERIFIED）与 r4_feedback 无未决冲突，不满足输出
+> `LEDGER_WRITE_BLOCKED_*` 且不烧 sources key。正确时序：全部 cwe 修正
+> （含 r4_feedback 裁决与 `r4_feedback_resolved` 落盘）→ r4-assert PASS →
+> 六门禁全 PASS → `--write`。`LEDGER_IDEMPOTENT_SKIP` 会附打印本队将产生的
+> new_counts；先回填后补标 cwe 的缺口格不回写（puma 审计 INJECTION×ruby 实录）。
+
 ## 🆕 v3.4.3 增量（2026-08-20，P0/P1/P2 验收缺陷闭环）
 
 > 设计文档：`docs/design/SYSTEM_DESIGN_V3_4_3.md`（12 REQ）+ `SW_DESIGN_V3_4_3.md` + `SWR_V3_4_3.md`。
@@ -640,8 +648,10 @@ test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶
 
 > 设计文档: `docs/design/SYSTEM_DESIGN_V3_5_2.md` + `docs/design/SWR_V3_5_2.md`。
 > 范围（用户确认）：①残留中项全部 ②过设计 B 裁决 10 项（按评估倾向执行）
-> ③偏见中「机械可修」项。内容补全类（8 语言 harness 模板 / L2 词族 5 语言 /
-> env 陷阱 9 语言 / 锚点 swift / L3 语义族脚本 token）留 v3.6。
+> ③偏见中「机械可修」项。内容补全类（L2 词族 5 语言 / env 陷阱 9 语言 /
+> L3 语义族脚本 token）留 v3.6 已处理（见下节 v3.6 增量）；8 语言 harness
+> 模板 v3.6 按用户裁决改为裁减 + 提炼 1 个通用协议级模板；锚点 swift 已由
+> v3.5 覆盖（SWR-V3.5-011）。
 
 ### 残留中项清零（去项目化）
 - checklist_library steps 4 处 → 机制形态（框架 CAND-001 对照 etcd CAND-004 双实测量级对照法 /
@@ -685,3 +695,50 @@ test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶
 ### 验收（回归）
 193 测试全绿 + `signature_lib.py selfcheck /root/phpseclib` exit 0 + install 后 DST
 pytest 全绿（phpseclib R0 复跑回归，不新增完整项目验收——用户确认）。
+
+---
+
+## 🆕 v3.6 增量（2026-08-23，评估驱动机制修复 + 内容补全，无设计膨胀）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_6.md` + `docs/design/SWR_V3_6.md`。
+> 范围（用户三约束）：**保持通用性 / 不携带审计历史信息 / 不出现无用设计**——
+> 所有机制改动以 puma 实战验收（AUDIT_EVAL_V3_5_2.md）暴露缺口为准绳。
+
+### 机制修复（P1，评估驱动）
+- **B9 清单注入时点修复**（`workflow_export.py` refutation 分支）：旧实现
+  `_in_r5_semantic_space` 在 verify 导出时恒空（PENDING 无 cwe/claim_type）且
+  refutation 分支不注入 → 家族检查清单零到达。v3.6 起 refutation 时点复用
+  `_checklist_section`（此时 cwe/claim_type 已由 collect 落盘），CK-EMPIRICAL-SCOPE
+  以 r5-semantic 绑定注入两个证伪者 prompt。resurrect 分支与 Mode A' 不加代码
+  （语境/成本裁决，见 SWR_V3_6）。
+- **R2「防御已到位」核查义务**（`task_templates/hypothesis_filter.md`）：bc/防御
+  已到位类 drop 前必须核查**默认权限上下文**（文件/目录/umask/监听 socket 权限、
+  环境变量默认值、启动命令注入点）并引用源码证据行（file:line）——只看 gate
+  存在性不算核查（puma HYP-005/006 误 drop 实录：默认 token 随机 + 权限上下文
+  使防御失效）。不做 r2_guard 机械 warn（误报>收益裁决）。
+- **EMPIRICAL_CLAIMS 8 类对称**（`harness_runner.py`/`evidence_ledger.py`）：
+  旧 6 类集缺 rce/leak → 对齐 binder R5_CLAIM_TYPES 8 类。rce/leak 声称现在
+  强制实证（此前能绑清单却不触发 harness——对称缺口）。
+- **账本回填机械前置**（`tools/batch_verify.py` coverage-ledger `--write`）：
+  幂等检查后两道前置——r4_findings 全 VERIFIED（缺即 `LEDGER_WRITE_BLOCKED_R4`）
+  + r4_feedback 无未决冲突（`LEDGER_WRITE_BLOCKED_FEEDBACK`），不满足 exit 1
+  **不烧 sources key**（puma 实录：先回填后补标 cwe 使缺口不可回写）。
+  幂等分支附打印 `would_be_new_counts`。**回填时序强制**：cwe 修正（含
+  r4_feedback 裁决）→ r4-assert PASS → 六门禁 → `--write`。
+
+### 内容补全（P2，v3.5.2 遗留 + 用户裁决）
+- **L2 词族 5 语言**：signature_library 20→25（SIG-RB-EVAL-001 / SIG-PHP-EVAL-001 /
+  SIG-PERL-EXEC-001 / SIG-SCALA-UNSAFE-001 / SIG-SWIFT-UNSAFE-001）。新签名无
+  确认锚点 → fixtures 以 `confirmed:false` 占位诚实簿记（不伪造 confirmed）。
+- **env 陷阱 9 语言**：`PER_LANG_ENV_TRAPS` 7→16 语言（对齐 harness_manuals/）。
+- **L3 语义族脚本 token**：5 个 L3 签名 grep 补 PHP/JS/ruby/shell/python 形态
+  （佐证器粗粒度 hint 设计，非判定器）。
+- **8 语言 harness 模板 → 裁减 + 提炼 1 个通用协议级模板**（用户裁决）：
+  `templates/harness/resource_rate_probe.py`（langs:["any"]）——并发连接灌注 +
+  逐秒 VmRSS + 拒绝计数 + delivery-rate 确认 + 停止后回落验证 + 单调性判定，
+  完全去项目化（argv 必传 host/port）。
+
+### 验收判据（Phase 3.6）
+204 测试全绿（193 基线 + 11 新增）+ `signature_lib.py selfcheck /root/phpseclib`
+exit 0 + install 后 DST pytest 全绿 + 分阶段 commit（P1→P2→P3→P4）。新在线
+项目实战验收（覆盖账本缺口格）另行启动。

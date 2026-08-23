@@ -170,11 +170,18 @@
 | 防回退 | test_precedents_all_matchable / test_ck_empirical_scope_binds / test_lang_alias_consistency / test_harness_cli_requires_lang / test_sk_parser_fuzz_listed / task_templates 注入违规测试（193 passed）; tracking 六处状态真话修复 |
 
 ### 未修（留 v3.6，内容补全类，非缺陷）
-- 8 语言 harness 模板补全（L2 词族语言实证模板缺口）
-- L2 词族 5 语言签名缺（swift/ps/objc/lua/cs 词族扩充）
-- env 陷阱 9 语言补全（harness_manuals 陷阱清单 7/16）
-- swift 回归锚点缺失（known_instances）
-- L3 语义族脚本 token 补全
+> v3.6 处理结果（2026-08-23，逐条标注）：
+- 8 语言 harness 模板补全（L2 词族语言实证模板缺口）→ **v3.6 已处理**：用户裁决
+  「裁减 + 提炼 1 个通用协议级模板」→ templates/harness/resource_rate_probe.py
+  （langs:["any"]，见 SYSTEM_DESIGN_V3_6 §3.4）
+- L2 词族 5 语言签名缺（swift/ps/objc/lua/cs 词族扩充）→ **v3.6 已处理**：签名
+  20→25（SIG-RB/PHP/PERL/SCALA/SWIFT 五签）；注意本行括号词族（swift/ps/objc/
+  lua/cs）与矩阵实况缺口（ruby/php/perl/scala/swift）不符——以矩阵实况为准
+  （勘误记 SWR_V3_6 R7）
+- env 陷阱 9 语言补全（harness_manuals 陷阱清单 7/16）→ **v3.6 已处理**：
+  PER_LANG_ENV_TRAPS 7→16 语言（对齐 harness_manuals/ 文件名）
+- swift 回归锚点缺失（known_instances）→ **v3.5 已覆盖**（SWR-V3.5-011）
+- L3 语义族脚本 token 补全 → **v3.6 已处理**：5 个 L3 签名 grep 追加脚本语言形态
 
 ---
 

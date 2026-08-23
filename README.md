@@ -149,11 +149,12 @@ python3 -m pytest <skill_dir>/tests/ -q
 ├── install.sh                安装脚本（开发仓库 → skill 目录）
 ├── *.py  × 9                 运行时模块（v3 六核心 + v3.1 三件套）
 ├── tools/                    batch_verify（队列编排）/ gen_tracking（文档工具）
-├── resources/                signature_library（20 签名）/ precedent_library（16 先例）
+├── resources/                signature_library（25 签名）/ precedent_library（16 先例）
 │                             / checklist_library（29 清单）
 ├── harness_manuals/          16 语言 + 2 通用实证手册，共 18 个（v3.1 机器资产）
-├── task_templates/  ×7       子智能体任务书（测绘/筛选/验证/证伪/H1-H7/实证/JSON 自检）
-├── templates/harness/  ×3    实证模板（ws_frame_alloc / ws_frame_accum / xss_path_sim）
+├── task_templates/  ×3       子智能体任务书（测绘/筛选/验证——v3.4 起按需组装）
+├── templates/harness/  ×5    实证模板（ws_frame_alloc / ws_frame_accum / xss_path_sim
+│                             / parser_fuzz / resource_rate_probe）
 ├── tests/  ×16               190 个测试（改模块后必须全绿）
 ├── lessons/                  全部历史教训（W5/W6/按语言）——机器资产的上游证据源
 └── docs/

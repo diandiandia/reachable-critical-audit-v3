@@ -209,8 +209,8 @@
 | REQ-V3.1-092 | 报告模板含 NEEDS_REVIEW ↔ R4 finding 同事实映射表 | 已完成 |  |
 | REQ-V3.1-093 | 条件式 REACHABLE 前提逐条列出（blocking_point 显式记录前提方可保留） | 已完成 |  |
 | REQ-V3.1-094 | 覆盖率簿记只认 SURF- 前缀 id，由 tracked_surfaces + surface_ids 数组驱动 | 已完成 |  |
-| REQ-V3.1-100 | 三项目复跑对照（akka-http/etcd/actix-web）验收：① R3.5 拦截率较战役基线下降 ② 原 REACHABLE 结论零丢失 ③ 六门禁全 PASS | 未开发 |  |
-| REQ-V3.1-101 | 验收通过后合并 main 并 install 到 skill 目录；未通过不得覆盖 v3 运行时 | 未开发 |  |
+| REQ-V3.1-100 | 三项目复跑对照（akka-http/etcd/actix-web）验收：① R3.5 拦截率较战役基线下降 ② 原 REACHABLE 结论零丢失 ③ 六门禁全 PASS | 已完成 | 三判据全满足, ACCEPTANCE_V3_1.md 记录; v3.6 回填 |
+| REQ-V3.1-101 | 验收通过后合并 main 并 install 到 skill 目录；未通过不得覆盖 v3 运行时 | 已完成 | ACCEPTANCE_V3_1.md:62 显式确认; v3.6 回填 |
 
 ## 软件需求（SWR-V3.1）（共 49 条）
 
@@ -712,10 +712,10 @@
 
 | 编号 | 内容 | 状态 | 里程碑 |
 |---|---|---|---|
-| SWR-V3.4.6-001 | coverage-ledger 主导语言推导链回退（候选空 → input_surface lang → language_inventory → other） | 未开发 | M1 |
-| SWR-V3.4.6-002 | R2 filter 产出 surface_ids 保真（模板 schema 强制 bc/drop 字段 + r2_guard 反查补齐） | 未开发 | M1 |
-| SWR-V3.4.6-003 | merge 同文件跨域未成对提示 same_file_cross_domain_pairs（提示不自动成对） | 未开发 | M1 |
-| SWR-V3.4.6-004 | SKILL.md R2 段全 keep 0 抽样复核条款（≥3 条 + spot_checked 落盘） | 未开发 | M2 |
+| SWR-V3.4.6-001 | coverage-ledger 主导语言推导链回退（候选空 → input_surface lang → language_inventory → other） | 已完成 | _project_dom_lang (tools/batch_verify.py:184); v3.6 回填 |
+| SWR-V3.4.6-002 | R2 filter 产出 surface_ids 保真（模板 schema 强制 bc/drop 字段 + r2_guard 反查补齐） | 已完成 | r2_guard.py:13 落盘保真 + test_v343 覆盖; v3.6 回填 |
+| SWR-V3.4.6-003 | merge 同文件跨域未成对提示 same_file_cross_domain_pairs（提示不自动成对） | 已完成 | surface_mapper.py:796; v3.6 回填 |
+| SWR-V3.4.6-004 | SKILL.md R2 段全 keep 0 抽样复核条款（≥3 条 + spot_checked 落盘） | 已完成 | SKILL.md:134-137; v3.6 回填 |
 
 验收: 单测 170+4 全绿；既有机制零回退（fixture 基线对照）；rpcx 新项目验收
 （M1 推导链实战验证 + 覆盖账本缺口格回填 + 六门禁全 PASS）后落 ACCEPTANCE_V3_4_6.md。
