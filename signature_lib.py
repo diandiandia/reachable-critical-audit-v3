@@ -147,10 +147,12 @@ def _scan_runtime_assets(base=None):
     """v3.5 (P5): 去项目化扫描扩展至运行时资产目录 (templates/harness + harness_manuals)。
     R0 selfcheck 完整性分支必须拦截模板/手册的项目残留回退——v3.5 体检实测模板曾
     硬编码 ktor/actix 端口与 AWStats 专属逻辑 (黑名单只扫签名资产是覆盖盲区)。
+    v3.5.1: resources/ 加入扫描——但仅拦 "/root/" 绝对路径 (数据资产零合法用途;
+    该目录的 source_lessons/cve 描述等字段合法含项目名, 黑名单 token 不适用)。
     返回 [(相对路径, 命中项)]。base 参数仅供测试注入临时目录。"""
     here = base or os.path.dirname(os.path.abspath(__file__))
     hits = []
-    for rel in ("templates", "harness_manuals"):
+    for rel in ("templates", "harness_manuals", "resources"):
         base_dir = os.path.join(here, rel)
         if not os.path.isdir(base_dir):
             continue
@@ -163,9 +165,10 @@ def _scan_runtime_assets(base=None):
                 except OSError:
                     continue
                 low = text.lower()
-                for tok in DEPROJECT_BLACKLIST:
-                    if tok in low:
-                        hits.append((os.path.relpath(p, here), tok))
+                if rel != "resources":
+                    for tok in DEPROJECT_BLACKLIST:
+                        if tok in low:
+                            hits.append((os.path.relpath(p, here), tok))
                 if "/root/" in text:
                     hits.append((os.path.relpath(p, here), "绝对路径 /root/"))
     return hits

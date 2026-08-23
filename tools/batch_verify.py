@@ -36,6 +36,8 @@ import os
 import re
 import sys
 import glob
+import hashlib
+import datetime
 
 BATCH_SIZE = 4
 REQUIRED_VERDICT_KEYS = {"verdict", "reachability_type", "call_chain", "call_chain_depth", "evidence"}
@@ -1063,6 +1065,13 @@ def _ledger_pressure(ledger):
     return {"pressure_cells": cells, "family_skew": skew}
 
 
+def _ledger_source_key(project_root):
+    """v3.5.1: 账本 sources 幂等身份 = 项目路径 sha256 前 16 hex (去项目化)。
+    第一原则三禁止③: 运行时资产不落历史项目绝对路径——sources 仅作幂等
+    比对身份, 路径内容无用, 追溯由 docs/design/ACCEPTANCE_* 承担。"""
+    return hashlib.sha256(os.path.abspath(project_root).encode("utf-8")).hexdigest()[:16]
+
+
 def stage_coverage_ledger(project_root, write=False):
     """SWR-V3.4-001/002/003: 覆盖账本——CWE 族 x 语言审计覆盖追踪 (范围守护)。
     --write: 从 verify_queue 聚合候选级 cwe x lang (+ R4 findings 按项目主导语言
@@ -1136,7 +1145,7 @@ def stage_coverage_ledger(project_root, write=False):
         }, ensure_ascii=False, indent=2))
         return 0
 
-    if project_root in (ledger.get("sources") or []):
+    if _ledger_source_key(project_root) in (ledger.get("sources") or []):
         print(json.dumps({"status": "LEDGER_IDEMPOTENT_SKIP",
                           "project": project_root}, ensure_ascii=False))
         return 0
@@ -1165,8 +1174,8 @@ def stage_coverage_ledger(project_root, write=False):
             rows[fam] = {}
         rows[fam][lg] = rows[fam].get(lg, 0) + n
     ledger["rows"] = [{"family": f, "langs": ls} for f, ls in sorted(rows.items())]
-    ledger.setdefault("sources", []).append(project_root)
-    ledger["updated_at"] = "2026-08-19"
+    ledger.setdefault("sources", []).append(_ledger_source_key(project_root))
+    ledger["updated_at"] = datetime.date.today().isoformat()
     json.dump(ledger, open(ledger_path, "w"), ensure_ascii=False, indent=2)
     print(json.dumps({"status": "LEDGER_WRITTEN", "project": project_root,
                       "new_counts": {f"{f}x{l}": n for (f, l), n in

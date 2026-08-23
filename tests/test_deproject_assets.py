@@ -65,3 +65,14 @@ def test_harness_templates_no_hardcoded_ports():
         t = open(os.path.join(WORK, "templates", "harness", fn)).read()
         assert "18083" not in t and "18084" not in t, fn
         assert "<host> <port>" in t or "host, port" in t, fn  # argv 必传形态
+
+
+def test_ledger_sources_hashed():
+    """v3.5.1: 覆盖账本 sources = 项目路径 sha256 前 16 hex (幂等身份),
+    零绝对路径/零项目名——第一原则三禁止③ (运行时资产不落历史项目目录)。"""
+    import re as _re
+    data = json.load(open(os.path.join(WORK, "resources", "issue_coverage_matrix.json")))
+    srcs = data.get("sources") or []
+    assert srcs, "sources 不应为空"
+    for s in srcs:
+        assert _re.fullmatch(r"[0-9a-f]{16}", s), f"非 hash 身份: {s!r}"

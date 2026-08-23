@@ -172,3 +172,18 @@ def test_selfcheck_flags_template_residue(tmp_path):
     (d / "bad_root.py").write_text("root = '/root/secret'\n")
     hits = signature_lib._scan_runtime_assets(base=str(tmp_path))
     assert any(f.endswith("bad_root.py") and "绝对路径" in tok for f, tok in hits)
+
+
+def test_selfcheck_flags_resources_root_residue(tmp_path):
+    """v3.5.1: _scan_runtime_assets 扩展扫 resources/——数据资产拦 /root/ 绝对路径
+    (资源目录的 source_lessons/cve 描述等合法字段含项目名, 黑名单 token 不扫);
+    resources 内 /root/ 回退 (如账本 sources 曾存 36 条项目路径) 被 R0 拦截。"""
+    import signature_lib
+    d = tmp_path / "resources"
+    d.mkdir(parents=True)
+    (d / "matrix.json").write_text('{"sources": ["/root/actix-web", "/root/Lersosa"]}\n')
+    hits = signature_lib._scan_runtime_assets(base=str(tmp_path))
+    assert any(f.endswith("matrix.json") and "绝对路径" in tok for f, tok in hits)
+    # 同目录合法追溯字段 (项目名无 /root/ 路径) 不触发
+    (d / "matrix.json").write_text('{"sources": ["a1b2c3d4e5f6a1b2"]}\n')
+    assert signature_lib._scan_runtime_assets(base=str(tmp_path)) == []

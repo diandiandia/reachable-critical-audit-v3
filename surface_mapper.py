@@ -711,7 +711,7 @@ def size_tier(project_root):
         ds = mixed_domains if n_langs >= 2 else ["network+data", "process+storage"]
         return {"tier": "small", "agent_count": 2 if n_langs < 2 else 3,
                 "time_limit_min": None, "checkpoint_every_min": None, "domains_split": ds,
-                "rationale": "W6 §24.7 (sinatra 20 surfaces 2 agents)" + (f"; v3.2 {n_langs} 语言 → 含 boundary 域" if n_langs >= 2 else "")}
+                "rationale": "W6 §24.7 (成熟框架 20 surfaces 2 agents 档位校准)" + (f"; v3.2 {n_langs} 语言 → 含 boundary 域" if n_langs >= 2 else "")}
     if count <= 500:
         ds = mixed_domains if n_langs >= 2 else DOMAINS
         return {"tier": "medium", "agent_count": 4, "time_limit_min": None,
