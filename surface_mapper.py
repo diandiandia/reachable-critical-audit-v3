@@ -720,59 +720,7 @@ def size_tier(project_root):
     ds = mixed_domains if n_langs >= 2 else DOMAINS
     return {"tier": "large", "agent_count": 4, "time_limit_min": 45,
             "checkpoint_every_min": 10, "domains_split": ds,
-            "rationale": "W6 §17.1/§18.6 (WP 2.5h 失控 / Dubbo 2h+; 失控判据=超时+无落盘)"}
-
-
-def repair_surfaces(data, project_root=None):
-    """SWR-V3.1-011 (W6 §18.7/§9.4): 行号漂移自动修复器。
-    逐 entry 按 ±2 主窗口 → 全文件首行键匹配 的顺序应用 suggested_line;
-    无命中者标记 paraphrased。返回 (repaired_data, stats)。幂等: 已匹配
-    entry 不重标 (W6 §9.5)。"""
-    data = normalize_surfaces(data, project_root)
-    stats = {"fixed": 0, "paraphrased": 0, "unchanged": 0}
-    for s in data.get("surfaces", []):
-        for ep in s.get("entry_points", []):
-            ev = ep.get("evidence", {})
-            snip = ev.get("snippet", "")
-            if not snip or not ep.get("line"):
-                continue
-            # 已修复过的 entry 不再处理 (幂等契约, §9.5)
-            if ep.get("suggested_line") or ep.get("paraphrased"):
-                stats["unchanged"] += 1
-                continue
-            snip_folded = re.sub(r"\s+", " ", str(snip).strip())
-            variants = {snip_folded}
-            if ev.get("snippet_unescaped"):
-                variants.add(re.sub(r"\s+", " ", ev["snippet_unescaped"].strip()))
-            first_key = snip_folded.splitlines()[0].strip()[:50] if snip_folded else ""
-            if not os.path.exists(ep["file"]):
-                continue
-            try:
-                lines = open(ep["file"], errors="ignore").read().splitlines()
-                folded = [re.sub(r"\s+", " ", ln).strip() for ln in lines]
-                lo = max(1, ep["line"] - 2)
-                hi = min(len(lines), ep["line"] + 2)
-                ok = any(folded[i - 1] and any(folded[i - 1] in v or v in folded[i - 1]
-                                               for v in variants)
-                         for i in range(lo, hi + 1))
-                if ok:
-                    stats["unchanged"] += 1
-                    continue
-                hits = [i for i, fl in enumerate(folded, 1)
-                        if fl and len(fl) >= 10 and
-                        (first_key in fl or (first_key and fl in first_key))]
-                if len(hits) == 1:
-                    ep["suggested_line"] = ep["line"]
-                    ep["line"] = hits[0]
-                    stats["fixed"] += 1
-                elif not hits:
-                    ep["paraphrased"] = True
-                    stats["paraphrased"] += 1
-                else:
-                    stats["unchanged"] += 1
-            except OSError:
-                pass
-    return data, stats
+            "rationale": "W6 §17.1/§18.6 (审计失控实录 2.5h+; 失控判据=超时+无落盘)"}
 
 
 def merge_surfaces(files, project_root=None):
@@ -975,14 +923,6 @@ def main(argv):
         for e in errors:
             print("  -", e)
         return 0 if ok else 1
-    if cmd == "repair":
-        data = json.load(open(argv[2]))
-        root = argv[argv.index("--root") + 1] if "--root" in argv else None
-        repaired, stats = repair_surfaces(data, root)
-        out = argv[argv.index("--out") + 1] if "--out" in argv else argv[2]
-        json.dump(repaired, open(out, "w"), ensure_ascii=False, indent=1)
-        print(json.dumps(stats, ensure_ascii=False))
-        return 0
     if cmd == "tier":
         print(json.dumps(size_tier(argv[2]), ensure_ascii=False, indent=1))
         return 0

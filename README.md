@@ -37,24 +37,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 起不再需要。
 | Python | ≥ 3.8 | 核心模块（surface_mapper / signature_lib / signature_matcher / evidence_ledger / harness_runner / workflow_export / checklist_binder / precedent_library / r2_guard + tools/）仅用标准库（json/re/os/subprocess 等），不装任何包即可运行 |
 | 测试（开发时） | pytest | `pip install pytest`（或使用 skill 自带 `.venv`） |
 
-### 1.3 可选依赖：L0 AST 深度模式（按需，默认不用）
-
-v3 流程的默认路径是 R1 输入面测绘 + R2 签名提示，**不经过 ast_scanner**（15 语言战役证明
-通用 regex L0 规则对成熟框架零区分度）。ast_scanner 仅作为"按需深度模式"保留，
-需要它时在 skill-local venv 安装：
-
-```bash
-<skill_dir>/.venv/bin/python3 -m pip install \
-  tree-sitter tree-sitter-java tree-sitter-cpp tree-sitter-python \
-  tree-sitter-javascript tree-sitter-go tree-sitter-rust tree-sitter-c-sharp \
-  tree-sitter-php tree-sitter-ruby tree-sitter-swift tree-sitter-kotlin \
-  tree-sitter-scala
-```
-
-约束：不允许在被审计项目根目录创建 `.venv`；不允许安装到系统 Python（PEP 668 环境必须
-用 skill-local venv）。
-
-### 1.4 目标语言工具链（仅 R5 实证阶段按需）
+### 1.3 目标语言工具链（仅 R5 实证阶段按需）
 
 skill 本体不依赖任何语言工具链；**只有 R5 实证抽验被触发时**才需要对应语言的工具链。
 工具链缺失不阻塞审计——按 §17.7 源事实级规则降级并记录 blocker（哨兵值/算术类主张接受
@@ -79,7 +62,7 @@ skill 本体不依赖任何语言工具链；**只有 R5 实证抽验被触发�
 | TypeScript | node/tsc | tsc 编译 + esbuild 降级链；函数体级提取标注 scope |
 | Perl | perl | 系统 perl 即可 |
 
-### 1.5 网络可达性（影响实证分级，不影响审计主流程）
+### 1.4 网络可达性（影响实证分级，不影响审计主流程）
 
 | 域名 | 状态（本环境实测） | 影响 |
 |---|---|---|
@@ -165,10 +148,9 @@ python3 -m pytest <skill_dir>/tests/ -q
 ├── SKILL.md                  ★ skill 规范（v3 流程 + v3.1 变更摘要）
 ├── install.sh                安装脚本（开发仓库 → skill 目录）
 ├── *.py  × 9                 运行时模块（v3 六核心 + v3.1 三件套）
-├── tools/                    batch_verify（队列编排）/ r05_diff_archaeology（R0.5）
-│                             / ast_scanner（L0 按需）/ gen_tracking（文档工具）
-├── resources/                signature_library（20 签名）/ precedent_library（25 先例）
-│                             / checklist_library（29 清单）/ security_profiles + anchor_registry（L0 按需）
+├── tools/                    batch_verify（队列编排）/ gen_tracking（文档工具）
+├── resources/                signature_library（20 签名）/ precedent_library（16 先例）
+│                             / checklist_library（29 清单）
 ├── harness_manuals/          16 语言 + 2 通用实证手册，共 18 个（v3.1 机器资产）
 ├── task_templates/  ×7       子智能体任务书（测绘/筛选/验证/证伪/H1-H7/实证/JSON 自检）
 ├── templates/harness/  ×3    实证模板（ws_frame_alloc / ws_frame_accum / xss_path_sim）
@@ -185,7 +167,7 @@ python3 -m pytest <skill_dir>/tests/ -q
 
 | 资产 | 内容 | 作用 |
 |---|---|---|
-| `precedent_library.json` | 25 条裁决先例（criterion/counterexample/applicability_scope/applications） | R3.5 裁决与自证伪提示的机器化依据——同一前提形态在 16 语言给出同一裁决 |
+| `precedent_library.json` | 16 条裁决先例（criterion/counterexample/applicability_scope/applications） | R3.5 裁决与自证伪提示的机器化依据——同一前提形态在 16 语言给出同一裁决 |
 | `checklist_library.json` | 29 条检查清单（结构化 binding: cwe/keywords/verdict_context） | verifier 强制自查项——16 语言证伪者攻击面固化 |
 | `harness_manuals/*.md` | 16 语言 + 2 通用手册（共 18 个） | 实证成本从"每项目重付陷阱清单"降为一次性入册 |
 

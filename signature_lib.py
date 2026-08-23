@@ -40,7 +40,7 @@ FIXTURE_INSTANCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__))
                                       "tests", "fixtures", "known_instances.json")
 
 REQUIRED_FIELDS = ["sig_id", "semantic", "cwe", "platform_profiles",
-                   "detection_hints", "known_instances", "empirical_harness"]
+                   "detection_hints", "known_instances"]
 
 DEFAULT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             "resources", "signature_library.json")

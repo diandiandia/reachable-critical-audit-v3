@@ -185,10 +185,24 @@ def test_new_checklists_bind():
     assert "CK-CACHE-GATE-LAYER" in bound2
 
 
-def test_new_precedents_exist():
+def test_precedents_all_matchable():
+    """v3.5.2 (B8): 先例库全部可被 match() 触达 (9 条永不可达先例已裁除)。
+    双向断言: 每条先例都可被某候选命中 (无不可达), 且映射表无悬空 id (无多余)。"""
     lib = precedent_library.load()
     ids = {p["id"] for p in lib["precedents"]}
-    assert {"PREC-TARGET-KIND-001", "PREC-IMPORT-BREAK-001"} <= ids
+    reached = set()
+    base = {"lang": "go"}
+    for fam in precedent_library.CWE_FAMILY_MAP:
+        for p in precedent_library.match({"summary": "候选", "cwe": fam[0], **base}):
+            reached.add(p["id"])
+    for kw in precedent_library.KEYWORD_MAP:
+        for p in precedent_library.match({"summary": f"候选 {kw}",
+                                          "cwe": "CWE-000", **base}):
+            reached.add(p["id"])
+    for p in precedent_library.match({"summary": "候选", "cwe": "CWE-000",
+                                      "lang_pair": "c->go", **base}):
+        reached.add(p["id"])
+    assert reached == ids, f"不可达: {ids - reached}; 悬空映射: {reached - ids}"
 
 
 # ---------- M7: component_role ----------

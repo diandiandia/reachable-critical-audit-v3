@@ -83,6 +83,21 @@ def _signals_ok(sig, candidate, text):
 # SWR-V3.4.3-040: 资源族 cwe 命中专属清单但信号不匹配时的通用兜底
 _RESOURCE_CWES = {"CWE-400", "CWE-789", "CWE-770", "CWE-401", "CWE-833"}
 
+# v3.5.2 (B9): R5 实证类清单的真实绑定触发集——与 SKILL R5 强制声称集一致
+# (crash/panic/oom/unbounded/xss/protocol_dos/rce/leak)。
+# 旧实现: applies_to_phase=="R5" → 无条件 matched=[] → CK-EMPIRICAL-SCOPE 永不可达。
+R5_CLAIM_TYPES = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos",
+                  "rce", "leak")
+
+
+def _in_r5_semantic_space(candidate):
+    """v3.5.2 (B9): 候选是否已进入实证语义空间——empirical dict 已存在
+    (R5 回填/写回), 或 claim_type ∈ R5 强制声称集 (将触发实证义务)。"""
+    if isinstance(candidate.get("empirical"), dict):
+        return True
+    claim = str(candidate.get("claim_type") or "").lower()
+    return any(c in claim for c in R5_CLAIM_TYPES)
+
 
 def bind(candidate, lib=None):
     """SWR-V3.1-050/051: 按 binding 规则匹配清单。返回 [(checklist_id, matched_rule)]。
@@ -113,7 +128,14 @@ def bind(candidate, lib=None):
             if vc and vc != verdict:
                 matched = []
             if rule.get("applies_to_phase") == "R5":
-                matched = []  # 实证类清单由 R5 流程显式绑定
+                # v3.5.2 (B9, 过设计裁决): 实证类清单真实绑定——候选进入实证
+                # 语义空间 (empirical dict / claim_type ∈ R5 强制声称集) 时绑定,
+                # 不依赖 keywords 碰巧命中; 否则维持不绑定 (非实证候选不注入)。
+                if _in_r5_semantic_space(candidate):
+                    if not matched:
+                        matched.append("r5-semantic")
+                else:
+                    matched = []
         else:
             for m in re.findall(r"cwe\s*[∈=]\s*\{([^}]*)\}", rule):
                 want = {w.strip().upper() for w in m.split(",") if w.strip()}

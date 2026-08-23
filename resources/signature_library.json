@@ -1,700 +1,680 @@
 {
- "signatures": [
-  {
-   "sig_id": "SIG-BUFFER-ACCUM-001",
-   "semantic": "远端投递数据的无界累积（帧/body/流）在大小校验之前发生",
-   "cwe": [
-    "CWE-770",
-    "CWE-789"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "extend_from_slice",
-     "writeFully",
-     "readRemaining",
-     "\\+\\+= payload",
-     "append\\(",
-     "writeBytes\\(",
-     "bodyBuffer",
-     "recv\\(",
-     "fread\\(",
-     "read\\(",
-     "push_back\\("
-    ],
-    "checklist": [
-     "累积点在哪里？",
-     "flush/对齐条件是什么（什么事件触发消费/清空）？",
-     "大小上限在累积之前还是之后检查？",
-     "声明长度与累积量是否独立？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": "ws_frame_accum",
-   "tier": "L3",
-   "tier_note": "语义族: 无界累积 (known_instances 跨 actix/ktor/akka 三语言, §3.4 旗舰签名)",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "lang": "any"
+  "signatures": [
+    {
+      "sig_id": "SIG-BUFFER-ACCUM-001",
+      "semantic": "远端投递数据的无界累积（帧/body/流）在大小校验之前发生",
+      "cwe": [
+        "CWE-770",
+        "CWE-789"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "extend_from_slice",
+          "writeFully",
+          "readRemaining",
+          "\\+\\+= payload",
+          "append\\(",
+          "writeBytes\\(",
+          "bodyBuffer",
+          "recv\\(",
+          "fread\\(",
+          "read\\(",
+          "push_back\\("
+        ],
+        "checklist": [
+          "累积点在哪里？",
+          "flush/对齐条件是什么（什么事件触发消费/清空）？",
+          "大小上限在累积之前还是之后检查？",
+          "声明长度与累积量是否独立？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "tier_note": "语义族: 无界累积 (known_instances 跨 actix/ktor/akka 三语言, §3.4 旗舰签名)",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-PATH-WHITELIST-002",
+      "semantic": "路径白名单/目录门禁用未锚定子串或前缀校验，可被路径穿越形式绕过",
+      "cwe": [
+        "CWE-22"
+      ],
+      "platform_profiles": [
+        "cgi-tool",
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "!~",
+          "contains\\(",
+          "starts_with",
+          "startsWith",
+          "hasPrefix",
+          "realpath",
+          "canonicalize"
+        ],
+        "checklist": [
+          "门禁是否锚定（^…$）？",
+          "校验值是正则还是字面量（正则需转义）？",
+          "校验发生在规范化/解码之前还是之后？",
+          "空路径/默认回退值是否绕过门禁？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "tier_note": "语义族: 路径白名单",
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-PREALLOC-LEN-003",
+      "semantic": "远端声明长度字段在数据到达前直接驱动内存分配（先分配后校验）",
+      "cwe": [
+        "CWE-770",
+        "CWE-789"
+      ],
+      "platform_profiles": [
+        "parser-library",
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "allocate\\(",
+          "with_capacity",
+          "StringBuilder\\(",
+          "new byte\\[",
+          "reserve\\(",
+          "capacity",
+          "calloc\\(",
+          "malloc\\(",
+          "realloc\\(",
+          "\\*\\s*sizeof"
+        ],
+        "checklist": [
+          "分配容量参数是否直接来自远端长度字段？",
+          "校验发生在分配之前还是之后？",
+          "默认上限是否存在且有效（非 MAX_VALUE 类）？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "tier_note": "语义族: 预分配长度",
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-TRUNC-CAST-004",
+      "semantic": "大偏移/长度值窄化截断（usize→u16/u32→usize）后用于切片/索引",
+      "cwe": [
+        "CWE-617",
+        "CWE-248",
+        "CWE-681"
+      ],
+      "platform_profiles": [
+        "parser-library",
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "as u16",
+          "as u32",
+          "as usize",
+          "toInt\\(\\)",
+          "toInt32",
+          "\\(int\\)",
+          "\\(unsigned int\\)",
+          "\\(short\\)",
+          "\\(uint16_t\\)",
+          "\\(uint32_t\\)",
+          "\\(size_t\\)"
+        ],
+        "checklist": [
+          "截断值是否来自远端可控长度/偏移？",
+          "截断后是否用于切片/索引/长度计算？",
+          "有无 checked cast 或范围校验？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "tier_note": "语义族: 截断转换",
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-LOGIC-WEAKEN-005",
+      "semantic": "安全谓词被弱化：hash-only 白名单、前缀校验替代全名校验、检查位于操作之后（LOGIC_PATTERN 族）",
+      "cwe": [
+        "CWE-502",
+        "CWE-863",
+        "CWE-306"
+      ],
+      "platform_profiles": [
+        "any"
+      ],
+      "detection_hints": {
+        "grep": [
+          "allowlist",
+          "whitelist",
+          "isInAllowList",
+          "acceptHash",
+          "binarySearch"
+        ],
+        "checklist": [
+          "授权/白名单谓词的判定域是否完整（全名 vs hash/前缀/子串）？",
+          "检查与危险操作的位置关系（先检查后操作？）",
+          "历史修复是否在树（修复-再暴露）？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "tier_note": "LOGIC_PATTERN: 授权谓词弱化",
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-HEADER-INJ-006",
+      "semantic": "远端值拼接进响应头/属性上下文时仅部分转义（相邻转义遗漏、条件转义、默认模式转义空操作）",
+      "cwe": [
+        "CWE-79",
+        "CWE-113"
+      ],
+      "platform_profiles": [
+        "cgi-tool",
+        "server-framework",
+        "web-app"
+      ],
+      "detection_hints": {
+        "grep": [
+          "set-cookie",
+          "Location:",
+          "href=",
+          "img src",
+          "escape\\(",
+          "encode\\(",
+          "XMLEncode"
+        ],
+        "checklist": [
+          "同一变量的其他消费点是否有转义（adjacent-escape-miss）？",
+          "转义函数在当前输出模式是否为有效实现（如 html 模式下 XML 转义空操作）？",
+          "转义是否覆盖引号/斜杠/CRLF 全部维度？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "tier_note": "语义族: 头注入 (known_instances 非空)",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-AUTHZ-BOUND-007",
+      "semantic": "信任边界/鉴权前提缺失：Host/转发头被信任（来源校验缺失/鉴权谓词弱化）",
+      "cwe": [
+        "CWE-807",
+        "CWE-350",
+        "CWE-639"
+      ],
+      "platform_profiles": [
+        "security-boundary",
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "X-Forwarded",
+          "Forwarded",
+          "request.host",
+          "Host header",
+          "X-Real-IP"
+        ],
+        "checklist": [
+          "该值是否被用于鉴权/CSRF/重定向/绝对 URL 构造？",
+          "信任该头/通道的前提（代理剥离）是否在框架内强制？",
+          "owner/session 与资源归属是否比对？"
+        ]
+      },
+      "known_instances": [],
+      "tier": "L3",
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "tier_note": "语义族: 授权边界",
+      "lang": "any"
+    },
+    {
+      "sig_id": "SIG-PS-SCRIPTBLOCK-001",
+      "tier": "L2",
+      "tier_note": "语言词族: PowerShell (W6 §9.1)",
+      "semantic": "动态脚本执行/注入（ScriptBlock::Create、dot-source、& 调用、iex）",
+      "cwe": [
+        "CWE-94"
+      ],
+      "platform_profiles": [
+        "cli-tool"
+      ],
+      "detection_hints": {
+        "grep": [
+          "\\[ScriptBlock\\]::Create",
+          "iex",
+          "Invoke-Expression",
+          "ParseInput",
+          "& $SafeCommands"
+        ],
+        "checklist": []
+      },
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "known_instances": [],
+      "lang": "powershell"
+    },
+    {
+      "sig_id": "SIG-SH-EVAL-001",
+      "tier": "L2",
+      "tier_note": "语言词族: Shell (W6 §12.1)",
+      "semantic": "shell eval/注入（trap/eval/source env 路径/curl|sh）",
+      "cwe": [
+        "CWE-78"
+      ],
+      "platform_profiles": [
+        "cli-tool"
+      ],
+      "detection_hints": {
+        "grep": [
+          "\\beval ",
+          "\\btrap ",
+          "\\bsource ",
+          "\\bcurl ",
+          "\\| sh",
+          "\\$\\([^)]*\\)"
+        ],
+        "checklist": []
+      },
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "known_instances": [],
+      "lang": "shell"
+    },
+    {
+      "sig_id": "SIG-CS-DESER-001",
+      "tier": "L2",
+      "tier_note": "语言词族: C# 反序列化 (W6 §13.1)",
+      "semantic": "反序列化类选择/程序集加载（TypeNameHandling/BindToType/Assembly.Load/Type.GetType——Newtonsoft.Json 通用框架 API）",
+      "cwe": [
+        "CWE-502"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "TypeNameHandling",
+          "BindToType",
+          "Assembly.Load",
+          "Type.GetType",
+          "Expression.Compile",
+          "ISerializableCreator"
+        ],
+        "checklist": []
+      },
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "known_instances": [],
+      "lang": "cs"
+    },
+    {
+      "sig_id": "SIG-PY-PICKLE-001",
+      "tier": "L2",
+      "tier_note": "语言词族: Python (W6 §14.1)",
+      "semantic": "Python pickle 反序列化（不可信数据直接 load）",
+      "cwe": [
+        "CWE-502",
+        "CWE-770"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "pickle\\.loads",
+          "pickle\\.load\\b",
+          "Unpickler"
+        ],
+        "checklist": []
+      },
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "known_instances": [],
+      "lang": "python"
+    },
+    {
+      "sig_id": "SIG-TS-ACCUM-001",
+      "tier": "L2",
+      "tier_note": "语言词族: TypeScript (W6 §15.1)",
+      "semantic": "Node.js 流/套接字 data 事件逐块累积（无总量上限）",
+      "cwe": [
+        "CWE-400"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "socket\\.on\\(['\"]data['\"]"
+        ],
+        "checklist": []
+      },
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "known_instances": [],
+      "lang": "typescript"
+    },
+    {
+      "sig_id": "SIG-KT-RECEIVE-001",
+      "tier": "L2",
+      "tier_note": "语言词族: Kotlin (W6 §19.1)",
+      "semantic": "Kotlin 通道/IO 接收（receive/readRemaining 无上限消费）",
+      "cwe": [
+        "CWE-770",
+        "CWE-601"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "receive\\(",
+          "readRemaining"
+        ],
+        "checklist": []
+      },
+      "runtime_prereq": null,
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      },
+      "known_instances": [],
+      "lang": "kotlin"
+    },
+    {
+      "sig_id": "SIG-C-ALLOC-001",
+      "tier": "L2",
+      "tier_note": "语言词族: C (v3.3 系统语言扩充)",
+      "semantic": "malloc/realloc/calloc 分配大小来自不可信长度/计数字段, 无业务预算检查",
+      "cwe": [
+        "CWE-789",
+        "CWE-770"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "malloc\\(",
+          "calloc\\(",
+          "realloc\\(",
+          "alloca\\("
+        ],
+        "checklist": [
+          "分配大小是否来自输入字段（长度/计数/varint）？",
+          "分配前是否只有乘法溢出检查而无业务总量预算？",
+          "分配大小与实际到达字节是否存在放大关系？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "c",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    },
+    {
+      "sig_id": "SIG-GO-ACCUM-001",
+      "tier": "L2",
+      "tier_note": "语言词族: Go (v3.3 系统语言扩充)",
+      "semantic": "流式消费/累积无总量上限（io.Copy/ReadAll 无限制, append 累积无预算）",
+      "cwe": [
+        "CWE-400",
+        "CWE-770"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "io\\.Copy\\(",
+          "io\\.ReadAll\\(",
+          "bufio\\.Reader",
+          "append\\("
+        ],
+        "checklist": [
+          "流来源是否远端可控且长度无限制？",
+          "累积点是否有 LimitReader/固定缓冲/总量预算？",
+          "声明长度与实际累积量是否独立？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "go",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    },
+    {
+      "sig_id": "SIG-RS-UNSAFE-001",
+      "tier": "L2",
+      "tier_note": "语言词族: Rust (v3.3 系统语言扩充)",
+      "semantic": "unsafe 块/FFI: 远端长度或指针构造切片（from_raw_parts/set_len）无边界校验",
+      "cwe": [
+        "CWE-125",
+        "CWE-787"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "unsafe\\s*\\{",
+          "from_raw_parts\\(",
+          "set_len\\(",
+          "transmute"
+        ],
+        "checklist": [
+          "长度参数是否来自远端/FFI 且未经校验？",
+          "指针是否由宿主/外部库传入？",
+          "unsafe 块内是否有注释化安全论证？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "rust",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    },
+    {
+      "sig_id": "SIG-JAVA-DESER-001",
+      "tier": "L2",
+      "tier_note": "语言词族: Java (v3.3 系统语言扩充)",
+      "semantic": "不可信源反序列化（ObjectInputStream.readObject 无过滤器）或流式读取无总量上限",
+      "cwe": [
+        "CWE-502",
+        "CWE-400"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "readObject\\(",
+          "ObjectInputStream",
+          "readAllBytes\\("
+        ],
+        "checklist": [
+          "输入源是否不可信（socket/文件/请求体）？",
+          "是否存在 ObjectInputFilter/类白名单？",
+          "读取循环是否有字节总量上限？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "java",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    },
+    {
+      "sig_id": "SIG-STATE-RACE-001",
+      "tier": "L3",
+      "tier_note": "语义族: 竞态窗口 (v3.3)",
+      "semantic": "检查与使用分离（check-then-act/TOCTOU）或共享状态读改写无同步",
+      "cwe": [
+        "CWE-362",
+        "CWE-367"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "access\\(",
+          "stat\\(",
+          "fopen\\(",
+          "tmpnam",
+          "open\\("
+        ],
+        "checklist": [
+          "检查与使用之间状态是否可被并发/外部改变（TOCTOU）？",
+          "文件系统对象是否先检查后使用？",
+          "共享变量/缓存的读改写是否有同步原语？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "any",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    },
+    {
+      "sig_id": "SIG-CRYPTO-WEAK-001",
+      "tier": "L3",
+      "tier_note": "语义族: 密码学弱化 (v3.3)",
+      "semantic": "安全用途的随机性来自可预测源（时间/地址/线性同余）或弱哈希用于完整性替代",
+      "cwe": [
+        "CWE-327",
+        "CWE-330"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "rand\\(\\b",
+          "time\\(NULL\\)",
+          "srand\\(",
+          "hashlib\\.md5",
+          "MD5",
+          "SHA1"
+        ],
+        "checklist": [
+          "随机源是否用于安全用途（seed/密钥/盐/令牌）？",
+          "种子是否可预测（时间戳/地址/固定值）？",
+          "哈希用途是否安全敏感（校验替代/签名/身份）？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "any",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    },
+    {
+      "sig_id": "SIG-CPP-ALLOC-001",
+      "tier": "L2",
+      "tier_note": "语言词族: C++ (v3.3.1 补齐)",
+      "semantic": "裸 new/new[] 分配无业务预算或容器无界增长 (push_back/resize 无总量上限)",
+      "cwe": [
+        "CWE-789",
+        "CWE-770"
+      ],
+      "platform_profiles": [
+        "server-framework"
+      ],
+      "detection_hints": {
+        "grep": [
+          "new\\s+\\w+\\[",
+          "\\bnew\\s+\\w+\\s*[;\\(]",
+          "push_back\\(",
+          "resize\\("
+        ],
+        "checklist": [
+          "分配大小是否来自不可信长度/计数字段？",
+          "new 前是否只有溢出检查而无业务预算？",
+          "容器增长是否有 reserve 上限/总量预算？"
+        ]
+      },
+      "runtime_prereq": null,
+      "known_instances": [],
+      "lang": "cpp",
+      "contribution": {
+        "hypotheses_contributed": 0,
+        "batches_seen": 0
+      }
+    }
+  ],
+  "smoke_test": {
+    "mode": "anchor_recall",
+    "required_hit_rate": 1.0
   },
-  {
-   "sig_id": "SIG-PATH-WHITELIST-002",
-   "semantic": "路径白名单/目录门禁用未锚定子串或前缀校验，可被路径穿越形式绕过",
-   "cwe": [
-    "CWE-22"
-   ],
-   "platform_profiles": [
-    "cgi-tool",
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "!~",
-     "contains\\(",
-     "starts_with",
-     "startsWith",
-     "hasPrefix",
-     "realpath",
-     "canonicalize"
-    ],
-    "checklist": [
-     "门禁是否锚定（^…$）？",
-     "校验值是正则还是字面量（正则需转义）？",
-     "校验发生在规范化/解码之前还是之后？",
-     "空路径/默认回退值是否绕过门禁？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": "xss_path_sim",
-   "tier": "L3",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "tier_note": "语义族: 路径白名单",
-   "lang": "any"
-  },
-  {
-   "sig_id": "SIG-PREALLOC-LEN-003",
-   "semantic": "远端声明长度字段在数据到达前直接驱动内存分配（先分配后校验）",
-   "cwe": [
-    "CWE-770",
-    "CWE-789"
-   ],
-   "platform_profiles": [
-    "parser-library",
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "allocate\\(",
-     "with_capacity",
-     "StringBuilder\\(",
-     "new byte\\[",
-     "reserve\\(",
-     "capacity",
-     "calloc\\(",
-     "malloc\\(",
-     "realloc\\(",
-     "\\*\\s*sizeof"
-    ],
-    "checklist": [
-     "分配容量参数是否直接来自远端长度字段？",
-     "校验发生在分配之前还是之后？",
-     "默认上限是否存在且有效（非 MAX_VALUE 类）？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": "ws_frame_alloc",
-   "tier": "L3",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "tier_note": "语义族: 预分配长度",
-   "lang": "any"
-  },
-  {
-   "sig_id": "SIG-TRUNC-CAST-004",
-   "semantic": "大偏移/长度值窄化截断（usize→u16/u32→usize）后用于切片/索引",
-   "cwe": [
-    "CWE-617",
-    "CWE-248",
-    "CWE-681"
-   ],
-   "platform_profiles": [
-    "parser-library",
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "as u16",
-     "as u32",
-     "as usize",
-     "toInt\\(\\)",
-     "toInt32",
-     "\\(int\\)",
-     "\\(unsigned int\\)",
-     "\\(short\\)",
-     "\\(uint16_t\\)",
-     "\\(uint32_t\\)",
-     "\\(size_t\\)"
-    ],
-    "checklist": [
-     "截断值是否来自远端可控长度/偏移？",
-     "截断后是否用于切片/索引/长度计算？",
-     "有无 checked cast 或范围校验？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "tier": "L3",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "tier_note": "语义族: 截断转换",
-   "lang": "any"
-  },
-  {
-   "sig_id": "SIG-LOGIC-WEAKEN-005",
-   "semantic": "安全谓词被弱化：hash-only 白名单、前缀校验替代全名校验、检查位于操作之后（LOGIC_PATTERN 族）",
-   "cwe": [
-    "CWE-502",
-    "CWE-863",
-    "CWE-306"
-   ],
-   "platform_profiles": [
-    "any"
-   ],
-   "detection_hints": {
-    "grep": [
-     "allowlist",
-     "whitelist",
-     "isInAllowList",
-     "acceptHash",
-     "binarySearch"
-    ],
-    "checklist": [
-     "授权/白名单谓词的判定域是否完整（全名 vs hash/前缀/子串）？",
-     "检查与危险操作的位置关系（先检查后操作？）",
-     "历史修复是否在树（修复-再暴露）？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "tier": "L3",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "tier_note": "LOGIC_PATTERN: 授权谓词弱化",
-   "lang": "any"
-  },
-  {
-   "sig_id": "SIG-HEADER-INJ-006",
-   "semantic": "远端值拼接进响应头/属性上下文时仅部分转义（相邻转义遗漏、条件转义、默认模式转义空操作）",
-   "cwe": [
-    "CWE-79",
-    "CWE-113"
-   ],
-   "platform_profiles": [
-    "cgi-tool",
-    "server-framework",
-    "web-app"
-   ],
-   "detection_hints": {
-    "grep": [
-     "set-cookie",
-     "Location:",
-     "href=",
-     "img src",
-     "escape\\(",
-     "encode\\(",
-     "XMLEncode"
-    ],
-    "checklist": [
-     "同一变量的其他消费点是否有转义（adjacent-escape-miss）？",
-     "转义函数在当前输出模式是否为有效实现（如 html 模式下 XML 转义空操作）？",
-     "转义是否覆盖引号/斜杠/CRLF 全部维度？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": "xss_path_sim",
-   "tier": "L3",
-   "tier_note": "语义族: 头注入 (known_instances 非空)",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "lang": "any"
-  },
-  {
-   "sig_id": "SIG-AUTHZ-BOUND-007",
-   "semantic": "信任边界/鉴权前提缺失：Host/转发头被信任（来源校验缺失/鉴权谓词弱化）",
-   "cwe": [
-    "CWE-807",
-    "CWE-350",
-    "CWE-639"
-   ],
-   "platform_profiles": [
-    "security-boundary",
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "X-Forwarded",
-     "Forwarded",
-     "request.host",
-     "Host header",
-     "X-Real-IP"
-    ],
-    "checklist": [
-     "该值是否被用于鉴权/CSRF/重定向/绝对 URL 构造？",
-     "信任该头/通道的前提（代理剥离）是否在框架内强制？",
-     "owner/session 与资源归属是否比对？"
-    ]
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "tier": "L3",
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "tier_note": "语义族: 授权边界",
-   "lang": "any"
-  },
-  {
-   "sig_id": "SIG-PS-SCRIPTBLOCK-001",
-   "tier": "L2",
-   "tier_note": "语言词族: PowerShell (W6 §9.1)",
-   "semantic": "动态脚本执行/注入（ScriptBlock::Create、dot-source、& 调用、iex）",
-   "cwe": [
-    "CWE-94"
-   ],
-   "platform_profiles": [
-    "cli-tool"
-   ],
-   "detection_hints": {
-    "grep": [
-     "\\[ScriptBlock\\]::Create",
-     "iex",
-     "Invoke-Expression",
-     "ParseInput",
-     "& $SafeCommands"
-    ],
-    "checklist": []
-   },
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "powershell"
-  },
-  {
-   "sig_id": "SIG-SH-EVAL-001",
-   "tier": "L2",
-   "tier_note": "语言词族: Shell (W6 §12.1)",
-   "semantic": "shell eval/注入（trap/eval/source env 路径/curl|sh）",
-   "cwe": [
-    "CWE-78"
-   ],
-   "platform_profiles": [
-    "cli-tool"
-   ],
-   "detection_hints": {
-    "grep": [
-     "\\beval ",
-     "\\btrap ",
-     "\\bsource ",
-     "\\bcurl ",
-     "\\| sh",
-     "\\$\\([^)]*\\)"
-    ],
-    "checklist": []
-   },
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "shell"
-  },
-  {
-   "sig_id": "SIG-CS-DESER-001",
-   "tier": "L2",
-   "tier_note": "语言词族: C# 反序列化 (W6 §13.1)",
-   "semantic": "反序列化类选择/程序集加载（TypeNameHandling/BindToType/Assembly.Load/Type.GetType——Newtonsoft.Json 通用框架 API）",
-   "cwe": [
-    "CWE-502"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "TypeNameHandling",
-     "BindToType",
-     "Assembly.Load",
-     "Type.GetType",
-     "Expression.Compile",
-     "ISerializableCreator"
-    ],
-    "checklist": []
-   },
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "cs"
-  },
-  {
-   "sig_id": "SIG-PY-PICKLE-001",
-   "tier": "L2",
-   "tier_note": "语言词族: Python (W6 §14.1)",
-   "semantic": "Python pickle 反序列化（不可信数据直接 load）",
-   "cwe": [
-    "CWE-502",
-    "CWE-770"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "pickle\\.loads",
-     "pickle\\.load\\b",
-     "Unpickler"
-    ],
-    "checklist": []
-   },
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "python"
-  },
-  {
-   "sig_id": "SIG-TS-ACCUM-001",
-   "tier": "L2",
-   "tier_note": "语言词族: TypeScript (W6 §15.1)",
-   "semantic": "Node.js 流/套接字 data 事件逐块累积（无总量上限）",
-   "cwe": [
-    "CWE-400"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "socket\\.on\\(['\"]data['\"]"
-    ],
-    "checklist": []
-   },
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "typescript"
-  },
-  {
-   "sig_id": "SIG-KT-RECEIVE-001",
-   "tier": "L2",
-   "tier_note": "语言词族: Kotlin (W6 §19.1)",
-   "semantic": "Kotlin 通道/IO 接收（receive/readRemaining 无上限消费）",
-   "cwe": [
-    "CWE-770",
-    "CWE-601"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "receive\\(",
-     "readRemaining"
-    ],
-    "checklist": []
-   },
-   "runtime_prereq": null,
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   },
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "kotlin"
-  },
-  {
-   "sig_id": "SIG-C-ALLOC-001",
-   "tier": "L2",
-   "tier_note": "语言词族: C (v3.3 系统语言扩充)",
-   "semantic": "malloc/realloc/calloc 分配大小来自不可信长度/计数字段, 无业务预算检查",
-   "cwe": [
-    "CWE-789",
-    "CWE-770"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "malloc\\(",
-     "calloc\\(",
-     "realloc\\(",
-     "alloca\\("
-    ],
-    "checklist": [
-     "分配大小是否来自输入字段（长度/计数/varint）？",
-     "分配前是否只有乘法溢出检查而无业务总量预算？",
-     "分配大小与实际到达字节是否存在放大关系？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "c",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  },
-  {
-   "sig_id": "SIG-GO-ACCUM-001",
-   "tier": "L2",
-   "tier_note": "语言词族: Go (v3.3 系统语言扩充)",
-   "semantic": "流式消费/累积无总量上限（io.Copy/ReadAll 无限制, append 累积无预算）",
-   "cwe": [
-    "CWE-400",
-    "CWE-770"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "io\\.Copy\\(",
-     "io\\.ReadAll\\(",
-     "bufio\\.Reader",
-     "append\\("
-    ],
-    "checklist": [
-     "流来源是否远端可控且长度无限制？",
-     "累积点是否有 LimitReader/固定缓冲/总量预算？",
-     "声明长度与实际累积量是否独立？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "go",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  },
-  {
-   "sig_id": "SIG-RS-UNSAFE-001",
-   "tier": "L2",
-   "tier_note": "语言词族: Rust (v3.3 系统语言扩充)",
-   "semantic": "unsafe 块/FFI: 远端长度或指针构造切片（from_raw_parts/set_len）无边界校验",
-   "cwe": [
-    "CWE-125",
-    "CWE-787"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "unsafe\\s*\\{",
-     "from_raw_parts\\(",
-     "set_len\\(",
-     "transmute"
-    ],
-    "checklist": [
-     "长度参数是否来自远端/FFI 且未经校验？",
-     "指针是否由宿主/外部库传入？",
-     "unsafe 块内是否有注释化安全论证？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "rust",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  },
-  {
-   "sig_id": "SIG-JAVA-DESER-001",
-   "tier": "L2",
-   "tier_note": "语言词族: Java (v3.3 系统语言扩充)",
-   "semantic": "不可信源反序列化（ObjectInputStream.readObject 无过滤器）或流式读取无总量上限",
-   "cwe": [
-    "CWE-502",
-    "CWE-400"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "readObject\\(",
-     "ObjectInputStream",
-     "readAllBytes\\("
-    ],
-    "checklist": [
-     "输入源是否不可信（socket/文件/请求体）？",
-     "是否存在 ObjectInputFilter/类白名单？",
-     "读取循环是否有字节总量上限？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "java",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  },
-  {
-   "sig_id": "SIG-STATE-RACE-001",
-   "tier": "L3",
-   "tier_note": "语义族: 竞态窗口 (v3.3)",
-   "semantic": "检查与使用分离（check-then-act/TOCTOU）或共享状态读改写无同步",
-   "cwe": [
-    "CWE-362",
-    "CWE-367"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "access\\(",
-     "stat\\(",
-     "fopen\\(",
-     "tmpnam",
-     "open\\("
-    ],
-    "checklist": [
-     "检查与使用之间状态是否可被并发/外部改变（TOCTOU）？",
-     "文件系统对象是否先检查后使用？",
-     "共享变量/缓存的读改写是否有同步原语？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "any",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  },
-  {
-   "sig_id": "SIG-CRYPTO-WEAK-001",
-   "tier": "L3",
-   "tier_note": "语义族: 密码学弱化 (v3.3)",
-   "semantic": "安全用途的随机性来自可预测源（时间/地址/线性同余）或弱哈希用于完整性替代",
-   "cwe": [
-    "CWE-327",
-    "CWE-330"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "rand\\(\\b",
-     "time\\(NULL\\)",
-     "srand\\(",
-     "hashlib\\.md5",
-     "MD5",
-     "SHA1"
-    ],
-    "checklist": [
-     "随机源是否用于安全用途（seed/密钥/盐/令牌）？",
-     "种子是否可预测（时间戳/地址/固定值）？",
-     "哈希用途是否安全敏感（校验替代/签名/身份）？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "any",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  },
-  {
-   "sig_id": "SIG-CPP-ALLOC-001",
-   "tier": "L2",
-   "tier_note": "语言词族: C++ (v3.3.1 补齐)",
-   "semantic": "裸 new/new[] 分配无业务预算或容器无界增长 (push_back/resize 无总量上限)",
-   "cwe": [
-    "CWE-789",
-    "CWE-770"
-   ],
-   "platform_profiles": [
-    "server-framework"
-   ],
-   "detection_hints": {
-    "grep": [
-     "new\\s+\\w+\\[",
-     "\\bnew\\s+\\w+\\s*[;\\(]",
-     "push_back\\(",
-     "resize\\("
-    ],
-    "checklist": [
-     "分配大小是否来自不可信长度/计数字段？",
-     "new 前是否只有溢出检查而无业务预算？",
-     "容器增长是否有 reserve 上限/总量预算？"
-    ]
-   },
-   "runtime_prereq": null,
-   "known_instances": [],
-   "empirical_harness": null,
-   "lang": "cpp",
-   "contribution": {
-    "hypotheses_contributed": 0,
-    "batches_seen": 0
-   }
-  }
- ],
- "smoke_test": {
-  "mode": "anchor_recall",
-  "required_hit_rate": 1.0
- },
- "retired_signatures": []
+  "retired_signatures": []
 }

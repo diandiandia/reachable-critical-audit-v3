@@ -249,13 +249,11 @@ def gen_hypotheses(hits, signatures):
             "semantic_family": sig.get("semantic", ""),
             "cwe": sig.get("cwe", []),
             "checklist": sig.get("detection_hints", {}).get("checklist", []),
-            "empirical_harness": sig.get("empirical_harness"),
             "hit_sites": [{"file": h["site"]["file"], "line": h["site"]["line"],
                            "matched": h["matched_pattern"],
                            "line_text": h["line_text"]} for h in hs],
             "status": "PENDING",
             "sources": [sig_id],  # v3.1 贡献度度量 (W6 设计 P-A)
-            "signature_tier": sig.get("tier", "L2"),
         }
         if sig_id.startswith(LOGIC_PATTERN_PREFIX):
             logic_hypotheses.append(hyp)

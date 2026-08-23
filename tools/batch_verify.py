@@ -150,7 +150,7 @@ tests/示例目录——不在则记 broken_edge → verdict=NEEDS_REVIEW。""",
 未被调用则记 broken_edge → verdict=NEEDS_REVIEW。""",
 }
 
-# 扩展名 → 语言 (与 ast_scanner.ASTCoarseScanner.EXTENSION_MAP 保持一致的子集)
+# 扩展名 → 语言 (v3.5.2: ast_scanner 已裁除, 本表为独立归一来源)
 _EXT_LANG = {
     ".java": "java", ".cpp": "cpp", ".cc": "cpp", ".cxx": "cpp", ".c": "c",
     ".h": "c", ".hpp": "cpp", ".py": "python", ".go": "go", ".rs": "rust",

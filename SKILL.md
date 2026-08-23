@@ -88,7 +88,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    python3 <skill_dir>/tools/target_kind.py <project> --write
    ```
    → 机械推荐 {application, library, hybrid} + 信号证据。主代理复核后**签收**写入
-   `verify_queue.target_kind`。存在性规则按型装载（PREC-TARGET-KIND-001）：
+   `verify_queue.target_kind`。存在性规则按型装载（先例规则文本，v3.5.2 起不设 PREC id）：
    - **application**：默认可达三层检查含 shipped 配置实际值 + 运行时注册核实 + platform_precondition 显式标注
    - **library**：公共 API 即信任边界（库型先例）；仓内调用者缺失不是阻断；死代码豁免不适用
    - **hybrid**：按组件分别装载；无法确定归属时按 application（保守）
@@ -219,7 +219,7 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 verifier/证伪者证据文本含真实实测的场景——必须带 `backfilled_by` 标记 + 实测数字依据
 （成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
 
-1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
+1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
 3. 实测确认 → `empirical` 字段 + grade=empirically_confirmed；证伪 → correction_record 降级并回溯 verifier 错误（REQ-V3-051）。
 
@@ -281,8 +281,8 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
-- `tools/r05_diff_archaeology.py`：R0.5 差异考古（REQ-V3-012~016，非默认路径）；`tools/ast_scanner.py`：L0 扫描器（REQ-V3-002 禁止其作为默认路径，按需使用）；`tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：20 个签名（9 L3 语义族 + 11 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall）；`resources/precedent_library.json`：25 条裁决先例；`resources/checklist_library.json`：29 条检查清单
+- `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
+- `resources/signature_library.json`：20 个签名（9 L3 语义族 + 11 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：29 条检查清单
 - `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：4 个实证模板；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
 - `tests/`：190 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
@@ -371,9 +371,9 @@ akka-http / etcd / actix-web 三项目复跑对照:
 
 ### R2/R3: 语言维度
 - L2 词族按 surface.lang 过滤（C 词族不打 Rust surface）
-- verifier 上下文语言按候选.lang 取；分级机械复核条款（collect 后强制机械复核：
-  `batch_verify.py <project> --stage grade-recheck` 批量逐候选重算，
-  差异写 grade_recomputed_by）
+- verifier 上下文语言按候选.lang 取；分级机械复核条款（v3.5.2 起 collect 内联
+  重算为默认路径，`batch_verify.py <project> --stage grade-recheck` 降为可选
+  维修工具——批量重算历史队列，差异写 grade_recomputed_by）
 - CK-FFI-BOUNDARY（第 21 条清单）绑定 ffi/ctypes/extern 类候选
 
 ### R3.5-N（新）: UNREACHABLE 复活攻击

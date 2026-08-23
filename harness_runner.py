@@ -307,10 +307,6 @@ def main(argv):
     r = _main_additions(argv)
     if r is not None:
         return r
-    if cmd == "check":
-        cand = json.load(open(argv[2]))
-        print(json.dumps({"needs_harness": needs_harness(cand)}, ensure_ascii=False))
-        return 0
     if cmd == "env":
         print(json.dumps(collect_env(), ensure_ascii=False, indent=2))
         return 0

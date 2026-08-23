@@ -96,7 +96,7 @@ def test_checklist_pinned_dep_entry():
 # ---------------- v3.5 (P5) 资产计数防漂移 ----------------
 
 def test_asset_counts_current():
-    """SKILL.md 资产地图计数 = 磁盘实况 (20/29/25/4/3/18)。
+    """SKILL.md 资产地图计数 = 磁盘实况 (20/29/16/4/3/18)。
     根因: SKILL.md 长期写 13 签名/19 清单/19 先例/3 模板/15 手册 (v3.5 体检低#1)。"""
     import glob
     sigs = len(json.load(open(os.path.join(WORKSPACE, "resources", "signature_library.json")))["signatures"])
