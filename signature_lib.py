@@ -149,10 +149,12 @@ def _scan_runtime_assets(base=None):
     硬编码 ktor/actix 端口与 AWStats 专属逻辑 (黑名单只扫签名资产是覆盖盲区)。
     v3.5.1: resources/ 加入扫描——但仅拦 "/root/" 绝对路径 (数据资产零合法用途;
     该目录的 source_lessons/cve 描述等字段合法含项目名, 黑名单 token 不适用)。
+    v3.5.2: task_templates/ 加入扫描 (任务书模板同 templates/harness 义务,
+    黑名单 + /root/ 全扫——模板内项目名例证曾被 P1 清零)。
     返回 [(相对路径, 命中项)]。base 参数仅供测试注入临时目录。"""
     here = base or os.path.dirname(os.path.abspath(__file__))
     hits = []
-    for rel in ("templates", "harness_manuals", "resources"):
+    for rel in ("templates", "harness_manuals", "task_templates", "resources"):
         base_dir = os.path.join(here, rel)
         if not os.path.isdir(base_dir):
             continue

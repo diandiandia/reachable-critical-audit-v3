@@ -1,909 +1,909 @@
 {
- "description": "检查清单库 — 15 语言战役中证伪者的攻击面固化为 verifier/refuter/H7 的强制自查项。每个清单带 applies_to 与 binding（绑定条件：按 cwe/语义家族/sink 形态自动挂到候选）。",
- "checklists": [
-  {
-   "id": "CK-WS-MATERIALIZE",
-   "name": "WS/分片物化检查",
-   "family": "ws-frame",
-   "binding": {
-    "cwe": [
-     "CWE-400"
-    ],
-    "keywords": [
-     "ws",
-     "websocket",
-     "帧",
-     "分片",
-     "continuation",
-     "chunked"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter"
-   ],
-   "steps": [
-    "框架是否物化整条消息：Codec 逐帧产出? 流 1:1 透传? ActorStream 逐项交付?",
-    "帧上限是否对每个分片帧（含 continuation）强制?",
-    "是否存在框架级『整条消息』累积缓冲? 累积是否只在用户 handler（=应用能力面）?",
-    "读取侧是否有背压（消费者暂停即停止读 socket）?"
-   ],
-   "source_lessons": [
-    "W6 §20.2",
-    "W6 §23.1"
-   ],
-   "applicability_signals": {
-    "text": [
-     "ws",
-     "websocket",
-     "分片",
-     "fragment",
-     "帧",
-     "流式",
-     "streaming",
-     "continuation"
-    ],
-    "note": "SWR-V3.4.3-042: cwe CWE-400 为通用资源码, 必须叠加 WS/分片问题域文本信号 (P1/P2 纯 JWT 库误绑教训)"
-   }
-  },
-  {
-   "id": "CK-UNBOUNDED-HOPS",
-   "name": "无上限逐跳验证",
-   "family": "unbounded",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "无上限",
-     "无界",
-     "unbounded",
-     "累积"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "枚举数据路径上每一跳的容量常量（chanBufLen/队列深度/批大小/窗口）",
-    "『未找到上限』≠『不存在』——每一跳都必须给出容量证据或证明无容量",
-    "对照：全树 grep 无任何 limit 常量时才可主张真无上限（ktor CAND-001 对照 etdd CAND-004）"
-   ],
-   "source_lessons": [
-    "W6 §21.2"
-   ]
-  },
-  {
-   "id": "CK-INJECT-PRIMITIVES",
-   "name": "注入原语枚举",
-   "family": "injection",
-   "binding": {
-    "cwe": [
-     "CWE-78",
-     "CWE-94",
-     "CWE-74",
-     "CWE-113"
-    ],
-    "keywords": [
-     "注入",
-     "env",
-     "命令"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "逐一枚举注入原语：换行 CR/LF、空字节 NUL、名污染（env 名/参数名）、编码形态（百分号/多字节）",
-    "对每个原语验证阻断点并记录证据——任一原语无阻断即 REACHABLE",
-    "名消毒规则（如 HTTP_[A-Z0-9_]+）是否同时封死危险名（PATH/LD_*）?"
-   ],
-   "source_lessons": [
-    "W6 §22.4"
-   ]
-  },
-  {
-   "id": "CK-HEADER-RESIDUAL",
-   "name": "头注入四级残余",
-   "family": "header-injection",
-   "binding": {
-    "cwe": [
-     "CWE-113"
-    ],
-    "keywords": [
-     "content-disposition",
-     "响应头",
-     "头注入",
-     "filename"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "四级残余面逐一验证：① CR/LF（响应拆分）② quote（属性逃逸）③ 全 C0 控制字符集（RFC 9110 field-content 违规/服务器语义破坏）④ NUL（崩溃）",
-    "净化函数字符集（如 gsub 三字符）之外的字符合集逐一实测透传行为",
-    "各服务器实现差异实测（Puma/WEBrick/Tomcat 对 C0 的处理不同）"
-   ],
-   "source_lessons": [
-    "W6 §24.5"
-   ]
-  },
-  {
-   "id": "CK-DEFAULT-3LAYER",
-   "name": "默认值三层语义",
-   "family": "default-on",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "默认",
-     "gate",
-     "默认开启",
-     "默认可达"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter",
-    "H7"
-   ],
-   "steps": [
-    "代码层默认值是什么?",
-    "模块/feature 层默认加载状态?（Cargo feature 默认集 ≠ 运行时可达）",
-    "部署层前提?（TLS 部署自动获得 h2、写入原语需另一漏洞）",
-    "三层全开才算默认可达；裁决输出 gate 记录型而非二元"
-   ],
-   "source_lessons": [
-    "W6 §22.3",
-    "W6 §23.2"
-   ]
-  },
-  {
-   "id": "CK-ENGINE-MATRIX",
-   "name": "引擎矩阵标注",
-   "family": "multi-engine",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "引擎",
-     "engine",
-     "cio",
-     "netty",
-     "后端",
-     "handler"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "REACHABLE 路径在文档默认引擎上成立吗?",
-    "非默认引擎的路径必须显式标注引擎矩阵（『PATH A 仅 CIO 执行』）",
-    "引擎差异导致的解析器差异（LAX vs STRICT）逐一对照"
-   ],
-   "source_lessons": [
-    "W6 §19.8"
-   ]
-  },
-  {
-   "id": "CK-DYNAMIC-DEFENSE",
-   "name": "动态注册防御搜索",
-   "family": "defense-verification",
-   "binding": {
-    "cwe": [
-     "CWE-79",
-     "CWE-20"
-    ],
-    "keywords": [
-     "hook",
-     "filter",
-     "注册",
-     "sanitize",
-     "净化"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "搜索该 sink/字段名的全部防御注册点——含 init 回调内的动态注册（kses_init 类）",
-    "条件注册（按 capability/环境）逐一判定当前上下文是否生效",
-    "单点 sanitize 调用不足以证明净化——防御是分层且动态的"
-   ],
-   "source_lessons": [
-    "W6 §17.4",
-    "W6 §17.5"
-   ]
-  },
-  {
-   "id": "CK-SIBLING-LISTENERS",
-   "name": "同族监听点枚举",
-   "family": "exception-path",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "异常处理",
-     "catch",
-     "监听",
-     "listener",
-     "try"
-    ],
-    "verdict_context": "UNREACHABLE",
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "枚举全部同族监听点（5 传输 × message 事件类）",
-    "每个监听点是否有相同防护? 一条路径有防护≠全部有",
-    "R4 与 R3 互为兜底：单点防护判 UNREACHABLE 后 R4 仍查原始监听器路径"
-   ],
-   "source_lessons": [
-    "W6 §15.5"
-   ]
-  },
-  {
-   "id": "CK-DEAD-CACHE",
-   "name": "缓存 key 注册存在性",
-   "family": "dead-cache",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "storage",
-     "cache",
-     "缓存",
-     "key 注册",
-     "register"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "见到缓存/存储写点必查该 key 的注册点是否存在",
-    "未注册的 key 可能是每请求全量重读的放大关键（ETagHashes StorageKey 先例）"
-   ],
-   "source_lessons": [
-    "W6 §16.13"
-   ]
-  },
-  {
-   "id": "CK-COMMENTED-GUARD",
-   "name": "被注释的守卫",
-   "family": "commented-guard",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "注释",
-     "commented"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter"
-   ],
-   "steps": [
-    "主动 grep 被注释的安全相关行（/* */、#、// 内的 check/limit/guard）",
-    "注释掉的守卫是最强证据形态（历史先例: 记账/守卫三处注释）"
-   ],
-   "source_lessons": [
-    "W6 §22.6"
-   ]
-  },
-  {
-   "id": "CK-DUAL-PARSER",
-   "name": "CWE-436 双解析器前提",
-   "family": "cwe-436",
-   "binding": {
-    "cwe": [
-     "CWE-436"
-    ],
-    "keywords": [
-     "解析器",
-     "parser",
-     "分歧"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "枚举『对同一字节流做安全判定的两个解析器』并证明分歧",
-    "浏览器是请求头生成方而非二次解析器——『与浏览器不一致』默认不成立",
-    "RFC 规定的百分号解码是合规行为而非分歧（RFC 5987 先例）"
-   ],
-   "source_lessons": [
-    "W6 §20.3"
-   ]
-  },
-  {
-   "id": "CK-HOST-AUTH-CONSISTENCY",
-   "name": "Host↔authority 一致性封口",
-   "family": "absolute-form",
-   "binding": {
-    "cwe": [
-     "CWE-436",
-     "CWE-444"
-    ],
-    "keywords": [
-     "absolute",
-     "authority",
-     "host",
-     "绝对 uri"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "第一步：目标框架是否校验 Host↔authority 一致性（不一致 400）?",
-    "有 → absolute-form/请求走私族核心形态直接封口（正向框架先例）",
-    "无 → 按 PREC-HOST-FAMILY-001 裁决树处理"
-   ],
-   "source_lessons": [
-    "W6 §20.4"
-   ]
-  },
-  {
-   "id": "CK-RUNTIME-RE",
-   "name": "运行时正则先验",
-   "family": "redos",
-   "binding": {
-    "cwe": [
-     "CWE-1333"
-    ],
-    "keywords": [
-     "regex",
-     "正则",
-     "redos",
-     "回溯"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier",
-    "R2 假设生成"
-   ],
-   "steps": [
-    "入队前先问运行时版本：Ruby≥3.2 Oniguruma 线性化经典灾难类? net8 自动原子化?",
-    "pattern 源是否攻击者可控（路由模式=应用代码则前提不成立）",
-    "实证前先做 pattern 搜索（自动原子化会假阴性）"
-   ],
-   "source_lessons": [
-    "W6 §24.3",
-    "W6 §13.4"
-   ]
-  },
-  {
-   "id": "CK-CHECKPOINT-AFTER-ACCUM",
-   "name": "检查点晚于累积点",
-   "family": "unbounded-body",
-   "binding": {
-    "cwe": [
-     "CWE-789",
-     "CWE-770"
-    ],
-    "keywords": [
-     "body",
-     "上传",
-     "读取循环",
-     "落盘",
-     "累积点",
-     "to_bytes"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier",
-    "H1"
-   ],
-   "steps": [
-    "限制检查点与累积点的先后：全量落盘/累积后才检查 = 缺陷（多框架同构先例）",
-    "写循环内是否有预算检查（LOOP_BUDGET 类）",
-    "对照：检查先于累积的框架为正向例"
-   ],
-   "source_lessons": [
-    "W6 §14.3"
-   ]
-  },
-  {
-   "id": "CK-REPLY-CHANNEL",
-   "name": "reply 通道族",
-   "family": "microservices",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "reply",
-     "回复通道",
-     "broker",
-     "mq",
-     "消息"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "H4"
-   ],
-   "steps": [
-    "reply-to/回复通道是否可预测（后缀拼接）?",
-    "回复目标是否由头驱动（REPLY_TOPIC 类）?",
-    "broker 认证默认矩阵（无认证匿名面）?"
-   ],
-   "source_lessons": [
-    "W6 §15.4"
-   ]
-  },
-  {
-   "id": "CK-SENTINEL-SEMANTICS",
-   "name": "哨兵值语义",
-   "family": "default-value",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "max_value",
-     "哨兵",
-     "默认值",
-     "-1",
-     "sentinel",
-     "limit 0"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "H7"
-   ],
-   "steps": [
-    "数值默认值红旗：MAX_VALUE / -1 / 0 三值即红旗",
-    "查下游依赖库对该值的哨兵处理（『库把它当什么』：显式无限制哨兵 vs 未设置）",
-    "对照防御完整框架的同位默认（如 Json 2MB / 8m 同族上限）"
-   ],
-   "source_lessons": [
-    "W6 §19.7",
-    "W6 §21.3"
-   ]
-  },
-  {
-   "id": "CK-DEFAULT-VALUE-TABLE",
-   "name": "默认值全表模板",
-   "family": "default-value",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "默认值",
-     "default config",
-     "settings"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "H7"
-   ],
-   "steps": [
-    "每默认值 × 五维：三层语义（CK-DEFAULT-3LAYER）、哨兵语义（CK-SENTINEL-SEMANTICS）、文档声明（README/CHANGELOG『有意』声明）、数值红旗、正向默认确认",
-    "输出含正向默认确认（防御完整项的显式列出——对使用方是选型信息）"
-   ],
-   "source_lessons": [
-    "W6 §20.6",
-    "W6 §24.6"
-   ]
-  },
-  {
-   "id": "CK-ENV-LEAK",
-   "name": "GIT_CONFIG/env 重定向族",
-   "family": "env-injection",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "git_config",
-     "环境变量",
-     "子进程",
-     "env"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "H4"
-   ],
-   "steps": [
-    "子进程调用前是否清理环境（GIT_CONFIG_* 可重定向 git pull 目标）",
-    "cwd/参数中控制字节是否穿透终端转义"
-   ],
-   "source_lessons": [
-    "W6 §12.7"
-   ]
-  },
-  {
-   "id": "CK-EMPIRICAL-SCOPE",
-   "name": "实证范围分级",
-   "family": "empirical",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "实证",
-     "harness",
-     "实测",
-     "scope"
-    ],
-    "applies_to_phase": "R5",
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "R5",
-    "verifier"
-   ],
-   "steps": [
-    "scope ∈ {mechanism, function_body, full_chain, e2e} 必填 + scope_note",
-    "机制级实证只能支撑 edge_proven 升级，不得直接升 empirically_confirmed",
-    "多维度主张必须多维度实证（解压放大 = 单 chunk ratio + 多 member 行为）",
-    "0ms 假阴性先怀疑语义前提（filter 作用对象）"
-   ],
-   "source_lessons": [
-    "W6 §17.7",
-    "W6 §15.6",
-    "W6 §23.8",
-    "W6 §13.7"
-   ]
-  },
-  {
-   "id": "CK-PATH-GUARD",
-   "name": "路径穿越守卫链验证",
-   "family": "path-traversal",
-   "binding": {
-    "cwe": [
-     "CWE-22"
-    ],
-    "keywords": [
-     "路径",
-     "穿越",
-     "守卫",
-     "static",
-     "expand_path",
-     "路径拼接",
-     "path_info"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier"
-   ],
-   "steps": [
-    "枚举守卫链全部环节并逐段验证语义（四段示例: NUL/编码 → expand_path → start_with 前缀 → File.file?）",
-    "解码与校验的先后顺序（RFC2396 unescape 先于校验 = 正确; 反之则 %2e%2e 绕过）",
-    "双编码是否二次解码（%252e 停留字面 = 安全）",
-    "symlink 逃逸面归属判定: 部署者写入 vs HTTP 可控",
-    "全 payload 矩阵实测（23 种穿越形态全 404 的先例标准, W6 §24.8）"
-   ],
-   "source_lessons": [
-    "W6 §22.4",
-    "W6 §24.8"
-   ]
-  },
-  {
-   "id": "CK-FFI-BOUNDARY",
-   "name": "跨语言 FFI 边界检查",
-   "family": "ffi-boundary",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "ffi",
-     "ctypes",
-     "extern",
-     "jni",
-     "n-api",
-     "cffi",
-     "绑定",
-     "所有权",
-     "addon",
-     "嵌入",
-     "lang_pair"
-    ],
-    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
-   },
-   "applies_to": [
-    "verifier",
-    "H4"
-   ],
-   "steps": [
-    "边界调用方向与所有权转移方向（哪侧分配/哪侧释放）",
-    "unsafe 桥接不变量逐条验证（指针有效性窗口/生命周期）",
-    "ABI 与结构体布局两侧一致性（打包/对齐/枚举值）",
-    "跨语言内存释放责任（ctypes 指针 vs 原库分配器）",
-    "引用计数对称性（嵌入场景：借出/归还配平）",
-    "跨语言序列化格式一致性（两侧编解码器版本/默认值分歧）"
-   ],
-   "source_lessons": [
-    "v3.2 P-B 设计",
-    "W6 §20.2 (跨语言对照先例)"
-   ]
-  },
-  {
-   "id": "CK-IMPORT-REGISTRATION",
-   "name": "模块可导入性/注册真实性检查",
-   "family": "import-registration",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "import",
-     "导入",
-     "di",
-     "组件扫描",
-     "component_scan",
-     "route",
-     "路由注册",
-     "register",
-     "autowired",
-     "provider"
-    ],
-    "note": "v3.2.1 (W6 §25.2): 链首模块存在≠被导入; DI 扫描器吞错路径=静默失败温床 (应用型项目 CAND-004/009 404 先例)"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter"
-   ],
-   "steps": [
-    "顶层包解析: 链首模块所属顶层包在部署布局下能否解析 (find_spec/import 语法/go.mod require/crate 在依赖树)——顶层包不存在则链首模块整体不可导入",
-    "构建包含: 该模块所在目录/文件是否被构建系统包含 (tsconfig include/Cargo [[bin]]/setup.py packages)",
-    "DI/组件扫描器吞错路径审查: 注册器若含 `except Exception: log/continue` 模式, 必须验证目标模块实际注册成功 (注册表/路由表/扫描日志), 不得以框架设计推定",
-    "实证核验: 有条件时实际启动/导入验证 (启动日志 grep 模块名 + 路由表/注册计数)——import 失败 → 边记 broken_edge, verdict=NEEDS_REVIEW (修复即可达条件候选)"
-   ]
-  },
-  {
-   "id": "CK-CACHE-GATE-LAYER",
-   "name": "消费端中间层/缓存门闩三查",
-   "family": "cache-gate",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "cache",
-     "缓存",
-     "redis",
-     "fallback",
-     "降级",
-     "gate",
-     "门闩",
-     "default_config",
-     "defaultOss",
-     "getdefault",
-     "write",
-     "写入"
-    ],
-    "note": "v3.2.1 (W6 §25.3): adapter↔domain 间缓存/门闩层被整层漏掉 → CAND-007 过度声称 (Redis 门闩错误分支写反死代码)"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter"
-   ],
-   "steps": [
-    "中间层横向枚举: 消费端 adapter 与 domain 之间逐层列出缓存/门闩/降级/拦截器——不能只沿调用链直查 (历史先例: 配置获取 API 的缓存前置门闩被整层漏掉)",
-    "错误分支方向: 检查 `if err == nil` 块内是否处理了错误分支 (写反=死代码); 缓存未命中路径返回什么 (空实体+nil error 会短路 DB 回源)",
-    "写读形状一致: 缓存写入方与读取方的序列化形状是否匹配 (writer 单对象 vs reader 切片 → 往返必然失败, 缓存永不能服务新值)",
-    "缓存键写路径: Save/Modify/Remove 是否失效/回填缓存键——不写缓存键则新写入的 DB 行永远进不了读路径; 状态依赖 (缓存命中的条件态 vs 默认态) 写入 blocking_point 候选"
-   ]
-  },
-  {
-   "id": "CK-CRYPTO-MISUSE",
-   "name": "密码学误用检查",
-   "family": "crypto",
-   "binding": {
-    "cwe": [
-     "CWE-327",
-     "CWE-326",
-     "CWE-338",
-     "CWE-347",
-     "CWE-330",
-     "CWE-310",
-     "CWE-311",
-     "CWE-295"
-    ],
-    "keywords": [
-     "crypto",
-     "cipher",
-     "sha",
-     "md5",
-     "rand",
-     "random",
-     "随机",
-     "密钥",
-     "签名",
-     "证书",
-     "校验和"
-    ],
-    "note": "v3.4 (REQ-V3.4-004): 难实证缺陷类深度清单——不进 gate ③ 强制实证 (漏斗防反转)"
-   },
-   "applies_to": [
-    "verifier",
-    "H4",
-    "H7"
-   ],
-   "steps": [
-    "算法选择: 过时/弱算法 (MD5/SHA1/RC4/DES) 是否用于安全敏感场景",
-    "随机源状态: 伪随机/未播种/弱种子是否进入不可预测性要求场景 (令牌/掩码/盐)",
-    "密钥管理: 硬编码/日志泄漏/派生流程 (KDF 参数) 是否合规",
-    "证书/签名校验: 是否跳过 hostname/链校验或校验返回值被忽略",
-    "非对称参数: 模长/填充/曲线选择是否有已知弱化"
-   ],
-   "source_lessons": [
-    "七项目批次 uwebsockets H7-F1 rand() 未播种发现 (去项目化)"
-   ],
-   "applications": []
-  },
-  {
-   "id": "CK-AUTHN-BYPASS",
-   "name": "认证/授权绕过检查",
-   "family": "authn",
-   "binding": {
-    "cwe": [
-     "CWE-287",
-     "CWE-862",
-     "CWE-863",
-     "CWE-285",
-     "CWE-639",
-     "CWE-926",
-     "CWE-306"
-    ],
-    "keywords": [
-     "auth",
-     "认证",
-     "鉴权",
-     "权限",
-     "owner",
-     "租户",
-     "会话",
-     "令牌",
-     "登录",
-     "越权"
-    ],
-    "note": "v3.4 (REQ-V3.4-004): 难实证缺陷类深度清单——不进 gate ③ 强制实证"
-   },
-   "applies_to": [
-    "verifier",
-    "H5",
-    "H6"
-   ],
-   "steps": [
-    "鉴权谓词强度: 前缀/子串/hash 匹配是否替代全名比对 (H7③ 同族)",
-    "默认拒绝: 未命中规则的请求是否落入允许分支 (default-allow 反模式)",
-    "会话/令牌校验: 过期/撤销/绑定 (token↔主体) 是否被检查或跳过",
-    "越权路径: 对象级 owner 比对缺失面 (横向) 与角色升级面 (纵向)",
-    "暴露端点: 调试/管理端点是否有鉴权前置或仅靠隐藏"
-   ],
-   "source_lessons": [
-    "七项目批次 hikaricp H6 类名前缀守卫发现 (去项目化)",
-    "W6 §24.9"
-   ],
-   "applications": []
-  },
-  {
-   "id": "CK-BIZ-LOGIC",
-   "name": "业务逻辑缺陷检查",
-   "family": "biz-logic",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "越权",
-     "状态机",
-     "限额",
-     "金额",
-     "流程不变式",
-     "竞态下单",
-     "多步",
-     "订单",
-     "配额",
-     "兑换"
-    ],
-    "note": "v3.4 (REQ-V3.4-004): 无 CWE 锚定 (跨族语义)——关键词绑定为主"
-   },
-   "applies_to": [
-    "verifier",
-    "H6"
-   ],
-   "steps": [
-    "多步流程不变式: 每步前置条件是否独立校验 (跳步/重放/乱序)",
-    "状态机越权: 非法状态转移是否被显式拒绝而非静默通过",
-    "限额/金额: 上限检查与扣减是否原子 (并发下双花/超卖)",
-    "竞态下单: 检查-动作窗口是否可被并发利用",
-    "幂等/重复提交: 是否缺少幂等键或重复请求区分"
-   ],
-   "source_lessons": [
-    "W6 §18.9 收窄条款同族 (义务裁剪先例)"
-   ],
-   "applications": []
-  },
-  {
-   "id": "CK-DATA-INTEGRITY",
-   "name": "数据完整性检查",
-   "family": "data-integrity",
-   "binding": {
-    "cwe": [
-     "CWE-345",
-     "CWE-351",
-     "CWE-829"
-    ],
-    "keywords": [
-     "完整性",
-     "来源伪造",
-     "校验",
-     "签名验证",
-     "篡改",
-     "MAC",
-     "下载校验"
-    ],
-    "note": "v3.4 (REQ-V3.4-004): 难实证缺陷类深度清单——不进 gate ③ 强制实证"
-   },
-   "applies_to": [
-    "verifier",
-    "H4"
-   ],
-   "steps": [
-    "来源真实性: 外部数据/配置/插件来源是否被认证 (CWE-829 同族)",
-    "校验语义: 校验失败分支方向是否写反 (错误分支处理失败=通过)",
-    "完整性校验覆盖: 校验对象与被使用对象是否为同一份数据 (TOCTOU 同族)",
-    "签名/MAC 验证: 比较是否为常量时间/是否允许截断比较"
-   ],
-   "source_lessons": [
-    "W6 §25.6 r4_feedback 冲突检测同族"
-   ],
-   "applications": []
-  },
-  {
-   "id": "CK-GENERIC-RESOURCE",
-   "name": "通用资源耗尽检查",
-   "family": "resource",
-   "binding": {
-    "cwe": [],
-    "note": "不自动绑定; 由 binder 信号不匹配兜底注入 (SWR-V3.4.3-040)"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter"
-   ],
-   "steps": [
-    "累积点清单: 逐条列出该路径的全部累积/分配点并标注是否存在上限检查",
-    "检查点位置: 上限检查发生在累积之前还是之后 (检查点滞后于累积=缺陷)",
-    "背压/中止面: 攻击者持续投递时应用/框架是否有中止通道 (超时/预算/receiver/队列上限)",
-    "放大面: 资源消耗相对输入是否为超线性 (指数/二次方/解压倍数)"
-   ],
-   "source_lessons": [
-    "W6 §33 (CK-WS-MATERIALIZE 误绑制度化兜底)"
-   ]
-  },
-  {
-   "id": "CK-PINNED-DEP",
-   "name": "钉住依赖实证核对检查",
-   "family": "vendored-deps",
-   "binding": {
-    "cwe": [],
-    "keywords": [
-     "pin",
-     "vendored",
-     "submodule",
-     "锁定版本",
-     "依赖版本",
-     "钉住",
-     "pinned"
-    ],
-    "note": "v3.4.5 (SWR-V3.4.5-004): 声称机制位于第三方钉住依赖时的实证核对指引——不自动全绑, 关键词命中才绑定"
-   },
-   "applies_to": [
-    "verifier",
-    "refuter"
-   ],
-   "steps": [
-    "依赖声明点定位: 在构建文件/锁文件 (go.mod/Cargo.lock/package-lock/bazel deps 等) 中找到声称机制所在依赖的钉住版本或 commit",
-    "pin 解析: 获取该确切版本/commit 的源码 (本地 vendored 目录或下载对应 commit), 禁止用任意最新版核对",
-    "常量/上限/开关核对: 声称机制涉及的常量、上限、开关在 pin 版源码中的实际值——注意条件值分支语义 (如仅某配置生效的更大上限)",
-    "阻断点证据: 记录 pin 值 + 源码出处 (file:line), 作为阻断点证据——不可用 README/CHANGELOG 声明替代源码事实"
-   ]
-  }
- ]
+  "description": "检查清单库 — 15 语言战役中证伪者的攻击面固化为 verifier/refuter/H7 的强制自查项。每个清单带 applies_to 与 binding（绑定条件：按 cwe/语义家族/sink 形态自动挂到候选）。",
+  "checklists": [
+    {
+      "id": "CK-WS-MATERIALIZE",
+      "name": "WS/分片物化检查",
+      "family": "ws-frame",
+      "binding": {
+        "cwe": [
+          "CWE-400"
+        ],
+        "keywords": [
+          "ws",
+          "websocket",
+          "帧",
+          "分片",
+          "continuation",
+          "chunked"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter"
+      ],
+      "steps": [
+        "框架是否物化整条消息：Codec 逐帧产出? 流 1:1 透传? ActorStream 逐项交付?",
+        "帧上限是否对每个分片帧（含 continuation）强制?",
+        "是否存在框架级『整条消息』累积缓冲? 累积是否只在用户 handler（=应用能力面）?",
+        "读取侧是否有背压（消费者暂停即停止读 socket）?"
+      ],
+      "source_lessons": [
+        "W6 §20.2",
+        "W6 §23.1"
+      ],
+      "applicability_signals": {
+        "text": [
+          "ws",
+          "websocket",
+          "分片",
+          "fragment",
+          "帧",
+          "流式",
+          "streaming",
+          "continuation"
+        ],
+        "note": "SWR-V3.4.3-042: cwe CWE-400 为通用资源码, 必须叠加 WS/分片问题域文本信号 (P1/P2 纯 JWT 库误绑教训)"
+      }
+    },
+    {
+      "id": "CK-UNBOUNDED-HOPS",
+      "name": "无上限逐跳验证",
+      "family": "unbounded",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "无上限",
+          "无界",
+          "unbounded",
+          "累积"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "枚举数据路径上每一跳的容量常量（chanBufLen/队列深度/批大小/窗口）",
+        "『未找到上限』≠『不存在』——每一跳都必须给出容量证据或证明无容量",
+        "对照：全树 grep 无任何 limit 常量时才可主张真无上限（框架 CAND-001 对照 etcd CAND-004 双实测量级对照法）"
+      ],
+      "source_lessons": [
+        "W6 §21.2"
+      ]
+    },
+    {
+      "id": "CK-INJECT-PRIMITIVES",
+      "name": "注入原语枚举",
+      "family": "injection",
+      "binding": {
+        "cwe": [
+          "CWE-78",
+          "CWE-94",
+          "CWE-74",
+          "CWE-113"
+        ],
+        "keywords": [
+          "注入",
+          "env",
+          "命令"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "逐一枚举注入原语：换行 CR/LF、空字节 NUL、名污染（env 名/参数名）、编码形态（百分号/多字节）",
+        "对每个原语验证阻断点并记录证据——任一原语无阻断即 REACHABLE",
+        "名消毒规则（如 HTTP_[A-Z0-9_]+）是否同时封死危险名（PATH/LD_*）?"
+      ],
+      "source_lessons": [
+        "W6 §22.4"
+      ]
+    },
+    {
+      "id": "CK-HEADER-RESIDUAL",
+      "name": "头注入四级残余",
+      "family": "header-injection",
+      "binding": {
+        "cwe": [
+          "CWE-113"
+        ],
+        "keywords": [
+          "content-disposition",
+          "响应头",
+          "头注入",
+          "filename"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "四级残余面逐一验证：① CR/LF（响应拆分）② quote（属性逃逸）③ 全 C0 控制字符集（RFC 9110 field-content 违规/服务器语义破坏）④ NUL（崩溃）",
+        "净化函数字符集（如 gsub 三字符）之外的字符合集逐一实测透传行为",
+        "各服务器实现差异实测（Puma/WEBrick/Tomcat 对 C0 的处理不同）"
+      ],
+      "source_lessons": [
+        "W6 §24.5"
+      ]
+    },
+    {
+      "id": "CK-DEFAULT-3LAYER",
+      "name": "默认值三层语义",
+      "family": "default-on",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "默认",
+          "gate",
+          "默认开启",
+          "默认可达"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter",
+        "H7"
+      ],
+      "steps": [
+        "代码层默认值是什么?",
+        "模块/feature 层默认加载状态?（Cargo feature 默认集 ≠ 运行时可达）",
+        "部署层前提?（TLS 部署自动获得 h2、写入原语需另一漏洞）",
+        "三层全开才算默认可达；裁决输出 gate 记录型而非二元"
+      ],
+      "source_lessons": [
+        "W6 §22.3",
+        "W6 §23.2"
+      ]
+    },
+    {
+      "id": "CK-ENGINE-MATRIX",
+      "name": "引擎矩阵标注",
+      "family": "multi-engine",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "引擎",
+          "engine",
+          "cio",
+          "netty",
+          "后端",
+          "handler"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "REACHABLE 路径在文档默认引擎上成立吗?",
+        "非默认引擎的路径必须显式标注引擎矩阵（『PATH A 仅 CIO 执行』）",
+        "引擎差异导致的解析器差异（LAX vs STRICT）逐一对照"
+      ],
+      "source_lessons": [
+        "W6 §19.8"
+      ]
+    },
+    {
+      "id": "CK-DYNAMIC-DEFENSE",
+      "name": "动态注册防御搜索",
+      "family": "defense-verification",
+      "binding": {
+        "cwe": [
+          "CWE-79",
+          "CWE-20"
+        ],
+        "keywords": [
+          "hook",
+          "filter",
+          "注册",
+          "sanitize",
+          "净化"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "搜索该 sink/字段名的全部防御注册点——含 init 回调内的动态注册（脚本语言过滤回调类）",
+        "条件注册（按 capability/环境）逐一判定当前上下文是否生效",
+        "单点 sanitize 调用不足以证明净化——防御是分层且动态的"
+      ],
+      "source_lessons": [
+        "W6 §17.4",
+        "W6 §17.5"
+      ]
+    },
+    {
+      "id": "CK-SIBLING-LISTENERS",
+      "name": "同族监听点枚举",
+      "family": "exception-path",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "异常处理",
+          "catch",
+          "监听",
+          "listener",
+          "try"
+        ],
+        "verdict_context": "UNREACHABLE",
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "枚举全部同族监听点（5 传输 × message 事件类）",
+        "每个监听点是否有相同防护? 一条路径有防护≠全部有",
+        "R4 与 R3 互为兜底：单点防护判 UNREACHABLE 后 R4 仍查原始监听器路径"
+      ],
+      "source_lessons": [
+        "W6 §15.5"
+      ]
+    },
+    {
+      "id": "CK-DEAD-CACHE",
+      "name": "缓存 key 注册存在性",
+      "family": "dead-cache",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "storage",
+          "cache",
+          "缓存",
+          "key 注册",
+          "register"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "见到缓存/存储写点必查该 key 的注册点是否存在",
+        "未注册的 key 可能是每请求全量重读的放大关键（哈希缓存键未注册先例）"
+      ],
+      "source_lessons": [
+        "W6 §16.13"
+      ]
+    },
+    {
+      "id": "CK-COMMENTED-GUARD",
+      "name": "被注释的守卫",
+      "family": "commented-guard",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "注释",
+          "commented"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter"
+      ],
+      "steps": [
+        "主动 grep 被注释的安全相关行（/* */、#、// 内的 check/limit/guard）",
+        "注释掉的守卫是最强证据形态（历史先例: 记账/守卫三处注释）"
+      ],
+      "source_lessons": [
+        "W6 §22.6"
+      ]
+    },
+    {
+      "id": "CK-DUAL-PARSER",
+      "name": "CWE-436 双解析器前提",
+      "family": "cwe-436",
+      "binding": {
+        "cwe": [
+          "CWE-436"
+        ],
+        "keywords": [
+          "解析器",
+          "parser",
+          "分歧"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "枚举『对同一字节流做安全判定的两个解析器』并证明分歧",
+        "浏览器是请求头生成方而非二次解析器——『与浏览器不一致』默认不成立",
+        "RFC 规定的百分号解码是合规行为而非分歧（RFC 5987 先例）"
+      ],
+      "source_lessons": [
+        "W6 §20.3"
+      ]
+    },
+    {
+      "id": "CK-HOST-AUTH-CONSISTENCY",
+      "name": "Host↔authority 一致性封口",
+      "family": "absolute-form",
+      "binding": {
+        "cwe": [
+          "CWE-436",
+          "CWE-444"
+        ],
+        "keywords": [
+          "absolute",
+          "authority",
+          "host",
+          "绝对 uri"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "第一步：目标框架是否校验 Host↔authority 一致性（不一致 400）?",
+        "有 → absolute-form/请求走私族核心形态直接封口（正向框架先例）",
+        "无 → 按 PREC-HOST-FAMILY-001 裁决树处理"
+      ],
+      "source_lessons": [
+        "W6 §20.4"
+      ]
+    },
+    {
+      "id": "CK-RUNTIME-RE",
+      "name": "运行时正则先验",
+      "family": "redos",
+      "binding": {
+        "cwe": [
+          "CWE-1333"
+        ],
+        "keywords": [
+          "regex",
+          "正则",
+          "redos",
+          "回溯"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier",
+        "R2 假设生成"
+      ],
+      "steps": [
+        "入队前先问运行时版本：Ruby≥3.2 Oniguruma 线性化经典灾难类? net8 自动原子化?",
+        "pattern 源是否攻击者可控（路由模式=应用代码则前提不成立）",
+        "实证前先做 pattern 搜索（自动原子化会假阴性）"
+      ],
+      "source_lessons": [
+        "W6 §24.3",
+        "W6 §13.4"
+      ]
+    },
+    {
+      "id": "CK-CHECKPOINT-AFTER-ACCUM",
+      "name": "检查点晚于累积点",
+      "family": "unbounded-body",
+      "binding": {
+        "cwe": [
+          "CWE-789",
+          "CWE-770"
+        ],
+        "keywords": [
+          "body",
+          "上传",
+          "读取循环",
+          "落盘",
+          "累积点",
+          "to_bytes"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier",
+        "H1"
+      ],
+      "steps": [
+        "限制检查点与累积点的先后：全量落盘/累积后才检查 = 缺陷（多框架同构先例）",
+        "写循环内是否有预算检查（LOOP_BUDGET 类）",
+        "对照：检查先于累积的框架为正向例"
+      ],
+      "source_lessons": [
+        "W6 §14.3"
+      ]
+    },
+    {
+      "id": "CK-REPLY-CHANNEL",
+      "name": "reply 通道族",
+      "family": "microservices",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "reply",
+          "回复通道",
+          "broker",
+          "mq",
+          "消息"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "H4"
+      ],
+      "steps": [
+        "reply-to/回复通道是否可预测（后缀拼接）?",
+        "回复目标是否由头驱动（REPLY_TOPIC 类）?",
+        "broker 认证默认矩阵（无认证匿名面）?"
+      ],
+      "source_lessons": [
+        "W6 §15.4"
+      ]
+    },
+    {
+      "id": "CK-SENTINEL-SEMANTICS",
+      "name": "哨兵值语义",
+      "family": "default-value",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "max_value",
+          "哨兵",
+          "默认值",
+          "-1",
+          "sentinel",
+          "limit 0"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "H7"
+      ],
+      "steps": [
+        "数值默认值红旗：MAX_VALUE / -1 / 0 三值即红旗",
+        "查下游依赖库对该值的哨兵处理（『库把它当什么』：显式无限制哨兵 vs 未设置）",
+        "对照防御完整框架的同位默认（如 Json 2MB / 8m 同族上限）"
+      ],
+      "source_lessons": [
+        "W6 §19.7",
+        "W6 §21.3"
+      ]
+    },
+    {
+      "id": "CK-DEFAULT-VALUE-TABLE",
+      "name": "默认值全表模板",
+      "family": "default-value",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "默认值",
+          "default config",
+          "settings"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "H7"
+      ],
+      "steps": [
+        "每默认值 × 五维：三层语义（CK-DEFAULT-3LAYER）、哨兵语义（CK-SENTINEL-SEMANTICS）、文档声明（README/CHANGELOG『有意』声明）、数值红旗、正向默认确认",
+        "输出含正向默认确认（防御完整项的显式列出——对使用方是选型信息）"
+      ],
+      "source_lessons": [
+        "W6 §20.6",
+        "W6 §24.6"
+      ]
+    },
+    {
+      "id": "CK-ENV-LEAK",
+      "name": "GIT_CONFIG/env 重定向族",
+      "family": "env-injection",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "git_config",
+          "环境变量",
+          "子进程",
+          "env"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "H4"
+      ],
+      "steps": [
+        "子进程调用前是否清理环境（GIT_CONFIG_* 可重定向 git pull 目标）",
+        "cwd/参数中控制字节是否穿透终端转义"
+      ],
+      "source_lessons": [
+        "W6 §12.7"
+      ]
+    },
+    {
+      "id": "CK-EMPIRICAL-SCOPE",
+      "name": "实证范围分级",
+      "family": "empirical",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "实证",
+          "harness",
+          "实测",
+          "scope"
+        ],
+        "applies_to_phase": "R5",
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "R5",
+        "verifier"
+      ],
+      "steps": [
+        "scope ∈ {mechanism, function_body, full_chain, e2e} 必填 + scope_note",
+        "机制级实证只能支撑 edge_proven 升级，不得直接升 empirically_confirmed",
+        "多维度主张必须多维度实证（解压放大 = 单 chunk ratio + 多 member 行为）",
+        "0ms 假阴性先怀疑语义前提（filter 作用对象）"
+      ],
+      "source_lessons": [
+        "W6 §17.7",
+        "W6 §15.6",
+        "W6 §23.8",
+        "W6 §13.7"
+      ]
+    },
+    {
+      "id": "CK-PATH-GUARD",
+      "name": "路径穿越守卫链验证",
+      "family": "path-traversal",
+      "binding": {
+        "cwe": [
+          "CWE-22"
+        ],
+        "keywords": [
+          "路径",
+          "穿越",
+          "守卫",
+          "static",
+          "expand_path",
+          "路径拼接",
+          "path_info"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier"
+      ],
+      "steps": [
+        "枚举守卫链全部环节并逐段验证语义（四段示例: NUL/编码 → expand_path → start_with 前缀 → File.file?）",
+        "解码与校验的先后顺序（RFC2396 unescape 先于校验 = 正确; 反之则 %2e%2e 绕过）",
+        "双编码是否二次解码（%252e 停留字面 = 安全）",
+        "symlink 逃逸面归属判定: 部署者写入 vs HTTP 可控",
+        "全 payload 矩阵实测（23 种穿越形态全 404 的先例标准, W6 §24.8）"
+      ],
+      "source_lessons": [
+        "W6 §22.4",
+        "W6 §24.8"
+      ]
+    },
+    {
+      "id": "CK-FFI-BOUNDARY",
+      "name": "跨语言 FFI 边界检查",
+      "family": "ffi-boundary",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "ffi",
+          "ctypes",
+          "extern",
+          "jni",
+          "n-api",
+          "cffi",
+          "绑定",
+          "所有权",
+          "addon",
+          "嵌入",
+          "lang_pair"
+        ],
+        "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+      },
+      "applies_to": [
+        "verifier",
+        "H4"
+      ],
+      "steps": [
+        "边界调用方向与所有权转移方向（哪侧分配/哪侧释放）",
+        "unsafe 桥接不变量逐条验证（指针有效性窗口/生命周期）",
+        "ABI 与结构体布局两侧一致性（打包/对齐/枚举值）",
+        "跨语言内存释放责任（ctypes 指针 vs 原库分配器）",
+        "引用计数对称性（嵌入场景：借出/归还配平）",
+        "跨语言序列化格式一致性（两侧编解码器版本/默认值分歧）"
+      ],
+      "source_lessons": [
+        "v3.2 P-B 设计",
+        "W6 §20.2 (跨语言对照先例)"
+      ]
+    },
+    {
+      "id": "CK-IMPORT-REGISTRATION",
+      "name": "模块可导入性/注册真实性检查",
+      "family": "import-registration",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "import",
+          "导入",
+          "di",
+          "组件扫描",
+          "component_scan",
+          "route",
+          "路由注册",
+          "register",
+          "autowired",
+          "provider"
+        ],
+        "note": "v3.2.1 (W6 §25.2): 链首模块存在≠被导入; DI 扫描器吞错路径=静默失败温床 (应用型项目 CAND-004/009 404 先例)"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter"
+      ],
+      "steps": [
+        "顶层包解析: 链首模块所属顶层包在部署布局下能否解析 (find_spec/import 语法/go.mod require/crate 在依赖树)——顶层包不存在则链首模块整体不可导入",
+        "构建包含: 该模块所在目录/文件是否被构建系统包含 (tsconfig include/Cargo [[bin]]/setup.py packages)",
+        "DI/组件扫描器吞错路径审查: 注册器若含 `except Exception: log/continue` 模式, 必须验证目标模块实际注册成功 (注册表/路由表/扫描日志), 不得以框架设计推定",
+        "实证核验: 有条件时实际启动/导入验证 (启动日志 grep 模块名 + 路由表/注册计数)——import 失败 → 边记 broken_edge, verdict=NEEDS_REVIEW (修复即可达条件候选)"
+      ]
+    },
+    {
+      "id": "CK-CACHE-GATE-LAYER",
+      "name": "消费端中间层/缓存门闩三查",
+      "family": "cache-gate",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "cache",
+          "缓存",
+          "redis",
+          "fallback",
+          "降级",
+          "gate",
+          "门闩",
+          "default_config",
+          "defaultOss",
+          "getdefault",
+          "write",
+          "写入"
+        ],
+        "note": "v3.2.1 (W6 §25.3): adapter↔domain 间缓存/门闩层被整层漏掉 → CAND-007 过度声称 (Redis 门闩错误分支写反死代码)"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter"
+      ],
+      "steps": [
+        "中间层横向枚举: 消费端 adapter 与 domain 之间逐层列出缓存/门闩/降级/拦截器——不能只沿调用链直查 (历史先例: 配置获取 API 的缓存前置门闩被整层漏掉)",
+        "错误分支方向: 检查 `if err == nil` 块内是否处理了错误分支 (写反=死代码); 缓存未命中路径返回什么 (空实体+nil error 会短路 DB 回源)",
+        "写读形状一致: 缓存写入方与读取方的序列化形状是否匹配 (writer 单对象 vs reader 切片 → 往返必然失败, 缓存永不能服务新值)",
+        "缓存键写路径: Save/Modify/Remove 是否失效/回填缓存键——不写缓存键则新写入的 DB 行永远进不了读路径; 状态依赖 (缓存命中的条件态 vs 默认态) 写入 blocking_point 候选"
+      ]
+    },
+    {
+      "id": "CK-CRYPTO-MISUSE",
+      "name": "密码学误用检查",
+      "family": "crypto",
+      "binding": {
+        "cwe": [
+          "CWE-327",
+          "CWE-326",
+          "CWE-338",
+          "CWE-347",
+          "CWE-330",
+          "CWE-310",
+          "CWE-311",
+          "CWE-295"
+        ],
+        "keywords": [
+          "crypto",
+          "cipher",
+          "sha",
+          "md5",
+          "rand",
+          "random",
+          "随机",
+          "密钥",
+          "签名",
+          "证书",
+          "校验和"
+        ],
+        "note": "v3.4 (REQ-V3.4-004): 难实证缺陷类深度清单——不进 gate ③ 强制实证 (漏斗防反转)"
+      },
+      "applies_to": [
+        "verifier",
+        "H4",
+        "H7"
+      ],
+      "steps": [
+        "算法选择: 过时/弱算法 (MD5/SHA1/RC4/DES) 是否用于安全敏感场景",
+        "随机源状态: 伪随机/未播种/弱种子是否进入不可预测性要求场景 (令牌/掩码/盐)",
+        "密钥管理: 硬编码/日志泄漏/派生流程 (KDF 参数) 是否合规",
+        "证书/签名校验: 是否跳过 hostname/链校验或校验返回值被忽略",
+        "非对称参数: 模长/填充/曲线选择是否有已知弱化"
+      ],
+      "source_lessons": [
+        "七项目批次 uwebsockets H7-F1 rand() 未播种发现 (去项目化)"
+      ],
+      "applications": []
+    },
+    {
+      "id": "CK-AUTHN-BYPASS",
+      "name": "认证/授权绕过检查",
+      "family": "authn",
+      "binding": {
+        "cwe": [
+          "CWE-287",
+          "CWE-862",
+          "CWE-863",
+          "CWE-285",
+          "CWE-639",
+          "CWE-926",
+          "CWE-306"
+        ],
+        "keywords": [
+          "auth",
+          "认证",
+          "鉴权",
+          "权限",
+          "owner",
+          "租户",
+          "会话",
+          "令牌",
+          "登录",
+          "越权"
+        ],
+        "note": "v3.4 (REQ-V3.4-004): 难实证缺陷类深度清单——不进 gate ③ 强制实证"
+      },
+      "applies_to": [
+        "verifier",
+        "H5",
+        "H6"
+      ],
+      "steps": [
+        "鉴权谓词强度: 前缀/子串/hash 匹配是否替代全名比对 (H7③ 同族)",
+        "默认拒绝: 未命中规则的请求是否落入允许分支 (default-allow 反模式)",
+        "会话/令牌校验: 过期/撤销/绑定 (token↔主体) 是否被检查或跳过",
+        "越权路径: 对象级 owner 比对缺失面 (横向) 与角色升级面 (纵向)",
+        "暴露端点: 调试/管理端点是否有鉴权前置或仅靠隐藏"
+      ],
+      "source_lessons": [
+        "七项目批次 hikaricp H6 类名前缀守卫发现 (去项目化)",
+        "W6 §24.9"
+      ],
+      "applications": []
+    },
+    {
+      "id": "CK-BIZ-LOGIC",
+      "name": "业务逻辑缺陷检查",
+      "family": "biz-logic",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "越权",
+          "状态机",
+          "限额",
+          "金额",
+          "流程不变式",
+          "竞态下单",
+          "多步",
+          "订单",
+          "配额",
+          "兑换"
+        ],
+        "note": "v3.4 (REQ-V3.4-004): 无 CWE 锚定 (跨族语义)——关键词绑定为主"
+      },
+      "applies_to": [
+        "verifier",
+        "H6"
+      ],
+      "steps": [
+        "多步流程不变式: 每步前置条件是否独立校验 (跳步/重放/乱序)",
+        "状态机越权: 非法状态转移是否被显式拒绝而非静默通过",
+        "限额/金额: 上限检查与扣减是否原子 (并发下双花/超卖)",
+        "竞态下单: 检查-动作窗口是否可被并发利用",
+        "幂等/重复提交: 是否缺少幂等键或重复请求区分"
+      ],
+      "source_lessons": [
+        "W6 §18.9 收窄条款同族 (义务裁剪先例)"
+      ],
+      "applications": []
+    },
+    {
+      "id": "CK-DATA-INTEGRITY",
+      "name": "数据完整性检查",
+      "family": "data-integrity",
+      "binding": {
+        "cwe": [
+          "CWE-345",
+          "CWE-351",
+          "CWE-829"
+        ],
+        "keywords": [
+          "完整性",
+          "来源伪造",
+          "校验",
+          "签名验证",
+          "篡改",
+          "MAC",
+          "下载校验"
+        ],
+        "note": "v3.4 (REQ-V3.4-004): 难实证缺陷类深度清单——不进 gate ③ 强制实证"
+      },
+      "applies_to": [
+        "verifier",
+        "H4"
+      ],
+      "steps": [
+        "来源真实性: 外部数据/配置/插件来源是否被认证 (CWE-829 同族)",
+        "校验语义: 校验失败分支方向是否写反 (错误分支处理失败=通过)",
+        "完整性校验覆盖: 校验对象与被使用对象是否为同一份数据 (TOCTOU 同族)",
+        "签名/MAC 验证: 比较是否为常量时间/是否允许截断比较"
+      ],
+      "source_lessons": [
+        "W6 §25.6 r4_feedback 冲突检测同族"
+      ],
+      "applications": []
+    },
+    {
+      "id": "CK-GENERIC-RESOURCE",
+      "name": "通用资源耗尽检查",
+      "family": "resource",
+      "binding": {
+        "cwe": [],
+        "note": "不自动绑定; 由 binder 信号不匹配兜底注入 (SWR-V3.4.3-040)"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter"
+      ],
+      "steps": [
+        "累积点清单: 逐条列出该路径的全部累积/分配点并标注是否存在上限检查",
+        "检查点位置: 上限检查发生在累积之前还是之后 (检查点滞后于累积=缺陷)",
+        "背压/中止面: 攻击者持续投递时应用/框架是否有中止通道 (超时/预算/receiver/队列上限)",
+        "放大面: 资源消耗相对输入是否为超线性 (指数/二次方/解压倍数)"
+      ],
+      "source_lessons": [
+        "W6 §33 (CK-WS-MATERIALIZE 误绑制度化兜底)"
+      ]
+    },
+    {
+      "id": "CK-PINNED-DEP",
+      "name": "钉住依赖实证核对检查",
+      "family": "vendored-deps",
+      "binding": {
+        "cwe": [],
+        "keywords": [
+          "pin",
+          "vendored",
+          "submodule",
+          "锁定版本",
+          "依赖版本",
+          "钉住",
+          "pinned"
+        ],
+        "note": "v3.4.5 (SWR-V3.4.5-004): 声称机制位于第三方钉住依赖时的实证核对指引——不自动全绑, 关键词命中才绑定"
+      },
+      "applies_to": [
+        "verifier",
+        "refuter"
+      ],
+      "steps": [
+        "依赖声明点定位: 在构建文件/锁文件 (go.mod/Cargo.lock/package-lock/bazel deps 等) 中找到声称机制所在依赖的钉住版本或 commit",
+        "pin 解析: 获取该确切版本/commit 的源码 (本地 vendored 目录或下载对应 commit), 禁止用任意最新版核对",
+        "常量/上限/开关核对: 声称机制涉及的常量、上限、开关在 pin 版源码中的实际值——注意条件值分支语义 (如仅某配置生效的更大上限)",
+        "阻断点证据: 记录 pin 值 + 源码出处 (file:line), 作为阻断点证据——不可用 README/CHANGELOG 声明替代源码事实"
+      ]
+    }
+  ]
 }

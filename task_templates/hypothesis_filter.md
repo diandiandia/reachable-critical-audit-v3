@@ -22,8 +22,8 @@
 ## scope_dependent 标记（v3.2.2, REQ-V3.2.2-019）
 drop 理由属于"目标代码在审计范围内不可见"类（子模块未物化/树外实现/依赖缺失）时
 必须 `scope_dependent: true`——该 drop 是 scope 快照的函数; scope 变更时（入队前
-scope diff）这类 drop 自动提示复活重验（mbedtls 审计: tf-psa-crypto 中途物化
-使"树外不可验证"drop 作废的实战形态）。其余 drop 为 false。
+scope diff）这类 drop 自动提示复活重验（C 库审计实战形态: 子模块中途物化
+使"树外不可验证"drop 作废）。其余 drop 为 false。
 
 ## 产出（强制 JSON，最终回复）
 {"keep":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"sources":["LLM|SIG-xxx"]}],
@@ -35,7 +35,7 @@ scope diff）这类 drop 自动提示复活重验（mbedtls 审计: tf-psa-crypt
 **keep / drop / boundary_confirmations 三组条目的 `surface_ids` 均必填数组**
 （从假设清单继承, 原样保留, 不得省略）。门禁⑦ tracked 覆盖簿记只认
 surface_ids; drop/boundary_confirmations 省略该字段 → 覆盖计数虚低 →
-假缺口阻断收尾（quic-go 41→31 实录）。
+假缺口阻断收尾（成熟网络库 41→31 实录）。
 
 ## 落盘拦截契约（v3.2.3 强制）
 若环境（权限/plan mode）阻止写入指定的落盘路径：最终回复**必须**是完整

@@ -188,9 +188,12 @@ def determine_target_kind(project_root):
         add("listener", "lib", "无监听器/服务构建模式命中", 1.0)
 
     # 3. 服务启动链 (main+wire/bootstrap/kratos)
+    # v3.5.2: 去项目化——删被审计项目专属类名 (Dubbo BeanContainerManager /
+    # actix ActixSystem::new); 补通用 Spring Boot 启动点 (Java 场景等价物)。
+    # 框架生态词汇 (wire/kratos/tokio/app.run) 为通用检测词保留。
     starters = _grep(root,
-                     re.compile(r"wire\.Build|kratos\.New|BeanContainerManager|"
-                                r"ActixSystem::new|#[tokio::main]|app\.run\(\)",
+                     re.compile(r"wire\.Build|kratos\.New|SpringApplication\.run|"
+                                r"#[tokio::main]|app\.run\(\)",
                                 re.IGNORECASE),
                      {".go", ".rs", ".py", ".java"}, 6)
     # v3.2.2: 排除测试/脚本/文档目录的启动链 (scripts/analyze_outcomes.py 与

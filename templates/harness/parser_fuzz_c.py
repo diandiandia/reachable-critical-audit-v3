@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v3.2.2 (REQ-V3.2.2-008): parser-fuzz 模板——C 解析器候选的 ASan+UBSan 实证 harness。
 
-适用声称: crash/panic 类 (解析器 OOB 读/写)。通用形态 (mbedtls 审计实战模板化):
+适用声称: crash/panic 类 (解析器 OOB 读/写)。通用形态 (C 库审计实战模板化):
 1. 把 sink 函数体逐字提取为独立 C 文件 (harness 注入随机主循环)
 2. clang/gcc -fsanitize=address,undefined 编译
 3. 攻击输入矩阵: N 随机缓冲 + 结构化截断 + 长度字段极值 (0x00/0x7F/0xFF 前缀)

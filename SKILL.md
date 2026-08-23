@@ -70,7 +70,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    ```
    落盘 `.audit_results/scope_snapshot.json`（子模块状态 + 关键目录存在性）。
    scope 是各阶段判定的隐含前提——子模块中途物化/依赖目录出现会使
-   "树外不可验证"类 drop 理由作废（mbedtls 审计实战形态），R3 入队前
+   "树外不可验证"类 drop 理由作废（C 库审计实战形态: 子模块中途物化），R3 入队前
    batch_verify 自动 diff 并输出 `scope_changed` 提示，受影响 drop
    （`scope_dependent: true`）按 R3.5-N 复活流程重开。
 2. **签名库自检**（REQ-V3-010, v3.2.2 起单一事实源：只引用 selfcheck 命令）：
@@ -90,7 +90,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    → 机械推荐 {application, library, hybrid} + 信号证据。主代理复核后**签收**写入
    `verify_queue.target_kind`。存在性规则按型装载（PREC-TARGET-KIND-001）：
    - **application**：默认可达三层检查含 shipped 配置实际值 + 运行时注册核实 + platform_precondition 显式标注
-   - **library**：公共 API 即信任边界（Newtonsoft.Json 先例）；仓内调用者缺失不是阻断；死代码豁免不适用
+   - **library**：公共 API 即信任边界（库型先例）；仓内调用者缺失不是阻断；死代码豁免不适用
    - **hybrid**：按组件分别装载；无法确定归属时按 application（保守）
    未签收 → 门禁⑧ target_kind_required 不放行（旧队列复跑以 `require_target_kind=False` 豁免）。
 5. 初始化空 `verify_queue.json`：`{"candidates":[]}`。
@@ -137,7 +137,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 > 抽样清单落盘 `r2_filter_result.spot_checked`）。筛选全防御裁决若失真
 > （防御性偏差的另一方向: 过度放行）, R3 空队会整体放过缺陷——抽样复核是
 > "证据裁决"铁律在空队形态下的必要延伸; R4 深度验证与 R2 交叉核对构成
-> 双保险（quic-go 28 条全防御、主代理抽样 HYP-L1/L12/L27 复核属实实录）。
+> 双保险（成熟网络库 28 条全防御、主代理抽样 HYP-L1/L12/L27 复核属实实录）。
 > 落盘保真: 筛选结果落盘为 `r2_filter_result.json` 后跑
 > `python3 <skill_dir>/r2_guard.py fidelity .audit_results/r2_filter_result.json`
 > （SWR-V3.4.6-002: bc/drop 缺 surface_ids 自动从 hypotheses.json 反查补齐）。
