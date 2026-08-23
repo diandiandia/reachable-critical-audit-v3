@@ -633,3 +633,55 @@ test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶
 锚点项目 `hit_rate=100% testable=20` + 自身仓库完整性零违规 + phpseclib
 新项目验收（六门禁全 PASS + coverage-ledger --write 回填 php×CRYPTO 零格）
 三条件满足才 install + 提交。
+
+---
+
+## 🆕 v3.5.2 增量（2026-08-23，残留中项清零 + 过设计 B 裁决执行 + 偏见机械修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_5_2.md` + `docs/design/SWR_V3_5_2.md`。
+> 范围（用户确认）：①残留中项全部 ②过设计 B 裁决 10 项（按评估倾向执行）
+> ③偏见中「机械可修」项。内容补全类（8 语言 harness 模板 / L2 词族 5 语言 /
+> env 陷阱 9 语言 / 锚点 swift / L3 语义族脚本 token）留 v3.6。
+
+### 残留中项清零（去项目化）
+- checklist_library steps 4 处 → 机制形态（框架 CAND-001 对照 etcd CAND-004 双实测量级对照法 /
+  脚本语言过滤回调类 / 哈希缓存键未注册先例）；binding keywords "netty" 删；
+  uwebsockets/hikaricp 在 source_lessons = 合法来源列保留
+- task_templates / parser_fuzz_c.py docstring / target_kind.py 启动链正则
+  （删 BeanContainerManager/ActixSystem::new，补 SpringApplication.run）→ 机制形态
+- SKILL.md 主文例证 → 机制形态；`_scan_runtime_assets` 扫描扩 task_templates（注入违规测试闭环）
+
+### 过设计 B 裁决执行（10 项）
+| # | 裁决 | 执行 |
+|---|---|---|
+| B1 | **全裁 ast_scanner 三联体**（与评估倾向差异见下） | 裁 ast_scanner.py + anchor_registry.json + security_profiles.json；REQ-V3-002 tracking → 已裁除 |
+| B2 | 裁 r05_diff_archaeology.py | 裁文件 + 2 测试；R0.5 现役 = surface_mapper scope_diff |
+| B3 | grade-recheck 降可选维修工具 | collect 内联重算为默认；stage 处理器 + CLI 保留 |
+| B4 | 裁 repair_surfaces | 裁函数 + CLI（零调用零测试） |
+| B5 | 裁 signature_tier/empirical_harness 字段 | 裁 20 签名字段 + REQUIRED_FIELDS + matcher 输出；**needs_harness 保留偏差见下** |
+| B6 | 裁 harness_coverage_matrix.json | 裁文件（零读者） |
+| B7 | parser_fuzz 保留 | SKILL.md R5 枚举补 parser_fuzz + 防回退测试 |
+| B8 | 裁 9/25 条永不可达先例 | 25→16；`test_precedents_all_matchable` 双向断言（match() 可达集 == 库 id 集） |
+| B9 | CK-EMPIRICAL-SCOPE 真实绑定 | 删 binder matched=[] 特判 → R5 语义空间（empirical dict / claim_type ∈ R5 强制集）触发绑定 |
+| B10 | 文档漂移 | v3.5 已修，无动作 |
+
+### 偏见机械修复
+- 语言词汇归一：账本 16 规范名（cs↔csharp、ts/typescript/js↔javascript）；签名标签
+  保留 superset 内部名；L2 过滤双侧归一化等值比较；跨模块 alias 一致性测试
+- harness_runner manual/traps 缺 lang 参数报 usage exit=2（删默认 rust）；
+  lang_pair 白名单 {c,py,rust,js,ts} 删除（任意语言小写接受）
+- boundary_kind +cgo（描述文补 cgo/capi）；步骤 5.5 Go 习语中立化；
+  双轨词汇文档（project_kind 上下文信号 vs target_kind 门禁判据两轴注）
+
+### 与评估倾向的差异（批准本方案即同意）
+- **B1**：评估倾向「保留 ast_scanner、裁 security_profiles」。探查证据推翻——
+  security_profiles.json 唯一读取方是 ast_scanner 自身（:928/:1186），ast_scanner
+  零生产调用方（v3.1→v3.5「按需使用」零触发）；保扫描器裁其唯一功能输入 = 保空壳。
+  **实际执行：三联体全裁**。
+- **B5**：评估「确认 needs_harness 后裁决」。探查发现 needs_harness 并非零调用方——
+  tests/test_integration.py:82 将其用作 R5 触发判定（步骤 6）。**实际执行：保留
+  needs_harness + 其 3 个单元测试 + 集成测试；仅裁 `check` CLI 入口**。
+
+### 验收（回归）
+193 测试全绿 + `signature_lib.py selfcheck /root/phpseclib` exit 0 + install 后 DST
+pytest 全绿（phpseclib R0 复跑回归，不新增完整项目验收——用户确认）。
