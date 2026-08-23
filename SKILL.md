@@ -286,7 +286,7 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
 - `resources/signature_library.json`：20 个签名（9 L3 语义族 + 11 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：29 条检查清单
 - `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：4 个实证模板；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
-- `tests/`：190 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
+- `tests/`：193 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---

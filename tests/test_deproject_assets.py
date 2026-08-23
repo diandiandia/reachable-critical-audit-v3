@@ -76,3 +76,17 @@ def test_ledger_sources_hashed():
     assert srcs, "sources 不应为空"
     for s in srcs:
         assert _re.fullmatch(r"[0-9a-f]{16}", s), f"非 hash 身份: {s!r}"
+
+
+def test_scan_covers_task_templates():
+    """v3.5.2 (P1 闭环): _scan_runtime_assets 扫描范围含 task_templates——
+    注入项目 token 的任务书模板必须被拦截 (旧: 仅 templates/harness + harness_manuals)。"""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        os.makedirs(os.path.join(d, "task_templates"))
+        open(os.path.join(d, "task_templates", "x.md"), "w").write(
+            "例证: /root/Lersosa 项目实录\n")
+        hits = signature_lib._scan_runtime_assets(base=d)
+        assert any("task_templates" in h[0] for h in hits), hits
+    # 正常模板不误伤 (task_templates 现役模板零残留由 P1 保证)
+    assert signature_lib._scan_runtime_assets() == []

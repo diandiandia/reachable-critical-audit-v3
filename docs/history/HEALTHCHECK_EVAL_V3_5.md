@@ -22,10 +22,10 @@
 - signature_library.json:38,345 tier_note/semantic 项目名
 - checklist_library.json:71,216,273,737,782（ktor/etdd 拼写错/kses_init/ETagHashes/uwebsockets/hikaricp）
 - ~~issue_coverage_matrix.json sources 35 条 /root 路径~~ → **v3.5.1 已修**（sha256 摘要化, 见对照表）
-- anchor_registry.json:36,64,72 fastjson2/tengine/xquic 审计产物锚点（未修, CVE 描述字段）
-- task_templates 例证（biz_hypothesis/hypothesis_filter/verifier_edge_proof）（未修）
+- anchor_registry.json:36,64,72 fastjson2/tengine/xquic 审计产物锚点（CVE 描述字段）→ **v3.5.2 已修**（随 B1 三联体裁除而消失）
+- task_templates 例证（biz_hypothesis/hypothesis_filter/verifier_edge_proof）→ **v3.5.2 已修**（mbedtls/quic-go → 机制形态; 自检扫描扩 task_templates 闭环）
 - signature_lib.py DEPROJECT_BLACKLIST 项目名注释+token（token 保留=守卫弹药, 注释已剥离）
-- ~~surface_mapper.py:698,707 rationale 运行时输出含项目名~~ → **v3.5 已修**; 漏网 :714 sinatra → **v3.5.1 已修**; tools/target_kind.py:192-193 Dubbo BeanContainerManager/actix ActixSystem 启动链正则（未修）
+- ~~surface_mapper.py:698,707 rationale 运行时输出含项目名~~ → **v3.5 已修**; 漏网 :714 sinatra → **v3.5.1 已修**; tools/target_kind.py:192-193 Dubbo BeanContainerManager/actix ActixSystem 启动链正则 → **v3.5.2 已修**（删项目专属类名, 补 SpringApplication.run）
 - SKILL.md:140 quic-go 实录 + :410-422 Lersosa（均处版本增量段=changelog 追溯, 判合法保留）
 
 ### 低（~50 处）
@@ -161,10 +161,20 @@
 | 自检盲区 | `_scan_runtime_assets` 扫描范围补 resources/（仅拦 /root/ 绝对路径; source_lessons/cve 描述等合法追溯字段豁免黑名单）——修复 36 条 /root/ 曾通过 R0 的盲区 |
 | 防回退追加 | test_selfcheck_flags_resources_root_residue + test_ledger_sources_hashed（192 passed） |
 
-### 未修（下轮依据）
-- 中优先级剩余（残留: anchor_registry CVE 描述 3 处 / checklist_library 5 处 / task_templates 例证 / target_kind.py 启动链正则 Dubbo+actix; 偏见 8 中 + 低 5）
-- B 裁决 10 项（上表）
-- 附带发现：SKILL.md 计数类已修；harness_runner 默认 rust、env 陷阱 7/16、L2 词族 5 语言缺失等
+### 已修（v3.5.2 追加, 2026-08-23）
+| 项 | 修复 |
+|---|---|
+| 残留中（P1） | checklist_library steps 4 处 → 机制形态（ktor+etdd→框架 CAND 对照法/kses_init→脚本过滤回调/ETagHashes→哈希缓存键; :174 binding keywords "netty" 删; uwebsockets/hikaricp 在 source_lessons=合法来源列保留）; task_templates 2 处 → 机制形态 + `_scan_runtime_assets` 扫 task_templates（注入违规测试闭环）; parser_fuzz_c.py docstring → 通用形态; target_kind.py 正则删 BeanContainerManager/ActixSystem::new 补 SpringApplication.run; SKILL.md 主文 :73/:93/:140 → 机制形态（:41/:44 来源/历史验证叙述保留） |
+| 过设计 B（P2） | B1 **全裁** ast_scanner 三联体（与评估「保留 ast_scanner」倾向的差异见 SWR_V3_5_2.md——security_profiles 唯一读者是 ast_scanner 自身, 保扫描器裁其唯一输入=保空壳）; B2 裁 r05_diff_archaeology; B3 grade-recheck 降可选维修工具; B4 裁 repair_surfaces; B5 裁 signature_tier/empirical_harness 字段（needs_harness 保留——test_integration 消费, 仅裁 check CLI）; B6 裁 harness_coverage_matrix; B7 parser_fuzz 补 SKILL.md R5 枚举; B8 裁 9 条永不可达先例（25→16, 全部可 match 触达有测试）; B9 CK-EMPIRICAL-SCOPE 真实绑定（R5 语义空间触发, 删 matched=[] 特判）; B10 无动作 |
+| 偏见机械（P3） | 语言词汇归一（_LANG_ALIAS 补 typescript→javascript; EXT_LANG_ALIAS cs→csharp/ts/typescript/js→javascript; L2 过滤双侧归一化; 跨模块一致性测试）; harness_runner manual/traps 缺 lang 报 usage（删默认 rust）; lang_pair 白名单删除; boundary +cgo（描述文补 cgo/capi）; 步骤 5.5 Go 习语中立化; 双轨词汇文档（project_kind vs target_kind 两轴注） |
+| 防回退 | test_precedents_all_matchable / test_ck_empirical_scope_binds / test_lang_alias_consistency / test_harness_cli_requires_lang / test_sk_parser_fuzz_listed / task_templates 注入违规测试（193 passed）; tracking 六处状态真话修复 |
+
+### 未修（留 v3.6，内容补全类，非缺陷）
+- 8 语言 harness 模板补全（L2 词族语言实证模板缺口）
+- L2 词族 5 语言签名缺（swift/ps/objc/lua/cs 词族扩充）
+- env 陷阱 9 语言补全（harness_manuals 陷阱清单 7/16）
+- swift 回归锚点缺失（known_instances）
+- L3 语义族脚本 token 补全
 
 ---
 

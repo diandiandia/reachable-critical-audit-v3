@@ -185,6 +185,27 @@ def test_new_checklists_bind():
     assert "CK-CACHE-GATE-LAYER" in bound2
 
 
+def test_ck_empirical_scope_binds():
+    """v3.5.2 (B9): CK-EMPIRICAL-SCOPE 真实绑定——claim_type ∈ R5 强制声称集
+    或 empirical dict 已存在时绑定; 非实证候选不绑定 (旧: 无条件 matched=[]
+    使该清单永不可达)。"""
+    lib = checklist_binder.load_library()
+    crash = {"summary": "解码循环越界", "cwe": "CWE-125", "lang": "c",
+             "claim_type": "crash"}
+    bound = [cid for cid, _ in checklist_binder.bind(crash, lib)]
+    assert "CK-EMPIRICAL-SCOPE" in bound, bound
+    oom = {"summary": "缓冲累积", "cwe": "CWE-400", "lang": "go",
+           "claim_type": "other",
+           "empirical": {"status": "confirmed", "scope": "full_chain",
+                         "scope_note": "x"}}
+    bound2 = [cid for cid, _ in checklist_binder.bind(oom, lib)]
+    assert "CK-EMPIRICAL-SCOPE" in bound2, bound2
+    auth = {"summary": "鉴权绕过", "cwe": "CWE-306", "lang": "python",
+            "claim_type": "auth-bypass"}
+    bound3 = [cid for cid, _ in checklist_binder.bind(auth, lib)]
+    assert "CK-EMPIRICAL-SCOPE" not in bound3, bound3
+
+
 def test_precedents_all_matchable():
     """v3.5.2 (B8): 先例库全部可被 match() 触达 (9 条永不可达先例已裁除)。
     双向断言: 每条先例都可被某候选命中 (无不可达), 且映射表无悬空 id (无多余)。"""

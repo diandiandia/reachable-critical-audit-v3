@@ -120,3 +120,12 @@ def test_readme_wc_line():
     """README 手册计数行 = 磁盘实况 (v3.5 低#1 同根)。"""
     readme = open(os.path.join(WORKSPACE, "README.md")).read()
     assert "期望 18" in readme, "README 手册 wc 行漂移"
+
+
+def test_sk_parser_fuzz_listed():
+    """v3.5.2 (P4): parser_fuzz 模板注册在 harness_runner.TEMPLATES 且
+    SKILL.md R5 模板枚举含 parser_fuzz (B7 保留裁决防回退)。"""
+    sys.path.insert(0, WORKSPACE)
+    import harness_runner
+    assert "parser_fuzz" in harness_runner.TEMPLATES
+    assert "parser_fuzz" in open(SKILL_MD).read()

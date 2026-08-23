@@ -10,7 +10,7 @@
 | 编号 | 需求 | 状态 | 备注 |
 |---|---|---|---|
 | REQ-V3-001 | 系统主分析引擎为 LLM 子智能体（测绘/回溯/判断），规则库仅作提示器，不作为判定器 | 未开发 |  |
-| REQ-V3-002 | 审计起点为输入面测绘（input_surface.json），禁止全库规则轰炸作为默认路径 | 未开发 |  |
+| REQ-V3-002 | 审计起点为输入面测绘（input_surface.json），禁止全库规则轰炸作为默认路径 | 已裁除 | v3.5.2 B1: ast_scanner 三联体裁除 (1212 行零生产调用方; 保扫描器裁其唯一输入=保空壳) |
 | REQ-V3-003 | 每个 verdict 必须携带证据类型（evidence_grade）与来源，不得存在无证据断言 | 未开发 |  |
 | REQ-V3-004 | DoS/崩溃/内存/无界类声称必须经实证抽验（R5）确认后方可申报 | 未开发 |  |
 | REQ-V3-005 | 系统无 LLM API 之外的新技术依赖 | 未开发 |  |
@@ -18,11 +18,11 @@
 | REQ-V3-007 | 兼容 Mode A'（Agent 工具）为默认执行模式 | 未开发 |  |
 | REQ-V3-010 | R0 自检包含签名库冒烟测试：每个签名必须至少有 1 个 known_instance 可复现 | 未开发 |  |
 | REQ-V3-011 | R0 自检检查 harness 执行器可用性（R5 前置） | 未开发 |  |
-| REQ-V3-012 | R0.5 支持 `--cross-tags t1,t2,...` 输出"修复 commit 是否在各 tag"矩阵 | 未开发 |  |
-| REQ-V3-013 | R0.5 对无 git 历史输出 NO_GIT 状态而非误导性文本 | 未开发 |  |
-| REQ-V3-014 | R0.5 对 HEAD 审计自动切换"修复变体复核"模式（修复已在树，价值在兄弟路径残留复核） | 未开发 |  |
-| REQ-V3-015 | R0.5 默认落盘 JSON（-o 可选而非必需） | 未开发 |  |
-| REQ-V3-016 | R0.5 grep 词表分级：security 关键词与通用 fix 词分开，噪声可控 | 未开发 |  |
+| REQ-V3-012 | R0.5 支持 `--cross-tags t1,t2,...` 输出"修复 commit 是否在各 tag"矩阵 | 已裁除 | v3.5.2 B2: r05_diff_archaeology 整文件裁除 (仅测试消费); R0.5 现役=surface_mapper scope_diff |
+| REQ-V3-013 | R0.5 对无 git 历史输出 NO_GIT 状态而非误导性文本 | 已裁除 | 同上 (REQ-V3-012~016 同文件同裁) |
+| REQ-V3-014 | R0.5 对 HEAD 审计自动切换"修复变体复核"模式（修复已在树，价值在兄弟路径残留复核） | 已裁除 | 同上 |
+| REQ-V3-015 | R0.5 默认落盘 JSON（-o 可选而非必需） | 已裁除 | 同上 |
+| REQ-V3-016 | R0.5 grep 词表分级：security 关键词与通用 fix 词分开，噪声可控 | 已裁除 | 同上 |
 | REQ-V3-020 | surface_mapper 按 4 域（网络/数据/进程/存储）生成测绘任务书 | 未开发 |  |
 | REQ-V3-021 | 测绘任务书必须携带项目背景（架构线索：README/依赖清单/构建文件摘要） | 未开发 |  |
 | REQ-V3-022 | 每个 surface 必须附 entry_points 源码证据（file:line + 代码片段） | 未开发 |  |
@@ -106,7 +106,7 @@
 | SWR-V3-032 | 实现 `check_preconditions()`：platform_precondition 需 platform_evidence；trust_boundary 需逐通道验证记录；gate 记录 | 未开发 |  |
 | SWR-V3-033 | 实现 `commit()`：merge 语义写回 + correction_record 追加 | 未开发 |  |
 | SWR-V3-034 | 实现 `assert_ledger()`：无 PENDING / REACHABLE 无 static_only / 实证类声称 100% empirically_confirmed / H1-H7 全 VERIFIED | 未开发 |  |
-| SWR-V3-040 | 实现 `needs_harness()`：claim ∈ EMPIRICAL_CLAIMS 且 grade < empirically_confirmed 触发 | 未开发 |  |
+| SWR-V3-040 | 实现 `needs_harness()`：claim ∈ EMPIRICAL_CLAIMS 且 grade < empirically_confirmed 触发 | 已完成 | v3.5.2 B5: 保留 (test_integration 消费); 仅裁 check CLI |
 | SWR-V3-041 | 内置 4 模板：ws_frame_alloc / ws_frame_accum / xss_path_sim / multipart_align（攻击脚本+判据+环境字段） | 未开发 |  |
 | SWR-V3-042 | 实现时序采样：/proc/<pid>/status VmRSS 每秒采样 + kill -0 存活 + exit code 采集 | 未开发 |  |
 | SWR-V3-043 | 采样协议含投递速率确认步骤（先慢速采样，以服务器实测到达量为准） | 未开发 |  |
@@ -217,7 +217,7 @@
 | 编号 | 需求 | 状态 | 备注 |
 |---|---|---|---|
 | SWR-V3.1-001 | 实现 `size_tier(project_root)`：源码文件计数 → small/medium/large 三档（agent 数/时限/落盘间隔/分域方案） | 已完成 |  |
-| SWR-V3.1-002 | 实现 `repair_surfaces()`：±2 主窗口 → 首行键全文件匹配（±80 语义）→ suggested_line 写回 + 行号修正 | 已完成 |  |
+| SWR-V3.1-002 | 实现 `repair_surfaces()`：±2 主窗口 → 首行键全文件匹配（±80 语义）→ suggested_line 写回 + 行号修正 | 已裁除 | v3.5.2 B4: 零调用零测试裁除; validate 行号漂移裁决保留 |
 | SWR-V3.1-003 | repair 零命中标记 `paraphrased=true`；幂等契约（已修复 entry 不重标） | 已完成 |  |
 | SWR-V3.1-004 | 实现 `_classify_project_kind()`：framework/library/infra/app | 已完成 |  |
 | SWR-V3.1-005 | validate 首行键 fallback 匹配 + paraphrased 标记（与 repair 共用逻辑） | 已完成 |  |
@@ -229,7 +229,7 @@
 | SWR-V3.1-014 | grade_verdict 升级条件收紧（empirical.status ∈ confirmed 集） | 已完成 |  |
 | SWR-V3.1-015 | assert_ledger 新增 gate empirical_required_r4（R4 findings 同受实证类门禁） | 已完成 |  |
 | SWR-V3.1-016 | `assert`/`grade`/`check`/`consistency` CLI 全走 load_lenient | 已完成 |  |
-| SWR-V3.1-020 | 实现 `bind()`：结构化 binding（cwe 并集/keywords 备选拆分/verdict_context/applies_to_phase）+ 字符串兼容 | 已完成 |  |
+| SWR-V3.1-020 | 实现 `bind()`：结构化 binding（cwe 并集/keywords 备选拆分/verdict_context/applies_to_phase）+ 字符串兼容 | 已完成 | v3.5.2 B9: applies_to_phase=R5 清单按实证语义空间真实绑定 (旧: 无条件不绑定) |
 | SWR-V3.1-021 | 实现 `bind_all()`：checklist_ids 写回候选（不覆盖已有） | 已完成 |  |
 | SWR-V3.1-022 | 实现 `h7_template_bind()` | 已完成 |  |
 | SWR-V3.1-023 | checklist_library.json 结构化 binding 重构（19 条全 dict 形态） | 已完成 |  |
@@ -383,7 +383,7 @@
 | REQ-V3.2.2-006 | verifier 任务书步骤 0.5 按候选 lang 分派模板（python/c/cpp/go/rust/java/default 各一版）；例证去项目名 | 已完成 |  |
 | REQ-V3.2.2-007 | 先例库/清单库运行时字段脱敏：项目名只允许出现在追溯字段（applications/source_lessons） | 已完成 |  |
 | REQ-V3.2.2-008 | harness_runner 新增 parser_fuzz 模板（C/C++：ASan+UBSan 骨架，mbedtls 实战模板化），绑定 crash 声称类 | 已完成 |  |
-| REQ-V3.2.2-009 | harness 覆盖矩阵（claim × 语言）落盘 resources/harness_coverage_matrix.json；R5 现场构造引用矩阵缺口 | 已完成 |  |
+| REQ-V3.2.2-009 | harness 覆盖矩阵（claim × 语言）落盘 resources/harness_coverage_matrix.json；R5 现场构造引用矩阵缺口 | 已裁除 | v3.5.2 B6: 文件零读者裁除, R5 现场构造不依赖矩阵 |
 | REQ-V3.2.2-010 | signature_lib 新增 selfcheck CLI 子命令（R0 单一事实源）；SKILL.md 只保留该命令；新增 doc-lint 测试从 SKILL.md 抽取代码块真实执行 | 已完成 |  |
 | REQ-V3.2.2-011 | surface_mapper merge 默认落盘 input_surface.json（--out 可选） | 已完成 |  |
 | REQ-V3.2.2-012 | r2_guard drops 输入归一化（drop/dropped 双键） | 已完成 |  |

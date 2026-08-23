@@ -41,3 +41,15 @@ def test_parse_empirical_result():
 def test_sampling_protocol_contains_rate_check():
     assert "投递速率确认" in hr.SAMPLING_PROTOCOL
     assert "/proc/" in hr.SAMPLING_PROTOCOL
+
+
+def test_cli_manual_traps_require_lang():
+    """v3.5.2 (P3): manual/traps 缺 lang 参数报 usage exit=2 (旧: 静默默认 rust)。"""
+    import subprocess
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for sub in ("manual", "traps"):
+        p = subprocess.run(
+            [sys.executable, os.path.join(here, "harness_runner.py"), sub],
+            capture_output=True, text=True)
+        assert p.returncode == 2, (sub, p.returncode)
+        assert "usage" in p.stderr, (sub, p.stderr)

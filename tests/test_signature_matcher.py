@@ -206,3 +206,39 @@ def test_v331_cpp_family():
           "entry_points": [{"file": os.path.join(repo, "a.cpp"), "line": 2}]}
     hits = sm.match_signatures([cs], sigs, idx)
     assert any(h["sig_id"] == "SIG-CPP-ALLOC-001" for h in hits)
+
+
+def test_lang_alias_consistency():
+    """v3.5.2 (P3): 跨模块语言词汇一致——共享键取值一致 + 账本 16 规范名
+    经归一化保持自身 + L2 过滤双侧归一化 (cs/ts 形态命中签名标签)。"""
+    tools = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools")
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    import batch_verify
+    shared = set(sm.EXT_LANG_ALIAS) & set(batch_verify._LANG_ALIAS)
+    for k in shared:
+        assert sm.EXT_LANG_ALIAS[k] == batch_verify._LANG_ALIAS[k], \
+            f"alias 冲突: {k} {sm.EXT_LANG_ALIAS[k]} vs {batch_verify._LANG_ALIAS[k]}"
+    ledger = json.load(open(os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources", "issue_coverage_matrix.json")))
+    for lang in ledger["langs"]:
+        assert sm.norm_lang(lang) == batch_verify._norm_lang(lang) == lang, lang
+    # L2 过滤双侧归一化: surface 'cs'/'csharp' 均命中 cs 签名标签, 'ts'/'typescript' 命中 ts 标签
+    tmp = tempfile.mkdtemp()
+    open(os.path.join(tmp, "a.cs"), "w").write(
+        "class D {\n  void h() { var t = new TypeNameHandling(); }\n}\n")
+    open(os.path.join(tmp, "b.ts"), "w").write(
+        "socket.on('data', (d) => buf += d);\n")
+    idx = sm.build_project_index(tmp)
+    sigs = signature_lib.load()["signatures"]
+    for langval in ("cs", "csharp"):
+        cs = {"id": f"S-{langval}", "type": "data_input", "lang": langval,
+              "entry_points": [{"file": os.path.join(tmp, "a.cs"), "line": 2}]}
+        hits = sm.match_signatures([cs], sigs, idx)
+        assert "SIG-CS-DESER-001" in {h["sig_id"] for h in hits}, langval
+    for langval in ("ts", "typescript", "javascript"):
+        ts = {"id": f"S-{langval}", "type": "data_input", "lang": langval,
+              "entry_points": [{"file": os.path.join(tmp, "b.ts"), "line": 1}]}
+        hits = sm.match_signatures([ts], sigs, idx)
+        assert "SIG-TS-ACCUM-001" in {h["sig_id"] for h in hits}, langval
