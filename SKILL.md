@@ -255,19 +255,48 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 
 ## 📊 报告
 
-落盘 `.audit_results/reachable_vulnerabilities_report.md`，必须含（v3.4 尾注：
-覆盖账本段由 `--stage report` 的 coverage_ledger 字段机械渲染——本批新增覆盖格
-与仍存缺口格，为下批选题依据）：
-- 规模对照（候选/假设/surface 数、闭合率）
-- **语言覆盖表**（v3.2.1 增加 `组件角色` 列：server-side/client-only/build-config；判据①：服务端组件语言 ≥1 surface 且非零候选；客户端组件语言以 ≥1 边界面 + cross_evidence 为等价判据）
-- 每个 REACHABLE：verdict + 证据分级 + 调用链 + 独立复核结果 + 实证记录（如有）
-- NEEDS_REVIEW 显式清单（含 correction_record 理由；v3.3 起注明成因双分：
-  `保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法取证））
-- R4 假说 verdict 表、六门禁断言结果、修复建议
+`--stage report` 机械生成 `.audit_results/reachable_vulnerabilities_report.md`
+（队列派生，REQ-V3.3.2-007：verify_queue.json 是唯一事实源；写入状态走 stderr，
+stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
+
+- **一、问题清单**（只含 verdict=REACHABLE，按严重程度排序）：严重 → 高 → 中
+  三节（机械映射，见下表；行内渲染 severity 来源 → 可问责，REQ-V3-006）。
+  每行 `ID | 问题摘要(claim_type+evidence 首 120 字) | 位置 file:line | CWE |
+  证据等级 | 复核(证伪者结果/未复核)`
+- **二、问题详情**：每条 REACHABLE 一节——位置/语言、CWE/claim_type、
+  verdict+证据分级（grade_recomputed_by 如有）、调用链逐跳+depth+
+  reachability_type、证据、blocking_point 前提逐条（PREC-CONDITIONAL-REACHABLE-001）、
+  独立复核 refutation{}、实证记录 empirical{}、修复建议（R4 finding fix 命中，
+  否则「（主代理补充）」）
+- **三、修复建议与结论（主代理补充）**：仅此段 + 头部审计基线由主代理补写；
+  **补充后不得重跑 `--stage report`**（机械渲染会覆盖本段）
+- **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：成因双分
+  （`保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法
+  取证）；未注明交主代理确认）+ correction_record 理由 + NEEDS_REVIEW ↔
+  R4 hypothesis/finding 映射行
+- **附录 B：审计过程信息**：B.1 规模对照（候选/假设/surface 数、闭合率）→
+  B.2 语言覆盖表（v3.2.1 `组件角色` 列：server-side/client-only/build-config，
+  `language_inventory` 现场重算；判据①：服务端组件语言 ≥1 surface 且非零候选；
+  客户端组件语言以 ≥1 边界面 + cross_evidence 为等价判据）→ B.3 FFI 边界表 →
+  B.4 R4 假说 verdict 表 → B.5 六门禁断言（机械调用 assert_ledger 渲染
+  ①-⑧+③c，未过 → FAIL 行）→ B.6 覆盖账本（coverage_ledger 字段机械渲染，
+  REQ-V3.4-007——本批新增覆盖格与仍存缺口格，为下批选题依据）
+
+严重程度机械映射（cwe 列表 + sink_type 全量 `CWE-(\d+)` 提取取 max；
+`severity_override` 合法值 {critical,high,medium} + reason 优先，非法值回退
+机械值 + 告警行）：
+| 级别 | 账本族（CWE） |
+|---|---|
+| 严重 | 注入/反序列化（78/94/77/502）+ MEMORY-SAFETY（787/125/416/415/476/190/129） |
+| 高 | SQLi/路径/SSRF（89/74/22/918）+ 鉴权主体（862/863/639/306）+ RESOURCE-DOS（400/770/789/409/833/834）+ RACE（362/366/367） |
+| 中 | XSS/弱鉴权（79/601/352/285/287/926）+ CRYPTO/DATA-INTEGRITY（327/326/338/347/330/310/311/295/345/351/829） |
+
+无 cwe 命中 → claim_type 回退（rce/leak→严重，crash/panic/oom/unbounded/
+protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（REQ-V3.4.3-006）。
 
 ## 📏 数据模型速查
 
-- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
+- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
 - **input_surface.json**：`{surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[], mirror_pairs[]}`
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
 - **语言词汇两轴（v3.5.2 注）**：① 签名标签 = 签名侧内部名，允许 superset（`cs`/`typescript`/`js` 等，校验白名单 VALID_LANGS）；② 账本/任务书/队列输出 = 归一化到账本 16 规范名（`cs↔csharp`、`ts`/`typescript`↔`javascript`、`ps↔powershell`）。跨模块 alias map 取值一致（有测试守卫），签名 L2 过滤双侧归一化后等值比较。
@@ -742,3 +771,37 @@ pytest 全绿（phpseclib R0 复跑回归，不新增完整项目验收——用
 204 测试全绿（193 基线 + 11 新增）+ `signature_lib.py selfcheck /root/phpseclib`
 exit 0 + install 后 DST pytest 全绿 + 分阶段 commit（P1→P2→P3→P4）。新在线
 项目实战验收（覆盖账本缺口格）另行启动。
+
+## 🆕 v3.7 增量（2026-08-23，报告格式重构：问题清单按严重程度排序 + 机械生成 + 附录化）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_7.md`。用户要求重新设计
+> `reachable_vulnerabilities_report.md`：简单明了说明有哪些代码问题、按严重程度
+> 排序、提供相关细节。三项决策：① 严重程度 = 机械映射（cwe/claim_type）+ 主代理
+> 可覆盖；② 生成方式 = 扩展 `--stage report` 机械生成完整报告（队列派生，
+> REQ-V3.3.2-007）；③ 审计过程信息移入附录。
+
+- **严重程度机械映射**（`tools/batch_verify.py` 模块级）：`SEVERITY_BY_CWE` 按
+  账本族分组（严重=注入/反序列化 + MEMORY-SAFETY；高=SQLi/路径/SSRF + 鉴权主体 +
+  RESOURCE-DOS + RACE；中=XSS/弱鉴权 + CRYPTO/DATA-INTEGRITY）；cwe 列表 +
+  sink_type 全量 `CWE-(\d+)` 提取取 max → claim_type 回退（rce/leak→严重，
+  crash/panic/oom/unbounded/protocol_dos→高，xss→中）→ medium 默认。
+  `severity_override`（合法值 {critical,high,medium} + reason）优先，非法值回退
+  机械值 + 告警行。问题摘要改用 claim_type + evidence 首 120 字（summary 字段
+  collect 不落盘）。
+- **机械渲染 render_report_md**（SWR-V3.7-002）：`--stage report` 末尾写
+  `.audit_results/reachable_vulnerabilities_report.md`（写入状态走 stderr，
+  stdout 保持纯 JSON 契约）。结构：一、问题清单（REACHABLE only，严重/高/中
+  三节表）；二、问题详情（每条一节：调用链/前提/复核/实证/修复建议）；三、
+  修复建议与结论（主代理补充，补充后不得重跑 report 覆盖）；附录 A =
+  NEEDS_REVIEW 成因双分 + 同事实映射；附录 B = 规模对照/语言覆盖表（角色现场
+  重算）/FFI 边界/R4 verdict/六门禁断言（机械调用 assert_ledger）/覆盖账本。
+  **铁律：所有可选输入缺失时降级渲染占位，绝不抛异常**（test_end_to_end
+  最小队列形态）。
+- **stage_collect 透传**：severity_override/severity_override_reason 白名单
+  落盘（队列 JSON 仍是唯一事实源，可直接编辑）。
+
+### 验收判据（Phase 3.7）
+214 测试全绿（204 基线 + 10 新增 tests/test_v37_report.py）+ `signature_lib.py
+selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级/排序/附录
+真实性人工检查，不覆盖既有报告）+ install 后 DST pytest 全绿 + 分阶段 commit
+（渲染+测试 → 文档+版本链）。
