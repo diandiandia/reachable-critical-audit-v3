@@ -294,7 +294,8 @@ def test_v331_normalize_surface_lang():
     assert norm["surfaces"][0]["lang"] == "c"
     d2 = {"surfaces": [dict(d["surfaces"][0], lang="ts")]}
     norm2 = sm.normalize_surfaces(d2)
-    assert norm2["surfaces"][0]["lang"] == "typescript"
+    # v3.5.2 (P3): ts 归一化到账本规范名 javascript (旧值 typescript)
+    assert norm2["surfaces"][0]["lang"] == "javascript"
 
 
 def test_merge_warns_id_gap():

@@ -15,15 +15,17 @@ import re
 import sys
 import signature_lib
 
-# v3.3.1: 扩展名/别名 → 签名 lang 词表 (对齐 signature_lib.VALID_LANGS 词汇;
-# 注意 batch_verify._EXT_LANG 的 csharp/javascript 词汇与此不同, 各模块独立)
+# v3.3.1: 扩展名/别名 → 签名 lang 词表 (对齐 signature_lib.VALID_LANGS 词汇)
+# v3.5.2 (P3): 归一词汇与 batch_verify._LANG_ALIAS 一致——cs→csharp、
+# ts/typescript/js→javascript (账本 16 名规范集); L2 过滤双侧归一化见
+# _sig_applicable (签名标签 cs/typescript 属签名侧内部名, 归一后等值匹配)
 EXT_LANG_ALIAS = {
     "c": "c", "h": "c", "cpp": "cpp", "cc": "cpp", "cxx": "cpp", "hpp": "cpp",
     "rs": "rust", "go": "go", "java": "java", "py": "python", "rb": "ruby",
-    "cs": "cs", "ts": "typescript", "kt": "kotlin", "kts": "kotlin",
-    "scala": "scala", "swift": "swift", "php": "php", "pl": "perl",
-    "pm": "perl", "sh": "shell", "ps1": "powershell", "js": "js",
-    "m": "objc", "mm": "objc", "lua": "lua",
+    "cs": "csharp", "ts": "javascript", "typescript": "javascript", "kt": "kotlin",
+    "kts": "kotlin", "scala": "scala", "swift": "swift", "php": "php",
+    "pl": "perl", "pm": "perl", "sh": "shell", "ps1": "powershell",
+    "js": "javascript", "m": "objc", "mm": "objc", "lua": "lua",
 }
 
 
@@ -180,7 +182,9 @@ def match_signatures(surfaces, signatures, project_index, depth=DEFAULT_DEPTH):
     # 不一致时 L2 过滤静默全不命中 (Lua 审计 0 hits 的另一半根因)
     def _sig_applicable(sig, surface):
         if sig.get("tier") == "L2" and sig.get("lang"):
-            return norm_lang(surface.get("lang")) == sig["lang"]
+            # v3.5.2 (P3): 双侧归一化——签名标签允许内部名 (cs/typescript),
+            # 归一后与 surface 规范名等值比较 (cs↔csharp, ts/typescript↔javascript)
+            return norm_lang(surface.get("lang")) == norm_lang(sig["lang"])
         return True
     for surface in surfaces:
         for entry in surface.get("entry_points", []):

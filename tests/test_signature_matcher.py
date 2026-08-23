@@ -186,9 +186,12 @@ def test_v331_lang_dot_form_normalized():
         hits = sm.match_signatures([cs], sigs, idx)
         ids = {h["sig_id"] for h in hits}
         assert "SIG-C-ALLOC-001" in ids, f"lang={langval} 未归一化命中"
-    assert sm.norm_lang(".ts") == "typescript"
+    # v3.5.2 (P3): 别名归一化到账本规范名——ts→javascript (旧值 typescript)
+    assert sm.norm_lang(".ts") == "javascript"
+    assert sm.norm_lang("typescript") == "javascript"
     assert sm.norm_lang("kt") == "kotlin"
     assert sm.norm_lang(".ps1") == "powershell"
+    assert sm.norm_lang("cs") == "csharp"
 
 
 def test_v331_cpp_family():

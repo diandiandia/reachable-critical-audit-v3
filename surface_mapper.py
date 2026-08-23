@@ -4,6 +4,13 @@
 满足: SWR-V3-001 (architecture_context), SWR-V3-002 (4 域任务书),
       SWR-V3-003/004 (surface 校验: entry_points 证据强制 + 枚举校验),
       SWR-V3-005 (多产出合并去重/冲突标注).
+
+形态判定两轴 (v3.5.2, 与 SKILL.md 数据模型速查注对齐):
+    project_kind ∈ {framework, library, infra, app}  = R1 测绘期上下文提示信号
+        (context 产出, 仅作背景上下文, 不设门禁)
+    target_kind ∈ {application, library, hybrid}     = R0 门禁签收判据
+        (tools/target_kind.py, 门禁⑧ target_kind_required)
+    两轴语义独立, 不得混用——测绘期上下文提示不替代验证期门禁判据。
 用法:
     python3 surface_mapper.py context <project_root>          # 产出 architecture_context.json
     python3 surface_mapper.py tasks   <project_root>          # 产出 4 域测绘任务书
@@ -20,9 +27,10 @@ import sys
 DOMAINS = ["network", "data", "process", "storage"]
 # v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
 BOUNDARY_DOMAIN = "boundary"
-BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-other",
-               "proto", "http-service", "subprocess", "grpc", "cli",
-               "capi")  # SWR-V3.4.3-031: C-API 扩展模块胶水 (Python C-API/Lua C-API/N-API)
+BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "cgo", "n-api", "jni", "embed",
+               "ffi-other", "proto", "http-service", "subprocess", "grpc", "cli",
+               "capi")  # SWR-V3.4.3-031: C-API 扩展模块胶水 (Python C-API/Lua C-API/N-API);
+               # v3.5.2 (P3): +cgo (Go→C 边界, 混合项目常见形态)
 
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown",
@@ -449,7 +457,8 @@ def gen_surface_tasks(project_root, ctx=None):
         "process": "IPC、环境变量注入、命令行参数、信号处理、子进程",
         "storage": "数据库查询入口、缓存键来源、LDAP/外部存储",
         # v3.2: 语言间边界——混合项目最高危面 (所有权/ABI/释放责任)
-        BOUNDARY_DOMAIN: ("跨语言 FFI 边界: extern \"C\"/ctypes/cffi/N-API/JNI/CPython 嵌入/JS addon——"
+        BOUNDARY_DOMAIN: ("跨语言 FFI 边界: extern \"C\"/ctypes/cffi/cgo/N-API/JNI/"
+                          "CPython 嵌入/JS addon/C-API 胶水——"
                           "枚举每个边界调用点 {调用方向, 语言对, 桥接文件:行, 边界类型, 数据流方向}"),
     }
     domains = DOMAINS + [BOUNDARY_DOMAIN]

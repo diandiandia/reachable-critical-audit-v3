@@ -269,6 +269,8 @@ R4 H-7 默认值盘点与 R3 REACHABLE gate 证据的 key:value 冲突 → 主�
 - **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
 - **input_surface.json**：`{surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[], mirror_pairs[]}`
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
+- **语言词汇两轴（v3.5.2 注）**：① 签名标签 = 签名侧内部名，允许 superset（`cs`/`typescript`/`js` 等，校验白名单 VALID_LANGS）；② 账本/任务书/队列输出 = 归一化到账本 16 规范名（`cs↔csharp`、`ts`/`typescript`↔`javascript`、`ps↔powershell`）。跨模块 alias map 取值一致（有测试守卫），签名 L2 过滤双侧归一化后等值比较。
+- **形态判定两轴（v3.5.2 注）**：`project_kind`（R1 上下文信号，4 值 {framework, library, infra, app}）与 `target_kind`（R0 门禁签收，3 值 {application, library, hybrid}）是**两个独立轴**——前者是测绘期上下文提示，后者是验证期门禁判据；不要混用（surface_mapper.py docstring 交叉引用）。
 
 ## ⚠️ 编排层四条铁律（W5 回归教训，强制执行）
 
@@ -365,7 +367,7 @@ akka-http / etcd / actix-web 三项目复跑对照:
 ### R0/R1: 语言清单 + boundary 第五域
 - `surface_mapper.py context` 输出 `language_inventory`（每语言文件数/组件角色）
 - R1 测绘 4 域 → **4+1 域**（boundary: 跨语言 FFI 边界调用表——extern/ctypes/cffi/
-  N-API/JNI/embed，boundary surface 必填 boundary_kind + lang_pair）
+  cgo/N-API/JNI/embed/C-API 胶水，boundary surface 必填 boundary_kind + lang_pair）
 - surface/entry_point/候选均带 lang 字段；任务书背景按语言分片
 - `size_tier`: 2 语言项目 domains 含 boundary；3+ 语言保底 large 档（5 agents）
 

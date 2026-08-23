@@ -239,9 +239,10 @@ def mixed_build_hint(candidate):
     引用 harness_manuals/mixed_build.md 总纲。"""
     langs = {candidate.get("lang")} if candidate.get("lang") else set()
     lp = str(candidate.get("lang_pair") or "")
+    # v3.5.2 (P3): 删硬编码白名单 {c,py,rust,js,ts}——任意语言对小写接受
+    # (白名单曾使 kotlin/go 等混合对不触发混合实证提示)
     for side in lp.replace("->", " ").split():
-        if side in ("c", "py", "rust", "js", "ts"):
-            langs.add(side)
+        langs.add(side.lower())
     if len(langs) < 2:
         return ""
     return (
@@ -283,7 +284,11 @@ def source_fact_rule(candidate, blocker=None):
 
 def _main_additions(argv):
     if argv[1] == "manual":
-        print(load_manual(argv[2] if len(argv) > 2 else "rust"))
+        # v3.5.2 (P3): 缺 lang 参数报 usage 而非静默默认 rust (语言偏见)
+        if len(argv) < 3:
+            print("usage: harness_runner.py manual <lang>", file=sys.stderr)
+            return 2
+        print(load_manual(argv[2]))
         return 0
     if argv[1] == "check-scope":
         c = json.load(open(argv[2]))
@@ -291,7 +296,10 @@ def _main_additions(argv):
             print(" -", v)
         return 1 if check_scope(c) else 0
     if argv[1] == "traps":
-        print("\n".join(f"- {t}" for t in env_trap_checklist(argv[2] if len(argv) > 2 else "rust")))
+        if len(argv) < 3:
+            print("usage: harness_runner.py traps <lang>", file=sys.stderr)
+            return 2
+        print("\n".join(f"- {t}" for t in env_trap_checklist(argv[2])))
         return 0
     return None
 

@@ -166,9 +166,11 @@ _R15_IGNORE_DIRS = {"node_modules", ".git", ".audit_results", ".agents", ".codex
                     "mocks", "unittest", "scratch", "demo"}
 
 # 短语言别名 → 规范名 (SWR-V3.4.6-001: _project_dom_lang 与 lang_of 共用)
+# v3.5.2 (P3): 补 typescript→javascript——否则 typescript 候选写入账本幻影列
+# (账本 langs 无 typescript; 归一输出集才有 javascript)
 _LANG_ALIAS = {"py": "python", "pl": "perl", "ts": "javascript", "js": "javascript",
                "rb": "ruby", "kt": "kotlin", "sh": "shell", "ps1": "powershell",
-               "cs": "csharp", "rs": "rust"}
+               "cs": "csharp", "rs": "rust", "typescript": "javascript"}
 
 
 def _norm_lang(lg):
@@ -1516,8 +1518,9 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 1. 中间层横向枚举：adapter 与 domain 之间逐层列出缓存/门闩/降级/拦截器——
    不能只沿调用链直查（既有先例: 缓存前置门闩被整层漏掉的前车之鉴）
 2. 缓存层三查：
-   - 错误分支方向：`if err == nil` 块内处理错误分支 = 写反死代码；
-     缓存未命中返回什么（空实体+nil error 会短路 DB 回源）
+   - 错误分支方向：错误处理落在成功分支 = 写反死代码（Go 习语示例:
+     `if err == nil` 块内处理错误分支）；缓存未命中返回什么（空实体 +
+     无错误返回会短路 DB 回源）
    - 写读形状一致：缓存写入方与读取方序列化形状是否匹配
      （writer 单对象 vs reader 切片 → 往返必然失败）
    - 缓存键写路径：Save/Modify 是否失效/回填缓存键——不写则新写入的 DB 行
