@@ -120,6 +120,67 @@ _R15_IGNORE_DIRS = {"node_modules", ".git", ".audit_results", ".agents", ".codex
                     "tests", "tool", "tools", "script", "scripts", "mock",
                     "mocks", "unittest", "scratch", "demo"}
 
+# 短语言别名 → 规范名 (SWR-V3.4.6-001: _project_dom_lang 与 lang_of 共用)
+_LANG_ALIAS = {"py": "python", "pl": "perl", "ts": "javascript", "js": "javascript",
+               "rb": "ruby", "kt": "kotlin", "sh": "shell", "ps1": "powershell",
+               "cs": "csharp", "rs": "rust"}
+
+
+def _norm_lang(lg):
+    """归一化语言标识: 去点/短别名/unknown 占位 → 规范名或 None。"""
+    lg = (lg or "").strip().lstrip(".")
+    if not lg or lg == "unknown":
+        return None
+    return _LANG_ALIAS.get(lg, lg)
+
+
+def _project_dom_lang(project_root):
+    """SWR-V3.4.6-001: 项目主导语言回退链 (候选空队时从 R1 产物推导)。
+    链: input_surface.json surfaces[].lang 多数 → architecture_context.json
+    language_inventory 文件数主导 → None (调用方落 "other")。
+    语义: R1 任务书 schema 强制 surface.lang 必填, 空队形态下该事实源仍可用
+    ——账本不因 R3 空队误记 other 格 (quic-go 全 Go 项目误记实录)。
+    返回规范语言名或 None; 只读 R1 产物, 缺文件/损坏静默跳过。"""
+    audit = os.path.join(project_root, ".audit_results")
+
+    # 回退 1: input_surface.json surface lang 多数
+    isurf = os.path.join(audit, "input_surface.json")
+    if os.path.exists(isurf):
+        try:
+            freq = {}
+            for s in json.load(open(isurf)).get("surfaces") or []:
+                lg = _norm_lang(s.get("lang"))
+                if lg:
+                    freq[lg] = freq.get(lg, 0) + 1
+            if freq:
+                return max(freq, key=freq.get)
+        except (OSError, ValueError):
+            pass
+    # 回退 2: architecture_context.json language_inventory 主导 (文件数加权)
+    actx = os.path.join(audit, "architecture_context.json")
+    if os.path.exists(actx):
+        try:
+            inv = json.load(open(actx)).get("language_inventory") or []
+            if isinstance(inv, dict):
+                inv = inv.values()
+            freq = {}
+            for it in inv:
+                if not isinstance(it, dict):
+                    continue
+                lg = _norm_lang(it.get("lang"))
+                if not lg:
+                    continue
+                try:
+                    n = int(it.get("file_count") or 1)
+                except (TypeError, ValueError):
+                    n = 1
+                freq[lg] = freq.get(lg, 0) + n
+            if freq:
+                return max(freq, key=freq.get)
+        except (OSError, ValueError):
+            pass
+    return None
+
 
 
 def _detect_languages(project_root):
@@ -1175,10 +1236,6 @@ def stage_coverage_ledger(project_root, write=False):
                 codes.add(int(m.group(1)))
         return codes
 
-    _LANG_ALIAS = {"py": "python", "pl": "perl", "ts": "javascript", "js": "javascript",
-                   "rb": "ruby", "kt": "kotlin", "sh": "shell", "ps1": "powershell",
-                   "cs": "csharp", "rs": "rust"}
-
     def lang_of(c):
         lg = (c.get("language") or c.get("lang") or "").strip()
         if lg:
@@ -1225,7 +1282,10 @@ def stage_coverage_ledger(project_root, write=False):
     if lang_freq:
         dom = max(lang_freq, key=lang_freq.get)
     else:
-        dom = "other"
+        # SWR-V3.4.6-001: 候选空 (R3 空队, R2 keep 0 合法终态) 时主导语言
+        # 回退 R1 产物——否则纯语言项目误记 other 格 (quic-go 验收实录:
+        # 全 Go 项目 R4 findings 记入 *xother 格, 账本失真人工修正)
+        dom = _project_dom_lang(project_root) or "other"
     for f in queue.get("r4_findings", []):
         for fi in f.get("findings", []):
             for code in codes_of(fi):

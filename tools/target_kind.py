@@ -21,6 +21,11 @@ LIB_KEYWORDS = ("library", "sdk", "framework", "toolkit", "包", "库", "组件�
 APP_KEYWORDS = ("server", "service", "deploy", "docker", "k8s", "kubernetes",
                 "服务", "部署", "网关", "监听")
 
+# 遍历排除段 (精确分段匹配——子串匹配会把 test_target_kind_xxx 这类
+# 目录整体跳过, v3.5 测试基线修复实证)
+SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build",
+             "__pycache__", "dist", "vendor"}
+
 LISTEN_PATTERN = re.compile(
     r"0\.0\.0\.0|Listen\(|Server::builder|uvicorn\.run|app\.listen|net\.Listen|"
     r"http\.ListenAndServe|grpc\.NewServer|axum::serve|hyper::Server",
@@ -34,8 +39,7 @@ SCAN_SWALLOW_PATTERN = re.compile(
 def _scan_files(root, exts, max_files=400):
     hits = []
     for dirpath, _dirs, files in os.walk(root):
-        if any(part in dirpath for part in (".git", "node_modules", ".venv",
-                                            "target", "build", "__pycache__")):
+        if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
             continue
         for f in files:
             if os.path.splitext(f)[1].lower() in exts:

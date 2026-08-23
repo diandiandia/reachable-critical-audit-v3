@@ -117,7 +117,7 @@
       "langs": {
         "perl": 7,
         "rust": 6,
-        "go": 28,
+        "go": 34,
         "csharp": 8,
         "scala": 3,
         "python": 7,
@@ -133,7 +133,7 @@
     {
       "family": "CRYPTO",
       "langs": {
-        "go": 1,
+        "go": 4,
         "python": 3,
         "c": 3,
         "ruby": 1,
@@ -149,7 +149,8 @@
         "cpp": 1,
         "shell": 1,
         "ruby": 1,
-        "c": 1
+        "c": 1,
+        "go": 3
       }
     },
     {
@@ -182,7 +183,7 @@
         "cpp": 2,
         "other": 3,
         "swift": 2,
-        "go": 2
+        "go": 8
       }
     },
     {
@@ -190,7 +191,7 @@
       "langs": {
         "perl": 17,
         "python": 41,
-        "go": 32,
+        "go": 37,
         "csharp": 4,
         "powershell": 5,
         "rust": 30,
@@ -211,7 +212,7 @@
       "family": "RACE",
       "langs": {
         "perl": 2,
-        "go": 4,
+        "go": 6,
         "csharp": 3,
         "powershell": 4,
         "rust": 3,
@@ -228,7 +229,7 @@
       "family": "RESOURCE-DOS",
       "langs": {
         "perl": 3,
-        "go": 41,
+        "go": 55,
         "csharp": 11,
         "powershell": 1,
         "rust": 26,
@@ -300,7 +301,8 @@
     "/root/pyjwt",
     "/root/jsonwebtoken",
     "/root/orjson",
-    "/root/quic-go"
+    "/root/quic-go",
+    "/root/rpcx"
   ],
-  "updated_at": "2026-08-23"
+  "updated_at": "2026-08-19"
 }

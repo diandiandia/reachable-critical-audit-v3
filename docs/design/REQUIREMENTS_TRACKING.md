@@ -704,3 +704,18 @@
 
 验收: test_signature_matcher / test_workflow_export / test_surface_mapper 新增用例全绿；全量测试无回退；三锚点 selfcheck 零回退；新项目验收（覆盖格 +1）后落 ACCEPTANCE_V3_4_5.md。
 > ✅ 2026-08-23: 全部验收完成（170 测试全绿 / quic-go 新项目验收 / ACCEPTANCE_V3_4_5.md）。SWR-V3.4.5-001 在 quic-go R2 实战验证（gen warn + 独立文件）。
+
+## 软件需求（SWR-V3.4.6）（共 4 条）
+
+> 来源: quic-go 空队验收（2026-08-23）运行实录暴露缺陷（设计文档 SYSTEM_DESIGN_V3_4_6.md / SWR_V3_4_6.md）。
+> 系统需求: 无新增（补丁版不改变阶段骨架与门禁语义）。
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| SWR-V3.4.6-001 | coverage-ledger 主导语言推导链回退（候选空 → input_surface lang → language_inventory → other） | 未开发 | M1 |
+| SWR-V3.4.6-002 | R2 filter 产出 surface_ids 保真（模板 schema 强制 bc/drop 字段 + r2_guard 反查补齐） | 未开发 | M1 |
+| SWR-V3.4.6-003 | merge 同文件跨域未成对提示 same_file_cross_domain_pairs（提示不自动成对） | 未开发 | M1 |
+| SWR-V3.4.6-004 | SKILL.md R2 段全 keep 0 抽样复核条款（≥3 条 + spot_checked 落盘） | 未开发 | M2 |
+
+验收: 单测 170+4 全绿；既有机制零回退（fixture 基线对照）；rpcx 新项目验收
+（M1 推导链实战验证 + 覆盖账本缺口格回填 + 六门禁全 PASS）后落 ACCEPTANCE_V3_4_6.md。

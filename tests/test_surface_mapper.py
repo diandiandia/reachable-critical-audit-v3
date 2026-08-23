@@ -317,3 +317,45 @@ def test_merge_warns_id_gap():
         assert len(merged["surfaces"]) == 3, "空洞不阻断合并"
         assert "SURF-BOUNDARY-003" in err.getvalue(), err.getvalue()
         assert "missing" in err.getvalue()
+
+
+def test_merge_same_file_cross_domain_hint():
+    """v3.4.6 (SWR-V3.4.6-003): 同文件双面但 entry_points 不重叠 →
+    merge 输出 same_file_cross_domain_pairs 提示 (不自动成对, 主代理裁决)。
+    quic-go 实录: token_store.go 被 data/storage 两域测绘不同函数,
+    conflict 启发式不触发 → mirror 漏对且无人工核对提示。"""
+    import io, contextlib
+    with tempfile.TemporaryDirectory() as tmp:
+        f1 = os.path.join(tmp, "_r1_data.json")
+        json.dump({"surfaces": [
+            {"id": "SURF-DATA-010", "type": "data",
+             "entry_points": [{"file": "token_store.go", "line": 10}]},
+            {"id": "SURF-DATA-011", "type": "data",
+             "entry_points": [{"file": "other.go", "line": 3}]},
+        ]}, open(f1, "w"))
+        f2 = os.path.join(tmp, "_r1_storage.json")
+        json.dump({"surfaces": [
+            {"id": "SURF-STORAGE-008", "type": "storage",
+             "entry_points": [{"file": "token_store.go", "line": 40}]},
+        ]}, open(f2, "w"))
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            merged = sm.merge_surfaces([f1, f2])
+        pairs = merged["same_file_cross_domain_pairs"]
+        assert any(set(p["pair"]) == {"SURF-DATA-010", "SURF-STORAGE-008"}
+                   for p in pairs), pairs
+        assert "hint" in err.getvalue() and "SURF-DATA-010" in err.getvalue()
+        # 同文件同域 (DATA-011/other.go 无同文件跨域面) → 不成对
+        assert not any(set(p["pair"]) == {"SURF-DATA-010", "SURF-DATA-011"}
+                       for p in pairs)
+    # 不同文件 / 同域 → 空清单
+    with tempfile.TemporaryDirectory() as tmp:
+        f1 = os.path.join(tmp, "_r1_a.json")
+        json.dump({"surfaces": [
+            {"id": "SURF-DATA-001", "type": "data",
+             "entry_points": [{"file": "a.go", "line": 1}]},
+            {"id": "SURF-DATA-002", "type": "data",
+             "entry_points": [{"file": "b.go", "line": 1}]},
+        ]}, open(f1, "w"))
+        merged = sm.merge_surfaces([f1])
+        assert merged["same_file_cross_domain_pairs"] == []

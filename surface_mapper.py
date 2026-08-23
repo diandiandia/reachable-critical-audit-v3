@@ -27,6 +27,11 @@ BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "n-api", "jni", "embed", "ffi-othe
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown",
                "host_api"}  # v3.3 (REQ-V3.3-008): 宿主 API 边界 (库组件默认)
+
+# 遍历排除段 (精确分段匹配——子串匹配会把 test_xxx/target_xxx 目录整体跳过,
+# v3.5 测试基线修复实证)
+SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build",
+             "__pycache__", "dist", "vendor"}
 VALID_CONFIDENCE = {"high", "medium", "low"}
 
 BUILD_FILES = ["Package.swift", "Cargo.toml", "pom.xml", "build.gradle",
@@ -329,7 +334,7 @@ def language_inventory(root):
     NON_RUNTIME_SEGS = {"scripts", "script", "tests", "test", "tools", "tool",
                         "docs", "doc", "configs", "config"}
     for dirpath, _dirs, files in os.walk(root):
-        if any(part in dirpath for part in (".git", "node_modules", ".venv", "target", "build")):
+        if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
             continue
         parts = set(p.lower() for p in dirpath.split(os.sep))
         hint = "core"
@@ -375,7 +380,7 @@ def _detect_lang(root):
     from signature_matcher import CODE_EXTENSIONS
     counts = {}
     for dirpath, _dirs, files in os.walk(root):
-        if any(part in dirpath for part in (".git", "node_modules", ".venv", "target", "build")):
+        if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
             continue
         for f in files:
             ext = os.path.splitext(f)[1].lower()
@@ -670,7 +675,7 @@ def size_tier(project_root):
     >500 → large: 4 agents + 45min 硬时限 + 每 10 分钟中间产物落盘。"""
     count = 0
     for dirpath, _dirs, files in os.walk(project_root):
-        if any(part in dirpath for part in (".git", "node_modules", ".venv", "target", "build")):
+        if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
             continue
         for f in files:
             ext = os.path.splitext(f)[1].lower()
@@ -815,6 +820,13 @@ def merge_surfaces(files, project_root=None):
     # SWR-V3.4.5-003: 域内 id 序列空洞告警 (非阻断)——缺号可能是 agent
     # 整段漏报的信号, 主代理复核决定是否重派 (gRPC 审计: boundary 缺 003)
     _warn_id_gaps(merged["surfaces"])
+    # SWR-V3.4.6-003: 同文件跨域未成对提示 (非阻断)——"同文件双面但 entry_points
+    # 不重叠"形态 (quic-go: token_store.go 被 data/storage 两域测绘不同函数) 不产生
+    # conflict → mirror 检测漏对 → 覆盖传播缺口且无人工核对提示。只提示不自动成对
+    # (自动配对会引入误耦合——同文件不同入口可能是完全独立的两个面), 主代理裁决
+    # 补 mirror_pairs 或 coverage_bridge
+    merged["same_file_cross_domain_pairs"] = _hint_same_file_cross_domain(
+        merged["surfaces"])
     if normalized_ids:
         merged["normalized_ids"] = normalized_ids
     return merged
@@ -840,6 +852,50 @@ def _warn_id_gaps(surfaces):
                 shown += f"...(+{len(missing) - 3})"
             print(f"[merge] warn: surface id 序列空洞 SURF-{domain}-{shown} "
                   f"missing ({len(uniq)} 条在册)", file=sys.stderr)
+
+
+def _hint_same_file_cross_domain(surfaces):
+    """SWR-V3.4.6-003: 同文件跨域未成对提示。
+    同文件、不同域前缀、entry_points 无重叠 (file+line 键) 的 surface 对清单。
+    返回 [{pair:[idA,idB], file, entries:{idA:[file:line,...], idB:[...]}}];
+    stderr 输出提示 (非阻断)。自动成对会引入误耦合——只提示, 主代理裁决。"""
+    by_file = {}
+    for s in surfaces:
+        for ep in s.get("entry_points", []):
+            f = ep.get("file")
+            if not f:
+                continue
+            by_file.setdefault(f, []).append(s)
+    out = []
+    for f, ss in by_file.items():
+        uniq = {s["id"]: s for s in ss if s.get("id")}
+        ids = list(uniq)
+        for i in range(len(ids)):
+            for j in range(i + 1, len(ids)):
+                a, b = uniq[ids[i]], uniq[ids[j]]
+                ma = re.match(r"^SURF-([A-Z]+)-", a["id"])
+                mb = re.match(r"^SURF-([A-Z]+)-", b["id"])
+                if not ma or not mb or ma.group(1) == mb.group(1):
+                    continue
+                ea = {(e.get("file"), e.get("line")) for e in a.get("entry_points", [])}
+                eb = {(e.get("file"), e.get("line")) for e in b.get("entry_points", [])}
+                if ea & eb:
+                    continue  # entry_points 重叠 → 已走 conflict/mirror 检测
+                out.append({
+                    "pair": [a["id"], b["id"]],
+                    "file": f,
+                    "entries": {
+                        a["id"]: [f"{e.get('file')}:{e.get('line')}"
+                                  for e in a.get("entry_points", [])],
+                        b["id"]: [f"{e.get('file')}:{e.get('line')}"
+                                  for e in b.get("entry_points", [])],
+                    },
+                })
+                print(f"[merge] hint: {a['id']} <-> {b['id']} 同文件 {f} 跨域"
+                      f"({ma.group(1)}/{mb.group(1)}) 且 entry_points 不重叠——"
+                      f"可能是同一实现的双面, 主代理裁决补 mirror 或 bridge",
+                      file=sys.stderr)
+    return out
 
 
 def scope_snapshot(project_root):

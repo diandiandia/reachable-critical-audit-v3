@@ -21,10 +21,21 @@ FIXTURE = "/root/mixed-fixture"
 LERSOSA = "/root/Lersosa"
 
 
+def _make_go_library(tmp_path):
+    """构造 Go 库形态项目 (go.mod module 声明 + 无 main 的 .go 文件)。
+
+    mixed-fixture 曾作为库型 fixture (v3.2 验收), 但其目录依赖外部环境;
+    tmp_path 构造等价的"库形态"信号组合: 有源码 + go.mod module + 无监听。
+    """
+    (tmp_path / "go.mod").write_text("module example.com/fixlib\n\ngo 1.21\n")
+    (tmp_path / "fixlib.go").write_text("package fixlib\n\nfunc Do() {}\n")
+    return str(tmp_path)
+
+
 # ---------- M1: target_kind ----------
 
-def test_target_kind_fixture_library():
-    r = determine_target_kind(FIXTURE)
+def test_target_kind_fixture_library(tmp_path):
+    r = determine_target_kind(_make_go_library(tmp_path))
     assert r["recommendation"] in ("library", "hybrid")
     assert r["signals"]
 
@@ -44,29 +55,36 @@ def test_target_kind_unknown_defaults_application():
 
 # ---------- M2: verifier 三段 ----------
 
-def test_build_prompt_has_import_precheck():
+def test_build_prompt_has_import_precheck(tmp_path):
     import batch_verify
     cand = {"id": "CAND-X", "type": None}
     ctx = {"file": "f.py", "line": 1, "language": "python", "cwe": "CWE-918",
            "category": "x", "sink": "requests.get(url)", "sources_regex": ""}
-    with open(os.path.join(LERSOSA, ".audit_results", "verify_queue.json")) as f:
-        q = json.load(f)
-    q["target_kind"] = "application"
-    # 临时借用 Lersosa 队列目录: prompt 读取 verify_queue.target_kind
-    p = batch_verify._build_prompt(cand, ctx, LERSOSA)
+    out = tmp_path / ".audit_results"
+    out.mkdir()
+    (out / "verify_queue.json").write_text(
+        json.dumps({"schema_version": "3.0", "target_kind": "application",
+                    "candidates": []}))
+    # prompt 读取 verify_queue.target_kind (原测试借用 Lersosa 目录, 环境依赖)
+    p = batch_verify._build_prompt(cand, ctx, str(tmp_path))
     assert "步骤 0.5" in p and "模块可导入性预检" in p
     assert "broken_edge" in p
     assert "目标类型存在性规则" in p and "shipped 配置" in p
 
 
-def test_build_prompt_write_read_family_enumeration():
+def test_build_prompt_write_read_family_enumeration(tmp_path):
     import batch_verify
     cand = {"id": "CAND-X", "type": None, "summary": "写入配置 → 出站重定向",
             "claim_type": "write-outbound"}
     ctx = {"file": "f.go", "line": 1, "language": "go", "cwe": "CWE-918",
            "category": "x", "sink": "minio.New(...)", "sources_regex": ""}
     assert batch_verify._is_write_read_family(cand)
-    p = batch_verify._build_prompt(cand, ctx, LERSOSA)
+    out = tmp_path / ".audit_results"
+    out.mkdir()
+    (out / "verify_queue.json").write_text(
+        json.dumps({"schema_version": "3.0", "target_kind": "application",
+                    "candidates": []}))
+    p = batch_verify._build_prompt(cand, ctx, str(tmp_path))
     assert "步骤 5.5" in p and "缓存层三查" in p
 
 
@@ -183,8 +201,12 @@ def test_component_role_derivation():
     assert surface_mapper._component_role("bindings") == "server-side"
 
 
-def test_lersosa_inventory_has_role():
-    inv = surface_mapper.language_inventory(LERSOSA)
+def test_lersosa_inventory_has_role(tmp_path):
+    # 原测试依赖 /root/Lersosa 目录 (外部项目), 改为 tmp_path 构造:
+    # frontend/ 目录 → 前端组件 client-only 判定 (与 _component_role 同启发式)
+    (tmp_path / "frontend").mkdir()
+    (tmp_path / "frontend" / "app.ts").write_text("export const a = 1;\n")
+    inv = surface_mapper.language_inventory(str(tmp_path))
     ts = [x for x in inv if x["lang"] == ".ts"]
     assert ts and ts[0]["component_role"] == "client-only"
 
@@ -214,3 +236,30 @@ def test_export_script_shipped_config(tmp_path):
                            "workflow_shipped_config.js")).read()
     errs = workflow_export.lint_script(js)
     assert not errs, errs
+
+
+# ---------- SWR-V3.4.6-002: R2 filter 产出 surface_ids 保真 ----------
+def test_filter_result_surface_ids_fidelity():
+    """v3.4.6 (SWR-V3.4.6-002): 落盘保真——bc/drop 缺 surface_ids 时从
+    hypotheses.json 按 id 反查补齐 + restored_from_hypotheses 标记。
+    quic-go 实录: bc/drop 只存 id → 门禁⑦ tracked 覆盖虚低 41→31 假缺口。"""
+    hyps = {"hypotheses": [
+        {"id": "HYP-001", "surface_ids": ["SURF-DATA-001"]},
+        {"id": "HYP-002", "surface_ids": ["SURF-DATA-002", "SURF-PROC-003"]}]}
+    data = {"keep": [{"id": "HYP-001", "surface_ids": ["SURF-DATA-001"]}],
+            "drop": [{"id": "HYP-002", "reason": "defense"}],
+            "boundary_confirmations": [{"id": "HYP-001", "confirmed_defense": "x"}]}
+    out, restored = r2_guard.restore_surface_ids(data, hyps)
+    assert out["drop"][0]["surface_ids"] == ["SURF-DATA-002", "SURF-PROC-003"]
+    assert out["drop"][0]["restored_from_hypotheses"] is True
+    assert set(restored) == {"HYP-002", "HYP-001"}
+    # bc 条目同样修复 (同 id 反查)
+    assert out["boundary_confirmations"][0]["surface_ids"] == ["SURF-DATA-001"]
+    assert out["boundary_confirmations"][0]["restored_from_hypotheses"] is True
+    # keep 已有 surface_ids → 不动, 无 restored 标记
+    assert "restored_from_hypotheses" not in out["keep"][0]
+    # 无反查来源 (hypotheses 缺失/未知 id) → 保持缺字段 (兼容旧产出, 不拒收)
+    out2, restored2 = r2_guard.restore_surface_ids(
+        {"boundary_confirmations": [{"id": "HYP-999", "confirmed_defense": "x"}]}, {})
+    assert out2["boundary_confirmations"][0].get("surface_ids") is None
+    assert restored2 == []

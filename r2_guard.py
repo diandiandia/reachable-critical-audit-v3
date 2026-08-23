@@ -9,6 +9,9 @@
     python3 r2_guard.py validate <hypotheses.json> <input_surface.json>
     python3 r2_guard.py anchor <hypothesis.json> <project_root>
     python3 r2_guard.py drops <r2_filter_output.json>
+    python3 r2_guard.py fidelity <r2_filter_result.json> [hypotheses.json]
+        # SWR-V3.4.6-002: 落盘保真——bc/drop 缺 surface_ids 时从 hypotheses.json
+        # 反查补齐 (restored_from_hypotheses 标记), 缺 hypotheses 参数自动探测同目录
 """
 import json
 import os
@@ -125,6 +128,46 @@ def audit_filter_drops(kept, dropped, path=None):
     return data, missing
 
 
+# v3.4.6 filter 产出三组键名 (模板 canonical) 与 v3.1 落盘键名 (kept/dropped) 双形态
+_FILTER_GROUPS = ("keep", "drop", "boundary_confirmations", "kept", "dropped")
+
+
+def restore_surface_ids(data, hypotheses):
+    """SWR-V3.4.6-002: filter 产出 surface_ids 保真。
+    keep/drop/boundary_confirmations 三组条目缺 surface_ids 时, 从 hypotheses.json
+    按 id 反查补齐 (对旧产出兼容, 缺字段不拒收只修复), 补后写
+    restored_from_hypotheses 标记。返回 (data, restored_ids)。
+    门禁⑦ tracked 覆盖簿记只认 surface_ids; bc/drop 丢字段 → 覆盖虚低 →
+    假缺口阻断收尾 (quic-go 41→31 实录)。"""
+    hyps = {}
+    if isinstance(hypotheses, dict):
+        for h in hypotheses.get("hypotheses", []):
+            hid = h.get("id") or h.get("hypothesis_id")
+            if hid:
+                hyps[hid] = h
+    restored = []
+    for group in _FILTER_GROUPS:
+        for item in data.get(group, []):
+            if not isinstance(item, dict):
+                continue
+            sids = item.get("surface_ids") or item.get("surface_id") or []
+            if isinstance(sids, str):
+                sids = [sids]
+            if sids:
+                continue
+            src = hyps.get(item.get("id"))
+            if not src:
+                continue
+            sids = src.get("surface_ids") or src.get("surface_id") or []
+            if isinstance(sids, str):
+                sids = [sids]
+            if sids:
+                item["surface_ids"] = sids
+                item["restored_from_hypotheses"] = True
+                restored.append(item.get("id"))
+    return data, restored
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "help"
     if cmd == "validate":
@@ -156,6 +199,22 @@ def main(argv):
         dropped = data.get("dropped") or data.get("drop") or []
         out, missing = audit_filter_drops(kept, dropped)
         print(f"kept={len(kept)} dropped={len(dropped)} missing_reason={missing}")
+        return 0
+    if cmd == "fidelity":
+        # SWR-V3.4.6-002: surface_ids 保真校验/修复 (r2_filter_result.json)
+        data = json.load(open(argv[2]))
+        hyps = None
+        if len(argv) > 3:
+            hyps = json.load(open(argv[3]))
+        else:
+            cand = os.path.join(os.path.dirname(os.path.abspath(argv[2])), "hypotheses.json")
+            if os.path.exists(cand):
+                hyps = json.load(open(cand))
+            else:
+                print("WARN: hypotheses.json 缺失, 跳过反查修复", file=sys.stderr)
+        data, restored = restore_surface_ids(data, hyps or {})
+        json.dump(data, open(argv[2], "w"), ensure_ascii=False, indent=2)
+        print(f"surface_ids_fidelity: restored={restored}")
         return 0
     print(__doc__)
     return 1

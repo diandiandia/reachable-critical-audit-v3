@@ -131,6 +131,17 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 
 **LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。筛选理由中的 focus sink（file:line）是后续簇化依据。
 
+> **keep=0 抽样复核条款（v3.4.6, SWR-V3.4.6-004）**：筛选结果 keep=0（或
+> boundary_confirmations ≥ 全量 80%）时, 主代理**必须**抽样复核 ≥3 条
+> boundary_confirmations 的真实代码防御点（逐条 Read 防御点源码确认成立;
+> 抽样清单落盘 `r2_filter_result.spot_checked`）。筛选全防御裁决若失真
+> （防御性偏差的另一方向: 过度放行）, R3 空队会整体放过缺陷——抽样复核是
+> "证据裁决"铁律在空队形态下的必要延伸; R4 深度验证与 R2 交叉核对构成
+> 双保险（quic-go 28 条全防御、主代理抽样 HYP-L1/L12/L27 复核属实实录）。
+> 落盘保真: 筛选结果落盘为 `r2_filter_result.json` 后跑
+> `python3 <skill_dir>/r2_guard.py fidelity .audit_results/r2_filter_result.json`
+> （SWR-V3.4.6-002: bc/drop 缺 surface_ids 自动从 hypotheses.json 反查补齐）。
+
 ## 🔄 R3：候选验证（Mode W 默认）
 
 **批次选题规则（v3.4, REQ-V3.4-006）**：多项目批次开题时，先跑

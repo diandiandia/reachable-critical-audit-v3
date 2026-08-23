@@ -27,9 +27,15 @@ scope diff）这类 drop 自动提示复活重验（mbedtls 审计: tf-psa-crypt
 
 ## 产出（强制 JSON，最终回复）
 {"keep":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"sources":["LLM|SIG-xxx"]}],
- "drop":[{"id":"HYP-xxx","reason":"...","dropped_by":"filter",
+ "drop":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"reason":"...","dropped_by":"filter",
           "scope_dependent":false|true}],
  "boundary_confirmations":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"confirmed_defense":"..."}]}
+
+## surface_ids 保真义务（v3.4.6, SWR-V3.4.6-002, 缺失即拒收）
+**keep / drop / boundary_confirmations 三组条目的 `surface_ids` 均必填数组**
+（从假设清单继承, 原样保留, 不得省略）。门禁⑦ tracked 覆盖簿记只认
+surface_ids; drop/boundary_confirmations 省略该字段 → 覆盖计数虚低 →
+假缺口阻断收尾（quic-go 41→31 实录）。
 
 ## 落盘拦截契约（v3.2.3 强制）
 若环境（权限/plan mode）阻止写入指定的落盘路径：最终回复**必须**是完整

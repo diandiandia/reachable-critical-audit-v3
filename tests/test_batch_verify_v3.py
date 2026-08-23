@@ -335,3 +335,70 @@ def test_coverage_reads_r2_filter_surface_ids():
     out = _json.loads(r.stdout)
     assert out["status"] == "COVERAGE_OK", out
     assert out["missing"] == []
+
+
+# ---- SWR-V3.4.6-001: coverage-ledger 空队主导语言回退链 ----
+def test_coverage_ledger_empty_queue_lang_from_surface():
+    """空队 (R3 空队, R2 keep 0 合法终态) + input_surface lang=go →
+    账本写 go 格, other 零新增。quic-go 实录: 全 Go 项目 R4 findings 误记
+    *xother 格, 账本失真人工修正——回退链根修。"""
+    import tempfile, subprocess, sys, os, json as _json
+    sys.path.insert(0, WORK)
+    # 测试写真实账本资产 → 快照/恢复, 防污染 (账本为记录型资产)
+    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    snapshot = open(ledger_path).read()
+    try:
+        tmp = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmp, ".audit_results"))
+        _json.dump({"schema_version": "3.0", "surfaces": [
+            {"id": "SURF-DATA-001", "name": "a", "type": "data", "lang": "go"}]},
+            open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
+        _json.dump({"schema_version": "3.0", "candidates": [],
+                    "r4_findings": [{"hypothesis_id": "H1", "findings": [
+                        {"title": "x", "cwe": ["CWE-770"]}]}]},
+            open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+        r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                            tmp, "--stage", "coverage-ledger", "--write"],
+                           capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        out = _json.loads(r.stdout)
+        assert out["status"] == "LEDGER_WRITTEN"
+        assert "RESOURCE-DOSxgo" in out["new_counts"], out["new_counts"]
+        assert not any("xother" in k for k in out["new_counts"]), out["new_counts"]
+    finally:
+        open(ledger_path, "w").write(snapshot)
+
+
+def test_coverage_ledger_derivation_chain():
+    """候选非空 (lang=rust) + surface lang=go → 仍按候选 rust 计
+    (回退链不覆盖候选级事实——回退只服务空队形态, 防破坏既有行为)。"""
+    import tempfile, subprocess, sys, os, json as _json
+    sys.path.insert(0, WORK)
+    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    snapshot = open(ledger_path).read()
+    try:
+        tmp = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmp, ".audit_results"))
+        _json.dump({"schema_version": "3.0", "surfaces": [
+            {"id": "SURF-DATA-001", "name": "a", "type": "data", "lang": "go"}]},
+            open(os.path.join(tmp, ".audit_results", "input_surface.json"), "w"))
+        _json.dump({"schema_version": "3.0", "candidates": [
+            {"id": "CAND-001", "source_file": "a.rs", "source_line": 1,
+             "sink_type": "CWE-770", "status": "VERIFIED", "language": "rust",
+             "cwe": ["CWE-770"]}],
+            "r4_findings": [{"hypothesis_id": "H2", "findings": [
+                {"title": "y", "cwe": ["CWE-345"]}]}]},
+            open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
+        r = subprocess.run([sys.executable, os.path.join(WORK, "tools", "batch_verify.py"),
+                            tmp, "--stage", "coverage-ledger", "--write"],
+                           capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        out = _json.loads(r.stdout)
+        assert out["status"] == "LEDGER_WRITTEN"
+        # 候选级语言优先: RESOURCE-DOS 记 rust 不记 go (surface lang 被候选覆盖)
+        assert "RESOURCE-DOSxrust" in out["new_counts"], out["new_counts"]
+        assert "RESOURCE-DOSxgo" not in out["new_counts"], out["new_counts"]
+        # R4 findings 走主导语言 (dom=rust, 与候选一致)
+        assert "DATA-INTEGRITYxrust" in out["new_counts"], out["new_counts"]
+    finally:
+        open(ledger_path, "w").write(snapshot)
