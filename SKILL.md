@@ -73,6 +73,11 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    "树外不可验证"类 drop 理由作废（C 库审计实战形态: 子模块中途物化），R3 入队前
    batch_verify 自动 diff 并输出 `scope_changed` 提示，受影响 drop
    （`scope_dependent: true`）按 R3.5-N 复活流程重开。
+   **版本基线佐证**（v3.8, SWR-V3.8-014）：`git describe --tags` 只作参考，
+   审计基线版本必须用构建清单佐证（pom.xml/Cargo.toml/package.json/setup.py/
+   Makefile.am 等）；两者不一致以构建清单为准并回填签收记录——旧标签残留会使
+   git describe 写错基线（shardingsphere 实录: describe 返回 4.0.0-RC2 而
+   pom 实为 5.5.4-SNAPSHOT）。
 2. **签名库自检**（REQ-V3-010, v3.2.2 起单一事实源：只引用 selfcheck 命令）：
    ```bash
    python3 <skill_dir>/signature_lib.py selfcheck <project>

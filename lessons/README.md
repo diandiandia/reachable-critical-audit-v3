@@ -12,6 +12,21 @@
 | [SKILL_LESSONS_SWIFT_GO.md](SKILL_LESSONS_SWIFT_GO.md) | Swift/Go | — | (v2 驱动) | Go/Swift 结构化模型（CodeQL MaD / SinkModelCsv） |
 | [SKILL_LESSONS_SWIFT_VAPOR.md](SKILL_LESSONS_SWIFT_VAPOR.md) | Swift | Vapor 5.0.0-alpha.2 | 2026-08-15 | L0 对 swift-server 生态全盲（SDR 0%）、无 Swift 锚点、verifier 调用边幻觉（H3-L1 实证证伪）、R3 缺平台支持维度（H1 Windows 误判）、无实证抽验阶段（33% 抽验误判率）；工具链坑（--cand- 前缀/R05 "?" 模板/blocking_point 断言）、Swift 环境坑手册 |
 | [SKILL_LESSONS_10LANG_CAMPAIGN.md](SKILL_LESSONS_10LANG_CAMPAIGN.md) | 10 语言 | sinatra/ohmyzsh/actix-web/Newtonsoft/AWStats/Pester/akka-http/nest/ktor/django | 2026-08-15 | L0 规则 10 语言全线失效（42k 候选、噪音 95%+、废 Java 方法名移植）；测试路径过滤缺 5 种语言约定（spec/tst/*_tests.rs/.Tests/*.spec.ts）；R4 六假说不可扩展（战役模式 1×6 压缩）；子智能体失联无检测；簇验证无规范；跨项目 CWE 家族同源（ws 帧缓冲三家同现）→ 家族复用；R0.5 多 tag 交叉为最高价值阶段。15/15 语言覆盖达成 |
+| [SKILL_LESSONS_mixed-fixture.md](SKILL_LESSONS_mixed-fixture.md) | 自动 | mixed-fixture | 2026-08-17 | R6 机械生成: 13 条问题证据 |
+| [SKILL_LESSONS_Lersosa.md](SKILL_LESSONS_Lersosa.md) | 自动 | Lersosa | 2026-08-17 | R6 机械生成: 36 条问题证据 |
+| [SKILL_LESSONS_mbedtls.md](SKILL_LESSONS_mbedtls.md) | 自动 | mbedtls | 2026-08-17 | R6 机械生成: 1 条问题证据 |
+| [SKILL_LESSONS_lua.md](SKILL_LESSONS_lua.md) | 自动 | lua | 2026-08-19 | R6 机械生成: 1 条问题证据 |
+| [SKILL_LESSONS_pyjwt.md](SKILL_LESSONS_pyjwt.md) | 自动 | pyjwt | 2026-08-20 | R6 机械生成: 6 条问题证据 |
+| [SKILL_LESSONS_jsonwebtoken.md](SKILL_LESSONS_jsonwebtoken.md) | 自动 | jsonwebtoken | 2026-08-20 | R6 机械生成: 2 条问题证据 |
+| [SKILL_LESSONS_orjson.md](SKILL_LESSONS_orjson.md) | 自动 | orjson | 2026-08-20 | R6 机械生成: 7 条问题证据 |
+| [SKILL_LESSONS_..md](SKILL_LESSONS_..md) | 自动 | . | 2026-08-21 | R6 机械生成: 4 条问题证据 |
+| [SKILL_LESSONS_jsrsasign.md](SKILL_LESSONS_jsrsasign.md) | 自动 | jsrsasign | 2026-08-21 | R6 机械生成: 4 条问题证据 |
+| [SKILL_LESSONS_aiohttp.md](SKILL_LESSONS_aiohttp.md) | 自动 | aiohttp | 2026-08-24 | R6 机械生成: 8 条问题证据 |
+| [SKILL_LESSONS_zookeeper.md](SKILL_LESSONS_zookeeper.md) | C/Java 混合 | zookeeper | 2026-08-25 | 渲染器静默丢弃 R4 Critical（已修 SWR-V3.7-009/010）、assert_ledger key:value 伪冲突（已修）、surface_mapper 实体锚点退化（v3.8 SWR-V3.8-008）、target_kind/maturity 机械误判（v3.8 SWR-V3.8-001/002）；编排模式：薄封装 fileref -95% args |
+| [SKILL_LESSONS_tomcat.md](SKILL_LESSONS_tomcat.md) | Java | tomcat | 2026-08-25 | R4 非枚举 verdict/非法 severity 污染清单（v3.8 SWR-V3.8-003~005）、LISTEN_PATTERN 漏 NIO 形态（v3.8 SWR-V3.8-001）、R4 增量落盘（v3.8 SWR-V3.8-013） |
+| [SKILL_LESSONS_kafka.md](SKILL_LESSONS_kafka.md) | Java/Scala 混合 | kafka | 2026-08-25 | verifier 漏跨语言调用点致 3 条 UNREACHABLE 误判（复活波 3/3 推翻）、edge 数规则误降级合并边（v3.8 SWR-V3.8-006/007） |
+| [SKILL_LESSONS_nacos.md](SKILL_LESSONS_nacos.md) | Java | nacos | 2026-08-25 | 五域 schema 不统一（v3.8 SWR-V3.8-009）、路径白名单 '.' 漏查（v3.8 SWR-V3.8-009）、refutation 契约机械落盘（r35-collect 已通）、复活波 2/2 证伪 |
+| [SKILL_LESSONS_shardingsphere.md](SKILL_LESSONS_shardingsphere.md) | Java | shardingsphere | 2026-08-25 | git describe 基线误导（v3.8 SWR-V3.8-014）、合并边误降级、同事实双计 severity override、hybrid 签收价值 |
 
 ## 跨语言收敛的模式（v2.1 → v2.2 改进输入）
 
@@ -47,12 +62,3 @@
   P0/P1/P2 分级的建议清单、"表现良好的部分（保持）"。
 - 与项目审计报告的关系：lesson 只沉淀 skill 缺陷，不重复项目漏洞细节（引用项目
   `.audit_results/` 归档）。
-| [SKILL_LESSONS_mixed-fixture.md](SKILL_LESSONS_mixed-fixture.md) | 自动 | mixed-fixture | 2026-08-17 | R6 机械生成: 13 条问题证据 |
-| [SKILL_LESSONS_Lersosa.md](SKILL_LESSONS_Lersosa.md) | 自动 | Lersosa | 2026-08-17 | R6 机械生成: 36 条问题证据 |
-| [SKILL_LESSONS_mbedtls.md](SKILL_LESSONS_mbedtls.md) | 自动 | mbedtls | 2026-08-17 | R6 机械生成: 1 条问题证据 |
-| [SKILL_LESSONS_lua.md](SKILL_LESSONS_lua.md) | 自动 | lua | 2026-08-19 | R6 机械生成: 1 条问题证据 |
-| [SKILL_LESSONS_pyjwt.md](SKILL_LESSONS_pyjwt.md) | 自动 | pyjwt | 2026-08-20 | R6 机械生成: 6 条问题证据 |
-| [SKILL_LESSONS_jsonwebtoken.md](SKILL_LESSONS_jsonwebtoken.md) | 自动 | jsonwebtoken | 2026-08-20 | R6 机械生成: 2 条问题证据 |
-| [SKILL_LESSONS_orjson.md](SKILL_LESSONS_orjson.md) | 自动 | orjson | 2026-08-20 | R6 机械生成: 7 条问题证据 |
-| [SKILL_LESSONS_..md](SKILL_LESSONS_..md) | 自动 | . | 2026-08-21 | R6 机械生成: 4 条问题证据 |
-| [SKILL_LESSONS_jsrsasign.md](SKILL_LESSONS_jsrsasign.md) | 自动 | jsrsasign | 2026-08-21 | R6 机械生成: 4 条问题证据 |

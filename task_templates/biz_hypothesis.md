@@ -47,6 +47,12 @@ evidence 为单字符串、r3_link 为字符串或 null）：
 
 ## 强制: 三选一 verdict（confirmed / reviewed_clean / not_applicable）+ 覆盖范围说明
 
+v3.8 (SWR-V3.8-003 语义固化, tomcat 审计): verdict 只允许上述三值，禁止自创
+（PARTIAL/REFUTED/REFUTED_HIGH 等非法值会被 collect 层告警）。**部分证伪但仍有
+成立 finding 的假说 → verdict=confirmed，证伪的断言不写进 findings 数组**；若必须
+保留证伪记录，该条 severity=Low 且 title 前缀标 `[refuted]`（进附录而非问题清单）。
+severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法值。
+
 ## v3.1 字段义务（缺失将被拒收）
 1. **tracked_surfaces**: 每个 finding 必须列出审查触及的 surface id 数组——
    **id 必须原样引用 input_surface.json 的 surface id**（不得自造 SURF- 前缀变体,
@@ -96,6 +102,9 @@ evidence 为单字符串、r3_link 为字符串或 null）：
 若环境（权限/plan mode）阻止写入 {out}：最终回复**必须**是完整 JSON 且
 末尾附一行 `UNWRITTEN: <原因>` 标注；禁止只写"已保存"而实际未落盘。
 主代理会从最终回复完整恢复（写 recovered_by 字段）。
+
+v3.8 (SWR-V3.8-013, tomcat 韧性教训): 产出**每 2-3 条 finding 就覆盖写盘一次**，
+不要等全部做完才写——连接中断时已写部分可被主代理直接采用，无需整假说重派。
 
 
 ---

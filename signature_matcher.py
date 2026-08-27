@@ -50,7 +50,10 @@ SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build", "dist",
 # 会被窗口展开当真实调用点, 造成自我引用污染)
 CODE_EXTENSIONS = {".c", ".h", ".cc", ".cpp", ".hpp", ".rs", ".rb", ".py",
                    ".js", ".ts", ".java", ".go", ".php", ".swift", ".kt",
-                   ".scala", ".cs", ".pl", ".pm", ".sh", ".ps1", ".m", ".mm"}
+                   ".scala", ".cs", ".pl", ".pm", ".sh", ".ps1", ".m", ".mm",
+                   # v3.8 (SWR-V3.8-021): .sql 进识别层——SQL 是 Top15 唯一全盲
+                   # 语言 (BIAS_EVAL F2)。仅识别层, 不加词族/手册/验证段。
+                   ".sql"}
 
 
 def build_project_index(project_root):

@@ -29,7 +29,15 @@ SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build",
 LISTEN_PATTERN = re.compile(
     r"0\.0\.0\.0|Listen\(|Server::builder|uvicorn\.run|app\.listen|net\.Listen|"
     r"http\.ListenAndServe|grpc\.NewServer|axum::serve|hyper::Server|"
-    r"HttpListener|TCPServer|stream_socket_server|IO::Socket::INET",
+    r"HttpListener|TCPServer|stream_socket_server|IO::Socket::INET|"
+    # v3.8 (SWR-V3.8-001): NIO/channel 与裸 socket 服务器形态——tomcat 一役
+    # NioEndpoint 用 ServerSocketChannel.open()+bind 而非 new ServerSocket,
+    # 机械推荐系统性误判 library (app 0/lib 1.0)。token 库补缺即通用覆盖。
+    r"ServerSocketChannel\.open|new\s+ServerSocket|"
+    # v3.8 (SWR-V3.8-024): Top15 服务器形态 token 缺口 (BIAS_EVAL F5)——
+    # ServerBootstrap (swift-nio/netty) / embeddedServer (ktor) /
+    # bindAndHandle (akka-http)。与既有 axum::serve 同类: 框架服务器构建 API。
+    r"ServerBootstrap|embeddedServer|bindAndHandle",
     re.IGNORECASE)
 
 SCAN_SWALLOW_PATTERN = re.compile(

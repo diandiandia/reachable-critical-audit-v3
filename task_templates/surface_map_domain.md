@@ -14,6 +14,12 @@
 1. 每个 surface 的 entry_points 必须附 **file:line + 代码片段证据**（REQ-V3-022，缺证据被校验拒收）
 2. trust_boundary 逐通道记录（未认证远程/受信通道/gate）
 3. 产出 schema 见下
+4. **五域一律输出下方 canonical 包裹形态**（v3.8, SWR-V3.8-009, nacos 审计）：
+   禁止自定顶层结构（如裸 `entry_points` 数组或自造 B-* 形态），否则会被
+   surface_mapper 拒收。boundary 域也用同一包裹，仅 type 与字段不同（见下）
+5. **路径/文件名参数面（v3.8, SWR-V3.8-009, nacos 审计）**: 防御声称（白名单/黑名单/
+   正则）必须**逐字符核实字符集的实际内容**——白名单含 '.' 即 '..' 序列合法
+   （路径穿越原语）；不能只 grep '/' 或 '\\' 就声称「穿越被阻止」
 
 ## 产出（强制 JSON 写入 {out}，最终回复同 JSON）
 {"surfaces":[{"id":"S-xxx","type":"network_endpoint|data_input|process_input|storage_input",
@@ -22,6 +28,13 @@
 "taint_channels":["..."],"downstream_hints":["..."],
 "trust_boundary":{"type":"unauthenticated_remote|authenticated_remote|trusted_channel|host_api|local|environment|unknown","gate":"none|..."},
 "confidence":"high|medium|low"}]}
+
+boundary 域条目（仅 boundary 域使用, 同一包裹数组内, v3.8 SWR-V3.8-009）:
+{"id":"B-xxx","type":"boundary","name":"...","lang_pair":"调用语言→被调语言 (如 java→c)",
+"boundary_kind":"extern|ctypes|cffi|cgo|n-api|jni|embed|...",
+"entry_points":[{"file":"...","line":N,"function":"...","evidence":{"snippet":"该行代码"}}],
+"taint_channels":["..."],"downstream_hints":["..."],
+"trust_boundary":{"type":"...","gate":"none|..."},"confidence":"high|medium|low"}
 
 ## 非网络/离线项目映射指引（v3.3 强制，REQ-V3.3-009）
 本项目若无网络服务面，按以下映射归类，**不得**把宿主 API 输入过度归为 local/environment：

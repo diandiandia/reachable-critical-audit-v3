@@ -129,7 +129,13 @@ def grade_verdict(v):
         if v.get("verdict") == "REACHABLE":
             if not edges or len(edges) < max(len(chain) - 1, 0):
                 grade = "static_only"
-                errors.append("REACHABLE 无逐跳边证据 → 自动降级 static_only (REQ-V3-042)")
+                # v3.8 (SWR-V3.8-007): 降级报错附计数——edges<chain-1 的常见根因是
+                # verifier 输出合并边 (一条 proof 覆盖多跳), 计数 + 提示让主代理
+                # 在收集时就定位, 不必等门禁②阻断才发现 (kafka/shardingsphere 双次实测)
+                errors.append(
+                    "REACHABLE 无逐跳边证据 → 自动降级 static_only (REQ-V3-042) "
+                    f"[edges={len(edges)}, chain={len(chain)}, 需≥{max(len(chain) - 1, 0)}; "
+                    "若 proof 文本覆盖多跳属合并边, 应从已有事实拆分为逐跳 edge_evidence]")
             else:
                 grade = "edge_proven"
         else:
@@ -373,11 +379,15 @@ def r4_feedback(queue):
     conflicts = []
     # v3.4.2: (?<!\.) 负向断言——文件行号引用 "codec.rs:89" 曾被误当
     # key:value 赋值 (P0 actix 复跑: key="rs" 89≠53 假冲突)
+    # v3.8 (SWR-V3.8-011, zookeeper 审计修正回填): 原 (?<!\.) 只挡"紧跟点号"的起点,
+    # 正则会从扩展名内部再起匹配 —— "Provider.java:37" 中 java 被挡后从 "ava" 起
+    # 匹配成功, 产出 key="ava" value=行号的系统性伪冲突。改用 (?<![\w.]):
+    # 起点前既不能是点也不能是词字符, 扩展名内部起点一并封死。
     assign_re = re.compile(
-        r"(?<!\.)([a-z_][a-z0-9_]*)\s*[=:]\s*(true|false|\"[^\"]{1,40}\"|\d+)")
+        r"(?<![\w.])([a-z_][a-z0-9_]*)\s*[=:]\s*(true|false|\"[^\"]{1,40}\"|\d+)")
     # key + 可选镜头词 + 可选赋值符 + value ("tls_enable 零值 false" 形态)
     gap_val_re = re.compile(
-        r"(?<!\.)([a-z_][a-z0-9_]*)\s*(?:零值|默认|缺省)\s*[=:]?\s*"
+        r"(?<![\w.])([a-z_][a-z0-9_]*)\s*(?:零值|默认|缺省)\s*[=:]?\s*"
         r"(true|false|\"[^\"]{1,40}\"|\d+)")
     commit_ctx_re = re.compile(
         r"(?:配置|仓库|shipped|committed|实际值)\s*[=:]\s*"

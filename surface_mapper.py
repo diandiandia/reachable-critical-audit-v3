@@ -44,7 +44,12 @@ VALID_CONFIDENCE = {"high", "medium", "low"}
 
 BUILD_FILES = ["Package.swift", "Cargo.toml", "pom.xml", "build.gradle",
                "CMakeLists.txt", "package.json", "go.mod", "pyproject.toml",
-               "requirements.txt", "Gemfile", "composer.json", "Makefile"]
+               "requirements.txt", "Gemfile", "composer.json", "Makefile",
+               # v3.8 (SWR-V3.8-023): Top15 构建清单缺口补齐 (BIAS_EVAL F4)
+               # —— C# (.csproj/.sln) / Scala (build.sbt) / Kotlin (.kts 变体)
+               # / TypeScript (tsconfig.json)。沿用既有根目录精确名 + 小写
+               # 变体匹配语义, 无新机制。
+               ".csproj", ".sln", "build.sbt", "build.gradle.kts", "tsconfig.json"]
 
 
 def norm_surface_id(sid):
@@ -318,7 +323,10 @@ def _detect_maturity(root):
             ["git", "-C", root, "describe", "--tags", "--always"],
             capture_output=True, text=True, timeout=5)
         tag = out.stdout.strip()
-        m = re.match(r"v?(\d+)\.(\d+)", tag)
+        # v3.8 (SWR-V3.8-002): 兼容 release-X.Y.Z 标签形态——zookeeper 全仓
+        # release-3.9.5 无 v 前缀, 旧正则判 unknown 致 maturity 覆盖下调,
+        # R4 与 R3 并行不触发。仅加前缀族, 不引入新判定轴。
+        m = re.match(r"(?:v|release-)?(\d+)\.(\d+)", tag)
         if m:
             level = "mature" if int(m.group(1)) >= 1 else "developing"
             return {"level": level, "signals": [f"git_tag:{tag}"]}
@@ -575,6 +583,17 @@ def normalize_surfaces(data, project_root=None):
     return result
 
 
+_COMMENT_PREFIXES = ("//", "#", "/*", "*", "<!--")
+_BLANK_TOKENS = {"", "{", "}", "(", ")", ";"}
+
+
+def _is_comment_or_blank(folded_line):
+    """v3.8 (SWR-V3.8-008): 折叠行文本的注释/空行判定 (语言无关最小集)。
+    只服务于 R1 surface 证据校验的锚点退化拦截; 与 r2_guard.anchor_check
+    (R2 假设锚点) 分层, 各自管各自阶段的数据。"""
+    return folded_line in _BLANK_TOKENS or folded_line.startswith(_COMMENT_PREFIXES)
+
+
 def validate_surfaces(data, project_root=None):
     """SWR-V3-003/004: schema 校验 + entry_points 证据强制 + 枚举校验。
     证据校验含源码行模糊匹配（行内容须含 snippet 前 40 字符）。
@@ -648,10 +667,23 @@ def validate_surfaces(data, project_root=None):
                     folded_lines = [re.sub(r"\s+", " ", ln).strip() for ln in lines]
                     lo = max(1, ep["line"] - 2)
                     hi = min(len(lines), ep["line"] + 2)
-                    ok_line = any(folded_lines[i - 1] and any(
-                                  folded_lines[i - 1] in sv or sv in folded_lines[i - 1]
-                                  for sv in snip_variants)
-                                  for i in range(lo, hi + 1))
+                    matched_lines = [i for i in range(lo, hi + 1)
+                                     if folded_lines[i - 1] and any(
+                                         folded_lines[i - 1] in sv
+                                         or sv in folded_lines[i - 1]
+                                         for sv in snip_variants)]
+                    ok_line = bool(matched_lines)
+                    # v3.8 (SWR-V3.8-008): 声称行是注释/空行而命中全部来自窗口邻行
+                    # → 锚点退化 (zookeeper 实录: C 文件实体转义条目锚点整体偏移 1,
+                    # 指向注释行仍过 validate, 直到 r2_guard.anchor_check 才暴露)。
+                    # 转 mismatch + suggested_line 修正, 复用现有修正流, 不放行。
+                    ln = int(ep["line"])
+                    if ok_line and 0 < ln <= len(lines) \
+                            and ln not in matched_lines \
+                            and _is_comment_or_blank(folded_lines[ln - 1]):
+                        ok_line = False
+                        ep["anchor_claimed_comment"] = True
+                        # suggested/suggested_all 由下方全文件命中修正流计算
                     if not ok_line:
                         # W6 回归发现: 超短行 ("(", "#", ")") 几乎总是任何 snippet 的
                         # 子串, 反向包含匹配产生假命中污染 suggested_lines
@@ -693,15 +725,17 @@ def size_tier(project_root):
     """SWR-V3.1-010 (W6 §17.1/§18.6/§20.5/§24.7): 规模自适应档位。
     <100 文件 → small: 2 agents 无限时; 100-500 → medium: 4 agents 无限时;
     >500 → large: 4 agents + 45min 硬时限 + 每 10 分钟中间产物落盘。"""
+    # v3.8 (SWR-V3.8-020): 与 signature_matcher.CODE_EXTENSIONS 单事实源——
+    # 旧内联集合缺 .cpp/.cc/.hpp/.m/.mm/.sql, C++ (top-2) 源码不计入档位
+    # (BIAS_EVAL F1)。同 language_inventory 写法。
+    from signature_matcher import CODE_EXTENSIONS
     count = 0
     for dirpath, _dirs, files in os.walk(project_root):
         if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
             continue
         for f in files:
             ext = os.path.splitext(f)[1].lower()
-            if ext in {".c", ".h", ".py", ".rb", ".rs", ".go", ".java", ".kt",
-                       ".scala", ".swift", ".php", ".js", ".ts", ".cs", ".ps1",
-                       ".sh", ".pl", ".pm"}:
+            if ext in CODE_EXTENSIONS:
                 count += 1
     inv = language_inventory(project_root)
     # v3.2.2 (REQ-V3.2.2-023): 语言混合度只计运行时语言 (server-side 组件角色)——

@@ -346,3 +346,16 @@ def test_assert_resurrection_exemption_warn():
     ok2, violations2 = el.assert_ledger(q)
     assert not ok2
     assert any(v.get("gate") == "resurrection_required" for v in violations2)
+
+
+def test_grade_error_includes_edge_counts():
+    # v3.8 (SWR-V3.8-007): 边数不足降级报错附 edges/chain 计数——合并边形态
+    # (一条 proof 覆盖多跳) 在收集时即可定位, 不必等门禁② (kafka/shardingsphere)
+    v = {"verdict": "REACHABLE", "reachability_type": "DIRECT",
+         "call_chain": ["a:1:f", "b:2:g", "c:3:h", "d:4:i"], "call_chain_depth": 4,
+         "evidence": "x",
+         "edge_evidence": [{"edge": "a:1:f->b:2:g", "proof": "p"}]}
+    grade, errors = el.grade_verdict(v)
+    assert grade == "static_only"
+    assert any("edges=1" in e and "chain=4" in e and "需≥3" in e and "合并边" in e
+               for e in errors), errors

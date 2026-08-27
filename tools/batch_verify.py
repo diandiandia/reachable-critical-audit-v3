@@ -158,6 +158,9 @@ _EXT_LANG = {
     ".cs": "csharp", ".php": "php", ".rb": "ruby", ".swift": "swift",
     ".kt": "kotlin", ".kts": "kotlin", ".scala": "scala", ".sh": "shell",
     ".pl": "perl", ".pm": "perl", ".ps1": "powershell",
+    # v3.8 (SWR-V3.8-021/022): .sql 识别层 (BIAS_EVAL F2); .m/.mm 与
+    # signature_matcher.EXT_LANG_ALIAS 对齐 (BIAS_EVAL F3, 原识别层内部矛盾)
+    ".sql": "sql", ".m": "objc", ".mm": "objc",
 }
 _R15_IGNORE_DIRS = {"node_modules", ".git", ".audit_results", ".agents", ".codex",
                     ".venv", "__pycache__", "reachable-critical-audit", "build",
@@ -842,6 +845,48 @@ def _preserve_adjudication(old, new):
     return preserved
 
 
+R4_VERDICTS = ("confirmed", "reviewed_clean", "not_applicable")
+R4_SEVERITIES = ("critical", "high", "medium", "low")
+
+
+def _warn_r4_enums(items):
+    """v3.8 (SWR-V3.8-003/004/005): R4 枚举完整性告警 (stderr, 不阻断)。
+
+    tomcat 审计实录: R4 agent 产出非枚举 verdict (PARTIAL/REFUTED/REFUTED_HIGH/
+    整句散文) 与非法 severity (informational), 收集层不拦截 → 自证伪条目被当
+    确认问题列进清单。逐条 warn + 附原文, 由主代理归一 (任务书契约见
+    task_templates/biz_hypothesis.md)。"""
+    warnings = []
+    for h in items or []:
+        hid = h.get("hypothesis_id") or "?"
+        hv = (h.get("verdict") or "").strip().lower()
+        if hv and hv not in R4_VERDICTS:
+            warnings.append({
+                "kind": "illegal_hypothesis_verdict", "hypothesis_id": hid,
+                "value": h.get("verdict"),
+                "hint": f"需归一化为 {R4_VERDICTS} 之一 (部分证伪但仍有 confirmed "
+                        f"finding → verdict=confirmed + 该条 title 标 [refuted])"})
+        for n, fi in enumerate(h.get("findings", []) or [], 1):
+            sev = (fi.get("severity") or "").strip().lower()
+            if sev and sev not in R4_SEVERITIES:
+                warnings.append({
+                    "kind": "illegal_finding_severity", "hypothesis_id": hid,
+                    "finding": f"{hid}-F{n}", "value": fi.get("severity"),
+                    "hint": f"需归一化为 {R4_SEVERITIES} 之一; 非法值会落到机械映射"
+                            f"兜底 (medium) 误导分级"})
+            title = (fi.get("title") or "").lower()
+            if "[refuted]" in title or "informational" in title:
+                warnings.append({
+                    "kind": "refuted_finding_in_list", "hypothesis_id": hid,
+                    "finding": f"{hid}-F{n}",
+                    "hint": "自证伪条目不应以确认问题形态进清单——证伪断言移出 "
+                            "findings 数组, 或 severity=Low + title 标 [refuted]"})
+    for w in warnings:
+        print(json.dumps({"status": "R4_ENUM_WARNING", "warning": w},
+                         ensure_ascii=False), file=sys.stderr)
+    return len(warnings)
+
+
 def stage_r4_collect(project_root, findings_file):
     """SWR-V3-055: R4 findings 写回 (merge 语义)。
 
@@ -860,6 +905,10 @@ def stage_r4_collect(project_root, findings_file):
     queue = load_queue(project_root)
     findings = json.load(open(findings_file))
     items, norm_flags = _normalize_r4_payload(findings)
+    # v3.8 (SWR-V3.8-003/004/005): 枚举完整性告警——非法 verdict/severity 不得
+    # 静默入库或静默兜底误导 (tomcat 审计: PARTIAL/REFUTED_HIGH 散文 verdict 与
+    # informational 非法 severity 直接进清单)。warn 不阻断 (C2: 拒收需新重试机制)。
+    _warn_r4_enums(items)
     existing = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", [])}
     collected = 0
     for f in items:
@@ -1442,7 +1491,9 @@ def _r4_severity(fi):
     用户裁决: R4 agent 按实际影响裁定比机械 cwe 映射准 (CWE-476 族 Low 影响
     的 NoMethodError 走机械映射会误判为严重)。"""
     sev = (fi.get("severity") or "").strip().lower()
-    if sev in ("high", "medium", "low"):
+    # v3.8 (SWR-V3.8-012, zookeeper 审计修正回填): critical 必须入白名单——
+    # 旧 ("high","medium","low") 使申报 Critical 的 R4 finding 落到机械映射兜底。
+    if sev in ("critical", "high", "medium", "low"):
         return sev, f"r4:{sev}"
     return severity_for(fi)
 
@@ -1461,7 +1512,11 @@ def _confirmed_issues(queue, cands):
         hid = f.get("hypothesis_id") or "?"
         for n, fi in enumerate(f.get("findings", []) or [], 1):
             sev, src = _r4_severity(fi)
-            if sev not in ("high", "medium"):   # Low 留附录 B (含「正向确认」类)
+            # critical 必须并入: _render_problem_list 的 grouped 有 critical 桶,
+            # 旧过滤 ("high","medium") 使该桶对 R4 条目永不可达 —— 申报为
+            # Critical 的 R4 finding 被静默丢弃 (zookeeper 审计实录: C 客户端
+            # jute vector calloc 无判空, 实测 SIGSEGV/OOM-kill, 未进问题清单)。
+            if sev not in ("critical", "high", "medium"):  # Low 留附录 B (含「正向确认」类)
                 continue
             fid = f"{hid}-F{n}"
             link = fi.get("r3_link")
@@ -2055,6 +2110,14 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 3. 追踪 Caller_L1 的每个参数来源，找到 Caller_L2
 4. 重复直到追溯到外部输入源（请求参数/文件/Binder IPC/蓝牙 HCI 事件等）
 5. **质量门禁**: call_chain 必须 >= 3 层（Sink ← L1 ← L2），不足则继续向上搜索
+6. **混合语言项目（v3.8, SWR-V3.8-006）**: 调用点搜索必须覆盖跨语言调用形态——
+   语言别名/桥接层/绑定层（如 JVM 系互调别名、FFI 绑定、解释器嵌入）。只 grep
+   同语言标识符会漏掉跨语言调用点导致 UNREACHABLE 误判（函数存在≠被调用，
+   反之亦然：调用存在≠按同语言形态书写）
+7. **edge_evidence 契约（v3.8, SWR-V3.8-006）**: edge_evidence 逐跳一条——
+   call_chain 相邻两跳之间一条 {{edge, proof}}，总条数 ≥ call_chain 长度 - 1。
+   **禁止合并多跳为一条**（合并边会被机械分级降级 static_only 并触发补边波次）；
+   每跳的 proof 必须指名调用处 file:line 与调用形态（直接/别名/桥接）
 
 ### 步骤 2: 多态穿透
 遇接口/抽象类/虚函数/特征(trait)，搜索所有具体实现类继续回溯
