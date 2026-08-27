@@ -27,6 +27,8 @@
 | [SKILL_LESSONS_kafka.md](SKILL_LESSONS_kafka.md) | Java/Scala 混合 | kafka | 2026-08-25 | verifier 漏跨语言调用点致 3 条 UNREACHABLE 误判（复活波 3/3 推翻）、edge 数规则误降级合并边（v3.8 SWR-V3.8-006/007） |
 | [SKILL_LESSONS_nacos.md](SKILL_LESSONS_nacos.md) | Java | nacos | 2026-08-25 | 五域 schema 不统一（v3.8 SWR-V3.8-009）、路径白名单 '.' 漏查（v3.8 SWR-V3.8-009）、refutation 契约机械落盘（r35-collect 已通）、复活波 2/2 证伪 |
 | [SKILL_LESSONS_shardingsphere.md](SKILL_LESSONS_shardingsphere.md) | Java | shardingsphere | 2026-08-25 | git describe 基线误导（v3.8 SWR-V3.8-014）、合并边误降级、同事实双计 severity override、hybrid 签收价值 |
+| [SKILL_LESSONS_elasticsearch.md](SKILL_LESSONS_elasticsearch.md) | Java(+cpp/rs) | elasticsearch | 2026-08-27 | target_kind 大仓库 listener 假阴性（v3.8 SWR-V3.8-030）、r35-collect 契约缺 survived/votes（v3.8 SWR-V3.8-031）、BOUNDARY_KINDS 无 panama（v3.8 SWR-V3.8-032）、锚点同分取首缺陷（v3.8 SWR-V3.8-033）；复活波 3/3 系列第 4 例 |
+| [SKILL_LESSONS_quarkus.md](SKILL_LESSONS_quarkus.md) | Java | quarkus | 2026-08-27 | v3.8 验证审计: keep=0 抽样复核条款实战; Host 头谓词缺陷通用形态; %2e%2e decode-after-normalize 发现由路径 checklist 驱动 |
 
 ## 跨语言收敛的模式（v2.1 → v2.2 改进输入）
 

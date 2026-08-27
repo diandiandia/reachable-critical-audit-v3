@@ -46,6 +46,9 @@ SCAN_SWALLOW_PATTERN = re.compile(
 
 
 def _scan_files(root, exts, max_files=400):
+    # v3.8 (SWR-V3.8-030): max_files=None = 全树扫描不截断——listener 信号
+    # 必须 hit 驱动 (elasticsearch 31k java 文件下 modules/transport-netty4
+    # 排在 400 文件之后, ServerBootstrap 真命中被机械漏报的假阴性根因)。
     hits = []
     for dirpath, _dirs, files in os.walk(root):
         if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
@@ -53,15 +56,15 @@ def _scan_files(root, exts, max_files=400):
         for f in files:
             if os.path.splitext(f)[1].lower() in exts:
                 hits.append(os.path.join(dirpath, f))
-                if len(hits) >= max_files:
+                if max_files is not None and len(hits) >= max_files:
                     return hits
     return hits
 
 
-def _grep(root, pattern, exts, max_hits=12):
-    """返回 (命中文件, 行号, 行内容) 列表。"""
+def _grep(root, pattern, exts, max_hits=12, max_files=400):
+    """返回 (命中文件, 行号, 行内容) 列表。max_files=None 全树扫描。"""
     out = []
-    for path in _scan_files(root, exts):
+    for path in _scan_files(root, exts, max_files=max_files):
         try:
             with open(path, encoding="utf-8", errors="ignore") as fh:
                 for i, line in enumerate(fh, 1):
@@ -179,7 +182,10 @@ def determine_target_kind(project_root):
 
     listens = _grep(root, LISTEN_PATTERN,
                     {".go", ".rs", ".py", ".js", ".ts", ".java", ".scala",
-                     ".rb", ".php", ".c", ".cpp"})
+                     ".rb", ".php", ".c", ".cpp"},
+                    # v3.8 (SWR-V3.8-030): listener 全树扫描——服务器入口可能
+                    # 位于任意目录深度, 命中 max_hits 即早退
+                    max_files=None)
     product_hits = [h for h in listens if _classify_hit(h[0]) == "product"]
     libdir_hits = [h for h in listens if _classify_hit(h[0]) == "libdir"]
     example_hits = [h for h in listens if _classify_hit(h[0]) == "examples"]

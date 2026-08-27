@@ -31,7 +31,7 @@
 
 boundary 域条目（仅 boundary 域使用, 同一包裹数组内, v3.8 SWR-V3.8-009）:
 {"id":"B-xxx","type":"boundary","name":"...","lang_pair":"调用语言→被调语言 (如 java→c)",
-"boundary_kind":"extern|ctypes|cffi|cgo|n-api|jni|embed|...",
+"boundary_kind":"extern|ctypes|cffi|cgo|n-api|jni|panama|embed|ffi-other|proto|http-service|subprocess|grpc|cli|capi",
 "entry_points":[{"file":"...","line":N,"function":"...","evidence":{"snippet":"该行代码"}}],
 "taint_channels":["..."],"downstream_hints":["..."],
 "trust_boundary":{"type":"...","gate":"none|..."},"confidence":"high|medium|low"}

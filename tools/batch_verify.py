@@ -1071,6 +1071,12 @@ def stage_r35_collect(project_root, transcript_dir):
         refutation = {"by": [d.get("agent") or f"refuter-{i}"
                              for i, d in enumerate(decs)]}
         kills = [d for d in decs if d.get("refuted")]
+        # v3.8 (SWR-V3.8-031): 契约完备——渲染器 _refutation_line 只读
+        # survived/votes/refute_count, 旧版 collect 不落盘致 summary 复核列
+        # 恒「未复核」(elasticsearch 8 候选实测, nacos #7 同源闭环)。
+        refutation["votes"] = len(decs)
+        refutation["refute_count"] = len(kills)
+        refutation["survived"] = len(kills) < 2
         poc = "；".join((d.get("note") or "").strip() for d in decs if
                         d.get("note") and any(k in d["note"] for k in
                                               ("PoC", "poc", "实测", "实证", "RSS", "exit")))

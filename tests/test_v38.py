@@ -255,3 +255,93 @@ def test_listen_pattern_swift_ktor_akka_tokens():
     assert target_kind.LISTEN_PATTERN.search("ServerBootstrap.bind(host, port)")
     assert target_kind.LISTEN_PATTERN.search("embeddedServer(Netty, 8080)")
     assert target_kind.LISTEN_PATTERN.search("Http().newServerAt(...).bindAndHandle(route)")
+
+
+# ---- SWR-V3.8-030~034: 双项目验证审计的 4 项实战缺陷修复 ----
+
+def test_listener_grep_full_tree_no_false_negative():
+    """SWR-V3.8-030: listener 信号全树扫描——token 位于 400 文件之后仍命中
+    (elasticsearch 31k 文件假阴性根因)。"""
+    tmp = tempfile.mkdtemp()
+    for i in range(450):
+        open(os.path.join(tmp, f"f{i:04d}.java"), "w").write("class F {}\n")
+    open(os.path.join(tmp, "zzz_token.java"), "w").write(
+        "class Z { void x() { new ServerSocket(8080); } }\n")
+    real_walk = os.walk
+    def sorted_walk(root, *a, **k):
+        for dirpath, dirs, names in real_walk(root, *a, **k):
+            dirs.sort(); names.sort()
+            yield dirpath, dirs, names
+    target_kind.os.walk = sorted_walk  # 确定性: zzz_token.java 排序必在末位
+    try:
+        r = target_kind.determine_target_kind(tmp)
+    finally:
+        target_kind.os.walk = real_walk
+    listener = [s for s in r["signals"] if s["signal"] == "listener"]
+    assert listener and any(s["direction"] == "app" for s in listener), listener
+
+
+def test_r35_collect_writes_survived_contract():
+    """SWR-V3.8-031: r35-collect 落盘 survived/votes/refute_count
+    (渲染器 _refutation_line 契约, ES 8 候选「未复核」根因)。"""
+    tmp = tempfile.mkdtemp()
+    os.makedirs(os.path.join(tmp, ".audit_results"))
+    q = {"schema_version": "2.0", "candidates": [
+        {"id": "CAND-001", "source_file": "a.java", "source_line": 1,
+         "status": "VERIFIED", "verdict": "REACHABLE",
+         "evidence_grade": "edge_proven", "priority": 0}]}
+    bv.save_queue(tmp, q)
+    jdir = os.path.join(tmp, "_journal")
+    os.makedirs(jdir)
+    recs = [{"type": "result", "result": {"id": "CAND-001", "refuted": False,
+                                          "reason": "no refute"}}] * 2
+    open(os.path.join(jdir, "journal.jsonl"), "w").write(
+        "\n".join(json.dumps(r) for r in recs))
+    bv.stage_r35_collect(tmp, jdir)
+    q2 = bv.load_queue(tmp)
+    rf = q2["candidates"][0]["refutation"]
+    assert rf["votes"] == 2 and rf["refute_count"] == 0 and rf["survived"] is True, rf
+
+
+def test_validate_accepts_panama_boundary_kind():
+    """SWR-V3.8-032: BOUNDARY_KINDS 含 panama (java.lang.foreign FFM)。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "f.java")
+        open(f, "w").write("void f() {}\n")
+        d = {"surfaces": [{"id": "B-1", "type": "boundary", "name": "ffm",
+                           "lang_pair": "java→c", "boundary_kind": "panama",
+                           "entry_points": [{"file": f, "line": 1, "function": "f",
+                                             "evidence": {"snippet": "void f() {}"}}],
+                           "taint_channels": [], "downstream_hints": [],
+                           "trust_boundary": "host_api", "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d, tmp)
+        assert ok, errors
+
+
+def test_validate_suggested_line_nearest_first():
+    """SWR-V3.8-033: 多命中时 suggested_line 取离声称行最近的命中
+    (quarkus 17 处裁决的同分取首缺陷修正)。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = os.path.join(tmp, "f.java")
+        lines = ["int a;\n"] + ["void g() {}\n"] * 100
+        lines[5] = "void f() {}\n"    # 近命中
+        lines[100] = "void f() {}\n"  # 远命中
+        open(f, "w").write("".join(lines))
+        d = {"surfaces": [{"id": "S-1", "type": "data_input", "name": "x",
+                           "entry_points": [{"file": f, "line": 3,
+                                             "function": "f",
+                                             "evidence": {"snippet": "void f() {}"}}],
+                           "taint_channels": [], "downstream_hints": [],
+                           "trust_boundary": "host_api", "confidence": "high"}]}
+        ok, errors = sm.validate_surfaces(d, tmp)
+        assert not ok
+        # 命中行: 文件行 6 (lines[5]) 与 101 (lines[100]); 声称行 3 → 最近为 6
+        assert any("suggested_line=6" in e for e in errors), errors
+        assert any("suggested_lines=101" in e for e in errors), errors
+
+
+def test_surface_map_domain_has_panama():
+    """SWR-V3.8-034: 任务书 boundary 示例含 panama 枚举。"""
+    tpl = open(os.path.join(WORKSPACE, "task_templates",
+                            "surface_map_domain.md")).read()
+    assert "panama" in tpl

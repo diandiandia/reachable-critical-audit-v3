@@ -27,10 +27,13 @@ import sys
 DOMAINS = ["network", "data", "process", "storage"]
 # v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
 BOUNDARY_DOMAIN = "boundary"
-BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "cgo", "n-api", "jni", "embed",
-               "ffi-other", "proto", "http-service", "subprocess", "grpc", "cli",
+BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "cgo", "n-api", "jni", "panama",
+               "embed", "ffi-other", "proto", "http-service", "subprocess", "grpc", "cli",
                "capi")  # SWR-V3.4.3-031: C-API 扩展模块胶水 (Python C-API/Lua C-API/N-API);
-               # v3.5.2 (P3): +cgo (Go→C 边界, 混合项目常见形态)
+               # v3.5.2 (P3): +cgo (Go→C 边界, 混合项目常见形态);
+               # v3.8 (SWR-V3.8-032): +panama (java.lang.foreign FFM 边界——
+               # elasticsearch libs/native 全为 Panama, 与 JNI 风险形态不同:
+               # MemorySegment 越界/生命周期而非 JNIEnv 语义)
 
 VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown",
@@ -466,7 +469,7 @@ def gen_surface_tasks(project_root, ctx=None):
         "storage": "数据库查询入口、缓存键来源、LDAP/外部存储",
         # v3.2: 语言间边界——混合项目最高危面 (所有权/ABI/释放责任)
         BOUNDARY_DOMAIN: ("跨语言 FFI 边界: extern \"C\"/ctypes/cffi/cgo/N-API/JNI/"
-                          "CPython 嵌入/JS addon/C-API 胶水——"
+                          "Panama FFM/CPython 嵌入/JS addon/C-API 胶水——"
                           "枚举每个边界调用点 {调用方向, 语言对, 桥接文件:行, 边界类型, 数据流方向}"),
     }
     domains = DOMAINS + [BOUNDARY_DOMAIN]
@@ -703,8 +706,16 @@ def validate_surfaces(data, project_root=None):
                                 callee = max(callees, key=len)
                                 hits = [i for i, fl in enumerate(folded_lines, 1)
                                         if re.search(r"\b" + re.escape(callee) + r"\s*\(", fl)]
-                        suggested = hits[0] if len(hits) == 1 else None
-                        suggested_all = hits[:4] if len(hits) > 1 else []
+                        # v3.8 (SWR-V3.8-033): 多命中按 |line-claimed| 升序——
+                        # 修正流建议取离声称行最近的命中 (同分取首候选曾把
+                        # 修正引向文件头部无关行, quarkus 17 处裁决实录)。
+                        if hits:
+                            near_first = sorted(hits, key=lambda i: abs(i - int(ep["line"])))
+                            suggested = near_first[0]
+                            suggested_all = near_first[1:5]
+                        else:
+                            suggested = None
+                            suggested_all = []
                         if not hits:
                             # v3.1 (W6 §22.1): 无命中 = 可能 paraphrased/臆造,
                             # 标记而非静默 (主代理必须人工复核)
@@ -715,7 +726,7 @@ def validate_surfaces(data, project_root=None):
                 msg = f"{tag}: {ep['file']}:{ep['line']} 证据与源码行不匹配"
                 if suggested:
                     msg += f" [suggested_line={suggested}]"
-                elif suggested_all:
+                if suggested_all:
                     msg += f" [suggested_lines={','.join(map(str, suggested_all))}]"
                 errors.append(msg)
     return (len(errors) == 0), errors
