@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.9"
+TOOLING_VERSION = "3.10"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -146,7 +146,8 @@ def shipped_config_prompt(component):
    - `committed_value` = 配置文件中的提交实际值
    - `code_default` = 代码中该键的零值/默认值（从结构体定义/默认构造 grep）
    - `mismatched` = 两者不一致时为 true（这正是"代码零值默认明文"类误判的根源, W6 §25.4）
-3. 输出 items 数组, 每个 item: file/key/committed_value/code_default/mismatched/note(平台限定路径如 Windows 证书路径须注明)
+3. **编译开关/特性键（v3.10, SWR-V3.10-009）**：若组件形态为构建开关配置（如 Kconfig 风格的 config 开关、Cargo features、CMake 选项等），键语义同样适用——committed_value 含"显式关闭"（如 `# ... is not set`）亦为提交值；code_default 从开关定义处（Kconfig default/features 声明/选项默认）grep；安全相关开关（鉴权默认、沙箱、加固、调试面暴露类）逐项入表。此形态与上款键清单并列，按组件实际形态分派
+4. 输出 items 数组, 每个 item: file/key/committed_value/code_default/mismatched/note(平台限定路径如 Windows 证书路径须注明)
 
 ## 输出格式
 结构化输出工具按 schema 强制校验。最终回复直接作为结果返回, 不要写文件。"""
@@ -339,6 +340,9 @@ def refute_prompt(c, idx):
         f"原判定证据: {evidence}\n"
         f"调用链: {chain}{chain_note}\n"
         f"证据分级: {c.get('evidence_grade')}\n\n"
+        f"佐证检索（v3.10, SWR-V3.10-011）: 搜索 sink 的 upstream 修复/已知"
+        f"缺陷报告（git log --all -S 关键标识、公开 CVE/补丁）——命中时核对"
+        f"本树是否已含, 写入 reason 或 note。file 引用一律相对项目根路径。\n\n"
         f"输出 refuted=true/false + reason（证伪依据或确认理由，附 file:line）。"
         f"发现更强的攻击向量或 verifier 归因错误时分别写入 strengthened / "
         f"attribution_correction 字段。"

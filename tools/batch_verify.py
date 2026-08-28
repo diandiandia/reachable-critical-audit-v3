@@ -453,6 +453,20 @@ def stage_collect(project_root, batch_id, verdicts):
             entry["evidence_grade"] = _g
             if entry.get("grade_self_reported") and _g != entry["grade_self_reported"]:
                 entry["grade_recomputed_by"] = "collect-mechanical-recompute"
+                # SWR-V3.10-006: 边缺口显式信号——自报 edge_proven 级被重算
+                # static_only 时, 最可能是合并边 (v3.8 契约: 逐跳一条, 总条数
+                # >= 跳数-1); 此前只有静默降级, 主代理要等报告阶段才发现
+                # (kernel 审计最高价值候选 12 跳 10 边实录)。信号不改降级行为,
+                # 只补显式 reason 与补拆指引。
+                if (_g == "static_only" and
+                        entry.get("grade_self_reported") in
+                        ("edge_proven", "empirically_confirmed")):
+                    cc_len = len(entry.get("call_chain") or [])
+                    ee_len = len(entry.get("edge_evidence") or [])
+                    entry["edge_gap"] = (
+                        f"call_chain={cc_len} 跳, edge_evidence={ee_len} 条"
+                        f" (契约要求 >= {cc_len - 1})——疑似合并边, "
+                        "补拆为逐跳一条后重 collect")
         except Exception:
             if entry.get("evidence_grade") is None:
                 entry["evidence_grade"] = ("edge_proven" if call_chain and depth >= MIN_CALL_CHAIN_DEPTH
@@ -978,6 +992,19 @@ def stage_r4_collect(project_root, findings_file):
                 if preserved:
                     f.setdefault("adjudication_preserved_from", []) \
                      .extend(preserved)
+            # SWR-V3.10-002/003: 假说级 tracked_surfaces 保存 (reviewed_clean /
+            # 无 finding 载体的审查触及面——kernel 审计 H4/H5/H6 审 ~30 面零簿记
+            # 实录); 幂等追加去重, 不覆盖 finding 级; 有 finding 载体时不重复
+            hts = f.get("tracked_surfaces") or []
+            if hts:
+                have_finding_ts = bool(
+                    (f.get("findings") or []) and
+                    all((fi.get("tracked_surfaces") or [])
+                        for fi in f["findings"]))
+                if not have_finding_ts:
+                    merged = set(f.get("hypothesis_tracked_surfaces") or [])
+                    merged.update(hts)
+                    f["hypothesis_tracked_surfaces"] = sorted(merged)
             existing[hid] = f
             collected += 1
     if not collected and items:
@@ -1510,28 +1537,38 @@ def _tracked_ids(project_root, queue, surfaces):
     v3.9 (SWR-V3.9-006): 优先 r2_filter_result.json 三组 surface_ids
     (keep/drop/boundary_confirmations——SWR-V3.4.6-002 保真契约: drop/bc 条目
     的 surface_ids 同样计入覆盖), hypotheses.json 仅无 filter 结果时兜底;
-    ∪ r4 findings[].tracked_surfaces ∪ queue.coverage_bridge[].surface。"""
+    ∪ r4 findings[].tracked_surfaces ∪ queue.coverage_bridge[].surface。
+    v3.10 (SWR-V3.10-001): 多波批次形态——①r2_filter_result*.json 全波次文件
+    glob 合并 (主文件与分波文件同权) ②logic_hypotheses[].surface_ids 恒并入
+    (门禁⑦语义: "R2 假设 surface_ids" 含 logic 组——防御裁决面的覆盖簿记,
+    kernel 审计 27/152 假失败实录) ③假说级 hypothesis_tracked_surfaces
+    (reviewed_clean 假说的审查触及面, SWR-V3.10-002/003)。"""
     ids = set()
-    filt_path = os.path.join(project_root, ".audit_results", "r2_filter_result.json")
+    ar = os.path.join(project_root, ".audit_results")
     filt_used = False
-    if os.path.exists(filt_path):
+    for fp in sorted(glob.glob(os.path.join(ar, "r2_filter_result*.json"))):
         try:
-            fr = json.load(open(filt_path))
+            fr = json.load(open(fp))
             for k in ("keep", "drop", "boundary_confirmations"):
                 for e in fr.get(k, []) or []:
                     ids.update(e.get("surface_ids", []) or [])
             filt_used = True
         except (OSError, ValueError):
             pass
-    if not filt_used:
-        hyp_path = os.path.join(project_root, ".audit_results", "hypotheses.json")
-        if os.path.exists(hyp_path):
-            try:
-                for h in json.load(open(hyp_path)).get("hypotheses", []):
+    hyp_path = os.path.join(ar, "hypotheses.json")
+    if os.path.exists(hyp_path):
+        try:
+            hp = json.load(open(hyp_path))
+            if not filt_used:
+                for h in hp.get("hypotheses", []):
                     ids.update(h.get("surface_ids", []) or [])
-            except (OSError, ValueError):
-                pass
+            # logic 组恒并入 (与 filter 结果存在与否无关)
+            for lh in hp.get("logic_hypotheses", []) or []:
+                ids.update(lh.get("surface_ids", []) or [])
+        except (OSError, ValueError):
+            pass
     for f in queue.get("r4_findings", []) or []:
+        ids.update(f.get("hypothesis_tracked_surfaces", []) or [])
         for fi in f.get("findings", []) or []:
             ids.update(fi.get("tracked_surfaces", []) or [])
     for e in queue.get("coverage_bridge", []) or []:
@@ -1757,9 +1794,18 @@ def _render_problem_details(cands, queue):
                               if rf.get("attribution_corrections") else ""))
             emp = c.get("empirical")
             if isinstance(emp, dict) and emp:
-                out.append(f"- 实证记录（R5）: outcome={emp.get('outcome')}, "
-                           f"evidence_numbers={emp.get('evidence_numbers')}"
-                           + (f", setup={emp.get('setup')}" if emp.get("setup") else "")
+                # SWR-V3.10-005: 键名容错双形态——保留键 (outcome/evidence_numbers)
+                # 优先; 缺失时回退标准键 (verdict/result/input/harness); 双形态
+                # 都缺时占位 (绝不抛异常)。kernel 审计实录: 回填 dict 用标准键
+                # 致实测数据在报告里全部渲染为 None。
+                outcome = emp.get("outcome") or emp.get("verdict")
+                nums = emp.get("evidence_numbers") or emp.get("result")
+                extra = emp.get("input")
+                harness = emp.get("harness")
+                out.append(f"- 实证记录（R5）: outcome={outcome}, "
+                           f"evidence_numbers={nums}"
+                           + (f", input={extra}" if extra else "")
+                           + (f", harness={harness}" if harness else "")
                            + (f", report={emp.get('report')}" if emp.get("report") else ""))
             hyp_id = None
             if c.get("members"):
@@ -2279,6 +2325,14 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
    call_chain 相邻两跳之间一条 {{edge, proof}}，总条数 ≥ call_chain 长度 - 1。
    **禁止合并多跳为一条**（合并边会被机械分级降级 static_only 并触发补边波次）；
    每跳的 proof 必须指名调用处 file:line 与调用形态（直接/别名/桥接）
+8. **路径格式（v3.10, SWR-V3.10-011）**: call_chain / edge_evidence 的 file
+   一律用**相对项目根**路径（不带项目根前缀）——混用会原样进入报告
+
+### 步骤 1.5: upstream 修复搜索（v3.10, SWR-V3.10-011）
+对 sink 搜索 upstream 修复/已知缺陷报告作为外部佐证：
+- `git log --all --oneline -S <sink 关键标识>` 与公开 CVE/补丁列表检索
+- 命中时：引用 commit hash 并核对**本树是否已含该修复**——"快照落于修复
+  前/后窗口"是候选可信度与报告语境的关键事实，写入 evidence
 
 ### 步骤 2: 多态穿透
 遇接口/抽象类/虚函数/特征(trait)，搜索所有具体实现类继续回溯

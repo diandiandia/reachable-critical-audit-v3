@@ -13,6 +13,7 @@
         # SWR-V3.4.6-002: 落盘保真——bc/drop 缺 surface_ids 时从 hypotheses.json
         # 反查补齐 (restored_from_hypotheses 标记), 缺 hypotheses 参数自动探测同目录
 """
+import glob
 import json
 import os
 import re
@@ -211,7 +212,24 @@ def main(argv):
             if os.path.exists(cand):
                 hyps = json.load(open(cand))
             else:
-                print("WARN: hypotheses.json 缺失, 跳过反查修复", file=sys.stderr)
+                # SWR-V3.10-004: 波次回退——多波批次的主文件可能尚未合并,
+                # glob _r2_hypotheses_*.json 合并反查 (kernel 审计 K1/K2 分波
+                # 文件形态下主文件缺失 WARN 实录); 全部缺失才跳过
+                wdir = os.path.dirname(os.path.abspath(argv[2]))
+                merged = {"hypotheses": [], "logic_hypotheses": []}
+                for wp in sorted(glob.glob(
+                        os.path.join(wdir, "_r2_hypotheses_*.json"))):
+                    try:
+                        wd = json.load(open(wp))
+                        merged["hypotheses"].extend(wd.get("hypotheses", []) or [])
+                        merged["logic_hypotheses"].extend(
+                            wd.get("logic_hypotheses", []) or [])
+                    except (OSError, ValueError):
+                        pass
+                if merged["hypotheses"] or merged["logic_hypotheses"]:
+                    hyps = merged
+                else:
+                    print("WARN: hypotheses.json 缺失, 跳过反查修复", file=sys.stderr)
         data, restored = restore_surface_ids(data, hyps or {})
         json.dump(data, open(argv[2], "w"), ensure_ascii=False, indent=2)
         print(f"surface_ids_fidelity: restored={restored}")

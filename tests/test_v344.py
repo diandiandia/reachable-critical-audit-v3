@@ -143,8 +143,10 @@ def test_r4_template_deployment_and_prefix():
     tpl = open(os.path.join(os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))), "task_templates", "biz_hypothesis.md")).read()
     assert "部署布局" in tpl and "SWR-V3.4.4-005" in tpl
-    assert "vm 全量加载 src" in tpl
-    assert "CONFIRMED:` / `REFUTED:` / `SOURCE_FACT:`" in tpl
+    # v3.10 (SWR-V3.10-008): 措辞生态中立化——npm 系短语 (vm 全量加载 src)
+    # 替换为发布面三查 + 编译开关面通用形态
+    assert "发布面三查" in tpl and "编译开关面" in tpl
+    assert "CONFIRMED:" in tpl and "REFUTED:" in tpl and "SOURCE_FACT:" in tpl
     assert "SWR-V3.4.4-006" in tpl
 
 
