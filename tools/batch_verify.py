@@ -722,6 +722,30 @@ def _adapt_r4_finding(f):
     if "recommendation" in out and not out.get("fix"):
         out["fix"] = out.pop("recommendation")
         flags.append("recommendation->fix")
+    # v3.9 (SWR-V3.9-001): 漂移归一扩展——Pillow 审计实测五类形态中四类为
+    # 字段级漂移 (cwe 字符串/call_chain 字符串/location 别名/surfaces 别名),
+    # 原四类自适应 (evidence 数组/r3_link dict/severity/recommendation) 未覆盖。
+    cwe = out.get("cwe")
+    if isinstance(cwe, str):
+        toks = [t.strip() for t in re.split(r"[/;]", cwe) if t.strip()]
+        out["cwe"] = toks or [cwe]
+        flags.append("cwe-str")
+    cc = out.get("call_chain")
+    if isinstance(cc, str):
+        out["call_chain"] = [cc] if cc.strip() else []
+        flags.append("callchain-str")
+    if not out.get("call_chain") and isinstance(out.get("location"), list):
+        locs = []
+        for d in out["location"]:
+            if isinstance(d, dict) and d.get("file"):
+                locs.append(f"{d['file']}:{d.get('line', '')}".rstrip(":"))
+        if locs:
+            out["call_chain"] = locs
+            flags.append("location->callchain")
+    if not out.get("tracked_surfaces") and isinstance(out.get("surfaces"), list):
+        out["tracked_surfaces"] = list(out["surfaces"])
+        out.setdefault("mapped_surface_ids", {})["surfaces-alias"] = "tracked_surfaces"
+        flags.append("surfaces->tracked")
     return out, flags
 
 
@@ -909,6 +933,36 @@ def stage_r4_collect(project_root, findings_file):
     # 静默入库或静默兜底误导 (tomcat 审计: PARTIAL/REFUTED_HIGH 散文 verdict 与
     # informational 非法 severity 直接进清单)。warn 不阻断 (C2: 拒收需新重试机制)。
     _warn_r4_enums(items)
+    # v3.9 (SWR-V3.9-002): tracked_surfaces 硬失败守卫——静默缺簿记导致门禁⑦
+    # 假失败、反向制造手工补救 (Pillow H7 13 面缺失实录)。input_surface.json
+    # 存在时校验; 违规 hypothesis 整体不合并 (原子性: 部分合并禁止)。
+    isurf_path = os.path.join(project_root, ".audit_results", "input_surface.json")
+    missing_ts = []
+    if os.path.exists(isurf_path):
+        try:
+            import surface_mapper as _sm
+            _norm = getattr(_sm, "norm_surface_id")
+            _isurf = json.load(open(isurf_path))
+            _known_samples = sorted({_norm(s.get("id"))
+                                     for s in _isurf.get("surfaces", [])})[:8]
+            for h in items:
+                for fi in (h.get("findings") or []):
+                    if fi.get("tracked_surfaces"):
+                        continue
+                    missing_ts.append({
+                        "hypothesis": h.get("hypothesis_id"),
+                        "finding": (fi.get("title") or "")[:60],
+                        "hint": ("finding 缺 tracked_surfaces 且无 surfaces 别名可恢复——"
+                                 "需原样引用 input_surface.json 的 surface id, "
+                                 f"前缀示例: {_known_samples}")})
+        except ValueError:
+            pass
+    if missing_ts:
+        print(json.dumps({"status": "R4_TRACKED_MISSING",
+                          "violations": missing_ts,
+                          "note": "未写回队列 (原子性: 部分合并禁止)——修复输入文件后重跑 r4-collect"},
+                         ensure_ascii=False), file=sys.stderr)
+        return 1
     existing = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", [])}
     collected = 0
     for f in items:
@@ -1426,7 +1480,11 @@ def _problem_summary(c):
 
 
 def _needs_review_cause(cand):
-    """REQ-V3.3-011: NEEDS_REVIEW 成因双分——关键词启发式 (机械侧近似, 未注明则主代理确认)。"""
+    """REQ-V3.3-011: NEEDS_REVIEW 成因双分——显式字段优先, 关键词启发式兜底
+    (机械侧近似, 未注明则主代理确认)。"""
+    explicit = (cand.get("needs_review_cause") or "").strip()
+    if explicit:
+        return explicit
     blob = " ".join([
         str(cand.get("evidence") or ""),
         " ".join(str(r) for r in cand.get("correction_record", []) or []),
@@ -1448,17 +1506,31 @@ def _refutation_line(c):
 
 
 def _tracked_ids(project_root, queue, surfaces):
-    """机械 tracked 集 (B.5 六门禁⑦用): hypotheses[].surface_ids ∪
-    r4 findings[].tracked_surfaces ∪ queue.coverage_bridge[].surface
-    (coverage_bridge 实况存在, 渲染侧按实况容忍消费)。"""
+    """机械 tracked 集 (B.3/B.5 六门禁⑦用)。
+    v3.9 (SWR-V3.9-006): 优先 r2_filter_result.json 三组 surface_ids
+    (keep/drop/boundary_confirmations——SWR-V3.4.6-002 保真契约: drop/bc 条目
+    的 surface_ids 同样计入覆盖), hypotheses.json 仅无 filter 结果时兜底;
+    ∪ r4 findings[].tracked_surfaces ∪ queue.coverage_bridge[].surface。"""
     ids = set()
-    hyp_path = os.path.join(project_root, ".audit_results", "hypotheses.json")
-    if os.path.exists(hyp_path):
+    filt_path = os.path.join(project_root, ".audit_results", "r2_filter_result.json")
+    filt_used = False
+    if os.path.exists(filt_path):
         try:
-            for h in json.load(open(hyp_path)).get("hypotheses", []):
-                ids.update(h.get("surface_ids", []) or [])
+            fr = json.load(open(filt_path))
+            for k in ("keep", "drop", "boundary_confirmations"):
+                for e in fr.get(k, []) or []:
+                    ids.update(e.get("surface_ids", []) or [])
+            filt_used = True
         except (OSError, ValueError):
             pass
+    if not filt_used:
+        hyp_path = os.path.join(project_root, ".audit_results", "hypotheses.json")
+        if os.path.exists(hyp_path):
+            try:
+                for h in json.load(open(hyp_path)).get("hypotheses", []):
+                    ids.update(h.get("surface_ids", []) or [])
+            except (OSError, ValueError):
+                pass
     for f in queue.get("r4_findings", []) or []:
         for fi in f.get("findings", []) or []:
             ids.update(fi.get("tracked_surfaces", []) or [])
@@ -1466,6 +1538,33 @@ def _tracked_ids(project_root, queue, surfaces):
         if isinstance(e, dict) and e.get("surface"):
             ids.add(e["surface"])
     return sorted(ids)
+
+
+def stage_tracked_ids(project_root):
+    """SWR-V3.9-006: tracked 集机械化 CLI——门禁⑦ 准备免手写 union 脚本;
+    落盘 _tracked_ids.json (直接可喂 assert_ledger surface_data);
+    覆盖率 <100% 时 exit 1 (供脚本链使用, 主代理可决定继续)。"""
+    queue = load_queue(project_root)
+    sf_path = os.path.join(project_root, ".audit_results", "input_surface.json")
+    surfaces = None
+    if os.path.exists(sf_path):
+        try:
+            surfaces = json.load(open(sf_path))
+        except (OSError, ValueError):
+            pass
+    total = len(surfaces.get("surfaces", [])) if surfaces else 0
+    tracked = _tracked_ids(project_root, queue, surfaces)
+    all_ids = {s.get("id") for s in surfaces.get("surfaces", [])} if surfaces else set()
+    missing = sorted(all_ids - set(tracked))
+    out = {"status": "TRACKED_IDS", "total": total,
+           "tracked": len(tracked), "missing": missing}
+    ad = os.path.join(project_root, ".audit_results")
+    if os.path.isdir(ad):
+        with open(os.path.join(ad, "_tracked_ids.json"), "w", encoding="utf-8") as f:
+            json.dump(sorted(tracked), f, ensure_ascii=False, indent=1)
+        out["written"] = ".audit_results/_tracked_ids.json"
+    print(json.dumps(out, ensure_ascii=False))
+    return 0 if not missing else 1
 
 
 def _gates_for_report(project_root, queue, surfaces):
@@ -1502,6 +1601,22 @@ def _r4_severity(fi):
     if sev in ("critical", "high", "medium", "low"):
         return sev, f"r4:{sev}"
     return severity_for(fi)
+
+
+def _r4_location(fi):
+    """SWR-V3.9-005: R4 finding 位置列来源——call_chain[0] (r4-collect 归一化保证
+    file:line 形态) → location 字段 → 降级 '-' (渲染铁律: 缺失降级占位不抛异常)。"""
+    cc = fi.get("call_chain") or []
+    if cc and isinstance(cc[0], str) and cc[0].strip():
+        return cc[0].strip()
+    loc = fi.get("location")
+    if isinstance(loc, list) and loc:
+        d = loc[0]
+        if isinstance(d, dict) and d.get("file"):
+            return f"{d['file']}:{d.get('line', '')}".rstrip(":")
+        if isinstance(d, str) and d.strip():
+            return d.strip()
+    return "-"
 
 
 def _confirmed_issues(queue, cands):
@@ -1575,7 +1690,7 @@ def _render_problem_list(cands, queue):
             else:
                 fi = it["obj"]
                 cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(fi))]
-                out.append(f"| {it['fid']} | {_problem_summary(fi)} | - | "
+                out.append(f"| {it['fid']} | {_problem_summary(fi)} | {_r4_location(fi)} | "
                            f"{', '.join(cwes) or '-'} | {_r4_grade_col(fi)} | "
                            f"R4 确认（无 R3.5 复核） |")
     if dupes:
@@ -1660,6 +1775,12 @@ def _render_problem_details(cands, queue):
             cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(fi))]
             out.append(f"- CWE / claim_type: {', '.join(cwes) or '-'} / "
                        f"{fi.get('claim_type') or '-'}")
+            out.append(f"- 位置: {_r4_location(fi)}")
+            ir = fi.get("independent_review")
+            if isinstance(ir, dict) and any(ir.get(k) for k in ("by", "method", "artifacts")):
+                out.append(f"- 独立复核（③d）: {ir.get('by') or '?'} — "
+                           f"{ir.get('method') or '-'}"
+                           f"（artifacts: {ir.get('artifacts') or '-'}）")
             if fi.get("title"):
                 out.append(f"- 要点: {fi.get('title')}")
             if fi.get("evidence"):
@@ -1675,8 +1796,13 @@ def _render_problem_details(cands, queue):
 
 
 def _render_appendix_a_needs_review(queue):
-    """附录 A: NEEDS_REVIEW 清单 + 成因双分 + 同事实映射 (REQ-V3.1-092)。"""
-    nr = [c for c in queue.get("candidates", []) if c.get("status") == "NEEDS_REVIEW"]
+    """附录 A: NEEDS_REVIEW 清单 + 成因双分 + 同事实映射 (REQ-V3.1-092)。
+    v3.9 (SWR-V3.9-003): collect 终态写 status=VERIFIED + verdict=NEEDS_REVIEW,
+    旧过滤只认 status==NEEDS_REVIEW 致终态候选不渲染 (Pillow CAND-001 实录)——
+    双语义容忍 (同 load_lenient 先例)。"""
+    nr = [c for c in queue.get("candidates", [])
+          if (c.get("status") == "VERIFIED" and c.get("verdict") == "NEEDS_REVIEW")
+          or c.get("status") == "NEEDS_REVIEW"]
     if not nr:
         return "无 NEEDS_REVIEW 候选。"
     hyp_by_id = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", []) or []}
@@ -1730,6 +1856,9 @@ def _render_appendix_b_process(project_root, queue, report_json):
     else:
         out.append("- surface: （input_surface.json 未落盘）")
     # B.2 语言覆盖表 (组件角色现场重算)
+    # v3.9 (SWR-V3.9-004): 双侧 lang 词汇归一后 join——surface.lang 为规范名
+    # (python/c), language_inventory 行为扩展名形态 (.py/.c), 原直接字符串键
+    # 比对致计数恒 0 (Pillow 实录)。归一失败归 unknown 桶。
     out.append("### B.2 语言覆盖表")
     try:
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -1738,22 +1867,30 @@ def _render_appendix_b_process(project_root, queue, report_json):
         surf_langs = {}
         if surfaces:
             for s in surfaces.get("surfaces", []):
-                lg = s.get("lang")
+                lg = _norm_lang(s.get("lang"))
                 if lg:
                     surf_langs[lg] = surf_langs.get(lg, 0) + 1
         cand_langs = {}
         for c in cands:
-            lg = c.get("language") or c.get("lang")
+            lg = _norm_lang(c.get("language") or c.get("lang"))
             if lg:
                 cand_langs[lg] = cand_langs.get(lg, 0) + 1
+        inv_rows = {}
+        for r in inv:
+            lg = _norm_lang(r.get("lang")) or "unknown"
+            agg = inv_rows.setdefault(lg, {"count": 0, "roles": set()})
+            agg["count"] += int(r.get("file_count", 0) or 0)
+            if r.get("component_role"):
+                agg["roles"].add(r["component_role"])
         out.append("| 语言 | 文件数 | 组件角色 | surfaces | 候选 | 判据① |")
         out.append("|---|---|---|---|---|---|")
-        for r in inv:
-            lg = r["lang"]
+        for lg in sorted(inv_rows):
+            agg = inv_rows[lg]
             has_sf = surf_langs.get(lg, 0) >= 1
             has_cand = cand_langs.get(lg, 0) >= 1
             judge = "✓" if (has_sf and has_cand) else "-"
-            out.append(f"| {lg} | {r['file_count']} | {r['component_role']} | "
+            role = "/".join(sorted(agg["roles"])) or "-"
+            out.append(f"| {lg} | {agg['count']} | {role} | "
                        f"{surf_langs.get(lg, 0)} | {cand_langs.get(lg, 0)} | {judge} |")
     except Exception:
         out.append("（language_inventory 现场重算失败, 角色列由主代理补充）")
@@ -1799,7 +1936,8 @@ def _render_appendix_b_process(project_root, queue, report_json):
                      ("escalated", "⑥ escalated=0 或签收"),
                      ("coverage", "⑦ surface 覆盖率 100%"),
                      ("target_kind", "⑧ target_kind_required"),
-                     ("resurrection", "③c 复活攻击完成度")]
+                     ("resurrection", "③c 复活攻击完成度"),
+                     ("r4_independent_review", "③d R4 confirmed 独立复核")]
         out.append("| 门禁 | 结果 | 详情 |")
         out.append("|---|---|---|")
         for key, name in gate_rows:
@@ -1923,6 +2061,23 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
                     "理由可能失效——按 R3.5-N 复活流程重开受影响候选")
         except (ImportError, ValueError):
             pass
+    # v3.9 (SWR-V3.9-007): payload 落盘——next_step 的"整读整传"条款需要一个
+    # 真实存在的文件 (旧实现只把 payload 打在 stdout, 主代理手工重提取, Pillow 实录)
+    pl = result.get("payload")
+    if pl is not None:
+        pl_rel = f".audit_results/{mode}_payload.json"
+        pl_path = os.path.join(project_root, ".audit_results", f"{mode}_payload.json")
+        try:
+            os.makedirs(os.path.dirname(pl_path), exist_ok=True)
+            with open(pl_path, "w", encoding="utf-8") as f:
+                json.dump(pl, f, ensure_ascii=False, indent=1)
+            result["payload_file"] = pl_rel
+            if isinstance(result.get("next_step"), str):
+                result["next_step"] += (f"\n  - payload 已落盘 {pl_rel}: args 从该文件 "
+                                        f"整读整传 (W6 §10.3)")
+            print(f"payload written: {pl_path}", file=sys.stderr)
+        except OSError as e:
+            print(f"payload write failed: {e}", file=sys.stderr)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
@@ -2287,6 +2442,8 @@ def main():
         stage_r4_collect(project_root, findings_file)
     elif stage == "r4-assert":
         sys.exit(stage_r4_assert(project_root))
+    elif stage == "tracked-ids":
+        sys.exit(stage_tracked_ids(project_root))
     elif stage == "bump-attempt":
         stage_bump_attempt(project_root, findings_file or "")
     elif stage == "workflow-script":

@@ -205,7 +205,7 @@ TERMINAL_STATUSES = {"VERIFIED", "ESCALATED", "NEEDS_REVIEW"}
 
 
 def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind=True,
-                  require_resurrection=True):
+                  require_resurrection=True, require_r4_independent=True):
     """SWR-V3-034 + REQ-V3-093/095/096 + SWR-V3.2.1-004/040: 门禁。
     ①no_pending ②REACHABLE 无 static_only ③实证类 100% ④H1-H7 全 VERIFIED
     ⑤对账零差异 (dispatched 提供时: 每个已派发 id 必须有终态)
@@ -328,6 +328,37 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
                                        "severity": "warn",
                                        "hypothesis": f.get("hypothesis_id"),
                                        "finding": (fi.get("title") or "")[:60]})
+    # ③d v3.9 (REQ-V3.9-010): R4 confirmed 独立复核——放行方向对抗复核
+    # (REQ-V3.2-021 精神) 在 R4 通道的补位: R3.5 证伪不覆盖 R4 confirmed finding,
+    # 头部声称无对抗复核即放行 (Pillow 审计 H-1/H-4 实录, 主代理 ad-hoc 兜底
+    # 才抓到 H4-1 假阴性陷阱)。判据: confirmed 假说中 High/Medium/Critical 且
+    # empirical_result 前缀 CONFIRMED 的 finding 须有 independent_review
+    # {by, method, artifacts} 或非空 r3_link (已过 R3.5 通道)。
+    if require_r4_independent:
+        for f in r4:
+            if f.get("verdict") != "confirmed":
+                continue
+            for fi in f.get("findings") or []:
+                sev = (fi.get("severity") or "").strip().lower()
+                er = (fi.get("empirical_result") or "").strip()
+                ir = fi.get("independent_review")
+                has_ir = (isinstance(ir, dict) and any(
+                    ir.get(k) for k in ("by", "method", "artifacts")))
+                if (sev in ("high", "medium", "critical")
+                        and er.upper().startswith("CONFIRMED")
+                        and not has_ir
+                        and not (isinstance(fi.get("r3_link"), str)
+                                 and fi["r3_link"].strip())):
+                    violations.append({
+                        "gate": "r4_independent_review",
+                        "hypothesis": f.get("hypothesis_id"),
+                        "finding": (fi.get("title") or "")[:60],
+                        "hint": ("需 independent_review {by, method, artifacts} "
+                                 "(主代理从零复现/对照实验) 或非空 r3_link")})
+    else:
+        violations.append({"gate": "r4_independent_exempted", "severity": "warn",
+                           "note": "③d 豁免: 旧队列复跑 (require_r4_independent=False), "
+                                   "不伪造独立复核记录 (同 ⑧/③c 豁免先例, v3.9)"})
     # ⑦surface 覆盖 (REQ-V3-095)
     if surface_data is not None:
         total = surface_data.get("total", 0)
