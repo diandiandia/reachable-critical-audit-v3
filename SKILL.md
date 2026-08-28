@@ -323,9 +323,9 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：29 条检查清单
+- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：30 条检查清单
 - `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：5 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe）；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
-- `tests/`：204 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
+- `tests/`：243+ 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---
@@ -345,6 +345,7 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 ### R1 新增: validate v3.1 + 预算档位
 - `surface_mapper.py repair` 行号漂移自动修复器（首行键全文件匹配 ±80 语义 +
   `suggested_line` + `paraphrased` 标记；幂等: 已修复 entry 不重标，W6 §18.7/§22.1/§9.5）
+  **（v3.5.2 已裁除，行号漂移裁决为 R1.3 主代理手工职责——见 SKILL.md R1 铁律 3；v3.9 补注）**
 - `surface_mapper.py tier` 规模档位: <100 文件 2 agents / 100-500 4 agents 无限时 /
   >500 4 agents + 45min 硬时限 + 10min 中间产物落盘（W6 §17.1/§18.6/§20.5/§24.7）
 
@@ -819,3 +820,48 @@ exit 0 + install 后 DST pytest 全绿 + 分阶段 commit（P1→P2→P3→P4）
 selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级/排序/附录
 真实性人工检查，不覆盖既有报告）+ install 后 DST pytest 全绿 + 分阶段 commit
 （渲染+测试 → 文档+版本链 → R4 并入增强）。
+
+## 🆕 v3.9 增量（2026-08-28，Pillow 审计复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_9.md` + `REQ_V3_9.md` + `SWR_V3_9.md`。
+> 缺陷修复版：不改变阶段骨架、不改变门禁①-⑧判据语义（③ 新增子判据 ③d）。
+
+### 收集与渲染（P0）
+- **r4-collect 前置守卫**（REQ-V3.9-001/002）：`_adapt_r4_finding` 归一化扩展
+  （cwe 字符串/call_chain 字符串/location 别名/surfaces 别名，写 flags）；
+  tracked_surfaces 缺失且不可恢复 → `R4_TRACKED_MISSING` 硬失败、该 hypothesis
+  不合并（原子性）——静默缺簿记导致门禁⑦ 假失败反向制造手工补救（Pillow H7 实录）
+- **报告渲染三修**（REQ-V3.9-003/004/005）：附录 A 改双语义过滤
+  （status=VERIFIED 且 verdict=NEEDS_REVIEW——collect 终态语义）；
+  B.2 双侧 lang 经 `_norm_lang` 归一后 join（surface 规范名 vs inventory 扩展名
+  词汇不匹配致计数恒 0）；R4 行位置列取 `call_chain[0]`/location（`_r4_location`）
+- **tracked-ids 机械化**（REQ-V3.9-006）：新 `--stage tracked-ids`——优先
+  r2_filter_result.json 三组 surface_ids（SWR-V3.4.6-002 保真契约）∪ R4 ∪
+  coverage_bridge，落盘 `_tracked_ids.json`，覆盖率 <100% exit 1
+- **export 落盘 payload**（REQ-V3.9-007）：`<mode>_payload.json` 落盘，
+  next_step 引用该路径（"整读整传"条款此前无文件可读）
+
+### 门禁与提示资产（P1/P2）
+- **门禁 ③d**（REQ-V3.9-010）：R4 confirmed finding（High/Medium/Critical 且
+  empirical_result 前缀 CONFIRMED）须有 `independent_review {by,method,artifacts}`
+  或非空 r3_link——放行方向对抗复核（REQ-V3.2-021 精神）在 R4 通道补位；
+  `require_r4_independent=False` 豁免旧队列复跑（warn 注记，同 ⑧/③c 先例）；
+  B.5 增行、问题详情渲染该字段
+- **R1 任务书双向核实条款**（REQ-V3.9-008）：命中共享 helper/allocator/工厂时，
+  边界声称须沿调用链双向核实（两次误报同模式：漏看调用者前置守卫/漏看被调者
+  前置检查）
+- **新清单 CK-POSTOP-INVARIANT**（REQ-V3.9-009，库 29→30）：后置检查+循环
+  不变量论证——判缺陷前须证明不变量破坏（两次将"检查在操作后但靠对齐不变量
+  兜底"的形态误判为缺陷）
+- **文档漂移**（REQ-V3.9-011）：SKILL.md repair 裁除注记；
+  workflow_export.TOOLING_VERSION 3.7→3.9（版本守卫数据本身漂移两版）
+- **cve-ghsa-draft**（REQ-V3.9-012）：新 `tools/check_no_cjk.py` 零中文检查脚本
+
+### 撤销记录（防义务棘轮）
+- 原 P1-6（assert_ledger 逐门输出）：代码复查确认现有 `(ok, violations)` 契约
+  已枚举全部 blocking 违规，无失误案例支撑，不做修改。
+
+### 验收判据（Phase 3.9）
+243 基线全绿 + 新增 test_v39 ≥12 用例 + `signature_lib.py selfcheck /root/Pillow`
+exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d 全 PASS、报告三处
+渲染缺陷消失且主代理零手工编辑）。
