@@ -221,9 +221,12 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 ## 🧪 R5：实证抽验（声称类强制，REQ-V3-004/060）
 
 **触发判定**：verdict=REACHABLE 且 `claim_type ∈ {crash,panic,oom,unbounded,xss,protocol_dos,rce,leak}` 且 `evidence_grade ≠ empirically_confirmed` → **强制实证，否则六门禁 ③ 不放行**（可选路径：主代理裁决降级 NEEDS_REVIEW，不实证不申报——v3.3 起此为明示条款：NEEDS_REVIEW 是合法终态而非降级耻辱，成因须注明「保守裁决」或「证据不足」）。源事实级降级规则（哨兵值/算术类，网络阻断记录 blocker，W6 §21.4）继续有效。
-**实证回填规范（v3.4.3, SWR-V3.4.3-061）**：主代理回填 `empirical` 结构化 dict 只允许发生在
-verifier/证伪者证据文本含真实实测的场景——必须带 `backfilled_by` 标记 + 实测数字依据
-（成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
+**实证回填规范（v3.4.3, SWR-V3.4.3-061；v3.10, SWR-V3.10-005 键名规范化）**：主代理回填
+`empirical` 结构化 dict 只允许发生在 verifier/证伪者证据文本含真实实测的场景——必须带
+`backfilled_by` 标记 + 实测数字依据（成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
+**canonical 键集**：保留键 `outcome`/`evidence_numbers`/`report`（报告渲染既有消费键）+
+标准键 `harness`/`method`/`input`/`result`/`verdict`/`backfilled_by`（自建 harness 回填用）；
+渲染器容错读双形态（保留键优先，缺失回退标准键）。
 
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
@@ -865,3 +868,72 @@ selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级
 243 基线全绿 + 新增 test_v39 ≥12 用例 + `signature_lib.py selfcheck /root/Pillow`
 exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d 全 PASS、报告三处
 渲染缺陷消失且主代理零手工编辑）。
+
+## 🆕 v3.10 增量（2026-08-28，kernel 级项目首例审计复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_10.md` + `REQ_V3_10.md` + `SWR_V3_10.md`。
+> 缺陷修复版：不改变阶段骨架、不改变六门禁①-⑧判据语义、不改变队列数据模型主体。
+> 复盘来源：2026-08-28 首次 kernel 级项目全流程审计（五波、109 假设、10 候选、
+> 六门禁全 PASS）。13 项复盘发现 → 修复 12 项、撤销 2 项（含 1 项复盘误报）。
+
+### 覆盖率簿记（P-A）
+- **tracked 提取源扩展**（REQ-V3.10-001）：①`r2_filter_result*.json` 全波次文件
+  glob 合并三组 surface_ids（多波批次形态，主文件与分波文件同权）②
+  `logic_hypotheses[].surface_ids` 恒并入（与门禁⑦语义对齐："R2 假设 surface_ids"
+  含 logic 组——防御裁决面的覆盖簿记）③兜底路径不变
+- **R4 假说级 tracked_surfaces**（REQ-V3.10-002/003）：reviewed_clean/not_applicable
+  （或 confirmed 但 findings 空）假说的审查触及面结构化落盘——条件触发（有 finding
+  载体不重复），r4-collect 幂等合并为 `hypothesis_tracked_surfaces`，防"审查触达与
+  覆盖率簿记脱节"（reviewed_clean 假说审大量面却零簿记, 覆盖率假失败实录）
+- **r2_guard fidelity 波次回退**（REQ-V3.10-004）：主 hypotheses.json 缺失时
+  glob `_r2_hypotheses_*.json` 合并反查，全部缺失才 WARN
+
+### 实证回填契约（P-B）
+- **empirical dict 键名规范化**（REQ-V3.10-005）：canonical 键集（保留键
+  outcome/evidence_numbers/report + 标准键 harness/method/input/result/verdict/
+  backfilled_by）；渲染器容错读双形态（缺失回退，绝不抛异常）——修复报告渲染
+  把实测数据全部渲染为 None 的契约缺口
+
+### 边证据检测（P-C）
+- **edge_gap 显式信号**（REQ-V3.10-006）：collect 时 grade 重算 static_only 且
+  自报更高 → 输出 `edge_gap`（边数 vs 跳数-1 + "疑似合并边"补拆指引）——
+  修复"禁止合并多跳"条款无机械检查点、违反只能静默降级事后暴露的问题
+
+### 任务书与门禁一致性（P-E）
+- **R4 empirical_result 指引与 gate 豁免一致**（REQ-V3.10-007）：Low+声称类
+  必须填机制级描述文本（含"静态/机制级/源码级"措辞）——填 null 会触发
+  empirical_required_r4 违规；High/Medium/Critical 声称类沿用不实证不申报
+
+### 任务书资产中立化（P-F，去项目化）
+- **部署布局义务生态中立化**（REQ-V3.10-008）：发布面三查按构建系统分派
+  （包清单 files/构建产物/发布面入口）+ 编译开关面查询（Kconfig 提交值/Cargo
+  features/CMake 选项/Gradle buildTypes 等作分派例）——"不在发布产物/编译面 →
+  不构成可达声称"语义不变，措辞不再单吊一种生态
+- **shipped-config 编译开关键通用形态**（REQ-V3.10-009）：config/features/开关类
+  键的"提交值 vs 代码默认值"（含显式关闭为提交值）与服务端框架键清单并列按
+  形态分派
+- **focus_sink 纯格式契约**（REQ-V3.10-010）：`path:line` 纯格式（相对项目根），
+  说明入 note——修复带后缀格式致簇化入队失败
+- **verifier/refuter 任务书补两步**（REQ-V3.10-011）：路径格式统一条款 +
+  upstream 修复搜索步骤（git log -S / CVE 补丁核对 / "快照落于修复前/后窗口"
+  写进证据——上游补丁存在性是候选可信度最强旁证）
+
+### 提示资产（P-G）
+- **parser_fuzz 有状态 stub 指引**（REQ-V3.10-012）：无符号下溢语义保留/边界
+  指针语义/分配布局模拟/逐字提取纪律/消费侧复刻——模板 docstring + c 手册第 7 节
+
+### 版本链（收尾）
+- TOOLING_VERSION → "3.10"；tests/test_v310.py 覆盖全部可测需求
+
+### 撤销记录（防义务棘轮）
+- P-D 撤销（复盘误报）：shipped-config workflow 返回契约本就正确（`{mode,
+  inventories, missing}` 包装），误报根源是主代理收集时读了 per-agent journal
+  行——形态差异补入 collect 指引文档，不改代码
+- P-H 撤销：batch-size 截断已有 advice 显式提示（两次均依提示重导出，无失误
+  案例）；payload_hash 辅助无失误案例支撑——均不建
+
+### 验收判据（Phase 3.10）
+全量回归测试全绿（243 基线 + test_v310 新增）+ kernel 受影响阶段复跑零回退
+（tracked-ids 152/152 无手工补丁、collect 输出 edge_gap 信号、报告渲染实证数据
+完整）+ `_scan_runtime_assets` 去项目化扫描绿 + 三锚点 fixture 复跑零回退
+（新项目全流程验收随下一在线项目进行）。

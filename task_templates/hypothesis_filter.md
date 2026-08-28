@@ -31,8 +31,14 @@ drop 理由属于"目标代码在审计范围内不可见"类（子模块未物�
 scope diff）这类 drop 自动提示复活重验（C 库审计实战形态: 子模块中途物化
 使"树外不可验证"drop 作废）。其余 drop 为 false。
 
+## focus_sink 格式契约（v3.10, SWR-V3.10-010）
+keep 条目的 focus_sink 必须是**纯 `path:line`**（相对项目根路径）——如
+`fs/namei.c:4404`。说明性文字一律放 note 字段。**反例**（禁止）：
+`fs/namei.c:4404 (lookup_open)`。主代理簇化入队直接按 `path:line` 解析，
+带后缀格式会导致入队失败。
+
 ## 产出（强制 JSON，最终回复）
-{"keep":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"sources":["LLM|SIG-xxx"]}],
+{"keep":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"sources":["LLM|SIG-xxx"],"focus_sink":"path:line","note":"核实结论"}],
  "drop":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"reason":"...","dropped_by":"filter",
           "scope_dependent":false|true}],
  "boundary_confirmations":[{"id":"HYP-xxx","surface_ids":["SURF-..."],"confirmed_defense":"..."}]}

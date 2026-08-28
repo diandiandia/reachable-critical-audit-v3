@@ -22,7 +22,8 @@ evidence 为单字符串、r3_link 为字符串或 null）：
    "tracked_surfaces":["<上方清单原样 id>"],"r3_link":"CAND-xxx 或 null",
    "claim_type":"crash|panic|oom|unbounded|xss|protocol_dos|rce|leak|other|null",
    "empirical_result":"实测数字/输出/exit code 或 null"}],
-  "default_value_table":[...]}
+  "default_value_table":[...],
+  "tracked_surfaces":["<审查触及的全部 surface id, 仅当 verdict 非 confirmed 或 findings 为空时填写, v3.10 SWR-V3.10-002>"]}
 ]}
 ```
 
@@ -57,6 +58,11 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
 1. **tracked_surfaces**: 每个 finding 必须列出审查触及的 surface id 数组——
    **id 必须原样引用 input_surface.json 的 surface id**（不得自造 SURF- 前缀变体,
    SWR-V3.3.2-015）；（门禁⑦覆盖率簿记靠此字段, W6 §4/§9.7）
+1.5 **假说级 tracked_surfaces（v3.10, SWR-V3.10-002）**: verdict 为
+   reviewed_clean/not_applicable、或 confirmed 但 findings 为空时，在假说条目
+   顶层填 `tracked_surfaces`——本假说审查过程中实际 Read/Grep 触及的全部
+   surface id（原样引用清单）。有 finding 级载体时省略。防"审查触达与覆盖率
+   簿记脱节"（reviewed_clean 假说审大量面却零簿记, 覆盖率假失败实录）
 2. **r3_link**: finding 与 R3 候选裁决重叠时引用候选 id + 裁决结论（严重度以 R3.5
    correction_record 为准, W6 §16.12）
 3. **empirical_result**: 异常路径描述必须实证抽验；实测纠正原证据机制
@@ -64,15 +70,24 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
 4. **claim_type（v3.3.2, SWR-V3.3.2-031）**: finding 声称 crash/oom/unbounded 等
    实证类后果时必须填 claim_type（枚举同候选 claim_type），供 gate ③b 结构化判定；
    不涉声称填 null
-6. **部署布局义务（v3.4.4, SWR-V3.4.4-005）**: 实证必须在**部署布局**执行——
-   npm main/bundle/官方构建产物（实际 require/import），vm 全量加载 src
-   不构成部署布局实证；模块不在任何发布产物（npm files/Makefile/bundle grep
-   三查零命中）→ 不构成可达声称，按源码卫生缺陷记录且 claim_type 置 null
-   （jsrsasign H7-F5 先例: pkcs5pkey 模块零发布被 vm 加载实证误判 REACHABLE crash）
-7. **empirical_result 前缀契约（v3.4.4, SWR-V3.4.4-006）**: empirical_result 必须以
-   `CONFIRMED:` / `REFUTED:` / `SOURCE_FACT:` 前缀开头——gate ③b 结构判定只识别
-   该前缀（真实实证缺前缀会被机械拦截, 主代理复验才放行; jsrsasign 5 条实证
-   finding 被误拦截实测）
+6. **部署布局义务（v3.4.4, SWR-V3.4.4-005; v3.10, SWR-V3.10-008 生态中立化）**:
+   实证必须在**部署布局**执行——发布面三查（包清单 files 字段/构建产物清单/
+   发布面入口导出，按目标构建系统分派：包管理器清单、构建产物、官方发布形态），
+   非发布布局加载（如整树源码直接加载）不构成部署布局实证；模块不在任何发布
+   产物 → 不构成可达声称，按源码卫生缺陷记录且 claim_type 置 null。
+   **编译开关面**（构建开关类目标）同样适用：可达前提必须核对其代码在编译面
+   （构建开关配置的提交值 vs 代码默认值——Kconfig 提交值、Cargo features、
+   CMake 选项、Gradle buildTypes 等按目标形态分派）；不在编译面 → 不构成可达
+   声称，claim_type 置 null 且 evidence 注明"非编译面"
+7. **empirical_result 前缀契约（v3.4.4, SWR-V3.4.4-006; v3.10, SWR-V3.10-007 与
+   gate 豁免一致）**: empirical_result 必须以 `CONFIRMED:` / `REFUTED:` /
+   `SOURCE_FACT:` 前缀开头——gate ③b 结构判定只识别该前缀。**无实证环境时**
+   （本环境无运行能力、已记录环境探针 blocker）：
+   - High/Medium/Critical 声称类 → 不实证不申报（主代理裁决 NEEDS_REVIEW 或
+     claim 修正），empirical_result 填 null；
+   - **Low + 声称类 → 填机制级描述文本**（如"纯静态分析（源码级代码事实……
+     无运行时测量）"——gate ③ 的 Low+机制级豁免判据依赖此文本措辞；
+     **填 null 会触发 empirical_required_r4 违规**）
 5. H7 输出必须含「默认值全表」段——**收缩 schema（v3.3.2, SWR-V3.3.2-030）**：
    只盘点**安全相关默认值**（tls/auth/listen/password/limits/timeouts 类，
    编译期安全常量与随机源行计入），**≤10 行**；每行
