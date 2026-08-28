@@ -305,3 +305,33 @@ def test_confirmed_issues_verdict_filter(tmp_path):
     issues, dupes = bv._confirmed_issues(q, [])
     assert [i["key"] for i in issues] == ["H-3-F1"], issues
     assert dupes == []
+
+
+def test_preserve_adjudication_titleless_keying(tmp_path):
+    """SWR-V3.10.1-002: title 缺失形态按 finding_id 匹配——各 finding 保留
+    各自字段, 不得被末条覆盖; 新值带 CONFIRMED 前缀时不回退旧值。"""
+    old = {"findings": [
+        {"finding_id": "f-1", "empirical_result": "CONFIRMED: A 测量",
+         "claim_type": "unbounded"},
+        {"finding_id": "f-2", "empirical_result": "CONFIRMED: B 测量",
+         "claim_type": "oom"},
+    ]}
+    new = {"findings": [
+        {"finding_id": "f-1", "empirical_result": "CONFIRMED: A 测量 v2",
+         "claim_type": "unbounded"},
+        {"finding_id": "f-2", "empirical_result": "CONFIRMED: B 测量 v2",
+         "claim_type": "oom"},
+    ]}
+    bv._preserve_adjudication(old, new)
+    # 各自保留各自的 empirical (v3.10.1-002 修复前: 全部被末条 f-2 覆盖)
+    assert new["findings"][0]["empirical_result"] == "CONFIRMED: A 测量 v2"
+    assert new["findings"][1]["empirical_result"] == "CONFIRMED: B 测量 v2"
+    # 真实保留语义: 旧值带 CONFIRMED (主代理复验) + 新值裸文本 → 保留旧值
+    old2 = {"findings": [{"finding_id": "f-3",
+                          "empirical_result": "CONFIRMED: 主代理复验",
+                          "empirical_verified_by": "main-agent"}]}
+    new2 = {"findings": [{"finding_id": "f-3",
+                          "empirical_result": "机制级静态核对"}]}
+    bv._preserve_adjudication(old2, new2)
+    assert new2["findings"][0]["empirical_result"] == "CONFIRMED: 主代理复验"
+    assert new2["findings"][0]["empirical_verified_by"] == "main-agent"

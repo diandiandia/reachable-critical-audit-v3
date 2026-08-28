@@ -843,9 +843,19 @@ def _preserve_adjudication(old, new):
     (裁决信号 = claim_nulled_by/empirical_verified_by/correction_record);
     未裁决 finding 仅在新值缺失时用旧值兜底。"""
     preserved = []
-    old_fi = {fi.get("title"): fi for fi in (old.get("findings") or [])}
+    # SWR-V3.10.1-002: finding 键规范化——title 缺失形态 (libpng 波用
+    # finding_id/summary, 无 title) 下 {title: fi} 全部折叠到 None 键,
+    # 末条 finding 的 CONFIRMED empirical_result 被强制保留覆写到所有
+    # finding (libpng H-1 四 finding 实测全部变为 f-h1-4 文本)。键序:
+    # finding_id > id > title > summary 前缀。
+    def _fkey(fi):
+        return (fi.get("finding_id") or fi.get("id") or fi.get("title")
+                or (fi.get("summary") or "")[:80] or None)
+    old_fi = {}
+    for of in (old.get("findings") or []):
+        old_fi[_fkey(of)] = of
     for fi in (new.get("findings") or []):
-        ofi = old_fi.get(fi.get("title"))
+        ofi = old_fi.get(_fkey(fi))
         if not ofi:
             continue
         fi_preserved = []
@@ -862,12 +872,22 @@ def _preserve_adjudication(old, new):
                 if ofi.get(k) and not fi.get(k):
                     fi[k] = ofi[k]
                     fi_preserved.append(k)
-        # empirical_result: 旧值带 CONFIRMED/REFUTED 主代理标记 → 强制保留
-        # (前缀标记即主代理复验信号, 原始输入不可能携带)
+        # empirical_result: 旧值带 CONFIRMED/REFUTED 主代理标记且新值不带
+        # → 强制保留 (前缀标记即主代理复验信号)。v3.10.1-002 修订: v3.10
+        # 任务书四态指引使 agent 原始产出同样携带 CONFIRMED 前缀——
+        # "原始输入不可能携带"前提过时, 双向 CONFIRMED 时无条件覆写会
+        # 冻结首次测量 (SWR-V3.10.1-002 实录)。新值已带前缀 → 保留新值。
         oer = ofi.get("empirical_result") or ""
         ner = fi.get("empirical_result") or ""
-        if oer and (oer.upper().startswith(("CONFIRMED", "REFUTED"))
-                    or (not ner)):
+        # 非字符串形态 (list/cli_observation dict 等, libjpeg-turbo 实测形态)
+        # 不参与前缀保留判定——字符串比较会抛 AttributeError
+        oer_s = oer if isinstance(oer, str) else ""
+        ner_s = ner if isinstance(ner, str) else ""
+        if not ner and oer:
+            fi["empirical_result"] = oer
+            fi_preserved.append("empirical_result")
+        elif oer_s and oer_s.upper().startswith(("CONFIRMED", "REFUTED")) \
+                and not (ner_s and ner_s.upper().startswith(("CONFIRMED", "REFUTED"))):
             fi["empirical_result"] = oer
             fi_preserved.append("empirical_result")
         # evidence: 旧值含主代理裁决段而新值无 → 追加裁决段 (不整段覆写)
