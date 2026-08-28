@@ -252,8 +252,10 @@ def test_language_coverage_table_roles(tmp_path):
     md = _render(_mk_full_repo(tmp_path))
     b2 = md.split("### B.2 语言覆盖表")[1].split("### B.3")[0]
     assert "server-side" in b2 and "client-only" in b2 and "build-config" in b2
-    assert "| .js | 1 | client-only |" in b2      # client-only 行
-    assert "| .sh | 1 | build-config |" in b2     # build-config 行
+    # v3.9 (SWR-V3.9-004): 语言列经 _norm_lang 归一 (扩展名→规范名), 旧断言
+    # 锁定 ".js" 原始形态与本修复冲突
+    assert "| javascript | 1 | client-only |" in b2   # client-only 行 (归一后)
+    assert "| shell | 1 | build-config |" in b2        # build-config 行 (归一后)
 
 
 # ── 10. tracked_ids 合并 coverage_bridge ──────────────────────────────

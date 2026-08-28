@@ -214,9 +214,11 @@ def test_gate3b_structured_medium_without_empirical_blocks():
     assert any(v.get("gate") == "empirical_required_r4" for v in violations)
 
 def test_gate3b_structured_medium_confirmed_passes():
+    # v3.9 (REQ-V3.9-010): 本 fixture 为 ③d 机制发布前的旧队列形态——
+    # 按豁免先例 (同 ⑧/③c) 以 require_r4_independent=False 复跑
     q = _r4q([{"title": "x", "severity": "Medium", "claim_type": "oom",
                "empirical_result": "CONFIRMED — 实测 RSS +500MB"}])
-    ok, violations = el.assert_ledger(q)
+    ok, violations = el.assert_ledger(q, require_r4_independent=False)
     assert ok, [v for v in violations if v.get("gate") == "empirical_required_r4"]
 
 def test_gate3b_low_no_claim_not_blocked():
