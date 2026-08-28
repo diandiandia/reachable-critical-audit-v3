@@ -246,6 +246,7 @@ def test_verify_prompt_v310_steps(tmp_path):
     assert "upstream 修复搜索" in prompt
     assert "快照落于修复" in prompt
     assert "相对项目根" in prompt
+    assert "首发归属" in prompt and "非首发发现" in prompt
 
 
 # ---------------------------------------------------------------- SWR-009/012/013

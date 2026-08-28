@@ -14,6 +14,6 @@
 | SWR-V3.10-008 | 008 | task_templates/biz_hypothesis.md | 部署布局义务措辞：包清单类/编译开关面两分派，通用语义（发布面三查 + 提交值 vs 代码默认值），无项目专属名 | 模板文本断言 + 去项目化扫描绿 |
 | SWR-V3.10-009 | 009 | workflow_export.py shipped_config_prompt | 键语义段补编译开关/特性键通用形态（config/features/开关类，提交值含显式关闭语义），与服务端框架键清单并列按形态分派 | prompt 生成产物断言（构造 config 形态组件 → prompt 含编译开关键段；构造服务端组件 → 含框架键段） |
 | SWR-V3.10-010 | 010 | task_templates/hypothesis_filter.md | focus_sink 格式段：纯 `path:line`（相对项目根）+ 正反例 | 模板文本断言 |
-| SWR-V3.10-011 | 011 | workflow_export.py verifier/refuter prompt 模板 | 两步补丁：路径格式统一条款 + upstream 修复搜索步骤（git log -S / CVE 补丁核对 / 前后窗口语义） | 导出产物断言（export 一个候选 → prompt 含两段文本）；去项目化扫描绿 |
+| SWR-V3.10-011 | 011 | workflow_export.py verifier/refuter prompt 模板 + tools/batch_verify.py _build_prompt | 两步补丁：路径格式统一条款 + upstream 修复搜索步骤（git log -S / CVE 补丁核对 / 前后窗口语义）；**同日增补**：命中公开补丁/已有 CVE 时标注首发归属（发现者/补丁作者/时间/补丁状态），evidence 写明「非首发发现」，主代理收尾按「推补丁合并+佐证」路径 | 导出产物断言（export 一个候选 → prompt 含两段文本 + 首发归属措辞）；去项目化扫描绿 |
 | SWR-V3.10-012 | 012 | templates/harness/parser_fuzz_c.py docstring + harness_manuals/c.md | "有状态 sink 最小 stub 复刻法"小节：无符号下溢语义、边界指针语义、分配布局模拟、逐字提取纪律——机制形态 | 文本断言（两文件均含小节标题与关键措辞）；去项目化扫描绿 |
 | SWR-V3.10-013 | 013 | workflow_export.py TOOLING_VERSION + SKILL.md + tests/test_v310.py | 版本 "3.10"；SKILL.md v3.10 增量段（设计/需求/软件需求链接 + 验收判据 + 撤销记录）；test_v310 全绿并入回归 | 版本守卫比对；测试全绿；`signature_lib.py selfcheck` 非 fixture 路径 exit 0 |

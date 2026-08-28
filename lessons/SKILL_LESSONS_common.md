@@ -35,7 +35,9 @@
 - 过程观察 3（实证路线）: 无 qemu/clang/KASAN 环境下 parser_fuzz 用户态复刻两次成功——RFCOMM skb 下溢(确定性输入 [00 ef ce])与 f2fs 越页读(slot 213+name_len 255)均获 ASAN heap-buffer-overflow 实测; sk_buff/dentry folio 的最小 stub 复刻是无内核环境实证的关键手法
 - 过程观察 4（复活波）: 第一次出现复活攻击成功找到证伪论证真实缺口(tcp_input.c:7013 SYN_SENT 无 seq 门禁 ts_recent 写入)——但重验以「零边际能力增益」(同枚不带 TS 的伪造 SYN 已杀~100% 连接尝试)维持 UNREACHABLE; 教训: 复活 gap ≠ 复活成功, 边际增益分析是终局裁决关键维度
 - 过程观察 5（上游修复佐证）: 两条实证候选均有上游修复存在(RFCOMM: Muhammad Bilal/yaojiale02 补丁; f2fs: 90e02a8e1b68 Trail of Bits)——audited 快照恰落于修复前窗口; 上游补丁存在性是候选可信度的强旁证, 值得在 R3 任务书预埋「搜索 upstream 修复」提示
-- 过程观察 6（LDM 编译面裁决）: LDM 簇代码级机制真实(16B 头拷入小分配+负 size memcpy)但 GKI 未编译 PARTITION_ADVANCED——scope_dependent drop + 报告配置面注记; microdroid_defconfig 含该选项, 配置扩展面需另行评估
+- 
+首发归属核查（同日增补, 2026-08-28 在线核实实录）: 最高价值候选经公开列表检索为双首发已发现（公开补丁 v1-v4 + KMSAN 报告佐证, 均未合并; 兄弟缺陷已有独立 CVE）——审计独立发现≠首发, 收尾动作从「申报」改为「推补丁合并 + 佐证材料」; 教训: R3.5 证伪者顺带发现的补丁记录必须在收尾阶段做在线归属核查, 申报口径以核查结果为准
+过程观察 6（LDM 编译面裁决）: LDM 簇代码级机制真实(16B 头拷入小分配+负 size memcpy)但 GKI 未编译 PARTITION_ADVANCED——scope_dependent drop + 报告配置面注记; microdroid_defconfig 含该选项, 配置扩展面需另行评估
 
 ## 待回填
 
