@@ -279,3 +279,29 @@ def test_tooling_version_v310():
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
+
+
+# ---------------------------------------------------------------- SWR-V3.10.1-001
+
+def test_confirmed_issues_verdict_filter(tmp_path):
+    """非 confirmed 假说的复核记录不得进确认问题清单 (spec 口径:
+    "R4 confirmed findings"; libjpeg-turbo 9 条复核 clean 记录渲染为
+    "中"级问题的实录修复)。"""
+    q = {"candidates": [],
+         "r4_findings": [
+             {"hypothesis_id": "H-1", "verdict": "reviewed_clean",
+              "findings": [{"title": "复核 clean 记录", "severity": None,
+                            "tracked_surfaces": ["SURF-T-000"]}]},
+             {"hypothesis_id": "H-2", "verdict": "not_applicable",
+              "findings": [{"title": "目标无认证机制", "severity": None,
+                            "tracked_surfaces": ["SURF-T-000"]}]},
+             {"hypothesis_id": "H-3", "verdict": "confirmed",
+              "findings": [{"title": "真实 Medium 问题", "severity": "Medium",
+                            "claim_type": "oom", "empirical_result": "CONFIRMED: x",
+                            "tracked_surfaces": ["SURF-T-000"]}]},
+         ]}
+    repo = _mk_ar(tmp_path, {"verify_queue.json": q,
+                             "input_surface.json": {"surfaces": _mk_surfaces(1)}})
+    issues, dupes = bv._confirmed_issues(q, [])
+    assert [i["key"] for i in issues] == ["H-3-F1"], issues
+    assert dupes == []

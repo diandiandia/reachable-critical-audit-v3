@@ -1667,6 +1667,13 @@ def _confirmed_issues(queue, cands):
             issues.append({"kind": "r3", "obj": c, "severity": sev,
                            "source": src, "key": c.get("id")})
     for f in queue.get("r4_findings", []) or []:
+        # SWR-V3.10.1-001: 只并入 confirmed 假说的 findings——spec 口径
+        # "R4 confirmed findings"; reviewed_clean/not_applicable 假说的
+        # 复核记录 (severity null/Low 正向确认) 被 _r4_severity 机械兜底
+        # medium 后误入问题清单 (libjpeg-turbo 审计实录: 9 条复核 clean
+        # 记录渲染为"中"级问题)。verdict 非 confirmed 的假说跳过。
+        if (f.get("verdict") or "").strip().lower() != "confirmed":
+            continue
         hid = f.get("hypothesis_id") or "?"
         for n, fi in enumerate(f.get("findings", []) or [], 1):
             sev, src = _r4_severity(fi)
