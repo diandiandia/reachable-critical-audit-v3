@@ -250,7 +250,7 @@ def test_checklist_postop_invariant():
     p = os.path.join(ROOT, "resources", "checklist_library.json")
     d = json.load(open(p))
     ids = [c["id"] for c in d["checklists"]]
-    assert len(ids) == 30
+    assert len(ids) == 34  # v3.12 增补 4 条状态机族 (SWR-V3.12-003)
     item = [c for c in d["checklists"] if c["id"] == "CK-POSTOP-INVARIANT"][0]
     assert "verifier" in item["applies_to"] and "refuter" in item["applies_to"]
     for tok in signature_lib.DEPROJECT_BLACKLIST:
@@ -263,10 +263,10 @@ def test_tooling_version_and_skillmd():
         "workflow_export", os.path.join(ROOT, "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.10.2"  # v3.10.2 版本链前进 (SWR-V3.10.2-020)
+    assert we.TOOLING_VERSION == "3.12"  # v3.12 版本链前进 (SWR-V3.12-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "v3.9" in skill and "v3.10" in skill and "已裁除" in skill
-    assert "30 条检查清单" in skill
+    assert "34 条检查清单" in skill
 
 
 # --- cve-ghsa-draft check_no_cjk ---

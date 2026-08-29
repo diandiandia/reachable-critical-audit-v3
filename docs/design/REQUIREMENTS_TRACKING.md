@@ -742,3 +742,31 @@
 验收: 214 测试全绿（204 基线 + 10 新增 test_v37_report）+ signature_lib selfcheck
 exit 0 + puma 真实队列临时副本冒烟（分级/排序/附录真实性人工检查）+ install 后
 DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅）。
+
+---
+
+## 系统需求（REQ-V3.12）（共 5 条）
+
+> 来源: 状态机分析能力补强（用户评估「skill 能否挖掘状态机分析」——复杂文件解析/
+> 协议分析为成熟主场，状态机分析缺族级机制）——设计文档 SYSTEM_DESIGN_V3_12.md /
+> REQ_V3_12.md（2026-08-29）。评估: BIAS_EVAL_V3_12.md。
+> 注意: 本段为手工追加（禁止运行 tools/gen_tracking.py 再生成）。
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| REQ-V3.12-001 | 覆盖账本 STATE 族（families 加 841/696/670 + rows 空行；fam_map 数据驱动零代码改动；缺口扫描可见 STATE×16 格） | 已完成 | resources/issue_coverage_matrix.json + tests/test_v312.py |
+| REQ-V3.12-002 | 严重程度映射扩展（841/696→高、670→中；override 优先级与 claim_type 回退不变） | 已完成 | tools/batch_verify.py SEVERITY_BY_CWE + tests/test_v312.py |
+| REQ-V3.12-003 | 状态机族检查清单 4 条（TRANSITION 841 锚定/CONFUSION 关键词/MULTISTEP 696 锚定/FRAME-GATE 关键词+词边界信号门控） | 已完成 | resources/checklist_library.json + tests/test_v312.py |
+| REQ-V3.12-004 | 裁决先例 PREC-STATE-GATE-REENTRY（CWE 元组+关键词双路径触达） | 已完成 | precedent_library.py/.json + tests/test_v312.py |
+| REQ-V3.12-005 | 版本链（TOOLING_VERSION 3.12 + SKILL.md 增量段 + 资产地图计数 + 文档四件套 + test_v312） | 已完成 | workflow_export.py + SKILL.md + tests/test_v39/test_v310/test_v312 |
+
+## 软件需求（SWR-V3.12）（共 6 条）
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| SWR-V3.12-001 | families 含 STATE(841/696/670) 且 rows 含空行；_aggregate_counts 841→STATE 非 OTHER；缺口扫描输出 STATE 格 | 已完成 | tests/test_v312.py |
+| SWR-V3.12-002 | severity_for 841/696→high、670→medium；override/claim_type 回退语义不变 | 已完成 | tests/test_v312.py |
+| SWR-V3.12-003 | 4 条 CK-STATE-* 绑定契约（cwe/关键词/信号门控路径 + framework/statement 零误绑） | 已完成 | tests/test_v312.py |
+| SWR-V3.12-004 | PREC-STATE-GATE-REENTRY 双路径触达；全先例可达断言保持 | 已完成 | tests/test_v312.py + test_v321.py |
+| SWR-V3.12-005 | 新清单/新先例去项目化扫描 0 命中（机制形态） | 已完成 | tests/test_v312.py + signature_lib |
+| SWR-V3.12-006 | TOOLING_VERSION=3.12；SKILL.md v3.12 增量段齐备（34/17 计数）；全量回归全绿 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量 |

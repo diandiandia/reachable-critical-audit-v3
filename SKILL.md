@@ -326,9 +326,9 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：16 条裁决先例（v3.5.2 裁 9 条永不可达先例）；`resources/checklist_library.json`：30 条检查清单
+- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：17 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族）；`resources/checklist_library.json`：34 条检查清单（v3.12 增补 4 条状态机族）
 - `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：5 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe）；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
-- `tests/`：243+ 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
+- `tests/`：300+ 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---
@@ -362,7 +362,7 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 ### R3 变更: verifier v3.1（步骤 0 + 清单 + 自证伪）
 - **步骤 0 承重前提验证**（W6 §17.10）——前提断裂立即终止
 - `checklist_binder.py` 按 cwe/关键词自动绑定家族检查清单（checklist_library.json
-  29 条 CK-*，16 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
+  34 条 CK-*（v3.12 增补 4 条状态机族），16 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
 - 自证伪提示: 候选附先例库匹配的最可能证伪论据，verifier 自查（目标: R3.5 拦截率
   从 ~50% 收敛到 <30%）
 - 轻量实证白名单 + `empirical` 字段结构化 + 范围分级
@@ -371,7 +371,7 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 ### R3.5 变更: 工具箱 + 裁决先例库
 - 证伪者实证工具箱按声称类别注入（区间类=参照模型+百万对拍 §21.1 / 解析类=真实
   构件+畸形矩阵 §19.4 / 代理分歧类=标准部署实测 §16.10）
-- `precedent_library.json`（25 条先例）裁决匹配 + `evidence_ledger.py consistency`
+- `precedent_library.json`（17 条先例）裁决匹配 + `evidence_ledger.py consistency`
   同族一致性断言（W6 §18.3 从证伪者武器升级为系统断言）
 - refutation 结果 schema 新增 strengthened/attribution_correction/note（W6 §13.6/§12.5）
 
@@ -1061,3 +1061,53 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 全量回归全绿（288 基线 + test_v311 新增）+ 去项目化扫描 0 命中（契约族按平台
 机制书写）+ 契约族条目 source 必填校验 + 旧队列复跑零新增告警（attacker_tier
 缺省推导）+ 未审计过的新项目验收随下一在线项目自然触发。
+
+---
+
+## 🆕 v3.12 增量（2026-08-29，状态机分析能力补强）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_12.md` + REQ/SWR/SOFTWARE_DESIGN_V3_12
+> + `BIAS_EVAL_V3_12.md`（四项缺陷评估）。能力增量版：不改变阶段骨架、六门禁
+> ①-⑧判据语义、队列数据模型。
+> 背景：状态机/序对类逻辑缺陷此前无家族级机械支持——账本无 STATE 族（841/696/670
+> 落 OTHER）、严重度表无对应 CWE（走 claim_type 回退）、仅 CK-BIZ-LOGIC 单条覆盖、
+> 先例库零条目。评估结论：复杂文件解析/协议分析为成熟主场，状态机分析为灰色地带
+> ——本版补齐家族级支持，全部走数据驱动与既有管线（零 binder/零注入代码改动）。
+
+### 机制新增
+
+1. **覆盖账本 STATE 族（REQ-V3.12-001）**：issue_coverage_matrix families 新增
+   STATE（CWE-841/696/670）+ rows 空行——fam_map 数据驱动自动生效（零代码改动），
+   缺口扫描现列出 STATE×16 语言缺口格。
+2. **严重程度映射（REQ-V3.12-002）**：841/696→高（状态机序对/协议类，与 RACE
+   同档）、670→中（恒错控制流逻辑缺陷默认档）。override 优先级与 claim_type
+   回退链语义不变。
+3. **状态机族检查清单 4 条（REQ-V3.12-003）**：CK-STATE-TRANSITION（非法转移
+   显式拒绝 vs 静默通过，CWE-841 唯一锚定条目）、CK-STATE-CONFUSION（重入/复用/
+   双解释，无 CWE 锚定关键词绑定——避免与 TRANSITION 双锚机械共绑）、
+   CK-MULTISTEP-INVARIANT（跳步/重放/乱序/序对依赖，CWE-696 锚定）、
+   CK-FRAME-GATE-REENTRY（逐帧/逐块/逐条状态机 vs 一次性门禁对账，关键词+
+   词边界信号门控——Pillow DCX/MPO 机制化）；与 CK-BIZ-LOGIC 共绑合法（跨族强化）。
+   绑定纪律：keywords 只放 CJK 与多词 ASCII 短语（禁裸 state/frame——子串误配
+   statement/framework），词边界敏感词全部走 applicability_signals.text。
+4. **裁决先例（REQ-V3.12-004）**：PREC-STATE-GATE-REENTRY（一次性门禁检查 vs
+   状态机重入；CWE 元组 + 状态机/state machine 关键词双路径触达）。
+
+### 明确不做（义务棘轮防护）
+
+- 不建 H8 状态机假说（gate ④ H1-H7 语义不变）、不加通用状态序列 fuzz harness
+  模板（v3.6 B 裁决先例：通用语言模板已裁除——状态机为项目专属形态，遵循
+  「无匹配模板时现场构造」条款）。
+- 不加新门禁、不加新绑定维度、不注入 R4 biz_hypothesis 与 Mode A' 任务书。
+- 不动 CK-BIZ-LOGIC 存量关键词（共绑定=跨族强化）；不收 CWE-799（交互频率
+  语义属 RESOURCE-DOS 侧）。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.12 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成（V3.4.4-V3.7 为手工维护段且不在 VERSIONS，
+  再生成会删除，实测核验）。
+
+### 验收判据（Phase 3.12）
+
+全量回归全绿（301 基线 + test_v312 新增 14 用例）+ 去项目化扫描 0 命中（新
+清单/新先例机制形态）+ 覆盖账本 dry-run 列出 STATE 缺口格 + 旧队列复跑零新增
+告警 + 未审计过的新项目验收随下一在线项目自然触发（状态机清单绑定、STATE 格
+回填、先例提示至少各真实命中一次）。
