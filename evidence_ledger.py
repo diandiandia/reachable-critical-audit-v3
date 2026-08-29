@@ -205,7 +205,8 @@ TERMINAL_STATUSES = {"VERIFIED", "ESCALATED", "NEEDS_REVIEW"}
 
 
 def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind=True,
-                  require_resurrection=True, require_r4_independent=True):
+                  require_resurrection=True, require_r4_independent=True,
+                  require_adjudication_verify=True, require_strengthen_verify=True):
     """SWR-V3-034 + REQ-V3-093/095/096 + SWR-V3.2.1-004/040: 门禁。
     ①no_pending ②REACHABLE 无 static_only ③实证类 100% ④H1-H7 全 VERIFIED
     ⑤对账零差异 (dispatched 提供时: 每个已派发 id 必须有终态)
@@ -215,6 +216,12 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
     ③c 复活攻击完成度 (v3.2): require_resurrection=False 仅复跑 v3.2 机制发布前
     旧队列时豁免 (产出 warn 级豁免注记, 同 ⑧ 先例; v3.4.2)
     r4_feedback (v3.2.1, warn 级): H-7 默认值盘点与 R3 REACHABLE gate 证据冲突检测
+    adjudication_unverified (v3.10.2, SWR-V3.10.2-014, warn 级): 主代理 demote
+      裁决缺 adjudication_verification 核验记录 → 提示 (不阻断; 旧队列复跑以
+      require_adjudication_verify=False 豁免, 同 ⑧/③c 先例)
+    strengthen_unverified (v3.10.2, SWR-V3.10.2-015, warn 级): REACHABLE 候选
+      存在未签收补强 (refutation.strengthened/attribution_correction 无
+      *_verified_by) → 提示 (不阻断; 旧队列复跑以 require_strengthen_verify=False 豁免)
     返回 (ok, violations)。dispatched/surface_data 为 None 时对应门禁跳过并记 skip_note。
     ⑧/r4_feedback 之外的 warn 级违规不阻断 PASS (v3.2.1 起 ok 只计 blocking)。"""
     violations = []
@@ -234,6 +241,16 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
            c.get("evidence_grade") != "empirically_confirmed":
             violations.append({"gate": "empirical_required", "id": c.get("id"),
                                "claim": claim})
+    # v3.10.2 (SWR-V3.10.2-004): 实证保真度提示——等价复现候选分列 (判据不变)
+    equivalent_ids = [c.get("id") for c in cands
+                      if c.get("verdict") == "REACHABLE"
+                      and c.get("evidence_grade") == "empirically_confirmed"
+                      and (c.get("empirical") or {}).get("fidelity") == "equivalent"]
+    if equivalent_ids:
+        violations.append({"gate": "fidelity_hint", "severity": "warn",
+                           "ids": equivalent_ids,
+                           "note": "等价复现实证 (fidelity=equivalent): 申报材料须标注"
+                                   " equivalence, 不得以真实目标实证口径"})
     r4 = queue.get("r4_findings", [])
     have = {h.get("hypothesis_id") for h in r4 if h.get("status") == "VERIFIED"}
     missing = [h for h in HYPOTHESES_IDS if h not in have]
@@ -385,6 +402,40 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         violations.append({"gate": "target_kind_required",
                            "msg": "verify_queue.target_kind 缺失 (R0 判定未签收); "
                                   "仅复跑旧队列时以 require_target_kind=False 豁免"})
+    # v3.10.2 (SWR-V3.10.2-014): 裁决核验记录 warn——demote 无核验记录提示
+    # (放行方向已有复活波兜底, 不阻断; 旧队列复跑以豁免参数关闭)
+    if require_adjudication_verify:
+        unverified_demotes = []
+        for c in cands:
+            for cr in c.get("correction_record") or []:
+                if cr.get("demote_to") and not cr.get("adjudication_verification"):
+                    unverified_demotes.append(c.get("id"))
+                    break
+        if unverified_demotes:
+            violations.append({"gate": "adjudication_unverified",
+                               "severity": "warn",
+                               "ids": unverified_demotes,
+                               "note": "主代理 demote 裁决缺 adjudication_verification "
+                                       "核验记录 (回源码核实证伪者承重前提主张)"})
+    # v3.10.2 (SWR-V3.10.2-015): 补强签收 warn——未签收补强进报告/申报前提示
+    if require_strengthen_verify:
+        unverified_strengthen = []
+        for c in cands:
+            if c.get("verdict") != "REACHABLE":
+                continue
+            ref = c.get("refutation") or {}
+            has_str = bool(ref.get("strengthened") or ref.get("attribution_correction")
+                           or ref.get("attribution_corrections"))
+            signed = bool(ref.get("strengthened_verified_by")
+                          or ref.get("attribution_correction_verified_by"))
+            if has_str and not signed:
+                unverified_strengthen.append(c.get("id"))
+        if unverified_strengthen:
+            violations.append({"gate": "strengthen_unverified",
+                               "severity": "warn",
+                               "ids": unverified_strengthen,
+                               "note": "补强/归因修正未签收 (*_verified_by 缺失): "
+                                       "进报告/申报材料前需主代理逐条复核"})
     # r4_feedback (v3.2.1, SWR-V3.2.1-040, warn 级): H-7 默认值盘点 ↔ R3 gate 证据冲突
     conflicts = r4_feedback(queue)
     if conflicts:

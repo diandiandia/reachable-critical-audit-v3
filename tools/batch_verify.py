@@ -376,6 +376,32 @@ def stage_next(project_root, batch_size=BATCH_SIZE):
     print(json.dumps(batch_info, indent=2, ensure_ascii=False))
 
 
+def _detect_journal_anomaly(transcript_dir):
+    """SWR-V3.10.2-006: journal 后验信号——同 id 多 result 且内容 hash 各异
+    提示幻觉 verdict 风险 (workflow args 失效时 agent 自由发挥的实录形态:
+    4 条 result 全部同 id、内容各异)。仅告警, 不阻断。"""
+    import hashlib as _hl
+    jp = os.path.join(transcript_dir, "journal.jsonl")
+    if not os.path.isfile(jp):
+        return []
+    by_id = {}
+    try:
+        for line in open(jp):
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            if d.get("type") != "result":
+                continue
+            r = d.get("result")
+            if not isinstance(r, dict) or not r.get("id"):
+                continue
+            h = _hl.sha256(json.dumps(r, sort_keys=True).encode()).hexdigest()[:12]
+            by_id.setdefault(r["id"], set()).add(h)
+    except OSError:
+        return []
+    return [cid for cid, hashes in by_id.items() if len(hashes) > 1]
+
 def stage_collect(project_root, batch_id, verdicts):
     """Collect verdicts from a batch and update the queue."""
     queue = load_queue(project_root)
@@ -496,6 +522,13 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
     resurrection_review dict {revived, outcome} (REQ-V3.2.2-015 落盘契约)。
     幂等: 已有 resurrection_review 的候选跳过。--expect 全集对账同 collect。"""
     queue = load_queue(project_root)
+    anomalies = _detect_journal_anomaly(transcript_dir)
+    if anomalies:
+        print(json.dumps({"status": "journal_anomaly",
+                          "ids": anomalies,
+                          "note": "同 id 多 result 且内容各异——疑似 workflow args "
+                                  "失效致 agent 自由发挥; 核实后决定是否采信"},
+                         ensure_ascii=False), file=sys.stderr)
     files = []
     for name in ("journal.jsonl",):
         p = os.path.join(transcript_dir, name)
@@ -945,6 +978,56 @@ def _warn_r4_enums(items):
     return len(warnings)
 
 
+def write_scope_review(project_root, changed_dir, decision, reason, surfaces_reopened=None):
+    """SWR-V3.10.2-018: 主代理对物化增量面的裁决落盘 (append scope_review.jsonl)。
+    decision ∈ {reopen, keep}。"""
+    row = {"changed_dir": changed_dir, "decision": decision,
+           "reason": reason, "surfaces_reopened": surfaces_reopened or []}
+    p = os.path.join(project_root, ".audit_results", "scope_review.jsonl")
+    with open(p, "a") as fh:
+        fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return row
+
+def stage_reopen(project_root, cid):
+    """SWR-V3.10.2-012: NEEDS_REVIEW 候选重开——环境 blocker 解除后回 PENDING
+    (保留 correction_record/needs_review_reason/refutation/resurrection_review);
+    reopen_reason 必填 (blocker 解除依据)。"""
+    queue = load_queue(project_root)
+    target = None
+    for c in queue.get("candidates", []):
+        if c.get("id") == cid:
+            target = c
+            break
+    if target is None:
+        print(json.dumps({"status": "REOPEN_NOT_FOUND", "id": cid},
+                         ensure_ascii=False), file=sys.stderr)
+        return 1
+    if target.get("verdict") != "NEEDS_REVIEW":
+        print(json.dumps({"status": "REOPEN_REJECTED", "id": cid,
+                          "note": f"仅 NEEDS_REVIEW 候选可重开 (当前 {target.get('verdict')})"},
+                         ensure_ascii=False), file=sys.stderr)
+        return 1
+    reason = os.environ.get("REOPEN_REASON", "")
+    if not reason:
+        print(json.dumps({"status": "REOPEN_REJECTED", "id": cid,
+                          "note": "reopen_reason 必填 (blocker 解除依据)——以 "
+                                  "REOPEN_REASON 环境变量传入"},
+                         ensure_ascii=False), file=sys.stderr)
+        return 1
+    target["status"] = "PENDING"
+    target["verdict"] = None
+    target["evidence_grade"] = None
+    target["claim_type"] = None
+    target["reopen_reason"] = reason
+    target.setdefault("reopen_history", []).append({
+        "reopened_at": "", "reason": reason,
+        "prior": {"verdict": "NEEDS_REVIEW",
+                  "needs_review_reason": target.get("needs_review_reason")}})
+    save_queue(project_root, queue)
+    print(json.dumps({"status": "REOPENED", "id": cid,
+                      "reason": reason}, ensure_ascii=False))
+    return 0
+
 def stage_r4_collect(project_root, findings_file):
     """SWR-V3-055: R4 findings 写回 (merge 语义)。
 
@@ -980,7 +1063,16 @@ def stage_r4_collect(project_root, findings_file):
             _known_samples = sorted({_norm(s.get("id"))
                                      for s in _isurf.get("surfaces", [])})[:8]
             for h in items:
-                for fi in (h.get("findings") or []):
+                findings = h.get("findings") or []
+                for fi in findings:
+                    # SWR-V3.10.2-007: surfaces 别名容错 (canonical hypotheses-list
+                    # 形态不经 _adapt_r4_finding——波 1 两项目 R4_TRACKED_MISSING
+                    # 实录: agent 产出 surfaces 键被硬失败守卫拦截)
+                    if not fi.get("tracked_surfaces") \
+                       and isinstance(fi.get("surfaces"), list):
+                        fi["tracked_surfaces"] = list(fi["surfaces"])
+                        fi.setdefault("mapped_surface_ids", {}) \
+                           ["surfaces-alias"] = "tracked_surfaces"
                     if fi.get("tracked_surfaces"):
                         continue
                     missing_ts.append({
@@ -989,6 +1081,16 @@ def stage_r4_collect(project_root, findings_file):
                         "hint": ("finding 缺 tracked_surfaces 且无 surfaces 别名可恢复——"
                                  "需原样引用 input_surface.json 的 surface id, "
                                  f"前缀示例: {_known_samples}")})
+                # SWR-V3.10.2-008: 空 findings 假说须声明假说级 tracked
+                # (全量扫掠面)——完全无 tracked 仍拦截
+                if not findings and not (h.get("tracked_surfaces") or []):
+                    missing_ts.append({
+                        "hypothesis": h.get("hypothesis_id"),
+                        "finding": "(空 findings 假说)",
+                        "hint": ("空 findings 假说 (reviewed_clean/not_applicable) "
+                                 "缺假说级 tracked_surfaces——需声明审查触及的"
+                                 "全量扫掠面 (原样引用 input_surface.json id, "
+                                 f"前缀示例: {_known_samples})")})
         except ValueError:
             pass
     if missing_ts:
@@ -1143,6 +1245,13 @@ def stage_r35_collect(project_root, transcript_dir):
     import evidence_ledger as el
     import glob as _glob
     queue = load_queue(project_root)
+    anomalies = _detect_journal_anomaly(transcript_dir)
+    if anomalies:
+        print(json.dumps({"status": "journal_anomaly",
+                          "ids": anomalies,
+                          "note": "同 id 多 result 且内容各异——疑似 workflow args "
+                                  "失效致 agent 自由发挥; 核实后决定是否采信"},
+                         ensure_ascii=False), file=sys.stderr)
     files = _glob.glob(os.path.join(transcript_dir, "journal.jsonl"))
     if not files:
         print("Error: journal.jsonl 不存在", file=sys.stderr)
@@ -1456,8 +1565,28 @@ def _mechanical_severity(candidate):
     return "medium", "default"
 
 
-def stage_report(project_root):
-    """SWR-V3-055: 基础量化报告 (过程问责指标)。"""
+def stage_report(project_root, force=False):
+    """SWR-V3-055: 基础量化报告 (过程问责指标)。
+    v3.10.2 (SWR-V3.10.2-009): 报告防覆盖——主代理段落已存在时拒绝重跑,
+    --force 显式重生成 (批次收尾后重跑机械渲染会覆盖主代理修复建议/结论/
+    severity 裁决)。"""
+    ar = os.path.join(project_root, ".audit_results")
+    rep_path = os.path.join(ar, "reachable_vulnerabilities_report.md")
+    if os.path.exists(rep_path) and not force:
+        try:
+            body = open(rep_path).read()
+            # 主代理段落判定: 第三节标题存在且内容非占位符模板
+            m = "## 三、修复建议与结论（主代理补充）"
+            idx = body.find(m)
+            if idx >= 0:
+                tail = body[idx + len(m):]
+                if "（主代理补充）" not in tail[:400]:
+                    print(json.dumps({
+                        "status": "REPORT_REFUSED_OVERWRITE",
+                        "note": "报告已含主代理段落; 重跑机械渲染将覆盖修复建议/结论/severity 裁决——如确需重生成请 --force"}, ensure_ascii=False), file=sys.stderr)
+                    return 1
+        except OSError:
+            pass
     queue = load_queue(project_root)
     cands = queue["candidates"]
     total = len(cands)
@@ -1538,6 +1667,10 @@ def _needs_review_cause(cand):
     ])
     if any(k in blob for k in ("保守", "防御充分", "门禁压力", "防御证据充分")):
         return "保守裁决"
+    # v3.10.2 (SWR-V3.10.2-013): 成因三分——环境受限 (无目标平台运行面) 单列
+    if any(k in blob for k in ("环境限制", "环境无", "无设备", "无运行面",
+                               "不可实证", "无法运行时实证", "环境受限")):
+        return "环境受限"
     if any(k in blob for k in ("证据不足", "无法取证", "无法验证", "前提无法",
                                "调用边无法", "不可验证")):
         return "证据不足"
@@ -1812,12 +1945,18 @@ def _render_problem_details(cands, queue):
                 out.append(f"- 前提（PREC-CONDITIONAL-REACHABLE-001）: {bp}")
             rf = c.get("refutation")
             if isinstance(rf, dict) and rf:
+                # SWR-V3.10.2-011: 补强/归因修正未签收 → （未复核）标记
+                has_str = bool(rf.get("strengthened") or rf.get("attribution_correction")
+                               or rf.get("attribution_corrections"))
+                signed = bool(rf.get("strengthened_verified_by")
+                              or rf.get("attribution_correction_verified_by"))
+                str_mark = "" if (signed or not has_str) else "（未复核）"
                 out.append(f"- 独立复核（R3.5）: {_refutation_line(c)}; "
                            f"votes={rf.get('votes')}, refute_count={rf.get('refute_count')}, "
                            f"survived={rf.get('survived')}"
-                           + (f"; strengthened={rf.get('strengthened')}"
+                           + (f"; strengthened={rf.get('strengthened')}{str_mark}"
                               if rf.get("strengthened") else "")
-                           + (f"; attribution_corrections={rf.get('attribution_corrections')}"
+                           + (f"; attribution_corrections={rf.get('attribution_corrections')}{str_mark}"
                               if rf.get("attribution_corrections") else ""))
             emp = c.get("empirical")
             if isinstance(emp, dict) and emp:
@@ -1829,10 +1968,17 @@ def _render_problem_details(cands, queue):
                 nums = emp.get("evidence_numbers") or emp.get("result")
                 extra = emp.get("input")
                 harness = emp.get("harness")
-                out.append(f"- 实证记录（R5）: outcome={outcome}, "
+                # SWR-V3.10.2-002: 实证保真度前缀 (equivalent/mechanism 标注)
+                fid = emp.get("fidelity") or "real_target"
+                fid_prefix = {"equivalent": "等价复现: ", "mechanism": "机制级: "}.get(fid, "")
+                # SWR-V3.10.2-010: 实证产物目录守卫 warn (R0 前缀规则机械检查)
+                path_warn = ""
+                if harness and not _under_audit_results(harness):
+                    path_warn = " [产物目录违规 warn]"
+                out.append(f"- 实证记录（R5）: {fid_prefix}outcome={outcome}, "
                            f"evidence_numbers={nums}"
                            + (f", input={extra}" if extra else "")
-                           + (f", harness={harness}" if harness else "")
+                           + (f", harness={harness}{path_warn}" if harness else "")
                            + (f", report={emp.get('report')}" if emp.get("report") else ""))
             hyp_id = None
             if c.get("members"):
@@ -1879,12 +2025,21 @@ def _render_appendix_a_needs_review(queue):
     if not nr:
         return "无 NEEDS_REVIEW 候选。"
     hyp_by_id = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", []) or []}
-    out = ["| ID | 成因 | correction_record 理由 | 位置 |", "|---|---|---|---|"]
+    out = ["| ID | 成因 | correction_record 理由 | 位置 | 佐证注记 |", "|---|---|---|---|---|"]
     for c in sorted(nr, key=lambda x: x.get("id", "")):
         cr = c.get("correction_record") or []
         cr_txt = "; ".join(str(r) for r in cr) or "-"
+        # SWR-V3.10.2-013: 环境受限 + 上游公开佐证 → 佐证注记列
+        corroboration = ""
+        if _needs_review_cause(c) == "环境受限":
+            blob2 = " ".join(str(r) for r in cr)
+            for kw in ("官方自认", "官方 issue", "上游", "先例", "佐证"):
+                if kw in blob2:
+                    corroboration = "上游佐证 (见 correction_record)"
+                    break
         out.append(f"| {c.get('id')} | {_needs_review_cause(c)} | {cr_txt} | "
-                   f"`{c.get('source_file')}:{c.get('source_line')}` |")
+                   f"`{c.get('source_file')}:{c.get('source_line')}` | "
+                   f"{corroboration or '-'} |")
     out.append("")
     out.append("**同事实映射（REQ-V3.1-092）**: NEEDS_REVIEW ↔ R4 hypothesis/finding")
     out.append("| NEEDS_REVIEW | 映射的 R4 假说 | 依据 |")
@@ -2034,6 +2189,14 @@ def _render_appendix_b_process(project_root, queue, report_json):
     return "\n".join(out)
 
 
+def _under_audit_results(path):
+    """SWR-V3.10.2-010: 实证产物目录守卫——harness 路径须落在项目
+    .audit_results/ 下 (R0 前缀规则); 相对路径默认视为合规 (无法判定时
+    不误报)。"""
+    if not isinstance(path, str) or not path:
+        return True
+    return ".audit_results" in path
+
 def render_report_md(project_root, report_json=None):
     """SWR-V3.7-002: 机械渲染完整报告 md → .audit_results/reachable_vulnerabilities_report.md。
     铁律: 所有可选输入缺失时降级渲染占位, 绝不抛异常 (test_end_to_end 最小队列形态)。
@@ -2121,7 +2284,8 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
     # v3.2.2 (REQ-V3.2.2-018/019): 入队前 scope diff——R0 快照 vs 现状,
     # 子模块物化/目录变化时附 scope_changed 提示 (mbedtls 审计: R4 智能体
     # submodule update 使 R2 drop 理由作废, 需复活重验)
-    snap_path = os.path.join(project_root, ".audit_results", "scope_snapshot.json")
+    ar_dir = os.path.join(project_root, ".audit_results")
+    snap_path = os.path.join(ar_dir, "scope_snapshot.json")
     if os.path.exists(snap_path):
         try:
             import surface_mapper as _sm
@@ -2132,6 +2296,36 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
                 result["scope_advice"] = (
                     "scope 已变更: R2 的 scope_dependent drop (树外不可验证类) "
                     "理由可能失效——按 R3.5-N 复活流程重开受影响候选")
+                # SWR-V3.10.2-018: 物化增量面重开建议——物化目录与 R1 面
+                # entry_points 路径交叉 (建议级, 主代理裁决后落盘 scope_review)
+                try:
+                    changed_dirs = [str(x.get("path") or x.get("dir") or "")
+                                    for x in (diff.get("changes") or [])]
+                    changed_dirs = [d for d in changed_dirs if d]
+                    isurf_path = os.path.join(ar_dir, "input_surface.json")
+                    reopen_candidates = []
+                    if changed_dirs and os.path.exists(isurf_path):
+                        isurf = json.load(open(isurf_path))
+                        for s in isurf.get("surfaces", []) or []:
+                            for ep in s.get("entry_points", []) or []:
+                                f = ep.get("file") or ""
+                                for d in changed_dirs:
+                                    if d in f:
+                                        reopen_candidates.append({
+                                            "surface_id": s.get("id"),
+                                            "file": f,
+                                            "materialized_dir": d})
+                                        break
+                    if reopen_candidates:
+                        result["scope_reopen_advice"] = {
+                            "note": "物化目录相关面建议重开测绘 (R1 面 entry_points "
+                                    "落于新物化目录内——物化前标树外不可验证的裁决 "
+                                    "前提可能已失效); 主代理裁决后以 write_scope_review "
+                                    "落盘 scope_review.jsonl",
+                            "candidates": reopen_candidates[:10],
+                            "total": len(reopen_candidates)}
+                except (OSError, ValueError):
+                    pass
         except (ImportError, ValueError):
             pass
     # v3.9 (SWR-V3.9-007): payload 落盘——next_step 的"整读整传"条款需要一个
@@ -2459,6 +2653,8 @@ def main():
     sinks_inline = None
     mode = "verify"
     expect_ids = []
+    force = False
+    reopen_id = None
 
     args = sys.argv[2:]
     for i, arg in enumerate(args):
@@ -2488,6 +2684,12 @@ def main():
             batch_size = int(arg.split("=", 1)[1])
         elif arg == "--batch-size" and i + 1 < len(args):
             batch_size = int(args[i + 1])
+        elif arg == "--force":
+            force = True
+        elif arg.startswith("--reopen-id="):
+            reopen_id = arg.split("=", 1)[1]
+        elif arg == "--reopen-id" and i + 1 < len(args):
+            reopen_id = args[i + 1]
         elif arg.startswith("--mode="):
             mode = arg.split("=", 1)[1]
         elif arg == "--mode" and i + 1 < len(args):
@@ -2534,7 +2736,12 @@ def main():
     elif stage == "workflow-script":
         sys.exit(stage_workflow_script(project_root, mode=mode, batch_size=batch_size or 4))
     elif stage == "report":
-        stage_report(project_root)
+        stage_report(project_root, force=force)
+    elif stage == "reopen":
+        if not reopen_id:
+            print("Error: reopen requires --reopen-id <id>", file=sys.stderr)
+            sys.exit(1)
+        sys.exit(stage_reopen(project_root, reopen_id))
     elif stage == "collect":
         # v3.2.2 (REQ-V3.2.2-024): --from-journal 桥接——从 workflow transcript
         # 目录的 journal.jsonl 提取 schema-validated 结果 (result/value 双字段,

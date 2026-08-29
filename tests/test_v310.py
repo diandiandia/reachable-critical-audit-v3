@@ -271,8 +271,9 @@ def test_parser_fuzz_stub_doc():
 
 
 def test_tooling_version_v310():
+    # v3.10.2: TOOLING_VERSION 版本链前进 (SWR-V3.10.2-020)
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.10"
+    assert we.TOOLING_VERSION == "3.10.2"
     sk = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.10 增量" in sk
 

@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.10"
+TOOLING_VERSION = "3.10.2"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -209,9 +209,23 @@ if (!args.candidates) {
 
 const VERDICT_SCHEMA = __SCHEMA__
 
+// v3.10.2 (SWR-V3.10.2-005): 输入 fail-fast——默认契约 (c.prompt) 与薄封装
+// 契约 (c.taskFile) 至少其一非空; 缺失时不派发 agent (undefined prompt 会让
+// agent 自由发挥产出幻觉 verdict, 批次实录: 4 条 result 同 id 内容各异)
 const results = await pipeline(
   args.candidates,
-  (c) => agent(c.prompt, { label: `verify:${c.id}`, schema: VERDICT_SCHEMA }),
+  (c) => {
+    if (!c.prompt && !c.taskFile) {
+      return { id: c.id, verdict: 'NEEDS_REVIEW',
+               reachability_type: 'INDIRECT', call_chain: [], call_chain_depth: 0,
+               evidence: 'workflow input missing: candidate has neither prompt nor taskFile (args contract violation)',
+               evidence_grade: 'static_only', blocking_point: 'workflow-input-missing' }
+    }
+    const prompt = c.taskFile
+      ? `你是 reachable-critical-audit 的 R3 候选验证器。第一步: 用 Read 工具读取 \`${c.taskFile}\` 文件全文并严格执行其中任务书。你此前没有见过该任务书内容, 一切以文件内容为准。若该文件读取失败, 返回 verdict=NEEDS_REVIEW 并在 evidence 说明读取失败。`
+      : c.prompt
+    return agent(prompt, { label: `verify:${c.id}`, schema: VERDICT_SCHEMA })
+  },
 )
 
 const verdicts = results.map((r, i) => r || null)
@@ -244,8 +258,18 @@ const KILL_THRESHOLD = 2
 
 const perCand = args.candidates.map((c) => async () => {
   const votes = await parallel(
-    Array.from({ length: N_REFUTERS }, (_, i) => () =>
-      agent(c.prompts[i], { label: `refute:${c.id}:${i}`, schema: REFUTATION_SCHEMA })),
+    Array.from({ length: N_REFUTERS }, (_, i) => () => {
+      // v3.10.2 (SWR-V3.10.2-005): fail-fast——prompts[i] 或 taskFiles[i] 缺失
+      // 时不派发 agent
+      const prompt = (c.taskFiles && c.taskFiles[i])
+        ? `你是 reachable-critical-audit 的 R3.5 证伪者 #${i}。第一步: 用 Read 工具读取 \`${c.taskFiles[i]}\` 文件全文并严格执行其中任务书。你此前没有见过该任务书内容, 一切以文件内容为准。若该文件读取失败, 返回 {"id": "${c.id}", "refuted": false, "reason": "taskFile 读取失败"}`
+        : (c.prompts && c.prompts[i])
+      if (!prompt) {
+        return { id: c.id, refuted: false,
+                 reason: 'workflow input missing: refuter prompt unavailable (args contract violation)' }
+      }
+      return agent(prompt, { label: `refute:${c.id}:${i}`, schema: REFUTATION_SCHEMA })
+    }),
   )
   const valid = votes.filter(Boolean)
   const refuted = valid.filter((v) => v.refuted)
@@ -380,7 +404,17 @@ const RESURRECT_SCHEMA = __SCHEMA__
 
 const results = await pipeline(
   args.candidates,
-  (c) => agent(c.prompt, { label: `resurrect:${c.id}`, schema: RESURRECT_SCHEMA }),
+  (c) => {
+    // v3.10.2 (SWR-V3.10.2-005): fail-fast——prompt/taskFile 缺失不派发 agent
+    if (!c.prompt && !c.taskFile) {
+      return { id: c.id, revived: false,
+               outcome: 'workflow input missing: candidate has neither prompt nor taskFile (args contract violation)' }
+    }
+    const prompt = c.taskFile
+      ? `你是 reachable-critical-audit 的复活攻击者。第一步: 用 Read 工具读取 \`${c.taskFile}\` 文件全文并严格执行其中任务书。你此前没有见过该任务书内容, 一切以文件内容为准。若该文件读取失败, 返回 {"id": "${c.id}", "revived": false, "outcome": "taskFile 读取失败"}`
+      : c.prompt
+    return agent(prompt, { label: `resurrect:${c.id}`, schema: RESURRECT_SCHEMA })
+  },
 )
 
 const decisions = results.map((r, i) => r || null)
