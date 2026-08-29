@@ -1087,6 +1087,141 @@
    "source_lessons": [
     "Pillow 批次 (SKILL_LESSONS_Pillow.md): DCX/MPO 多帧 seek 逐帧改 _size 无逐帧 bomb 检查——open 一次性检查覆盖不到 per-frame _open 重跑"
    ]
+  },
+  {
+   "id": "CK-NUMERIC-TRUNCATION",
+   "name": "整数截断/回绕先于检查",
+   "family": "numeric-semantics",
+   "binding": {
+    "cwe": [
+     "CWE-191",
+     "CWE-681"
+    ],
+    "keywords": [
+     "截断",
+     "回绕",
+     "窄化",
+     "整数下溢",
+     "整数溢出",
+     "精度丢失",
+     "integer overflow",
+     "integer underflow",
+     "wraparound",
+     "truncation"
+    ],
+    "note": "v3.13 (REQ-V3.13-003): 截断/窄化先于范围检查=检查死代码形态; 长度算术回绕落入检查通过区间; 上游哨兵值参与算术的取值域"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "截断/窄化是否先于范围检查——32 位（或更窄）转换先于上限检查时，上界输入经截断落入通过区间，检查对攻击者输入为死代码",
+    "回绕是否通过检查——长度/计数算术（len+4 类偏移、长度减一）回绕后落入检查通过区间，检查形态不可信",
+    "上游哨兵值参与算术的语义——MaxUint32/-1/0 类哨兵参与长度算术时的实际取值域（哨兵处理语义见 CK-SENTINEL-SEMANTICS 共绑）"
+   ],
+   "source_lessons": [
+    "libvpx 批次 CAND-001: 32 位截断先于范围检查——检查死代码形态 (超上界 limit 被静默接受, 实证队列记录)",
+    "RFCOMM 批次: 长度减一的无符号下溢 (SKILL_LESSONS_common.md 过程观察)",
+    "mixed-fixture 批次 GT-2 (SKILL_LESSONS_mixed-fixture.md): len+4 无符号回绕通过一致性检查"
+   ]
+  },
+  {
+   "id": "CK-NUMERIC-SEMANTICS",
+   "name": "除零与比较/计数语义",
+   "family": "numeric-semantics",
+   "binding": {
+    "cwe": [
+     "CWE-369",
+     "CWE-697"
+    ],
+    "keywords": [
+     "除零",
+     "不一致比较",
+     "算术",
+     "计数回绕",
+     "数值上限",
+     "divide by zero",
+     "inconsistent comparison"
+    ],
+    "note": "v3.13 (REQ-V3.13-003): 除零（零宽字段/零尺寸输入驱动除数）与比较方向/类型不一致、计数与偏移算术的取模边界"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "除零路径——除数是否由零宽字段/零尺寸输入/空数据长度驱动（零值检查存在与否、检查点在除法前还是后）",
+    "比较方向与类型不一致——比较两侧符号/位宽/语义不一致（无符号 vs 有符号、截断后比较）导致恒真/恒假分支",
+    "计数与偏移算术的取模边界——计数/偏移参与取模或长度算术时的边界值（0/-1/上限）与取模回绕"
+   ],
+   "source_lessons": [
+    "多媒体系列批次 media3 H-2: ID3 解析除零 (实证队列记录 CWE-369)",
+    "W6 §19.7 (MAX_VALUE/-1/0 三值红旗)",
+    "W6 §21.3 (哨兵值语义: 查库把哨兵当什么)"
+   ]
+  },
+  {
+   "id": "CK-ERROR-BRANCH",
+   "name": "错误分支方向与死代码检查",
+   "family": "error-handling",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "错误分支",
+     "失败分支",
+     "条件反转",
+     "异常路径",
+     "error path",
+     "failure path"
+    ],
+    "note": "v3.13 (REQ-V3.13-004): 无 CWE 锚定（跨族语义）——关键词绑定为主; 禁裸 异常/error（子串中 异常处理→共绑膨胀; 词边界不拦下划线→error_handler 误配）"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "错误分支条件是否反转——if err==nil 块内处理错误分支（写反=死代码形态，错误路径从不执行而正常路径被短路）",
+    "错误分支是否死代码——错误分支被前置条件/早期返回静默阻断（静默阻断形态）",
+    "异常吞没后是否转正常路径继续——错误被捕获吞掉后沿正常路径继续，下游以默认/残留状态处理"
+   ],
+   "source_lessons": [
+    "W6 §25.3 (adapter↔domain 缓存/门闩层条件反转写反=死代码——列项由来)",
+    "W6 §13.5 (异常路径描述必须实证抽验)"
+   ]
+  },
+  {
+   "id": "CK-ERROR-CLEANUP",
+   "name": "错误路径状态残留与清理完整性",
+   "family": "error-handling",
+   "binding": {
+    "cwe": [
+     "CWE-457",
+     "CWE-665"
+    ],
+    "keywords": [
+     "未初始化",
+     "清理缺失",
+     "部分初始化",
+     "释放后未置空",
+     "uninitialized"
+    ],
+    "note": "v3.13 (REQ-V3.13-004): 失败/截断路径残留未初始化状态被下游消费——CWE-457/665 锚定 + 关键词"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "失败/截断路径是否残留未初始化状态被下游消费——部分接收/截断帧后继续解析或释放该缓冲",
+    "错误路径清理是否完整——free 后未置 NULL、部分初始化对象流入正常路径、提前返回跳过清理段",
+    "宿主复用后状态残留——连接池/对象池/缓存复用后残留上一使用者状态（与 CK-STATE-CONFUSION 复用面共绑）"
+   ],
+   "source_lessons": [
+    "zookeeper 批次 (SKILL_LESSONS_zookeeper.md): 截断帧→未初始化栈结构→free(garbage) SIGABRT (实证队列记录 CWE-125/457/787)",
+    "Pillow 批次 (SKILL_LESSONS_Pillow.md): H3 错误路径族候选——维度浮现候选、实证证伪后如实归档"
+   ]
   }
  ],
  "platform_trust_models": [
