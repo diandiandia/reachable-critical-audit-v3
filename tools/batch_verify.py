@@ -1545,18 +1545,21 @@ def stage_coverage_ledger(project_root, write=False):
 SEVERITY_ORDER = {"critical": 3, "high": 2, "medium": 1}
 SEVERITY_LABELS = {"critical": "严重", "high": "高", "medium": "中"}
 SEVERITY_BY_CWE = {
-    # 命令/代码注入 + 反序列化 + MEMORY-SAFETY 全族
-    "critical": {78, 94, 77, 502, 787, 125, 416, 415, 476, 190, 129},
+    # 命令/代码注入 + 反序列化 + MEMORY-SAFETY 全族 + NUMERIC 整数下溢 (191, 与 190 对称)
+    "critical": {78, 94, 77, 502, 787, 125, 416, 415, 476, 190, 129, 191},
     # SQLi/路径穿越/SSRF + AUTHN 主体 + RESOURCE-DOS 全族 + RACE 全族 +
-    # STATE 序对/协议类 (841/696, 与 RACE 同档)
+    # STATE 序对/协议类 (841/696) + NUMERIC 除零 (369, crash 类) +
+    # ERROR-HANDLING 未初始化 (457, 实证 SIGABRT 档) + WEB 请求走私 (444) +
+    # RESOURCE-DOS ReDoS (1333, 全族 high 先例)
     "high": {89, 74, 22, 918, 862, 863, 639, 306,
              400, 770, 789, 409, 833, 834, 362, 366, 367,
-             841, 696},
+             841, 696, 369, 457, 444, 1333},
     # XSS/开放重定向/CSRF + 鉴权弱项 + CRYPTO 全族 + DATA-INTEGRITY 全族 +
-    # STATE 恒错控制流 (670, 逻辑缺陷默认档)
+    # STATE 恒错控制流 (670) + NUMERIC 截断/不一致比较 (681/697, 逻辑缺陷默认档) +
+    # ERROR-HANDLING 初始化不完整 (665) + WEB 双解析器前提 (436)
     "medium": {79, 601, 352, 285, 287, 926,
                327, 326, 338, 347, 330, 310, 311, 295, 345, 351, 829,
-               670},
+               670, 681, 697, 665, 436},
 }
 CLAIM_TYPE_SEVERITY = {  # 回退: cwe 无命中时 (REQ-V3.4.3-006: leak 已同步)
     "rce": "critical", "leak": "critical",
