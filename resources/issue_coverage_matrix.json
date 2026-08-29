@@ -120,14 +120,15 @@
         "csharp": 8,
         "scala": 3,
         "python": 7,
-        "java": 13,
+        "java": 18,
         "kotlin": 7,
-        "c": 13,
+        "c": 16,
         "javascript": 14,
-        "other": 6,
+        "other": 7,
         "swift": 9,
         "php": 9,
-        "ruby": 7
+        "ruby": 7,
+        "cpp": 2
       }
     },
     {
@@ -151,7 +152,9 @@
         "shell": 1,
         "ruby": 1,
         "c": 1,
-        "go": 3
+        "go": 3,
+        "java": 1,
+        "other": 3
       }
     },
     {
@@ -167,7 +170,8 @@
         "javascript": 1,
         "shell": 5,
         "other": 12,
-        "php": 1
+        "php": 1,
+        "cpp": 1
       }
     },
     {
@@ -177,11 +181,11 @@
         "csharp": 3,
         "powershell": 2,
         "rust": 19,
-        "c": 35,
+        "c": 56,
         "python": 6,
         "java": 2,
         "javascript": 1,
-        "cpp": 2,
+        "cpp": 14,
         "other": 3,
         "swift": 2,
         "go": 8,
@@ -199,16 +203,17 @@
         "powershell": 5,
         "rust": 30,
         "scala": 10,
-        "c": 53,
-        "java": 22,
+        "c": 61,
+        "java": 34,
         "kotlin": 15,
         "javascript": 40,
-        "cpp": 3,
-        "other": 14,
+        "cpp": 6,
+        "other": 15,
         "shell": 2,
         "ruby": 19,
         "swift": 34,
-        "php": 13
+        "php": 13,
+        "objc": 1
       }
     },
     {
@@ -236,14 +241,14 @@
         "csharp": 11,
         "powershell": 1,
         "rust": 26,
-        "other": 6,
+        "other": 9,
         "scala": 5,
-        "c": 38,
+        "c": 60,
         "python": 13,
-        "java": 10,
+        "java": 26,
         "kotlin": 12,
         "javascript": 16,
-        "cpp": 9,
+        "cpp": 24,
         "ruby": 10,
         "swift": 14,
         "php": 22
@@ -259,14 +264,15 @@
         "powershell": 2,
         "rust": 5,
         "scala": 1,
-        "java": 3,
+        "java": 7,
         "kotlin": 2,
         "c": 4,
         "javascript": 5,
-        "cpp": 2,
+        "cpp": 5,
         "ruby": 5,
         "swift": 5,
-        "php": 10
+        "php": 10,
+        "other": 1
       }
     }
   ],
@@ -307,7 +313,15 @@
     "4ac02f954d882d9d",
     "e7bce01e6efb415d",
     "a282485e05f5ed8e",
-    "727d67e5ced4ed03"
+    "727d67e5ced4ed03",
+    "df5d4ef3065bfc9f",
+    "97d7fb1fbdcae73b",
+    "d201f3035bcb37bd",
+    "466938df479ed39e",
+    "b82baff5b3762cd5",
+    "240177a00ef7c8f8",
+    "0ff471256497f6a4",
+    "570475a119e75199"
   ],
-  "updated_at": "2026-08-23"
+  "updated_at": "2026-08-29"
 }
