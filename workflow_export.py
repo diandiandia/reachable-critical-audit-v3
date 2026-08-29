@@ -483,19 +483,42 @@ def resurrect_prompt(c):
 def export_script_resurrect(project_root, batch_size=8):
     """SWR-V3.2-042: 导出复活攻击 workflow (复用 export_script 的载荷模式)。"""
     queue = bv.load_queue(project_root)
-    pool = resurrect_pool(queue["candidates"], batch_size)
+    # v3.14 (SWR-V3.14-006): 复活抽样单真相——_resurrect_sample.json (主代理决策
+    # 记录) 存在且与当前候选集合一致时以文件为权威池 (此前文件 write-only 无人读,
+    # 三权威冲突实录: 主代理 selected 与导出器内部池不一致)。文件保持可选——
+    # 不存在/漂移时内部抽样并重写 (现状即缺省路径, 零新义务)。
+    cands = queue["candidates"]
+    eligible_ids = {c["id"] for c in cands
+                    if c.get("status") == "VERIFIED"
+                    and c.get("verdict") == "UNREACHABLE"
+                    and not c.get("resurrection_review")}
+    sample_path = os.path.join(project_root, ".audit_results", "_resurrect_sample.json")
+    pool = None
+    sample_authority = False
+    if os.path.exists(sample_path):
+        try:
+            sample = json.load(open(sample_path))
+            ssel, sunsel = (sample.get("selected") or []), (sample.get("unselected") or [])
+            if set(ssel) | set(sunsel) == eligible_ids:
+                pool = [c for c in cands if c["id"] in ssel]
+                sample_authority = True
+        except (ValueError, OSError):
+            pass
+    if pool is None:
+        pool = resurrect_pool(cands, batch_size)
     if not pool:
         return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": "resurrect"}
     # SWR-V3.3.2-021: 抽样决策落盘 (记录型义务, 消费者=事后问责/报告追溯)
     selected = [c["id"] for c in pool]
-    unselected = [c["id"] for c in queue["candidates"]
+    unselected = [c["id"] for c in cands
                   if c.get("status") == "VERIFIED" and c.get("verdict") == "UNREACHABLE"
                   and not c.get("resurrection_review") and c["id"] not in selected]
-    with open(os.path.join(project_root, ".audit_results",
-                           "_resurrect_sample.json"), "w") as f:
+    with open(sample_path, "w") as f:
         json.dump({
-            "rule": "声称类 (crash/panic/oom/unbounded/xss/protocol_dos) UNREACHABLE 全量 + "
-                    "其他类 20% 抽样 (最少 2, 上限 batch_size), 已有 resurrection_review 排除",
+            "rule": ("声称类 (crash/panic/oom/unbounded/xss/protocol_dos) UNREACHABLE 全量 + "
+                     "其他类 20% 抽样 (最少 2, 上限 batch_size), 已有 resurrection_review 排除"
+                     + ("; v3.14 以主代理 sample 文件为权威池" if sample_authority
+                        else "; v3.14 内部抽样 (文件缺失/漂移)")),
             "selected": selected, "unselected": unselected,
             "unselected_note": "未入池候选无复活复核义务 (REQ-V3.2-023 只查声称类)",
         }, f, ensure_ascii=False, indent=2)

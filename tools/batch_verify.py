@@ -1223,6 +1223,40 @@ def stage_r4_collect(project_root, findings_file):
         except ValueError as e:
             unknown.append({"error": f"input_surface.json 校验失败: {e}"})
     result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
+    # v3.14 (SWR-V3.14-004): R4 finding 终态表述与 r3_link 候选终态一致性检查——
+    # finding 带 r3_link 且 title/evidence 含终态关键词时与候选当前 verdict 比对,
+    # 矛盾输出 warn (字段级, 非新门禁)。案例: H4-F5「维持 R3 UNREACHABLE」vs
+    # CAND-009 复活重验改判 NEEDS_REVIEW——报告定稿前零拦截, 主代理事后发现。
+    verdict_kw = {
+        "UNREACHABLE": ("维持 unreachable", "维持 r3 unreachable", "维持unreachable"),
+        "NEEDS_REVIEW": ("维持 needs_review", "维持needs_review", "维持 needs review"),
+        "REACHABLE": ("维持 reachable", "维持reachable"),
+    }
+    link_conflicts = []
+    cand_verdict = {c["id"]: c.get("verdict") for c in queue["candidates"]}
+    for hf in queue.get("r4_findings", []):
+        for fi in (hf.get("findings") or []):
+            link = fi.get("r3_link") or ""
+            if not isinstance(link, str) or not link.strip().startswith("CAND-"):
+                continue
+            cid = link.strip().split()[0].split("(")[0]
+            cv = cand_verdict.get(cid)
+            if not cv:
+                continue
+            blob = " ".join([fi.get("title") or "", fi.get("evidence") or ""]).lower()
+            for claimed, kws in verdict_kw.items():
+                if cv != claimed and any(k in blob for k in kws):
+                    link_conflicts.append({
+                        "hypothesis": hf.get("hypothesis_id"),
+                        "finding": (fi.get("title") or "")[:60],
+                        "r3_link": cid,
+                        "candidate_verdict": cv,
+                        "claimed_verdict": claimed})
+    if link_conflicts:
+        result["r4_verdict_link_conflict"] = link_conflicts
+        result["r4_verdict_link_conflict_note"] = ("finding 终态表述与 r3_link 候选当前终态"
+                                                   "不一致 (复活/裁决改判后遗留)——主代理核对"
+                                                   "后修正 finding 文本或改指 (warn 级不阻断)")
     if mapped:
         result["mapped_surface_ids"] = mapped
     if unknown:
@@ -1525,12 +1559,28 @@ def stage_coverage_ledger(project_root, write=False):
         # 身份是机制语义 (每项目只回填一次, 防重复记账); 附当前队列将产生的新计数
         # 供主代理核对 (先回填后补标 cwe 的缺口格不回写, 由下批选题闭合)。
         would_be = _aggregate_counts(queue, project_root)
-        print(json.dumps({"status": "LEDGER_IDEMPOTENT_SKIP",
-                          "project": project_root,
-                          "would_be_new_counts": {f"{f}x{l}": n for (f, l), n in
-                                                  sorted(would_be.items())},
-                          "note": "sources 已含本项目 hash, 不重复记账 (v3.6)"},
-                         ensure_ascii=False, indent=2))
+        out = {"status": "LEDGER_IDEMPOTENT_SKIP",
+               "project": project_root,
+               "would_be_new_counts": {f"{f}x{l}": n for (f, l), n in
+                                       sorted(would_be.items())},
+               "note": "sources 已含本项目 hash, 不重复记账 (v3.6)"}
+        # v3.14 (SWR-V3.14-005): 复审计幂等盲区——新族 (v3.12/v3.13 后加入) 的
+        # re-audit 增量在幂等语义下 dropped。附结构化手工合并指引 (不做自动
+        # re-credit——义务棘轮: 第二个复审计案例再评自动语义; protobuf 复审计
+        # STATExc=1 增量摸索合并实录)。
+        delta = {f"{f}x{l}": n for (f, l), n in sorted(would_be.items())
+                 if n > 0}
+        if delta:
+            out["manual_merge_guidance"] = {
+                "delta_cells": delta,
+                "protocol": ("复审计增量未机械写入: 逐格合并到 resources/issue_coverage_matrix.json "
+                             "rows[family].langs[lang] += n; sources 保持单条不追加; "
+                             "rows[family] 附 manual_merge_note 注明日期/项目/增量来源 "
+                             "(would_be_new_counts 机械值)"),
+                "note": ("本指引为提示级——是否合并由主代理裁决 (同项目二刷的增量 "
+                         "回记语义; 不自动合并防双计数)"),
+            }
+        print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0
     # v3.6 (P1-4): 回填前置 (a) r4-assert 语义 (H1-H7 全 VERIFIED)
     missing = _r4_missing(queue)

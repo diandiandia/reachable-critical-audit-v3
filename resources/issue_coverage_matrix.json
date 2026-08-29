@@ -1,366 +1,370 @@
 {
-  "note": "CWE 族 x 语言审计覆盖账本 (范围守护, REQ-V3.4-001)。rows 计数来源=候选级 cwe x lang 聚合 + R4 findings 按项目主导语言近似计入; sources=已回填项目 (幂等去重)。统计口径与缺口打印见 batch_verify --stage coverage-ledger。",
-  "langs": [
-    "perl",
-    "powershell",
-    "shell",
-    "csharp",
-    "python",
-    "javascript",
-    "java",
-    "kotlin",
-    "scala",
-    "go",
-    "c",
-    "cpp",
-    "rust",
-    "php",
-    "ruby",
-    "swift"
-  ],
-  "families": {
-    "RESOURCE-DOS": {
-      "name": "资源耗尽/无界 (DoS)",
-      "cwe": [
-        770,
-        789,
-        400,
-        409,
-        834,
-        833,
-        1333
-      ]
-    },
-    "MEMORY-SAFETY": {
-      "name": "内存安全 (越界/UAF/双重释放)",
-      "cwe": [
-        125,
-        787,
-        416,
-        415,
-        476,
-        190,
-        129
-      ]
-    },
-    "INJECTION": {
-      "name": "注入 (SQL/命令/模板/反序列化/类加载)",
-      "cwe": [
-        89,
-        78,
-        94,
-        77,
-        502,
-        470,
-        74
-      ]
-    },
-    "CRYPTO": {
-      "name": "密码学误用 (算法/密钥/随机源)",
-      "cwe": [
-        327,
-        326,
-        338,
-        347,
-        330,
-        310,
-        311,
-        295
-      ]
-    },
-    "AUTHN": {
-      "name": "认证/授权 (绕过/缺失/谓词弱化)",
-      "cwe": [
-        287,
-        862,
-        863,
-        285,
-        639,
-        926,
-        306
-      ]
-    },
-    "DATA-INTEGRITY": {
-      "name": "数据完整性 (来源伪造/校验语义)",
-      "cwe": [
-        345,
-        351,
-        829
-      ]
-    },
-    "WEB": {
-      "name": "Web 层 (路径穿越/XSS/重定向/SSRF)",
-      "cwe": [
-        79,
-        601,
-        22,
-        352,
-        918,
-        436,
-        444
-      ]
-    },
-    "RACE": {
-      "name": "并发竞态",
-      "cwe": [
-        362,
-        366,
-        367
-      ]
-    },
-    "STATE": {
-      "name": "状态机/序对语义 (行为工作流/顺序/控制流)",
-      "cwe": [
-        841,
-        696,
-        670
-      ]
-    },
-    "NUMERIC": {
-      "name": "数值语义 (整数下溢/除零/转换截断/不一致比较)",
-      "cwe": [
-        191,
-        369,
-        681,
-        697
-      ]
-    },
-    "ERROR-HANDLING": {
-      "name": "错误/故障路径处理 (未初始化状态/错误分支反转/清理缺失)",
-      "cwe": [
-        457,
-        665
-      ]
-    },
-    "OTHER": {
-      "name": "其他",
-      "cwe": []
-    }
+ "note": "CWE 族 x 语言审计覆盖账本 (范围守护, REQ-V3.4-001)。rows 计数来源=候选级 cwe x lang 聚合 + R4 findings 按项目主导语言近似计入; sources=已回填项目 (幂等去重)。统计口径与缺口打印见 batch_verify --stage coverage-ledger。",
+ "langs": [
+  "perl",
+  "powershell",
+  "shell",
+  "csharp",
+  "python",
+  "javascript",
+  "java",
+  "kotlin",
+  "scala",
+  "go",
+  "c",
+  "cpp",
+  "rust",
+  "php",
+  "ruby",
+  "swift"
+ ],
+ "families": {
+  "RESOURCE-DOS": {
+   "name": "资源耗尽/无界 (DoS)",
+   "cwe": [
+    770,
+    789,
+    400,
+    409,
+    834,
+    833,
+    1333
+   ]
   },
-  "rows": [
-    {
-      "family": "AUTHN",
-      "langs": {
-        "perl": 7,
-        "rust": 6,
-        "go": 34,
-        "csharp": 8,
-        "scala": 3,
-        "python": 7,
-        "java": 18,
-        "kotlin": 7,
-        "c": 16,
-        "javascript": 14,
-        "other": 7,
-        "swift": 9,
-        "php": 9,
-        "ruby": 7,
-        "cpp": 2
-      }
-    },
-    {
-      "family": "CRYPTO",
-      "langs": {
-        "go": 4,
-        "python": 3,
-        "c": 3,
-        "ruby": 1,
-        "rust": 1,
-        "php": 1
-      }
-    },
-    {
-      "family": "DATA-INTEGRITY",
-      "langs": {
-        "python": 4,
-        "powershell": 1,
-        "kotlin": 1,
-        "cpp": 1,
-        "shell": 1,
-        "ruby": 1,
-        "c": 1,
-        "go": 3,
-        "java": 1,
-        "other": 3
-      }
-    },
-    {
-      "family": "INJECTION",
-      "langs": {
-        "python": 9,
-        "csharp": 11,
-        "powershell": 9,
-        "scala": 1,
-        "java": 15,
-        "kotlin": 1,
-        "c": 5,
-        "javascript": 1,
-        "shell": 5,
-        "other": 12,
-        "php": 1,
-        "cpp": 1
-      }
-    },
-    {
-      "family": "MEMORY-SAFETY",
-      "langs": {
-        "perl": 1,
-        "csharp": 3,
-        "powershell": 2,
-        "rust": 19,
-        "c": 56,
-        "python": 6,
-        "java": 2,
-        "javascript": 1,
-        "cpp": 14,
-        "other": 3,
-        "swift": 2,
-        "go": 8,
-        "php": 3,
-        "ruby": 4
-      }
-    },
-    {
-      "family": "STATE",
-      "langs": {}
-    },
-    {
-      "family": "NUMERIC",
-      "langs": {}
-    },
-    {
-      "family": "ERROR-HANDLING",
-      "langs": {}
-    },
-    {
-      "family": "OTHER",
-      "langs": {
-        "perl": 17,
-        "python": 41,
-        "go": 37,
-        "csharp": 4,
-        "powershell": 5,
-        "rust": 30,
-        "scala": 10,
-        "c": 61,
-        "java": 34,
-        "kotlin": 15,
-        "javascript": 40,
-        "cpp": 6,
-        "other": 15,
-        "shell": 2,
-        "ruby": 19,
-        "swift": 34,
-        "php": 13,
-        "objc": 1
-      }
-    },
-    {
-      "family": "RACE",
-      "langs": {
-        "perl": 2,
-        "go": 6,
-        "csharp": 3,
-        "powershell": 4,
-        "rust": 3,
-        "python": 5,
-        "java": 2,
-        "c": 4,
-        "cpp": 1,
-        "other": 4,
-        "swift": 3,
-        "php": 1
-      }
-    },
-    {
-      "family": "RESOURCE-DOS",
-      "langs": {
-        "perl": 3,
-        "go": 55,
-        "csharp": 11,
-        "powershell": 1,
-        "rust": 26,
-        "other": 9,
-        "scala": 5,
-        "c": 60,
-        "python": 13,
-        "java": 26,
-        "kotlin": 12,
-        "javascript": 16,
-        "cpp": 24,
-        "ruby": 10,
-        "swift": 14,
-        "php": 22
-      }
-    },
-    {
-      "family": "WEB",
-      "langs": {
-        "perl": 8,
-        "python": 7,
-        "go": 6,
-        "csharp": 1,
-        "powershell": 2,
-        "rust": 5,
-        "scala": 1,
-        "java": 7,
-        "kotlin": 2,
-        "c": 4,
-        "javascript": 5,
-        "cpp": 5,
-        "ruby": 5,
-        "swift": 5,
-        "php": 10,
-        "other": 1
-      }
-    }
-  ],
-  "sources": [
-    "b6dcb2d2e8edb675",
-    "92b1cf96b5dab9cd",
-    "4e61ebb13664a29d",
-    "d9c5136e7d02cb55",
-    "eb9c542fb3d8900e",
-    "96591586d2afe175",
-    "d76dbb98799c696f",
-    "8db91df56f8275c9",
-    "44ad003ad6f852dd",
-    "ead303bca1da901f",
-    "f96f90a8a98578a8",
-    "9604f759db99fa0d",
-    "b28eacc999f157f6",
-    "8ec49edc83fe4706",
-    "503b54ef2cfb5770",
-    "42b1722a67d9c4f3",
-    "00328813ed855ae6",
-    "0098da0107d33865",
-    "ea051ec98add34f0",
-    "0c52ac3e61e2b2b0",
-    "79a45ef59a692849",
-    "89e8307e598073da",
-    "440a5379dd5cb309",
-    "ffadf01bf071fee7",
-    "1fede647ccfe039c",
-    "3a15fb54e9cde6aa",
-    "3d9462ed87608f79",
-    "20f1d5da42198fb5",
-    "7af8fcd15e05fe44",
-    "121604a9eab2700c",
-    "8194d7e9f32924ae",
-    "d04365e37b4937a2",
-    "7306c52badded63a",
-    "4ac02f954d882d9d",
-    "e7bce01e6efb415d",
-    "a282485e05f5ed8e",
-    "727d67e5ced4ed03",
-    "df5d4ef3065bfc9f",
-    "97d7fb1fbdcae73b",
-    "d201f3035bcb37bd",
-    "466938df479ed39e",
-    "b82baff5b3762cd5",
-    "240177a00ef7c8f8",
-    "0ff471256497f6a4",
-    "570475a119e75199"
-  ],
-  "updated_at": "2026-08-29"
+  "MEMORY-SAFETY": {
+   "name": "内存安全 (越界/UAF/双重释放)",
+   "cwe": [
+    125,
+    787,
+    416,
+    415,
+    476,
+    190,
+    129
+   ]
+  },
+  "INJECTION": {
+   "name": "注入 (SQL/命令/模板/反序列化/类加载)",
+   "cwe": [
+    89,
+    78,
+    94,
+    77,
+    502,
+    470,
+    74
+   ]
+  },
+  "CRYPTO": {
+   "name": "密码学误用 (算法/密钥/随机源)",
+   "cwe": [
+    327,
+    326,
+    338,
+    347,
+    330,
+    310,
+    311,
+    295
+   ]
+  },
+  "AUTHN": {
+   "name": "认证/授权 (绕过/缺失/谓词弱化)",
+   "cwe": [
+    287,
+    862,
+    863,
+    285,
+    639,
+    926,
+    306
+   ]
+  },
+  "DATA-INTEGRITY": {
+   "name": "数据完整性 (来源伪造/校验语义)",
+   "cwe": [
+    345,
+    351,
+    829
+   ]
+  },
+  "WEB": {
+   "name": "Web 层 (路径穿越/XSS/重定向/SSRF)",
+   "cwe": [
+    79,
+    601,
+    22,
+    352,
+    918,
+    436,
+    444
+   ]
+  },
+  "RACE": {
+   "name": "并发竞态",
+   "cwe": [
+    362,
+    366,
+    367
+   ]
+  },
+  "STATE": {
+   "name": "状态机/序对语义 (行为工作流/顺序/控制流)",
+   "cwe": [
+    841,
+    696,
+    670
+   ]
+  },
+  "NUMERIC": {
+   "name": "数值语义 (整数下溢/除零/转换截断/不一致比较)",
+   "cwe": [
+    191,
+    369,
+    681,
+    697
+   ]
+  },
+  "ERROR-HANDLING": {
+   "name": "错误/故障路径处理 (未初始化状态/错误分支反转/清理缺失)",
+   "cwe": [
+    457,
+    665
+   ]
+  },
+  "OTHER": {
+   "name": "其他",
+   "cwe": []
+  }
+ },
+ "rows": [
+  {
+   "family": "AUTHN",
+   "langs": {
+    "perl": 7,
+    "rust": 6,
+    "go": 34,
+    "csharp": 8,
+    "scala": 3,
+    "python": 8,
+    "java": 19,
+    "kotlin": 7,
+    "c": 16,
+    "javascript": 14,
+    "other": 7,
+    "swift": 9,
+    "php": 9,
+    "ruby": 7,
+    "cpp": 8
+   }
+  },
+  {
+   "family": "CRYPTO",
+   "langs": {
+    "go": 4,
+    "python": 3,
+    "c": 3,
+    "ruby": 1,
+    "rust": 1,
+    "php": 1
+   }
+  },
+  {
+   "family": "DATA-INTEGRITY",
+   "langs": {
+    "python": 4,
+    "powershell": 1,
+    "kotlin": 1,
+    "cpp": 1,
+    "shell": 1,
+    "ruby": 1,
+    "c": 1,
+    "go": 3,
+    "java": 1,
+    "other": 3
+   }
+  },
+  {
+   "family": "ERROR-HANDLING",
+   "langs": {}
+  },
+  {
+   "family": "INJECTION",
+   "langs": {
+    "python": 9,
+    "csharp": 11,
+    "powershell": 9,
+    "scala": 1,
+    "java": 15,
+    "kotlin": 1,
+    "c": 5,
+    "javascript": 1,
+    "shell": 5,
+    "other": 12,
+    "php": 1,
+    "cpp": 7
+   }
+  },
+  {
+   "family": "MEMORY-SAFETY",
+   "langs": {
+    "perl": 1,
+    "csharp": 3,
+    "powershell": 2,
+    "rust": 19,
+    "c": 56,
+    "python": 6,
+    "java": 2,
+    "javascript": 1,
+    "cpp": 19,
+    "other": 3,
+    "swift": 2,
+    "go": 8,
+    "php": 3,
+    "ruby": 4
+   }
+  },
+  {
+   "family": "NUMERIC",
+   "langs": {}
+  },
+  {
+   "family": "OTHER",
+   "langs": {
+    "perl": 17,
+    "python": 41,
+    "go": 37,
+    "csharp": 4,
+    "powershell": 5,
+    "rust": 30,
+    "scala": 10,
+    "c": 61,
+    "java": 34,
+    "kotlin": 15,
+    "javascript": 40,
+    "cpp": 13,
+    "other": 15,
+    "shell": 2,
+    "ruby": 19,
+    "swift": 34,
+    "php": 13,
+    "objc": 1
+   }
+  },
+  {
+   "family": "RACE",
+   "langs": {
+    "perl": 2,
+    "go": 6,
+    "csharp": 3,
+    "powershell": 4,
+    "rust": 3,
+    "python": 5,
+    "java": 2,
+    "c": 4,
+    "cpp": 2,
+    "other": 4,
+    "swift": 3,
+    "php": 1
+   }
+  },
+  {
+   "family": "RESOURCE-DOS",
+   "langs": {
+    "perl": 3,
+    "go": 55,
+    "csharp": 11,
+    "powershell": 1,
+    "rust": 26,
+    "other": 9,
+    "scala": 5,
+    "c": 63,
+    "python": 13,
+    "java": 26,
+    "kotlin": 12,
+    "javascript": 16,
+    "cpp": 34,
+    "ruby": 10,
+    "swift": 14,
+    "php": 22
+   }
+  },
+  {
+   "family": "STATE",
+   "langs": {
+    "c": 1
+   },
+   "manual_merge_note": "2026-08-29 protobuf 复审计: 幂等 skip 后按 would_be_new_counts 机械增量手工合并 (STATExc=1, CAND-012 CWE-670); sources key 由上届审计烧录"
+  },
+  {
+   "family": "WEB",
+   "langs": {
+    "perl": 8,
+    "python": 7,
+    "go": 6,
+    "csharp": 1,
+    "powershell": 2,
+    "rust": 5,
+    "scala": 1,
+    "java": 7,
+    "kotlin": 2,
+    "c": 4,
+    "javascript": 5,
+    "cpp": 6,
+    "ruby": 5,
+    "swift": 5,
+    "php": 10,
+    "other": 1
+   }
+  }
+ ],
+ "sources": [
+  "b6dcb2d2e8edb675",
+  "92b1cf96b5dab9cd",
+  "4e61ebb13664a29d",
+  "d9c5136e7d02cb55",
+  "eb9c542fb3d8900e",
+  "96591586d2afe175",
+  "d76dbb98799c696f",
+  "8db91df56f8275c9",
+  "44ad003ad6f852dd",
+  "ead303bca1da901f",
+  "f96f90a8a98578a8",
+  "9604f759db99fa0d",
+  "b28eacc999f157f6",
+  "8ec49edc83fe4706",
+  "503b54ef2cfb5770",
+  "42b1722a67d9c4f3",
+  "00328813ed855ae6",
+  "0098da0107d33865",
+  "ea051ec98add34f0",
+  "0c52ac3e61e2b2b0",
+  "79a45ef59a692849",
+  "89e8307e598073da",
+  "440a5379dd5cb309",
+  "ffadf01bf071fee7",
+  "1fede647ccfe039c",
+  "3a15fb54e9cde6aa",
+  "3d9462ed87608f79",
+  "20f1d5da42198fb5",
+  "7af8fcd15e05fe44",
+  "121604a9eab2700c",
+  "8194d7e9f32924ae",
+  "d04365e37b4937a2",
+  "7306c52badded63a",
+  "4ac02f954d882d9d",
+  "e7bce01e6efb415d",
+  "a282485e05f5ed8e",
+  "727d67e5ced4ed03",
+  "df5d4ef3065bfc9f",
+  "97d7fb1fbdcae73b",
+  "d201f3035bcb37bd",
+  "466938df479ed39e",
+  "b82baff5b3762cd5",
+  "240177a00ef7c8f8",
+  "0ff471256497f6a4",
+  "570475a119e75199",
+  "a485d8f86f54a576"
+ ],
+ "updated_at": "2026-08-29"
 }
