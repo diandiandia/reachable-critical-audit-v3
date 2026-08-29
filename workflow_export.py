@@ -497,8 +497,32 @@ def export_script_resurrect(project_root, batch_size=8):
             "unselected_note": "未入池候选无复活复核义务 (REQ-V3.2-023 只查声称类)",
         }, f, ensure_ascii=False, indent=2)
     payload = []
+    # v3.10.2 收尾补丁 (P8 遗漏): 平台信任模型清单注入——三层对抗复核
+    # (verifier/证伪者/复活者) 知识注入对称; 复活者是放行方向最后防线,
+    # 其平台知识基线不得弱于前两层 (026/027 复活成功恰依赖复活者自带
+    # 平台知识而证伪者缺失——靠自带知识是运气性因素, 必须机制化注入)
+    try:
+        import checklist_binder as _cb
+        isurf_path = os.path.join(project_root, ".audit_results",
+                                  "input_surface.json")
+        _surfs = json.load(open(isurf_path)).get("surfaces", []) \
+            if os.path.exists(isurf_path) else []
+        _plats = _cb.detect_platforms(_surfs)
+        _models = _cb.platform_models(_plats)
+    except (ImportError, OSError, ValueError):
+        _models = []
     for c in pool:
-        payload.append({"id": c["id"], "prompt": resurrect_prompt(c)})
+        prompt = resurrect_prompt(c)
+        if _models:
+            prompt += ("\n\n## 平台信任模型对照清单 (v3.10.2, SWR-V3.10.2-016)\n"
+                       "目标平台信号: " + ", ".join(_plats) + "。复活维度 5"
+                       " (平台前提是否有实证) 必须逐条对照: \n")
+            for _m in _models:
+                prompt += (f"### {_m.get('id')}\n{_m.get('mechanism')}\n"
+                           + "".join(f"- {q}\n" for q in _m.get("probe_questions") or []))
+            prompt += ("\n『同主体/单信任域』类阻断论证必须对照上表核实——"
+                       "同设备其他应用经导出组件/意图参数注入是异主体。\n")
+        payload.append({"id": c["id"], "prompt": prompt})
     js = _inject_project_marker(
         RESURRECT_SCRIPT.replace("__SCHEMA__", json.dumps(RESURRECT_SCHEMA, ensure_ascii=False)),
         project_root)
