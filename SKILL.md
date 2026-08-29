@@ -940,3 +940,75 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 （tracked-ids 152/152 无手工补丁、collect 输出 edge_gap 信号、报告渲染实证数据
 完整）+ `_scan_runtime_assets` 去项目化扫描绿 + 三锚点 fixture 复跑零回退
 （新项目全流程验收随下一在线项目进行）。
+
+## 🆕 v3.10.2 增量（2026-08-29，多媒体系列 7 项目批次复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_10_2.md` + REQ/SOFTWARE_DESIGN/SWR_V3_10_2。
+> 背景审计: 2026-08-29 多媒体系列批次（7 项目、双并行 × 4 波、六门禁 7/7 全 PASS）。
+> 复盘发现 13 项问题（Q-A~Q-M）→ 本版修复 13 项、维持撤销 2 项。
+> 不改变阶段骨架、六门禁判据语义、队列数据模型主体。
+
+### 机制新增（机械层）
+
+1. **实证保真度三档（SWR-V3.10.2-001~004）**：`empirical.fidelity` 枚举
+   `real_target | equivalent | mechanism`（缺省 real_target，旧队列零行为变化）。
+   `equivalent`（等价语义复现）满足 gate ③ 但报告行首渲染 `等价复现:` 前缀、
+   gate 输出 `fidelity_hint` 分列；`mechanism` 不得升 `empirically_confirmed`。
+   申报材料必须按档位标注（真实构建物与复刻证据分列，不混级申报）。
+2. **workflow args fail-fast（SWR-V3.10.2-005）**：导出脚本（verify/refutation/
+   resurrect）在 agent 任务内首步校验输入键（`c.prompt`/`c.taskFile` 至少其一
+   非空），缺失时不派发 agent、返回结构化错误——「undefined prompt 幻觉
+   verdict」事故的制度化拦截；collect 后验 `journal_anomaly` 告警（同 id 多
+   result 内容各异）。
+3. **R4 簿记容错（SWR-V3.10.2-007/008）**：r4-collect 兼容 finding 级
+   `surfaces` 别名（canonical hypotheses-list 形态此前不经别名映射）；空
+   findings 假说须声明假说级全量扫掠 tracked（完全无 tracked 仍拦截）。
+4. **报告防覆盖（SWR-V3.10.2-009）**：`--stage report` 检测主代理段落已存在
+   时拒绝重跑（exit 1），`--force` 显式重生成并告警。
+5. **NEEDS_REVIEW 重开（SWR-V3.10.2-012）**：`--stage reopen --id <id>` +
+   `REOPEN_REASON` 环境变量——环境 blocker 解除后回 PENDING（保留全部历史
+   字段与 correction_record）。
+6. **裁决核验与补强签收 warn（SWR-V3.10.2-014/015）**：主代理采纳证伪者
+   结论 demote 时须对证伪者承重前提主张逐条回源码核实并落盘
+   `adjudication_verification`；证伪者/复活者补强（strengthened/
+   attribution_correction）进报告/申报前须主代理逐条签收
+   （`*_verified_by`）——两者均为 warn 级不阻断，旧队列复跑以
+   `require_adjudication_verify=False` / `require_strengthen_verify=False` 豁免。
+7. **NEEDS_REVIEW 成因三分（SWR-V3.10.2-013）**：`保守裁决 | 证据不足 |
+   环境受限`（环境受限=无目标平台运行面）；环境受限 + 上游公开佐证 →
+   附录 A 渲染「佐证注记」列（申报走佐证材料路径，终态不变）。
+8. **渲染四标记（SWR-V3.10.2-002/010/011）**：实证行 fidelity 前缀、harness
+   路径非 `.audit_results/` 前缀 → `[产物目录违规 warn]`、补强未签收 →
+   `（未复核）` 标记。
+
+### 机制新增（知识/契约层）
+
+9. **平台信任模型清单（SWR-V3.10.2-016）**：checklist_library 新增
+   `platform_trust_models` 清单族（按平台分派：mobile/desktop/web/
+   embedded_kernel，平台机制级条目零项目 API 名）——「同主体」判定前必须
+   对照平台清单（同设备其他应用经导出组件/意图参数注入是异主体；平台鉴权
+   中介存在时「未认证通道」判据不成立）。R1 surface 信号驱动
+   `detect_platforms` → verifier/refuter prompt 注入；零平台信号零注入。
+10. **依赖 CVE 对账可选步（SWR-V3.10.2-017）**：R1 context 含 pinned 依赖
+    清单时，verifier 步骤 1.5 可选对账关键依赖（解码器/解析器执行主体）的
+    已知 CVE 状态 → `dependency_cve_notes` 注记（不改变 verdict，报告附录 B
+    与申报语境引用）。
+11. **物化增量面重审（SWR-V3.10.2-018）**：scope_changed 时输出受影响面
+    重开建议（物化目录 × R1 面路径交叉）；主代理裁决后
+    `write_scope_review` 落盘 `scope_review.jsonl`。
+12. **实证防误伤样板（SWR-V3.10.2-019）**：parser_fuzz 模板与 c 手册 §8
+    资源防护样板（ulimit/setrlimit 双形态）——GB/TB 级分配 harness 无防护
+    环境复跑会 OOM-kill 整机。
+
+### 维持撤销（义务棘轮防护）
+
+- batch-size 默认截断提示、payload_hash 辅助命令：v3.10 撤销后本批次复评
+  无失误案例再现——维持撤销。
+- severity override 逐条复核义务：现有 override+reason 可问责，无失误案例
+  ——不建。
+
+### 验收判据（Phase 3.10.2）
+
+全量回归全绿（273 基线 + test_v3102 15 新增）+ 去项目化扫描 0 命中（平台
+清单族）+ 旧队列复跑零新增 blocking（新增 warn 以豁免参数关闭）+ 未审计过
+的新项目验收随下一在线项目进行。
