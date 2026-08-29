@@ -434,8 +434,10 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
             violations.append({"gate": "strengthen_unverified",
                                "severity": "warn",
                                "ids": unverified_strengthen,
-                               "note": "补强/归因修正未签收 (*_verified_by 缺失): "
-                                       "进报告/申报材料前需主代理逐条复核"})
+                               "note": "补强/归因修正未签收: 需在候选级 refutation dict 内"
+                                       "(与 strengthened[] 平级, 非 entry 内部) 写 "
+                                       "strengthened_verified_by / attribution_correction_verified_by "
+                                       "=主代理签收标识; 进报告/申报材料前需主代理逐条复核"})
     # r4_feedback (v3.2.1, SWR-V3.2.1-040, warn 级): H-7 默认值盘点 ↔ R3 gate 证据冲突
     conflicts = r4_feedback(queue)
     if conflicts:

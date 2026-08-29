@@ -55,7 +55,9 @@ def test_ledger_state_family_and_rows(tmp_path):
                                          "issue_coverage_matrix.json")))
     assert ledger["families"]["STATE"]["cwe"] == [841, 696, 670]
     state_rows = [r for r in ledger["rows"] if r["family"] == "STATE"]
-    assert state_rows and state_rows[0]["langs"] == {}
+    assert state_rows
+    # v3.14: protobuf 复审计手工合并 STATExc=1 (机械增量) 后行非空——钉住合并值
+    assert (state_rows[0].get("langs") or {}).get("c", 0) == 1
     # 数据驱动归属: 841 聚合进 STATE 而非 OTHER
     counts = bv._aggregate_counts(
         {"candidates": [_cand("C-1", cwe=["CWE-841"])], "r4_findings": []},

@@ -376,10 +376,13 @@ def stage_next(project_root, batch_size=BATCH_SIZE):
     print(json.dumps(batch_info, indent=2, ensure_ascii=False))
 
 
-def _detect_journal_anomaly(transcript_dir):
+def _detect_journal_anomaly(transcript_dir, max_distinct_per_id=1):
     """SWR-V3.10.2-006: journal 后验信号——同 id 多 result 且内容 hash 各异
     提示幻觉 verdict 风险 (workflow args 失效时 agent 自由发挥的实录形态:
-    4 条 result 全部同 id、内容各异)。仅告警, 不阻断。"""
+    4 条 result 全部同 id、内容各异)。仅告警, 不阻断。
+    v3.14 (SWR-V3.14-001): max_distinct_per_id 按 mode 设计形态区分——
+    refutation 模式 N=2 证伪者同 id 多 result 是设计形态, 传 2 (>2 才 anomaly);
+    resurrect/默认 1。"""
     import hashlib as _hl
     jp = os.path.join(transcript_dir, "journal.jsonl")
     if not os.path.isfile(jp):
@@ -400,7 +403,8 @@ def _detect_journal_anomaly(transcript_dir):
             by_id.setdefault(r["id"], set()).add(h)
     except OSError:
         return []
-    return [cid for cid, hashes in by_id.items() if len(hashes) > 1]
+    return [cid for cid, hashes in by_id.items()
+            if len(hashes) > max_distinct_per_id]
 
 def _derive_attacker_tier(v, c):
     """SWR-V3.11-002: attacker_tier 缺省推导——verifier 未显式给出时按
@@ -793,6 +797,13 @@ def _adapt_r4_finding(f):
         cand, note = r3.get("candidate"), r3.get("note")
         out["r3_link"] = (f"{cand} ({note[:60]})" if cand and note
                           else (cand or (note[:60] if note else None)))
+    # v3.14 (SWR-V3.14-003): r3_link 值域校验——非空且非 CAND-* 形态 (假设 id 误填
+    # 等) 写 flag, r4-collect 输出 warn 提示主代理裁决 (置 null 或改指候选)。
+    # gate ③d 只查非空不查值域, 无效 link 此前静默落盘至报告 (HYP-001 实录)。
+    link = out.get("r3_link")
+    if isinstance(link, str) and link.strip() and not link.strip().startswith("CAND-"):
+        out["r3_link_invalid"] = True
+        flags.append("r3-link-invalid")
         flags.append("r3-link-dict")
     sev = out.get("severity")
     if isinstance(sev, str) and sev and sev != sev.capitalize():
@@ -1218,6 +1229,24 @@ def stage_r4_collect(project_root, findings_file):
         result["unknown_surface_ids"] = unknown
         result["warning"] = ("tracked_surfaces 含 input_surface.json 中不存在的 id "
                              "(前缀映射+归一化后)——任务书要求原样引用 surface id (SWR-V3.3.2-015)")
+        # v3.14 (SWR-V3.14-002): 从归一化 known 集生成后缀匹配建议映射 (仅提示,
+        # 不自动改写——误猜风险>收益, 修正由主代理裁决)。覆盖 S-<域>-NNN ↔
+        # SURF-<域>-NNN 类跨前缀形态 (既有 _map_surface_id 归一化之外的残缺口)。
+        if "known" in locals() and "norm" in locals():
+            suggestions = {}
+            known_sorted = sorted(known)
+            for u in unknown:
+                sid = u.get("surface_id")
+                if not sid:
+                    continue
+                n = norm(sid)
+                tail = n.split("-", 1)[-1] if "-" in n else n
+                hits = [k for k in known_sorted
+                        if (k.endswith("-" + tail) or n.endswith("-" + k.split("-", 1)[-1]))][:3]
+                if hits:
+                    suggestions[sid] = hits
+            if suggestions:
+                result["suggested_corrections"] = suggestions
     print(json.dumps(result, ensure_ascii=False))
 
 
@@ -1279,11 +1308,12 @@ def stage_r35_collect(project_root, transcript_dir):
     import evidence_ledger as el
     import glob as _glob
     queue = load_queue(project_root)
-    anomalies = _detect_journal_anomaly(transcript_dir)
+    # v3.14 (SWR-V3.14-001): refutation N=2 证伪者同 id 2 result 是设计形态
+    anomalies = _detect_journal_anomaly(transcript_dir, max_distinct_per_id=2)
     if anomalies:
         print(json.dumps({"status": "journal_anomaly",
                           "ids": anomalies,
-                          "note": "同 id 多 result 且内容各异——疑似 workflow args "
+                          "note": "同 id 多 result(>2, 超出 N=2 证伪者设计形态)且内容各异——疑似 workflow args "
                                   "失效致 agent 自由发挥; 核实后决定是否采信"},
                          ensure_ascii=False), file=sys.stderr)
     files = _glob.glob(os.path.join(transcript_dir, "journal.jsonl"))

@@ -106,6 +106,11 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 
 1. **架构上下文**：`python3 surface_mapper.py context <project>` → 语言/构建文件/README 摘要。
 2. **4 域并行测绘**（network/data/process/storage）：拉起 4 个子智能体，任务书模板 `task_templates/surface_map_domain.md`。
+   > **派发能力指引（v3.14, SWR-V3.14-007）**：优先派发具备写盘能力的子智能体
+   > （允许写 `.audit_results/_r1_<域>.json`）；只读代理（如 Explore）会按落盘
+   > 拦截契约以 UNWRITTEN 形态返回完整 JSON，由主代理恢复（写 recovered_by）——
+   > 可用但产生主代理转写负担（protobuf 审计 4/5 域 UNWRITTEN 实录）。完成通知
+   > 后先 `json.load` 校验文件已落盘（铁律 1）再采信。
    > ⚠️ **任务书 schema 契约（W5 教训 ②）**：任务书必须内嵌下述 canonical schema，禁止让子智能体自定格式：
    > ```json
    > [{"id":"SURF-<域>-NNN","name":"...","type":"network|data|process|storage",
@@ -971,8 +976,10 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 6. **裁决核验与补强签收 warn（SWR-V3.10.2-014/015）**：主代理采纳证伪者
    结论 demote 时须对证伪者承重前提主张逐条回源码核实并落盘
    `adjudication_verification`；证伪者/复活者补强（strengthened/
-   attribution_correction）进报告/申报前须主代理逐条签收
-   （`*_verified_by`）——两者均为 warn 级不阻断，旧队列复跑以
+   attribution_correction）进报告/申报前须主代理逐条签收——签收字段为候选级
+   `refutation` dict 内的 `strengthened_verified_by` /
+   `attribution_correction_verified_by`（与 `strengthened[]` 平级，**非 entry
+   内部**，v3.14 SWR-V3.14-008 文案补全）——两者均为 warn 级不阻断，旧队列复跑以
    `require_adjudication_verify=False` / `require_strengthen_verify=False` 豁免。
 7. **NEEDS_REVIEW 成因三分（SWR-V3.10.2-013）**：`保守裁决 | 证据不足 |
    环境受限`（环境受限=无目标平台运行面）；环境受限 + 上游公开佐证 →
