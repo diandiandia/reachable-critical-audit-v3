@@ -23,6 +23,14 @@
 - 消费侧 (sink 下游按长度拷贝的循环) 同样复刻, 长度传播到消费点才是
   完整攻击链的实证
 
+复现安全性 (v3.10.2, SWR-V3.10.2-019):
+本模板生成的 harness 可能触发 GB/TB 级分配请求——无防护环境复跑极值预设会
+OOM-kill 整机。运行前必须设进程限额 (示例):
+  ulimit -v 8388608   # 8GB 虚拟内存上限
+或按 c/cpp 语言手册 §7 的资源防护样板 (setrlimit/getrlimit) 在 harness 头部
+显式设置。攻击输入矩阵的极值预设 (0xFFFFFFFF 类长度前缀) 仅在有限额环境下
+运行; 对照复现 (RSS 测量) 用 -O1 无 sanitizer, 与 ASan 运行分离。
+
 用法: python3 parser_fuzz_c.py --sink <提取的C文件> --rounds 200000
 输出: {"asan_findings": n, "ubsan_findings": n, "rounds": n, "verdict": ...}
 """

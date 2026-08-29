@@ -175,3 +175,41 @@ def main(argv):
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
+
+
+# ---- v3.10.2 (SWR-V3.10.2-016): 平台信任模型清单查询 ----
+
+PLATFORM_SIGNAL_PATHS = {
+    # 平台信号判定 (通用机制): surface 文件路径/语言特征 → 平台键。
+    # 注意: 只作注入信号, 平台语义本身由清单条目承载 (去项目化: 零具体项目 API 名)。
+    "mobile": (("android", "/android/"), ("ios", "/ios/"), ("darwin", "/darwin/")),
+    "desktop": (("linux", "/linux/"), ("windows", "/windows/"), ("macos", "/macos/"),
+                ("embedder", "/embedder/")),
+    "web": (("web", "/web"), ("html", ".html"), ("js", ".js"), ("wasm", "wasm")),
+    "embedded_kernel": (("kconfig", "Kconfig"), ("defconfig", "defconfig"),
+                        ("syscall", "syscall"), ("bpf", "/bpf/")),
+}
+
+
+def detect_platforms(surfaces):
+    """SWR-V3.10.2-016: 从 R1 surface 集判定目标平台键 (信号级, 供任务书绑定)。
+    surfaces: input_surface.json 的 surfaces 列表 (dict 形态, 含 entry_points/file 或
+    lang 字段)。零平台信号 → 返回空列表 (任务书零注入)。"""
+    hits = {}
+    for s in surfaces or []:
+        blob = " ".join([
+            str(s.get("lang") or ""),
+            *(str(ep.get("file") or "") for ep in (s.get("entry_points") or [])),
+        ]).lower()
+        for plat, sigs in PLATFORM_SIGNAL_PATHS.items():
+            if any(sig[0].lower() in blob or sig[1].lower() in blob for sig in sigs):
+                hits[plat] = hits.get(plat, 0) + 1
+    return sorted(hits, key=lambda k: -hits[k])
+
+
+def platform_models(targets):
+    """SWR-V3.10.2-016: 按平台键返回清单条目 (任务书注入用)。
+    targets: detect_platforms 的返回或主代理显式指定。"""
+    lib = load_library()
+    models = lib.get("platform_trust_models", [])
+    return [m for m in models if m.get("platform") in (targets or [])]

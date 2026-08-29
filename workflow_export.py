@@ -337,7 +337,9 @@ def refute_prompt(c, idx):
            "混合语言项目必须搜索跨语言调用形态（别名/桥接/绑定层），不得只 grep "
            "同语言标识符（v3.8, SWR-V3.8-006）",
         1: "前提维度与阻断幻觉: platform_precondition 是否被忽略（平台限定路径被判通用可达）；"
-           "trust_boundary 是否惯例假设；gate 是否被当默认开；阻断是否覆盖攻击者可控的全部维度。",
+           "trust_boundary 是否惯例假设——特别注意平台信任模型 (v3.10.2, SWR-V3.10.2-016): "
+           "同设备其他应用经导出组件/意图参数注入是异主体, 不得以『单信任域设计』泛化同主体; "
+           "gate 是否被当默认开；阻断是否覆盖攻击者可控的全部维度。",
     }
     angle = lens.get(idx, lens[0])
     toolbox = ""
@@ -371,7 +373,9 @@ def refute_prompt(c, idx):
         f"file 引用一律相对项目根路径。\n\n"
         f"输出 refuted=true/false + reason（证伪依据或确认理由，附 file:line）。"
         f"发现更强的攻击向量或 verifier 归因错误时分别写入 strengthened / "
-        f"attribution_correction 字段。"
+        f"attribution_correction 字段。补强/归因修正是第三方断言——主代理将逐条"
+        f"复核签收后才进入报告与申报材料 (v3.10.2, SWR-V3.10.2-011), 请确保每条"
+        f"可回源码核实 (附 file:line)。"
     )
 
 
@@ -586,6 +590,26 @@ def export_script(project_root, mode="verify", batch_size=4):
         ctx = bv._build_context(c, project_root)
         prompt = bv._build_prompt(c, ctx, project_root)
         if mode == "verify":
+            # v3.10.2 (SWR-V3.10.2-016): 平台信任模型清单注入——按 R1 surface
+            # 集判定平台键, 注入对应清单条目 (零平台信号 → 零注入)
+            try:
+                import checklist_binder as _cb
+                isurf_path = os.path.join(project_root, ".audit_results",
+                                          "input_surface.json")
+                _surfs = json.load(open(isurf_path)).get("surfaces", []) \
+                    if os.path.exists(isurf_path) else []
+                _plats = _cb.detect_platforms(_surfs)
+                _models = _cb.platform_models(_plats)
+                if _models:
+                    prompt += ("\n\n## 平台信任模型对照清单 (v3.10.2, SWR-V3.10.2-016)\n"
+                               "目标平台信号: " + ", ".join(_plats) + "。\n")
+                    for _m in _models:
+                        prompt += (f"### {_m.get('id')}\n{_m.get('mechanism')}\n"
+                                   + "".join(f"- {q}\n" for q in _m.get("probe_questions") or []))
+                    prompt += ("\n步骤 3 的『同主体/DIRECT』判定必须逐条对照上表："
+                               "任一平台机制使『调用者≠启动者本人』(异主体) 时按 ACROSS_BOUNDARY 处理。\n")
+            except (ImportError, OSError, ValueError):
+                pass
             # v3.1 (SWR-V3.1-044/045): 注入家族清单步骤 + 自证伪提示
             checklist_section = _checklist_section(c)
             hints = _self_refutation_section(c)

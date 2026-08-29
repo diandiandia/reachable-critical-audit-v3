@@ -937,5 +937,92 @@
     "检查在操作之后但覆盖下一次操作之前的全部写窗口吗? 若首块写入发生在任何检查之前，需单独论证首块边界（含退化维度/零尺寸路径）"
    ]
   }
+ ],
+ "platform_trust_models": [
+  {
+   "id": "PTM-MOBILE-INTENT",
+   "platform": "mobile",
+   "mechanism": "same-device cross-app injection surface: 同设备其他应用经导出组件/意图参数/跨应用调用进入目标进程是异主体——intent/URI 参数控制者 ≠ 启动者本人",
+   "probe_questions": [
+    "宿主默认入口（launcher/deep-link handler）是否导出且处理外部参数?",
+    "外部参数是否影响安全敏感配置（鉴权/调试/绑定地址/路径）?",
+    "平台是否对注入参数有 release/受限门（构建类型过滤/权限）?"
+   ],
+   "source_lessons": [
+    "多媒体系列批次: 跨主体意图注入族四轮缺失直到复活波纠正"
+   ]
+  },
+  {
+   "id": "PTM-MOBILE-BROKER",
+   "platform": "mobile",
+   "mechanism": "platform auth broker: 系统服务绑定/用户授权中介（自动填充/通知/无障碍）构成平台级认证——载荷经 BIND 保护组件+用户启用+系统会话中介, 非未认证通道",
+   "probe_questions": [
+    "数据源是否经系统绑定组件+用户显式授权到达?",
+    "载荷是否仅字符串值且严格落入应用自身注册结构?"
+   ],
+   "source_lessons": [
+    "多媒体系列批次: 平台认证中介被误读为未认证通道 (2/2 证伪纠正)"
+   ]
+  },
+  {
+   "id": "PTM-MOBILE-NETPOL",
+   "platform": "mobile",
+   "mechanism": "network policy gate: 平台级明文/域名限制策略门（默认禁明文/域名白名单）——引擎策略默认放行不等于平台无门",
+   "probe_questions": [
+    "平台网络策略（明文禁止/域名策略）对出站面是否生效?",
+    "库侧策略开关默认值与平台策略的关系?"
+   ],
+   "source_lessons": [
+    "多媒体系列批次: 明文放行默认值的平台门对照"
+   ]
+  },
+  {
+   "id": "PTM-MOBILE-SANDBOX",
+   "platform": "mobile",
+   "mechanism": "sandbox semantics: 进程级沙箱对文件读取/资源访问的全局约束——库内路径穿越原语受进程沙箱封顶, 影响面声明须按沙箱边界限定",
+   "probe_questions": [
+    "路径类原语在沙箱内实际可达面（容器内 vs 全文件系统）?",
+    "平台资源（剪贴板/相机/存储）访问是否有 OS 层前置?"
+   ],
+   "source_lessons": [
+    "多媒体系列批次: 穿越原语被平台约束封顶的形态"
+   ]
+  },
+  {
+   "id": "PTM-DESKTOP-ENV",
+   "platform": "desktop",
+   "mechanism": "environment/argv injection: 同 UID 进程可控制的环境变量/启动参数注入面——外部输入经 env/argv 进入安全敏感配置",
+   "probe_questions": [
+    "env/argv 是否直达安全敏感开关（鉴权/绑定/路径）?",
+    "注入面是否有构建类型门（release 排除）?"
+   ],
+   "source_lessons": [
+    "多媒体系列批次: env 重定向族 (同 Android intent 族的桌面形态)"
+   ]
+  },
+  {
+   "id": "PTM-WEB-ORIGIN",
+   "platform": "web",
+   "mechanism": "same-origin/host-page trust: 宿主页面即应用信任域——JS 入口配置/加载参数由页面自身控制, 无跨信任域输入",
+   "probe_questions": [
+    "入口配置来源是否同源（宿主页面自身）?",
+    "wasm/worker 边界内解码器是否独立信任域?"
+   ],
+   "source_lessons": [
+    "多媒体系列批次: web 入口面按宿主页面信任域裁决"
+   ]
+  },
+  {
+   "id": "PTM-KERNEL-CONFIG",
+   "platform": "embedded_kernel",
+   "mechanism": "config surface: 编译开关提交值（defconfig/fragments 的 =y/=m）vs 代码默认值——可达性前提必须核对代码在编译面, 不在编译面不构成可达声称",
+   "probe_questions": [
+    "sink 所在代码在发布配置的提交值中是否编译?",
+    "树外模块/厂商模块的供给面是否在测绘范围外?"
+   ],
+   "source_lessons": [
+    "kernel 级项目首例审计: GKI 编译面出圈裁决"
+   ]
+  }
  ]
 }

@@ -74,3 +74,31 @@ parser_fuzz 的随机主循环适配无状态解析器；sink 依赖解析上下
 - 实测形态（来源：2026-08 内核级目标两次 ASAN 实证，见 lessons/SKILL_LESSONS_common.md
   过程观察）：确定性输入求解（穷举长度/校验字段使门禁通过）+ 1M 轮随机矩阵
   双模式，ASAN 报 redzone 越界即 CONFIRMED
+
+## 8. 资源防护样板（v3.10.2, SWR-V3.10.2-019）
+
+实证 harness 可能触发 GB/TB 级分配——无防护环境复跑极值预设会 OOM-kill 整机。
+运行前二选一：
+
+```bash
+# 方式 A: shell 级限额 (最简)
+ulimit -v 8388608    # 8GB 虚拟内存上限; 分配超限时 malloc 失败而非杀主机
+```
+
+```c
+/* 方式 B: harness 内显式防护 (可复现性更强, 推荐写入 harness 头部) */
+#include <sys/resource.h>
+static void limit_vmem_kb(long kb) {
+    struct rlimit rl = { (rlim_t)kb * 1024, (rlim_t)kb * 1024 };
+    if (setrlimit(RLIMIT_AS, &rl) != 0) { perror("setrlimit"); exit(2); }
+}
+/* main 开头: limit_vmem_kb(8 * 1024 * 1024);  // 8GB */
+```
+
+纪律：
+- 极值预设（0xFFFFFFFF 类长度/计数）仅在限额环境运行；甜点区间（GB 级成功
+  分配）与极值（bad_alloc）分两次运行分别取证。
+- 对照复现（RSS 测量）用 `-O1` 无 sanitizer，与 ASan/UBSan 运行分离
+  （ASan 约 2x 内存开销会干扰 RSS 读数；报告注明工具链差异）。
+- 实证产物全部落盘 `.audit_results/empirical/<name>/`（R0 目录守卫）——
+  含源码、输入、EMPRICAL_REPORT（工具链版本/输入/输出/判定）。
