@@ -1171,3 +1171,51 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 4 条清单机制形态）+ 覆盖账本 dry-run 列出 NUMERIC/ERROR-HANDLING 缺口格 +
 436/444/1333 归族 + 旧队列复跑零新增告警 + 未审计过的新项目验收随下一在线
 项目自然触发（数值/错误路径清单绑定、新族格回填至少各真实命中一次）。
+
+---
+
+## 🆕 v3.14 增量（2026-08-30，protobuf 复审计复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_14.md` + REQ/SWR/SOFTWARE_DESIGN_V3_14
+> + `BIAS_EVAL_V3_14.md`（四项缺陷评估）。缺陷修复版：不改变阶段骨架、六门禁
+> ①-⑧判据语义、队列数据模型主体。
+> 背景：protobuf 复审计（v3.13 验收审计，52 面/29 假设/12 候选/3 验证波 +
+> 2 证伪波 + 2 复活波，六门禁 PASS）实战暴露 8 项缺陷，全部经代码取证核实。
+
+### 机制修复
+
+1. **journal 异常检测按 mode 区分（D-1, REQ-V3.14-001）**：`_detect_journal_anomaly`
+   加 `max_distinct_per_id` 参数（默认 1）；r35-collect（N=2 证伪者同 id 多 result
+   是设计形态）传 2——仅 >2 才判 anomaly。此前 refutation 模式恒误报。
+2. **unknown_surface_ids 建议映射（D-4, REQ-V3.14-002）**：r4-collect 告警处从
+   归一化 known 集生成 `suggested_corrections`（后缀匹配，覆盖 S-<域>-NNN ↔
+   SURF-<域>-NNN 跨前缀形态）——仅提示不自动改写。
+3. **r3_link 值域校验（D-5, REQ-V3.14-003）**：非空且非 CAND-* 的 r3_link 写
+   `r3_link_invalid` flag + warn（假设 id 误填静默落盘实录）。
+4. **R4 finding 终态一致性 warn（D-6, REQ-V3.14-004）**：finding 带 r3_link 且含
+   终态关键词时与候选当前 verdict 比对，矛盾输出 `r4_verdict_link_conflict`
+   （字段级 warn，非新门禁）。
+5. **复审计幂等分支增量指引（D-2, REQ-V3.14-005）**：LEDGER_IDEMPOTENT_SKIP
+   且 would_be 增量非空时输出 `manual_merge_guidance`（增量清单 + 合并协议）——
+   不做自动 re-credit（第二个复审计案例再评）。
+6. **复活抽样单真相（D-3, REQ-V3.14-006）**：`export_script_resurrect` 先读
+   `_resurrect_sample.json`（存在且与当前候选集合一致→文件池为准；缺失/漂移→
+   内部抽样并写文件）。文件保持可选，零新增强制义务。
+7. **R1 派发写盘能力指引（D-7, REQ-V3.14-007）**：优先派发具备写盘能力的子
+   智能体；只读代理按 UNWRITTEN 契约恢复（一行指引）。
+8. **strengthen 签收文案（D-8, REQ-V3.14-008）**：note 补字段名与层级
+   （候选级 refutation dict 内 `strengthened_verified_by`/
+   `attribution_correction_verified_by`，与 strengthened[] 平级）。
+
+### 明确不做（义务棘轮防护 + 四缺陷评估裁决）
+
+- 不做自动 re-credit、不自动改写 tracked_surfaces、不加新门禁、不改 revive/demote
+  裁决语义；D-7 不升 SWR；`_resurrect_sample.json` 保持可选。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.14 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成。
+
+### 验收判据（Phase 3.14）
+
+全量回归全绿（329 基线 + test_v314 新增）+ 旧队列复跑零新增告警 + protobuf
+受影响阶段复跑零回退（journal 重放无 anomaly 误报、账本幂等分支输出增量指引、
+复活导出读 sample 文件）+ 审计工件修正完成（H4-F5 与 CAND-009 终态一致）。

@@ -798,3 +798,37 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | SWR-V3.13-004 | 错误路径族 2 条绑定契约（含限定形态负例：异常处理/error_handler/cleanup() 不绑新条目） | 已完成 | tests/test_v313.py |
 | SWR-V3.13-005 | 4 条新清单去项目化扫描 0 命中（黑名单含 lersosa/无 /root//无 applications 死字段） | 已完成 | tests/test_v313.py + signature_lib |
 | SWR-V3.13-006 | TOOLING_VERSION=3.13；SKILL.md v3.13 段齐备（38/17 计数）；全量回归全绿 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量 |
+
+---
+
+## 系统需求（REQ-V3.14）（共 9 条）
+
+> 来源: protobuf 复审计复盘（8 项缺陷 D-1~D-8 实战暴露）——设计文档
+> SYSTEM_DESIGN_V3_14.md / REQ_V3_14.md（2026-08-30）。评估: BIAS_EVAL_V3_14.md。
+> 注意: 本段为手工追加（禁止运行 tools/gen_tracking.py 再生成）。
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| REQ-V3.14-001 | journal 异常检测按 mode 区分（max_distinct_per_id 参数, r35 传 2） | 已完成 | tools/batch_verify.py + tests/test_v314.py |
+| REQ-V3.14-002 | unknown_surface_ids 建议映射（仅提示不自动改写） | 已完成 | tools/batch_verify.py + tests/test_v314.py |
+| REQ-V3.14-003 | r3_link 值域校验（非 CAND-* warn） | 已完成 | tools/batch_verify.py + tests/test_v314.py |
+| REQ-V3.14-004 | R4 finding 终态表述与候选终态一致性 warn（字段级非新门禁） | 已完成 | tools/batch_verify.py + tests/test_v314.py |
+| REQ-V3.14-005 | 复审计幂等分支 manual_merge_guidance（不自动 re-credit） | 已完成 | tools/batch_verify.py + tests/test_v314.py |
+| REQ-V3.14-006 | 复活抽样单真相（导出器读 sample 文件, 可选） | 已完成 | workflow_export.py + tests/test_v314.py |
+| REQ-V3.14-007 | R1 派发写盘能力指引（SKILL.md 一行） | 已完成 | SKILL.md + tests/test_v314.py |
+| REQ-V3.14-008 | strengthen 签收指引文案（字段名+层级） | 已完成 | evidence_ledger.py + SKILL.md + tests/test_v314.py |
+| REQ-V3.14-009 | 版本链（TOOLING 3.14 + 增量段 + test_v314） | 已完成 | workflow_export.py + SKILL.md + tests/ |
+
+## 软件需求（SWR-V3.14）（共 9 条）
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| SWR-V3.14-001 | anomaly 阈值参数默认 1/r35 传 2；test_v3102 两参调用保持全绿 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-002 | suggested_corrections 映射输出；tracked_surfaces 不被自动改写 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-003 | r3_link_invalid flag + warn；合法值零告警 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-004 | r4_verdict_link_conflict 矛盾 warn/一致零告警；无新 gate 名 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-005 | manual_merge_guidance 增量非空输出/空零输出；首写路径零变化 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-006 | sample 文件权威三分支；test_resurrect_sample_dump 保持全绿 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-007 | SKILL.md R1 写盘指引句存在 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-008 | note 含字段名与层级 | 已完成 | tests/test_v314.py |
+| SWR-V3.14-009 | TOOLING==3.14 + v3.14 增量段 + 全量回归全绿 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量 |
