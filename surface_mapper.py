@@ -848,7 +848,10 @@ def merge_surfaces(files, project_root=None):
     # 仅提示 (语义相似度判定不可靠, 不自动组族), 主代理 merge 复核时裁决。
     _langs = {str(s.get("lang") or "") for s in merged["surfaces"]}
     if len(_langs) >= 2:
-        # 语义域词集 (防同名异义误配: 图像解码 codec vs 消息编解码 codec)
+        # 语义域词集 (防同名异义误配: 图像解码 codec vs 消息编解码 codec)。
+        # 偏见评估注记 (P13): 首版双域从多媒体系批次提炼——对其他形态项目
+        # (数据面/协议栈/存储面) 静默失效 (零输出, 无负作用)。词集为开放形态:
+        # 新项目审计后按需扩展域词, 勿视为封闭全集。
         _image_domain = {"image", "图像", "帧", "frame", "instantiate", "bitmap",
                          "pixel", "像素", "图片", "动画"}
         _message_domain = {"message", "消息", "channel", "通道", "插件", "plugin",
@@ -996,10 +999,14 @@ def scope_snapshot(project_root):
 
 
 _BUILD_MANIFESTS = (
-    # 生态分派: 构建清单文件名 → 依赖声明形态
-    ("DEPS", "deps"), (".gclient", "gclient"), ("build.gradle", "gradle"),
-    ("pom.xml", "maven"), ("Cargo.toml", "cargo"), ("go.mod", "gomod"),
-    ("package.json", "npm"), ("pyproject.toml", "pyproject"),
+    # 过设计评估裁剪 (P13): 目录提取仅对「树内目录声明」形态的清单有效
+    # (DEPS/.gclient 的 'src/xxx': url 形态); 其余生态清单 (pom/gradle/cargo/
+    # go.mod/npm/pyproject) 的依赖解析形态各异, 统一提取是伪能力——降为
+    # 存在性注记 (仅声明「有构建清单但未做目录级提取」)
+    ("DEPS", "deps", True), (".gclient", "gclient", True),
+    ("build.gradle", "gradle", False), ("pom.xml", "maven", False),
+    ("Cargo.toml", "cargo", False), ("go.mod", "gomod", False),
+    ("package.json", "npm", False), ("pyproject.toml", "pyproject", False),
 )
 
 
@@ -1007,9 +1014,17 @@ def _build_divergence(project_root):
     '''SWR-V3.11-009: 构建差异声明——构建清单存在但对应物化目录缺失/为空的
     差异表 (依赖未物化/生成物缺失)。提示级声明, 不改变任何裁决。'''
     div = []
-    for fname, kind in _BUILD_MANIFESTS:
+    for fname, kind, extract_dirs in _BUILD_MANIFESTS:
         fp = os.path.join(project_root, fname)
         if not os.path.isfile(fp):
+            continue
+        if not extract_dirs:
+            div.append({"manifest": fname, "kind": kind,
+                        "declared_dirs_sample": [],
+                        "missing_or_empty": [],
+                        "note": "存在性注记: 该生态清单的依赖解析形态各异, "
+                                "未做目录级提取 (过设计裁剪)——审计树差异由主代理"
+                                "按生态惯例声明"})
             continue
         declared_dirs = set()
         try:

@@ -418,8 +418,11 @@ def _derive_attacker_tier(v, c):
         return "same_process"
     if rt == "ACROSS_BOUNDARY":
         # 平台组件注入信号 > 网络内容信号 (同设备异主体优先于远程)
-        if any(k in ev for k in ("导出组件", "intent", "意图", "跨应用", "binder",
-                                 "exported", "组件注入")):
+        if (any(k in ev for k in ("导出组件", "意图", "跨应用", "binder",
+                                   "组件注入"))
+                or re.search(r"\bintent\b", ev)
+                or "intent extra" in ev or "intent 参数" in ev
+                or "exported=" in ev or "android:exported" in ev):
             return "same_device_cross_app"
         if any(k in ev for k in ("远程", "网络", "remote", "http", "url", "下载",
                                  "服务器", "字节流", "网络内容")):
@@ -1017,7 +1020,7 @@ def write_scope_review(project_root, changed_dir, decision, reason, surfaces_reo
         fh.write(json.dumps(row, ensure_ascii=False) + "\n")
     return row
 
-def stage_reopen(project_root, cid):
+def stage_reopen(project_root, cid, reopen_reason=None):
     """SWR-V3.10.2-012: NEEDS_REVIEW 候选重开——环境 blocker 解除后回 PENDING
     (保留 correction_record/needs_review_reason/refutation/resurrection_review);
     reopen_reason 必填 (blocker 解除依据)。"""
@@ -1036,11 +1039,11 @@ def stage_reopen(project_root, cid):
                           "note": f"仅 NEEDS_REVIEW 候选可重开 (当前 {target.get('verdict')})"},
                          ensure_ascii=False), file=sys.stderr)
         return 1
-    reason = os.environ.get("REOPEN_REASON", "")
+    reason = reopen_reason or os.environ.get("REOPEN_REASON", "")
     if not reason:
         print(json.dumps({"status": "REOPEN_REJECTED", "id": cid,
-                          "note": "reopen_reason 必填 (blocker 解除依据)——以 "
-                                  "REOPEN_REASON 环境变量传入"},
+                          "note": "reopen_reason 必填 (blocker 解除依据)——"
+                                  "--reopen-reason 参数传入 (环境变量 REOPEN_REASON 兼容兜底)"},
                          ensure_ascii=False), file=sys.stderr)
         return 1
     target["status"] = "PENDING"
@@ -1048,8 +1051,10 @@ def stage_reopen(project_root, cid):
     target["evidence_grade"] = None
     target["claim_type"] = None
     target["reopen_reason"] = reason
+    import datetime as _dt
     target.setdefault("reopen_history", []).append({
-        "reopened_at": "", "reason": reason,
+        "reopened_at": _dt.datetime.now().isoformat(timespec="seconds"),
+        "reason": reason,
         "prior": {"verdict": "NEEDS_REVIEW",
                   "needs_review_reason": target.get("needs_review_reason")}})
     save_queue(project_root, queue)
@@ -2733,6 +2738,7 @@ def main():
     expect_ids = []
     force = False
     reopen_id = None
+    reopen_reason = None
 
     args = sys.argv[2:]
     for i, arg in enumerate(args):
@@ -2768,6 +2774,10 @@ def main():
             reopen_id = arg.split("=", 1)[1]
         elif arg == "--reopen-id" and i + 1 < len(args):
             reopen_id = args[i + 1]
+        elif arg.startswith("--reopen-reason="):
+            reopen_reason = arg.split("=", 1)[1]
+        elif arg == "--reopen-reason" and i + 1 < len(args):
+            reopen_reason = args[i + 1]
         elif arg.startswith("--mode="):
             mode = arg.split("=", 1)[1]
         elif arg == "--mode" and i + 1 < len(args):
@@ -2819,7 +2829,34 @@ def main():
         if not reopen_id:
             print("Error: reopen requires --reopen-id <id>", file=sys.stderr)
             sys.exit(1)
-        sys.exit(stage_reopen(project_root, reopen_id))
+        sys.exit(stage_reopen(project_root, reopen_id, reopen_reason))
+    elif stage == "scope-review":
+        # SWR-V3.11-018 补充: write_scope_review 的 CLI 入口 (此前仅 API 形态,
+        # 无调用点——过设计/死代码评估发现)
+        _dir = None
+        _decision = None
+        _reason = ""
+        for j, arg in enumerate(args):
+            if arg.startswith("--dir="):
+                _dir = arg.split("=", 1)[1]
+            elif arg == "--dir" and j + 1 < len(args):
+                _dir = args[j + 1]
+            elif arg.startswith("--decision="):
+                _decision = arg.split("=", 1)[1]
+            elif arg == "--decision" and j + 1 < len(args):
+                _decision = args[j + 1]
+            elif arg.startswith("--reason="):
+                _reason = arg.split("=", 1)[1]
+            elif arg == "--reason" and j + 1 < len(args):
+                _reason = args[j + 1]
+        if not _dir or _decision not in ("reopen", "keep"):
+            print("Error: scope-review requires --dir <d> --decision reopen|keep "
+                  "[--reason <r>]", file=sys.stderr)
+            sys.exit(1)
+        row = write_scope_review(project_root, _dir, _decision, _reason)
+        print(json.dumps({"status": "SCOPE_REVIEW_WRITTEN", **row},
+                         ensure_ascii=False))
+        sys.exit(0)
     elif stage == "collect":
         # v3.2.2 (REQ-V3.2.2-024): --from-journal 桥接——从 workflow transcript
         # 目录的 journal.jsonl 提取 schema-validated 结果 (result/value 双字段,
