@@ -770,3 +770,31 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | SWR-V3.12-004 | PREC-STATE-GATE-REENTRY 双路径触达；全先例可达断言保持 | 已完成 | tests/test_v312.py + test_v321.py |
 | SWR-V3.12-005 | 新清单/新先例去项目化扫描 0 命中（机制形态） | 已完成 | tests/test_v312.py + signature_lib |
 | SWR-V3.12-006 | TOOLING_VERSION=3.12；SKILL.md v3.12 增量段齐备（34/17 计数）；全量回归全绿 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量 |
+
+---
+
+## 系统需求（REQ-V3.13）（共 5 条）
+
+> 来源: 用户盘点「除复杂文件解析/协议/状态机之外还该关注什么」——错误路径处理族 +
+> 数值语义族 + 账本锚点一致性修复——设计文档 SYSTEM_DESIGN_V3_13.md / REQ_V3_13.md
+> （2026-08-29）。评估: BIAS_EVAL_V3_13.md（H-0 自纠 + 4 处核验修正）。
+> 注意: 本段为手工追加（禁止运行 tools/gen_tracking.py 再生成）。
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| REQ-V3.13-001 | 覆盖账本 NUMERIC{191/369/681/697} + ERROR-HANDLING{457/665} 两族 + 空行；WEB += 436/444、RESOURCE-DOS += 1333 锚定修正（190/129 不重归） | 已完成 | resources/issue_coverage_matrix.json + tests/test_v313.py |
+| REQ-V3.13-002 | 严重程度映射 9 码（191→严重；369/457/444/1333→高；681/697/665/436→中；override/回退不变） | 已完成 | tools/batch_verify.py + tests/test_v313.py |
+| REQ-V3.13-003 | 数值语义族清单 2 条（CK-NUMERIC-TRUNCATION 191/681 锚；CK-NUMERIC-SEMANTICS 369/697 锚） | 已完成 | resources/checklist_library.json + tests/test_v313.py |
+| REQ-V3.13-004 | 错误路径处理族清单 2 条（CK-ERROR-BRANCH 无锚关键词——W6 §25.3 制度化；CK-ERROR-CLEANUP 457/665 锚） | 已完成 | resources/checklist_library.json + tests/test_v313.py |
+| REQ-V3.13-005 | 版本链（TOOLING 3.13 + SKILL.md 增量段 + 资产地图 38 + 文档五件套 + test_v313） | 已完成 | workflow_export.py + SKILL.md + tests/ |
+
+## 软件需求（SWR-V3.13）（共 6 条）
+
+| 编号 | 内容 | 状态 | 里程碑 |
+|---|---|---|---|
+| SWR-V3.13-001 | 两族 cwe 集/空行断言；436/444→WEB、1333→RESOURCE-DOS、191→NUMERIC、457→ERROR-HANDLING（非 OTHER）；缺口扫描新族格 | 已完成 | tests/test_v313.py |
+| SWR-V3.13-002 | severity_for 9 码档位；override/claim_type 回退语义不变 | 已完成 | tests/test_v313.py |
+| SWR-V3.13-003 | 数值族 2 条绑定契约（cwe/关键词双路径；唯一锚定） | 已完成 | tests/test_v313.py |
+| SWR-V3.13-004 | 错误路径族 2 条绑定契约（含限定形态负例：异常处理/error_handler/cleanup() 不绑新条目） | 已完成 | tests/test_v313.py |
+| SWR-V3.13-005 | 4 条新清单去项目化扫描 0 命中（黑名单含 lersosa/无 /root//无 applications 死字段） | 已完成 | tests/test_v313.py + signature_lib |
+| SWR-V3.13-006 | TOOLING_VERSION=3.13；SKILL.md v3.13 段齐备（38/17 计数）；全量回归全绿 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量 |

@@ -326,7 +326,7 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：17 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族）；`resources/checklist_library.json`：34 条检查清单（v3.12 增补 4 条状态机族）
+- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：17 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族）；`resources/checklist_library.json`：38 条检查清单（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族）
 - `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：5 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe）；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
 - `tests/`：300+ 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
@@ -362,7 +362,7 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 ### R3 变更: verifier v3.1（步骤 0 + 清单 + 自证伪）
 - **步骤 0 承重前提验证**（W6 §17.10）——前提断裂立即终止
 - `checklist_binder.py` 按 cwe/关键词自动绑定家族检查清单（checklist_library.json
-  34 条 CK-*（v3.12 增补 4 条状态机族），16 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
+  38 条 CK-*（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族），16 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
 - 自证伪提示: 候选附先例库匹配的最可能证伪论据，verifier 自查（目标: R3.5 拦截率
   从 ~50% 收敛到 <30%）
 - 轻量实证白名单 + `empirical` 字段结构化 + 范围分级
@@ -1111,3 +1111,56 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 清单/新先例机制形态）+ 覆盖账本 dry-run 列出 STATE 缺口格 + 旧队列复跑零新增
 告警 + 未审计过的新项目验收随下一在线项目自然触发（状态机清单绑定、STATE 格
 回填、先例提示至少各真实命中一次）。
+
+---
+
+## 🆕 v3.13 增量（2026-08-29，错误路径处理族 + 数值语义族 + 账本锚点一致性修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_13.md` + REQ/SWR/SOFTWARE_DESIGN_V3_13
+> + `BIAS_EVAL_V3_13.md`（四项缺陷评估）。能力增量版：不改变阶段骨架、六门禁
+> ①-⑧判据语义、队列数据模型。
+> 背景：用户盘点「除复杂文件解析/协议分析/状态机分析之外还该关注什么」——
+> 两族有实证支撑的空白维度（数值语义/错误路径处理）+ 一个账本漂移修复
+> （436/444/1333 清单/先例层已锚、账本层未锚）。全部案例支撑经实证队列核验。
+
+### 机制新增
+
+1. **覆盖账本 NUMERIC + ERROR-HANDLING 族（REQ-V3.13-001）**：NUMERIC
+   {191 整数下溢/369 除零/681 转换截断/697 不一致比较}、ERROR-HANDLING
+   {457 未初始化/665 初始化不完整} + 空行（缺口扫描可见）。**锚定修正**：
+   WEB cwe += 436/444、RESOURCE-DOS cwe += 1333——收口清单层（CK-DUAL-PARSER/
+   CK-HOST-AUTH-CONSISTENCY/CK-RUNTIME-RE）与先例层已锚而账本未锚的漂移。
+   190/129 不重归（MEMORY-SAFETY 既有锁）。fam_map 数据驱动零代码改动。
+2. **严重程度映射 9 码（REQ-V3.13-002）**：191→严重（与 190 对称）、
+   369/457/444/1333→高（除零 crash 类/未初始化 SIGABRT 实证档/请求走私/
+   RESOURCE-DOS 全族 high 先例）、681/697/665/436→中（转换截断/不一致比较/
+   初始化不完整/双解析器前提=逻辑缺陷默认档）。override 优先级与 claim_type
+   回退链语义不变。
+3. **数值语义族检查清单 2 条（REQ-V3.13-003）**：CK-NUMERIC-TRUNCATION
+   （191/681 锚定：截断先于检查=检查死代码/回绕过检/哨兵算术）、
+   CK-NUMERIC-SEMANTICS（369/697 锚定：除零路径/比较不一致/取模边界）。
+4. **错误路径处理族检查清单 2 条（REQ-V3.13-004）**：CK-ERROR-BRANCH（无 CWE
+   锚定关键词绑定：错误分支条件反转/静默阻断/吞没转正常路径——W6 §25.3 列项
+   制度化）、CK-ERROR-CLEANUP（457/665 锚定：未初始化残留/清理完整性/宿主复用
+   残留）。关键词纪律延续 v3.12：禁裸 异常/error/cleanup（子串/下划线误配），
+   用 异常路径/error path/failure path 多词短语。
+5. **版本链（REQ-V3.13-005）**：TOOLING_VERSION → "3.13"；资产地图 38 清单；
+   无新 PREC（436/444/1333 既有 CWE_FAMILY_MAP 已可达）。
+
+### 明确不做（义务棘轮防护）
+
+- 不建 H8/H9 假说（错误路径保持清单级——v3.12「不建 H8」先例，gate ④ 语义不变）。
+- 不重归 190/129（MEMORY-SAFETY 既有锁）；不动 CK-SENTINEL-SEMANTICS 与
+  CK-SIBLING-LISTENERS 存量（共绑合法）。
+- 无新 PREC、无新 harness 模板、无新门禁、无新绑定维度、不注入 R4/Mode A'。
+- 时间/Unicode/侧信道维度无漏报支撑暂缓（下一批对应形态目标自然触发后再议）。
+- 不修复 README.md 清单计数存量漂移（v3.12 口径一致性，见 BIAS_EVAL D-4）。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.13 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成（V3.4.4-V3.7 手工段不在 VERSIONS）。
+
+### 验收判据（Phase 3.13）
+
+全量回归全绿（315 基线 + test_v313 新增 14 用例）+ 去项目化扫描 0 命中（新
+4 条清单机制形态）+ 覆盖账本 dry-run 列出 NUMERIC/ERROR-HANDLING 缺口格 +
+436/444/1333 归族 + 旧队列复跑零新增告警 + 未审计过的新项目验收随下一在线
+项目自然触发（数值/错误路径清单绑定、新族格回填至少各真实命中一次）。

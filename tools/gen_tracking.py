@@ -20,6 +20,8 @@ VERSIONS = [
     # v3.12 登记 (2026-08-29, REQ_V3_12/SWR_V3_12 为标题形态零提取——登记仅未来-proof；
     # REQUIREMENTS_TRACKING.md 的 V3.12 段为手工追加，禁止运行本脚本再生成)
     ("V3.12",  "docs/design/REQ_V3_12.md",  "docs/design/SWR_V3_12.md"),
+    # v3.13 登记 (同 v3.12 语义: 标题形态零提取, 手工段维护, 禁止再生成)
+    ("V3.13",  "docs/design/REQ_V3_13.md",  "docs/design/SWR_V3_13.md"),
 ]
 DOCS = {f"{k}-{label}": p for label, rp, sp in VERSIONS
         for k, p in (("REQ", rp), ("SWR", sp))}
