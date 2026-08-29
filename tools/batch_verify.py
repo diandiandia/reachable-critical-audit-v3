@@ -2222,6 +2222,24 @@ def _render_appendix_b_process(project_root, queue, report_json):
         out.append(f"- 缺口格 {cl.get('gap_cell_count')}: "
                    f"{'、'.join(cl.get('gap_cells', [])) or '无'}")
         out.append(f"- 饱和格 {cl.get('saturated_cell_count')}（count≥15 不建议再选题）")
+    # B.7 v3.11 (SWR-V3.11-010): 审计树与部署物差异声明
+    out.append("### B.7 审计树与部署物差异（SWR-V3.11-009/010）")
+    snap_path = os.path.join(project_root, ".audit_results", "scope_snapshot.json")
+    div = None
+    if os.path.exists(snap_path):
+        try:
+            div = json.load(open(snap_path)).get("build_divergence")
+        except (OSError, ValueError):
+            pass
+    if div is None:
+        out.append("（scope snapshot 无构建差异段——旧快照兼容跳过）")
+    elif not div:
+        out.append("无构建清单声明的依赖差异（审计树与部署物一致声明）。")
+    else:
+        for d in div:
+            out.append(f"- `{d.get('manifest')}` ({d.get('kind')}): "
+                       f"缺失/空目录 {d.get('missing_or_empty') or '无'}"
+                       f"（声明样例 {d.get('declared_dirs_sample') or '无'}）")
     return "\n".join(out)
 
 
@@ -2567,7 +2585,10 @@ def _build_prompt(cand, ctx, project_root):
 verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重前提"（W6 §17.10/§19.5）。
 
 {step05}
-
+- 模板产物存在性（v3.11, SWR-V3.11-008）: sink 所在模板/生成器文件不随源码
+  构建但随产物生成进入部署——存在性按「模板 → 实例化产物」链判定（产物生成
+  链存在即存在性成立）; 阻断论证引用「零导出组件」类清单事实时必须核对模板
+  产物形态（源码树清单 ≠ 部署物清单）
 ### 步骤 1: 逆向调用链回溯（最小深度 3 层）
 1. 读取 {ctx['file']} L{ctx['line']} 周围代码，确认 sink 点
 2. 使用 grep 反向查找直接调用者（Caller_L1），记录调用处 file:line:function

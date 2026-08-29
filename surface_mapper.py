@@ -989,7 +989,47 @@ def scope_snapshot(project_root):
                 snap["key_dirs"][p] = bool(os.listdir(
                     os.path.join(project_root, p))) if os.path.isdir(
                     os.path.join(project_root, p)) else False
+    # v3.11 (SWR-V3.11-009): 构建差异声明——构建清单声明的依赖/生成物 vs 树内
+    # 物化状态 (审计树与部署物差异面; 空差异也落盘, 供给面完整性注记)
+    snap["build_divergence"] = _build_divergence(project_root)
     return snap
+
+
+_BUILD_MANIFESTS = (
+    # 生态分派: 构建清单文件名 → 依赖声明形态
+    ("DEPS", "deps"), (".gclient", "gclient"), ("build.gradle", "gradle"),
+    ("pom.xml", "maven"), ("Cargo.toml", "cargo"), ("go.mod", "gomod"),
+    ("package.json", "npm"), ("pyproject.toml", "pyproject"),
+)
+
+
+def _build_divergence(project_root):
+    '''SWR-V3.11-009: 构建差异声明——构建清单存在但对应物化目录缺失/为空的
+    差异表 (依赖未物化/生成物缺失)。提示级声明, 不改变任何裁决。'''
+    div = []
+    for fname, kind in _BUILD_MANIFESTS:
+        fp = os.path.join(project_root, fname)
+        if not os.path.isfile(fp):
+            continue
+        declared_dirs = set()
+        try:
+            for line in open(fp, errors="ignore"):
+                line = line.strip()
+                if ("src/" in line or "third_party" in line
+                        or line.startswith(("'", '"'))):
+                    for tok in line.replace("'", '"').split('"'):
+                        if "/" in tok and not tok.startswith(("http", "file:")):
+                            declared_dirs.add(tok.split("/")[0])
+        except OSError:
+            pass
+        missing = [d for d in sorted(declared_dirs)
+                   if not os.path.isdir(os.path.join(project_root, d))]
+        div.append({"manifest": fname, "kind": kind,
+                    "declared_dirs_sample": sorted(declared_dirs)[:8],
+                    "missing_or_empty": missing[:12],
+                    "note": "审计树与部署物差异声明 (SWR-V3.11-009): "
+                            "未物化/空目录为树外不可验证面的依据之一"})
+    return div
 
 
 def scope_diff(project_root, snapshot):

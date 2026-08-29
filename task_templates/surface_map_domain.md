@@ -41,6 +41,14 @@ boundary 域条目（仅 boundary 域使用, 同一包裹数组内, v3.8 SWR-V3.
 "taint_channels":["..."],"downstream_hints":["..."],
 "trust_boundary":{"type":"...","gate":"none|..."},"confidence":"high|medium|low"}
 
+## 生成器/模板产物面指引（v3.11, SWR-V3.11-007/008）
+仓库含模板/生成器/脚手架目录（路径信号: tmpl/template/scaffold/generator）时，
+该类文件是输入面的**实例化载体**——模板中声明的组件配置（导出属性/权限声明/
+入口注册/默认配置）在产物生成时成为部署面的一部分。面登记时 entry_points 指向
+模板文件并在该 entry 标 `"instantiated_artifact": true`。注意：模板文件不随源码
+构建但随产物生成进入部署——「源码树零导出组件」不等于「部署物零导出组件」，
+测绘时必须核对模板产物形态（该教训曾致错误阻断论证，靠复核才纠正）。
+
 ## 非网络/离线项目映射指引（v3.3 强制，REQ-V3.3-009）
 本项目若无网络服务面，按以下映射归类，**不得**把宿主 API 输入过度归为 local/environment：
 - **库/解析引擎类**：宿主应用通过公共 API 喂入的不可信数据（脚本文本/字节码/二进制块/字符串）
