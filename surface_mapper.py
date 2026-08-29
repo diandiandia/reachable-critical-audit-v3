@@ -784,6 +784,9 @@ def merge_surfaces(files, project_root=None):
     门禁⑦ tracked 计算自动传播镜像面覆盖 (mbedtls 审计 15 冲突对手写 bridge 制度化)。"""
     merged = {"surfaces": [], "conflicts": [],
               "mirror_pairs": []}
+    # v3.11 (SWR-V3.11-013): 逻辑镜像提示——跨语言语义相似面组 (仅提示不组族,
+    # 主代理裁决; 语言清单 ≥2 才检测)
+    _lang_count = set()
     # SWR-V3.4.3-030: 域前缀归一化映射 (只记变更项, 供下游追溯)
     normalized_ids = {}
     keymap = {}
@@ -840,6 +843,56 @@ def merge_surfaces(files, project_root=None):
     # 补 mirror_pairs 或主代理手动核对 (v3.5: coverage_bridge 字段已删)
     merged["same_file_cross_domain_pairs"] = _hint_same_file_cross_domain(
         merged["surfaces"])
+    # v3.11 (SWR-V3.11-013): 逻辑镜像提示——同逻辑面 × 多语言实现的完整性信号。
+    # 判定: 语义关键词重叠 (name/taint_channels) 且 lang 不同的面组。
+    # 仅提示 (语义相似度判定不可靠, 不自动组族), 主代理 merge 复核时裁决。
+    _langs = {str(s.get("lang") or "") for s in merged["surfaces"]}
+    if len(_langs) >= 2:
+        # 语义域词集 (防同名异义误配: 图像解码 codec vs 消息编解码 codec)
+        _image_domain = {"image", "图像", "帧", "frame", "instantiate", "bitmap",
+                         "pixel", "像素", "图片", "动画"}
+        _message_domain = {"message", "消息", "channel", "通道", "插件", "plugin",
+                           "binary", "二进制", "payload", "载荷"}
+        _sem = {}
+        for s in merged["surfaces"]:
+            blob = " ".join([str(s.get("name") or ""),
+                             " ".join(str(x) for x in (s.get("taint_channels") or []))]).lower()
+            kws = {w for w in ("codec", "decoder", "code", "encode", "decode",
+                               "消息", "通道", "channel", "message", "协议",
+                               "protocol", "parse", "解析", "编解码")
+                   if w in blob}
+            domains = (({"image"} if (kws & _image_domain) or any(
+                        d in blob for d in _image_domain) else set())
+                       | ({"message"} if (kws & _message_domain) or any(
+                          d in blob for d in _message_domain) else set()))
+            if len(kws) >= 2 and domains:
+                _sem[s.get("id")] = (kws, domains)
+        _cands = []
+        _ids = list(_sem.keys())
+        for i in range(len(_ids)):
+            for j in range(i + 1, len(_ids)):
+                a, b = _ids[i], _ids[j]
+                _sa = next((s for s in merged["surfaces"] if s.get("id") == a), None)
+                _sb = next((s for s in merged["surfaces"] if s.get("id") == b), None)
+                if (_sa and _sb and _sa.get("lang") and _sb.get("lang")
+                        and _sa["lang"] != _sb["lang"]
+                        and len(_sem[a][0] & _sem[b][0]) >= 2
+                        and (_sem[a][1] & _sem[b][1])):  # 同一语义域
+                    _cands.append([a, b])
+        if _cands:
+            # 按域均衡截断 (前 10 组被单域占满会截掉其他域的镜像族——域内
+            # 最多 8 组, 总上限 16)
+            _dom_cands = {}
+            for a, b in _cands:
+                _d = sorted(_sem[a][1] & _sem[b][1])[0]
+                if len(_dom_cands.get(_d, [])) < 8:
+                    _dom_cands.setdefault(_d, []).append([a, b])
+            _flat = [p for pairs in _dom_cands.values() for p in pairs][:16]
+            merged["mirror_candidates"] = _flat
+            merged["mirror_candidates_note"] = (
+                "跨语言语义相似面组 (同逻辑面的多语言实现候选, 仅提示不组族; "
+                "按语义域均衡截断)——主代理 merge 复核时裁决是否作为逻辑镜像族"
+                "登记; R2 假设生成须覆盖族内全部语言实现 (SWR-V3.11-013/014)")
     if normalized_ids:
         merged["normalized_ids"] = normalized_ids
     return merged
