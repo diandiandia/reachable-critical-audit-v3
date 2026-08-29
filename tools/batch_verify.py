@@ -1547,12 +1547,16 @@ SEVERITY_LABELS = {"critical": "严重", "high": "高", "medium": "中"}
 SEVERITY_BY_CWE = {
     # 命令/代码注入 + 反序列化 + MEMORY-SAFETY 全族
     "critical": {78, 94, 77, 502, 787, 125, 416, 415, 476, 190, 129},
-    # SQLi/路径穿越/SSRF + AUTHN 主体 + RESOURCE-DOS 全族 + RACE 全族
+    # SQLi/路径穿越/SSRF + AUTHN 主体 + RESOURCE-DOS 全族 + RACE 全族 +
+    # STATE 序对/协议类 (841/696, 与 RACE 同档)
     "high": {89, 74, 22, 918, 862, 863, 639, 306,
-             400, 770, 789, 409, 833, 834, 362, 366, 367},
-    # XSS/开放重定向/CSRF + 鉴权弱项 + CRYPTO 全族 + DATA-INTEGRITY 全族
+             400, 770, 789, 409, 833, 834, 362, 366, 367,
+             841, 696},
+    # XSS/开放重定向/CSRF + 鉴权弱项 + CRYPTO 全族 + DATA-INTEGRITY 全族 +
+    # STATE 恒错控制流 (670, 逻辑缺陷默认档)
     "medium": {79, 601, 352, 285, 287, 926,
-               327, 326, 338, 347, 330, 310, 311, 295, 345, 351, 829},
+               327, 326, 338, 347, 330, 310, 311, 295, 345, 351, 829,
+               670},
 }
 CLAIM_TYPE_SEVERITY = {  # 回退: cwe 无命中时 (REQ-V3.4.3-006: leak 已同步)
     "rce": "critical", "leak": "critical",
