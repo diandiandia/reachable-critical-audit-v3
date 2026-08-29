@@ -266,6 +266,19 @@
       "applicability_signals": {
         "requires_lang_pair": true
       }
+    },
+    {
+      "id": "PREC-STATE-GATE-REENTRY",
+      "name": "一次性门禁 vs 状态机重入",
+      "criterion": "容器类目标（多帧/多块/多记录格式）的门禁声称先对账『门禁执行时点 × 状态机重入路径』：门禁在初始化/open 加载时执行一次，而逐帧/逐块/逐条处理各自重跑状态机（每项改状态、门禁覆盖不到）→ 门禁被绕过，缺陷成立；门禁在每次重入路径上独立执行（含首/尾/零尺寸特例）→ 门禁成立，按既有等级裁决",
+      "counterexample": "单块/单记录目标（一次性解析，无逐项重入路径）不适用——无重入路径则一次性门禁覆盖全部处理窗口",
+      "applicability_scope": "多帧/多块/多记录容器与逐项状态机目标（图像容器、分片流、块传输、重协商流等逐项处理面）",
+      "applications": [
+        "多帧 seek 逐帧改尺寸 vs 初始化/open 一次性 bomb 检查（门禁时序 vs 状态机重入）"
+      ],
+      "source_lessons": [
+        "Pillow 批次 (SKILL_LESSONS_Pillow.md): DCX/MPO 同一缺陷家族两实例——发现方式为门禁时序 vs 状态机重入"
+      ]
     }
   ]
 }

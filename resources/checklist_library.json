@@ -936,6 +936,157 @@
     "破坏不变量的输入是否存在（维度/偏移/步进的取值域是否受上游校验约束）? 找不到破坏输入 → 后置检查形态判为安全，不构成缺陷",
     "检查在操作之后但覆盖下一次操作之前的全部写窗口吗? 若首块写入发生在任何检查之前，需单独论证首块边界（含退化维度/零尺寸路径）"
    ]
+  },
+  {
+   "id": "CK-STATE-TRANSITION",
+   "name": "非法状态转移显式拒绝检查",
+   "family": "state-machine",
+   "binding": {
+    "cwe": [
+     "CWE-841"
+    ],
+    "keywords": [
+     "状态机",
+     "state machine",
+     "状态转移",
+     "state transition",
+     "非法状态",
+     "状态跃迁",
+     "会话状态",
+     "协议状态"
+    ],
+    "note": "v3.12 (REQ-V3.12-003): CWE-841 行为工作流强制锚定（唯一 841 锚定条目，不与 CONFUSION 双锚共绑）——非法转移须显式拒绝而非静默通过"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "非法/未定义转移分支是显式拒绝（错误码/会话重置/回滚）还是静默通过（保持当前状态沿默认分支继续）——静默通过是 CWE-841 缺陷形态",
+    "转移守卫与状态持久化时序：守卫检查发生在状态写回（会话/对象字段/协议层状态表）之前还是之后——检查后被覆盖=重入窗口",
+    "非法转移触发面：状态是否由外部输入驱动（协议字节/伪造会话/跨请求状态残留/复用连接）——输入可控才构成可达缺陷"
+   ],
+   "source_lessons": [
+    "CK-BIZ-LOGIC 状态机越权步骤升级为族 (v3.4)",
+    "Pillow 批次 (SKILL_LESSONS_Pillow.md): 门禁时序 vs 状态机重入同族"
+   ]
+  },
+  {
+   "id": "CK-STATE-CONFUSION",
+   "name": "状态机双路径解释检查",
+   "family": "state-machine",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "重入",
+     "reentrancy",
+     "复用",
+     "对象复用",
+     "双解释",
+     "状态混淆",
+     "共享状态",
+     "两路径"
+    ],
+    "note": "v3.12 (REQ-V3.12-003): 无 CWE 锚定（跨族语义）——关键词绑定为主，避免与 TRANSITION 双锚 841 机械共绑"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "同一输入/对象是否可被两条状态机路径解释（重入路径/并发请求/对象复用/双解释器）——每条路径是否维护独立状态",
+    "状态字段共享面：多路径读写同一状态对象时路径间状态污染/覆盖是否可能（先写者后被其他路径覆写）",
+    "复用后状态残留：对象/会话复用（连接池/缓存/对象池）是否残留上一使用者的状态（身份/授权/解析进度）"
+   ],
+   "source_lessons": [
+    "Pillow 批次 (SKILL_LESSONS_Pillow.md): 同一缺陷家族两实例——多帧 seek 逐帧改状态的复用面"
+   ]
+  },
+  {
+   "id": "CK-MULTISTEP-INVARIANT",
+   "name": "多步流程不变式检查",
+   "family": "state-machine",
+   "binding": {
+    "cwe": [
+     "CWE-696"
+    ],
+    "keywords": [
+     "多步",
+     "multi-step",
+     "重放",
+     "replay",
+     "乱序",
+     "out-of-order",
+     "跳步",
+     "序对",
+     "步骤顺序",
+     "前置",
+     "invariant",
+     "不变量"
+    ],
+    "note": "v3.12 (REQ-V3.12-003): CWE-696 行为顺序错误锚定——每步前置独立校验/跳步/重放/乱序/序对依赖"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "多步流程每步前置条件是否独立校验（每步入口重验而非仅首步）——跳步（绕过中间步骤直接调用后步）是否可达",
+    "重放/乱序：同一输入序列重放或重排后是否重复执行副作用（幂等键/序号检查/防重放窗口）",
+    "序对依赖：第 N 步对第 N-1 步产物的假设是否在第 N 步入口被验证——『上游已做校验』的假设未在入口重验=缺陷形态"
+   ],
+   "source_lessons": [
+    "CK-BIZ-LOGIC 多步流程不变式步骤升级为族 (v3.4)"
+   ]
+  },
+  {
+   "id": "CK-FRAME-GATE-REENTRY",
+   "name": "逐项状态机与一次性门禁对账检查",
+   "family": "state-machine",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "状态机",
+     "state machine",
+     "逐帧",
+     "多帧",
+     "逐块",
+     "帧门禁",
+     "重入",
+     "chunked gate",
+     "frame gate",
+     "一次性检查"
+    ],
+    "note": "v3.12 (REQ-V3.12-003): 无 CWE 锚定（跨族语义）——关键词绑定 + 信号门控（Pillow DCX/MPO 机制化）"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "applicability_signals": {
+    "text": [
+     "frame",
+     "chunk",
+     "handshake",
+     "renegotiation",
+     "transition",
+     "fsm",
+     "帧",
+     "分块",
+     "逐块",
+     "逐帧",
+     "多帧"
+    ],
+    "note": "SWR-V3.12-003: 词边界 ASCII 术语 + CJK 逐项术语——无容器/逐项信号不绑定"
+   },
+   "steps": [
+    "容器级一次性门禁 vs 逐项状态机：门禁（大小/深度/预算检查）在容器初始化/open 加载时执行一次，还是对每个帧/块/条目的每次处理重入路径独立执行——逐项重跑是否绕过一次性检查",
+    "重入路径枚举：逐帧/逐块/逐记录处理循环中的每次迭代是否都经过完整门禁（含首帧/尾帧/零尺寸特例）",
+    "状态机与门禁的对账：逐项状态机的状态更新（逐帧改尺寸/逐块累积）是否在任何门禁检查之前发生——先改状态后检查=检查被绕过"
+   ],
+   "source_lessons": [
+    "Pillow 批次 (SKILL_LESSONS_Pillow.md): DCX/MPO 多帧 seek 逐帧改 _size 无逐帧 bomb 检查——open 一次性检查覆盖不到 per-frame _open 重跑"
+   ]
   }
  ],
  "platform_trust_models": [

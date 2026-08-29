@@ -23,6 +23,7 @@ CWE_FAMILY_MAP = {
                    "PREC-GATE-RATING-001"],
     ("CWE-770", "CWE-789"): ["PREC-GATE-RATING-001", "PREC-STREAM-MATERIALIZE-001"],
     ("CWE-1333",): ["PREC-RUNTIME-VERSION-001"],
+    ("CWE-841", "CWE-696", "CWE-670"): ["PREC-STATE-GATE-REENTRY"],
 }
 
 # summary 关键词 → 先例 id（默认/gate/引擎/能力/文档等前提形态）
@@ -40,6 +41,8 @@ KEYWORD_MAP = {
     "needs_review": ["PREC-DUAL-LENS-001"],
     "host": ["PREC-HOST-FAMILY-001"],
     "referer": ["PREC-VICTIM-TRIGGER-001"],
+    "状态机": ["PREC-STATE-GATE-REENTRY"],
+    "state machine": ["PREC-STATE-GATE-REENTRY"],
 }
 
 _CACHE = {}
