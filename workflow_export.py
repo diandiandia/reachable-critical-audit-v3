@@ -339,7 +339,10 @@ def refute_prompt(c, idx):
         1: "前提维度与阻断幻觉: platform_precondition 是否被忽略（平台限定路径被判通用可达）；"
            "trust_boundary 是否惯例假设——特别注意平台信任模型 (v3.10.2, SWR-V3.10.2-016): "
            "同设备其他应用经导出组件/意图参数注入是异主体, 不得以『单信任域设计』泛化同主体; "
-           "gate 是否被当默认开；阻断是否覆盖攻击者可控的全部维度。",
+           "gate 是否被当默认开；阻断是否覆盖攻击者可控的全部维度。"
+           "平台 API 行为契约 (v3.11, SWR-V3.11-004~006): 已实证的平台固有处理语义"
+           "（归档条目查找封顶/系统绑定中介/版本级前置限制/直缓冲约定）是判定依据——"
+           "契约成立时不得以『库侧无校验』忽略, 契约不适用时注明理由。",
     }
     angle = lens.get(idx, lens[0])
     toolbox = ""
@@ -509,8 +512,9 @@ def export_script_resurrect(project_root, batch_size=8):
             if os.path.exists(isurf_path) else []
         _plats = _cb.detect_platforms(_surfs)
         _models = _cb.platform_models(_plats)
+        _contracts = _cb.platform_api_contracts(_plats)
     except (ImportError, OSError, ValueError):
-        _models = []
+        _models, _contracts = [], []
     for c in pool:
         prompt = resurrect_prompt(c)
         if _models:
@@ -522,6 +526,13 @@ def export_script_resurrect(project_root, batch_size=8):
                            + "".join(f"- {q}\n" for q in _m.get("probe_questions") or []))
             prompt += ("\n『同主体/单信任域』类阻断论证必须对照上表核实——"
                        "同设备其他应用经导出组件/意图参数注入是异主体。\n")
+        if _contracts:
+            prompt += ("\n\n## 平台 API 行为契约清单 (v3.11, SWR-V3.11-004~006)\n"
+                       "已实证的平台 API 固有处理语义, 复活论证必须对照:\n")
+            for _ct in _contracts:
+                prompt += (f"### {_ct.get('id')}\n{_ct.get('api_pattern')}: "
+                           f"{_ct.get('behavior')} (security_effect="
+                           f"{_ct.get('security_effect')})\n")
         payload.append({"id": c["id"], "prompt": prompt})
     js = _inject_project_marker(
         RESURRECT_SCRIPT.replace("__SCHEMA__", json.dumps(RESURRECT_SCHEMA, ensure_ascii=False)),
@@ -632,6 +643,17 @@ def export_script(project_root, mode="verify", batch_size=4):
                                    + "".join(f"- {q}\n" for q in _m.get("probe_questions") or []))
                     prompt += ("\n步骤 3 的『同主体/DIRECT』判定必须逐条对照上表："
                                "任一平台机制使『调用者≠启动者本人』(异主体) 时按 ACROSS_BOUNDARY 处理。\n")
+                # v3.11 (SWR-V3.11-006): 平台 API 契约注入 (阻断/放行判定的知识基线)
+                _contracts = _cb.platform_api_contracts(_plats)
+                if _contracts:
+                    prompt += ("\n\n## 平台 API 行为契约清单 (v3.11, SWR-V3.11-004~006)\n"
+                               "以下平台 API 的固有处理语义是已实证的判定依据, "
+                               "阻断/放行论证必须对照 (契约成立时不得忽略, 契约不适用时注明):\n")
+                    for _ct in _contracts:
+                        prompt += (f"### {_ct.get('id')}\n{_ct.get('api_pattern')}: "
+                                   f"{_ct.get('behavior')}\n"
+                                   f"security_effect={_ct.get('security_effect')}\n"
+                                   + "".join(f"- {q}\n" for q in _ct.get("probe") or []))
             except (ImportError, OSError, ValueError):
                 pass
             # v3.1 (SWR-V3.1-044/045): 注入家族清单步骤 + 自证伪提示

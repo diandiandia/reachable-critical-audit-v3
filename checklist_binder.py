@@ -207,6 +207,25 @@ def detect_platforms(surfaces):
     return sorted(hits, key=lambda k: -hits[k])
 
 
+def platform_api_contracts(targets):
+    """SWR-V3.11-006: 按平台键返回 API 契约条目 (三层 prompt 注入, 与 PTM 同管线)。
+    加载校验: 条目缺 source → 拒收该条 + stderr 告警 (SWR-V3.11-004 防幻觉契约)。"""
+    lib = load_library()
+    contracts = lib.get("platform_api_contracts", [])
+    out, rejected = [], []
+    for c in contracts:
+        if not (c.get("source") or "").strip():
+            rejected.append(c.get("id", "?"))
+            continue
+        if c.get("platform") in (targets or []):
+            out.append(c)
+    if rejected:
+        import sys
+        print(f"Warning: platform_api_contracts 拒收无 source 条目: {rejected}",
+              file=sys.stderr)
+    return out
+
+
 def platform_models(targets):
     """SWR-V3.10.2-016: 按平台键返回清单条目 (任务书注入用)。
     targets: detect_platforms 的返回或主代理显式指定。"""

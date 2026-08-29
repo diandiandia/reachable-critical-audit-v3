@@ -402,6 +402,31 @@ def _detect_journal_anomaly(transcript_dir):
         return []
     return [cid for cid, hashes in by_id.items() if len(hashes) > 1]
 
+def _derive_attacker_tier(v, c):
+    """SWR-V3.11-002: attacker_tier 缺省推导——verifier 未显式给出时按
+    reachability_type/trust_boundary/evidence 信号推导; 无法判定返回 None
+    (主代理裁决, 不机械兜底)。"""
+    if v.get("attacker_tier") in ("same_process", "same_device_cross_app",
+                                  "system_broker", "remote"):
+        return v["attacker_tier"]
+    if str(v.get("attacker_tier") or ""):
+        print(f"Warning: {c.get('id')} 非法 attacker_tier={v.get('attacker_tier')!r} "
+              f"回退推导", file=sys.stderr)
+    ev = " ".join(str(v.get(k) or "") for k in ("evidence",)).lower()
+    rt = v.get("reachability_type")
+    if rt == "DIRECT":
+        return "same_process"
+    if rt == "ACROSS_BOUNDARY":
+        # 平台组件注入信号 > 网络内容信号 (同设备异主体优先于远程)
+        if any(k in ev for k in ("导出组件", "intent", "意图", "跨应用", "binder",
+                                 "exported", "组件注入")):
+            return "same_device_cross_app"
+        if any(k in ev for k in ("远程", "网络", "remote", "http", "url", "下载",
+                                 "服务器", "字节流", "网络内容")):
+            return "remote"
+        return None
+    return None
+
 def stage_collect(project_root, batch_id, verdicts):
     """Collect verdicts from a batch and update the queue."""
     queue = load_queue(project_root)
@@ -422,6 +447,10 @@ def stage_collect(project_root, batch_id, verdicts):
         if validation_errors:
             errors.extend(validation_errors)
             continue
+        # v3.11 (SWR-V3.11-001/002): attacker_tier 落盘 (显式或推导)
+        tier = _derive_attacker_tier(v, cand_map[cand_id])
+        if tier:
+            v["attacker_tier"] = tier
 
         # Validate call chain depth
         call_chain = v.get("call_chain", [])
@@ -1653,6 +1682,13 @@ def _problem_summary(c):
     ev = " ".join(str(c.get("evidence") or "").split())
     head = ev[:120] + ("…" if len(ev) > 120 else "")
     return (f"[{ct}] {head}" if ct else head) or "(无 evidence)"
+# v3.11 (SWR-V3.11-003): tier 标注附加在清单摘要尾部
+def _tier_suffix(c):
+    t = c.get("attacker_tier")
+    if c.get("verdict") == "REACHABLE" and t in (
+            "same_device_cross_app", "system_broker", "remote"):
+        return f" [tier: {t}]"
+    return ""
 
 
 def _needs_review_cause(cand):
@@ -1880,7 +1916,7 @@ def _render_problem_list(cands, queue):
                 c = it["obj"]
                 cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
                 sev_note = " ⚠override非法" if it["source"] == "invalid_override" else ""
-                out.append(f"| {c.get('id')} | {_problem_summary(c)} | "
+                out.append(f"| {c.get('id')} | {_problem_summary(c)}{_tier_suffix(c)} | "
                            f"`{c.get('source_file')}:{c.get('source_line')}` | "
                            f"{', '.join(cwes) or '-'} | {c.get('evidence_grade', '-')} | "
                            f"{_refutation_line(c)}{sev_note} |")
@@ -2579,6 +2615,12 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 - v3.10.2 (SWR-V3.10.2-016): 平台信任模型对照——「同主体」判定前必须过目标
   平台的信任模型清单（下方注入）: 同设备其他应用经导出组件/意图参数注入、
   平台鉴权中介、网络策略门、沙箱语义等平台机制可能使「库外调用者」≠「同主体」
+- v3.11 (SWR-V3.11-001): 攻击者主体层级判定——evidence 必须注明 attacker_tier
+  四层之一: same_process (攻击者与目标同进程) / same_device_cross_app (同设备
+  其他应用经导出组件/意图参数/跨应用调用注入) / system_broker (经系统中介:
+  服务绑定/用户授权中介/系统回调) / remote (网络可达内容)。DIRECT+host_api
+  通常推导 same_process, 但平台组件注入面会使其升为 same_device_cross_app——
+  该层级决定申报口径与 CVSS 基线 (AV:L 同设备 vs AV:N 远程), 不得含糊
 
 ### 步骤 4: 阻断检测
 - 强类型转换、掩码（`& 0xFF`）、参数化绑定（`?` 占位符）、边界检查（`offset+len <= total`）
