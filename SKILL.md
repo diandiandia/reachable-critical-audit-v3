@@ -515,17 +515,24 @@ fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退
 
 ```bash
 python3 lessons_recorder.py <project> --write
-# → lessons/SKILL_LESSONS_<project>.md（机械提取: 裁决纠正/降级/复活/分级重算/
-#   paraphrased 标记/验收记录——全部来自 .audit_results/ 产物证据）
+# 机械提取: 裁决纠正/降级/复活/分级重算/paraphrased 标记/验收记录——
+# 全部来自 .audit_results/ 产物证据
 ```
+
+**lessons 统一落盘位置（v3.16.1，用户裁定）**：`<project>/.audit_results/lessons.md`
+（项目本地）——审计收官时主代理在此写「对 skill 的教训」+「审计自身教训」两段；
+**skill-optimizer 从各项目 `.audit_results/lessons.md` 读取**（唯一读入口）。
+仓库 `lessons/` 目录为战役期历史档案（不再写入）；`lessons_recorder.py` 的
+仓库 lessons/ 写入路径为遗留机制，保留兼容但不再作为惯例。
 
 1. 主代理必须**人工补充过程观察段**（agent 行为/工具链陷阱/workflow 缺陷——
    非结构化数据无法机械提取），用 `write_lesson(project, process_notes=[...])`。
    幂等语义：write_lesson 全量重渲染（机械提取段 + 过程观察段），
    与 `--write` 调用顺序无关、重复调用不丢内容
-2. 价值判定：高价值条目（新缺陷模式/语言盲区/裁决先例）当日并入
-   W6_MORE_LANGS_FINDINGS.md 或对应语言 lessons；低价值条目留审计轨迹
-3. 索引 lessons/README.md 自动更新；**未执行 R6 的审计不得闭合**（报告阶段门禁）
+2. 价值判定：高价值条目（新缺陷模式/语言盲区/裁决先例）经去项目化提炼后
+   入库清单/先例（两段式：具体发现 → 去项目化 → 入库，来源留追溯字段）；
+   低价值条目留项目 lessons 轨迹
+3. **未执行 R6 的审计不得闭合**（报告阶段门禁）
 
 > **覆盖账本回填时序（v3.6 强制）**：`--stage coverage-ledger --write` 带两道机械前置——
 > r4-assert（H1-H7 全 VERIFIED）与 r4_feedback 无未决冲突，不满足输出
