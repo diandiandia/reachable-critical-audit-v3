@@ -14,14 +14,13 @@
 1. 每个 surface 的 entry_points 必须附 **file:line + 代码片段证据**（REQ-V3-022，缺证据被校验拒收）
 2. trust_boundary 逐通道记录（未认证远程/受信通道/gate）
 3. 产出 schema 见下
-4. **五域一律输出下方 canonical 包裹形态**（v3.8, SWR-V3.8-009, nacos 审计）：
+4. **五域一律输出下方 canonical 包裹形态**（v3.8, SWR-V3.8-009）：
    禁止自定顶层结构（如裸 `entry_points` 数组或自造 B-* 形态），否则会被
    surface_mapper 拒收。boundary 域也用同一包裹，仅 type 与字段不同（见下）。
    **域空条款（v3.15, SWR-V3.15-008）**: 该域无面时如实输出
-   `{"surfaces": []}` 并附空域理由（零 syscall/无监听器等实证, freetype 网络域
-   实录形态）——不虚构面; 主代理复核后写 `reviewed_by` + `empty_domain_reason`
+   `{"surfaces": []}` 并附空域理由（零 syscall/无监听器等实证, 网络空域实录形态）——不虚构面; 主代理复核后写 `reviewed_by` + `empty_domain_reason`
    签收（validate 对空域缺签收会 FAIL）。
-5. **路径/文件名参数面（v3.8, SWR-V3.8-009, nacos 审计）**: 防御声称（白名单/黑名单/
+5. **路径/文件名参数面（v3.8, SWR-V3.8-009）**: 防御声称（白名单/黑名单/
    正则）必须**逐字符核实字符集的实际内容**——白名单含 '.' 即 '..' 序列合法
    （路径穿越原语）；不能只 grep '/' 或 '\\' 就声称「穿越被阻止」
 6. **边界检查双向核实（v3.9, SWR-V3.9-010）**: 命中共享 helper/allocator/工厂类

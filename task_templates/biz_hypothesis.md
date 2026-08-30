@@ -54,10 +54,10 @@ evidence 为单字符串、r3_link 为字符串或 null）：
 
 ## 强制: 三选一 verdict — **confirmed / reviewed_clean / not_applicable** + 覆盖范围说明
 
-v3.8 (SWR-V3.8-003 语义固化, tomcat 审计): verdict 只允许上述三值，禁止自创
+v3.8 (SWR-V3.8-003 语义固化): verdict 只允许上述三值，禁止自创
 （PARTIAL/REFUTED/REFUTED_HIGH 等非法值会被 collect 层告警）。
 **反面示例 (v3.15, SWR-V3.16-002)**: REACHABLE / UNREACHABLE / NEEDS_REVIEW 是
-R3 候选的 verdict，不是本假说 verdict——av 批四文件全逃逸实录（H2/H4/H5/H6 各写
+R3 候选的 verdict，不是本假说 verdict——验收批次四文件全逃逸实录（H2/H4/H5/H6 各写
 一个非法值），写入这些值会被 r4-collect 报 R4_ENUM_WARNING 并给建议映射。
 **部分证伪但仍有
 成立 finding 的假说 → verdict=confirmed，证伪的断言不写进 findings 数组**；若必须
@@ -76,7 +76,7 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
    **canonical 字段形态（v3.15, SWR-V3.15-008）**: `tracked_surfaces` 与
    `hypothesis_tracked_surfaces` 必须是**字符串 id 列表**（门禁⑦/报告渲染消费
    此形态）; 逐面复核证据（{surface_id, verdict, evidence} 富形态）写
-   `sweep_records` 字段, 不得混入 canonical 字段（gpac H2 实录: 富形态混入致
+   `sweep_records` 字段, 不得混入 canonical 字段（富形态混入致
    报告渲染 unhashable 崩溃 + 门禁⑦假失败）。落盘后门禁⑦ 会机械核对——自报
    「已落盘」不可信, 以机械核对为准。
 2. **r3_link**: finding 与 R3 候选裁决重叠时引用候选 id + 裁决结论（严重度以 R3.5
@@ -134,7 +134,7 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
 末尾附一行 `UNWRITTEN: <原因>` 标注；禁止只写"已保存"而实际未落盘。
 主代理会从最终回复完整恢复（写 recovered_by 字段）。
 
-v3.8 (SWR-V3.8-013, tomcat 韧性教训): 产出**每 2-3 条 finding 就覆盖写盘一次**，
+v3.8 (SWR-V3.8-013, 批次韧性教训): 产出**每 2-3 条 finding 就覆盖写盘一次**，
 不要等全部做完才写——连接中断时已写部分可被主代理直接采用，无需整假说重派。
 
 

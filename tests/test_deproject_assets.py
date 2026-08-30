@@ -90,3 +90,57 @@ def test_scan_covers_task_templates():
         assert any("task_templates" in h[0] for h in hits), hits
     # 正常模板不误伤 (task_templates 现役模板零残留由 P1 保证)
     assert signature_lib._scan_runtime_assets() == []
+
+
+# ---- v3.16 验收扩展: 项目名 token 守卫 (盲目带入违规 15 处实录的防回退) ----
+
+PROJECT_TOKENS = ("gpac", "freetype", "s2n-tls", "nghttp2", "libarchive",
+                  "frameworks/av", "nacos", "tomcat", "mbedtls", "jsrsasign",
+                  "puma", "elasticsearch", "pillow", "flutter", "protobuf",
+                  "zookeeper", "kafka", "shardingsphere", "aiohttp", "gson",
+                  "libpng", "libjpeg", "libvpx", "aom", "media3", "quic-go",
+                  "pyjwt", "quarkus", "phpseclib", "cosign", "etcd", "sinatra",
+                  "lighttpd", "django", "nestjs", "ktor", "actix", "webrick")
+
+
+def _scan_tokens(src):
+    return [t for t in PROJECT_TOKENS if t in src.lower()]
+
+
+def test_checklist_steps_generic():
+    """清单库 steps 正文零项目名 (v3.16 验收: 盲目带入 5 处清单实录的防回退)。"""
+    data = json.load(open(os.path.join(WORK, "resources", "checklist_library.json")))
+    bad = []
+    for c in data["checklists"]:
+        for i, s in enumerate(c.get("steps", [])):
+            for t in _scan_tokens(str(s)):
+                bad.append((c.get("id"), i, t))
+    assert bad == [], f"清单 steps 残留项目名: {bad}"
+
+
+def test_task_templates_generic():
+    """任务书模板正文零项目名 (v3.16 验收: 模板 4 处实录的防回退)。"""
+    bad = []
+    for f in ("task_templates/biz_hypothesis.md",
+              "task_templates/surface_map_domain.md",
+              "task_templates/hypothesis_filter.md"):
+        p = os.path.join(WORK, f)
+        if not os.path.exists(p):
+            continue
+        for t in _scan_tokens(open(p).read()):
+            bad.append((f, t))
+    assert bad == [], f"任务书模板残留项目名: {bad}"
+
+
+def test_workflow_export_injected_generic():
+    """workflow_export 注入 prompt 文本零项目名 (v3.16 验收: 注入文本实录的防回退)。"""
+    import re as _re
+    we = open(os.path.join(WORK, "workflow_export.py")).read()
+    bad = []
+    for m in _re.finditer(r'prompt \+= \("([^"]*)"', we):
+        for t in _scan_tokens(m.group(1)):
+            bad.append(("inject", t))
+    for m in _re.finditer(r'f"([^"]{0,200}实录[^"]*)"', we):
+        for t in _scan_tokens(m.group(1)):
+            bad.append(("fstring", t))
+    assert bad == [], f"workflow_export 注入残留项目名: {bad}"

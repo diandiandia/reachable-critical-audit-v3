@@ -494,7 +494,7 @@ def resurrect_prompt(c):
         f"  7. 守卫封顶类阻断是否枚举过守卫通过子集（文件真实包含声明尺寸/\n"
         f"     自动切换 tier/重试路径, PREC-GUARD-SUBSET-001）\n"
         f"  8. verifier 未实测的平台维度优先补测（32 位/LLP64 模拟重建等,\n"
-        f"     SWR-V3.15-012——revived=false 也欢迎补测固化阻断裁决）\n\n"
+        f"     SWR-V3.15-012——revived=false 也欢迎补测固化阻断裁决（验收批次 32 位模拟补测实录））\n\n"
         f"原判定证据: {_truncate_evidence(c.get('evidence', ''))}\n"
         f"调用链: {c.get('call_chain', [])[:8]}\n\n"
         f"输出 revived=true/false + reason（附 file:line）；revived=true 时 "
@@ -708,7 +708,7 @@ def export_script(project_root, mode="verify", batch_size=4):
                     prompt += ("\n步骤 3 的『同主体/DIRECT』判定必须逐条对照上表："
                                "任一平台机制使『调用者≠启动者本人』(异主体) 时按 ACROSS_BOUNDARY 处理。\n")
                     # SWR-V3.15-012: 平台条件性前提必须显式列未实测平台/构建清单
-                    # (复活波按此清单定向补测, freetype CAND-002 实录)
+                    # (复活波按此清单定向补测, 验收批次 32 位模拟补测实录)
                     prompt += ("\n平台条件性前提 (32 位回绕/LLP64/平台 API 语义) 必须在 "
                                "evidence 显式列出『未实测平台/构建清单』——已实测的写实测"
                                "方式与结果, 未实测的逐项列名, 供复活波定向补测。\n")
@@ -726,7 +726,7 @@ def export_script(project_root, mode="verify", batch_size=4):
             except (ImportError, OSError, ValueError):
                 pass
             # SWR-V3.16-004: 树外层清单——多树/框架树目标的阻断论证第一来源
-            # 在树外 (av CAND-013 Java fd 重定向→scheme 大小写变体契约实录);
+            # 在树外 (Java fd 重定向→scheme 大小写变体契约实录);
             # 无条件注入 (不依赖平台信号命中)
             prompt += ("\n多树/框架树目标必须显式列『树外层清单』: 绑定依赖库 / "
                        "框架语言层 (如 Java 侧门禁) / 系统策略层 (如 SELinux 域)"
