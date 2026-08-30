@@ -545,13 +545,15 @@
     "scope ∈ {mechanism, function_body, full_chain, e2e} 必填 + scope_note",
     "机制级实证只能支撑 edge_proven 升级，不得直接升 empirically_confirmed",
     "多维度主张必须多维度实证（解压放大 = 单 chunk ratio + 多 member 行为）",
-    "0ms 假阴性先怀疑语义前提（filter 作用对象）"
+    "0ms 假阴性先怀疑语义前提（filter 作用对象）",
+    "资源类 (oom/unbounded/protocol_dos) 实证必须双测: 对照组 (无攻击输入/基线运行) + 攻击组; 报告基线值与增量 (RSS/耗时/计数) 与驻留时长观测——单次绝对读数不可作证据 (gpac CAND-001 实录: 108MB 读数为 ~105MB 环境基线伪影, 真实增量 ~12MB, 27,000x 放大证伪)"
    ],
    "source_lessons": [
     "W6 §17.7",
     "W6 §15.6",
     "W6 §23.8",
-    "W6 §13.7"
+    "W6 §13.7",
+    "gpac CAND-001 baseline artifact (2026-08)"
    ]
   },
   {
@@ -1221,6 +1223,39 @@
    "source_lessons": [
     "zookeeper 批次 (SKILL_LESSONS_zookeeper.md): 截断帧→未初始化栈结构→free(garbage) SIGABRT (实证队列记录 CWE-125/457/787)",
     "Pillow 批次 (SKILL_LESSONS_Pillow.md): H3 错误路径族候选——维度浮现候选、实证证伪后如实归档"
+   ]
+  },
+  {
+   "id": "CK-VENDORED-CONTRACT",
+   "name": "绑定依赖库/第三方 vendored 解析器契约检查",
+   "family": "blocking",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "vendored",
+     "llhttp",
+     "libcrypto",
+     "绑定",
+     "第三方",
+     "openssl",
+     "upgrade",
+     "契约"
+    ],
+    "applies_to_phase": "R3",
+    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "目标树内缺校验 ≠ 缺陷成立——先查绑定层契约: vendored 状态机 (llhttp pause/resume/upgrade 转移) 是否补上校验、加密库低阶点/对等端校验 (X25519 kZeros/DH Ys=p-1)、流层 count>size 拒绝等",
+    "『死代码/不可达』类阻断主张对 vendored 解析器必须做状态机级复核 (逐状态转移行核实, 不得凭调用形态推定) —— nghttp2 llhttp HPE_PAUSED_UPGRADE 续接分支被 verifier 判死代码为假, 复活者逐 llhttp.c 转移行推翻",
+    "阻断论证引用『绑定层补全校验』时必须写绑定层 file:line, 不得只写目标树行号 (s2n-tls X25519/DH 绑定层契约两次生效实录)"
+   ],
+   "source_lessons": [
+    "nghttp2 CAND-002 llhttp state-machine misjudgment (2026-08)",
+    "s2n-tls binding-layer contracts x2 (2026-08)"
    ]
   }
  ],

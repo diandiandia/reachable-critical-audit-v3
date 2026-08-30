@@ -162,11 +162,6 @@ _EXT_LANG = {
     # signature_matcher.EXT_LANG_ALIAS 对齐 (BIAS_EVAL F3, 原识别层内部矛盾)
     ".sql": "sql", ".m": "objc", ".mm": "objc",
 }
-_R15_IGNORE_DIRS = {"node_modules", ".git", ".audit_results", ".agents", ".codex",
-                    ".venv", "__pycache__", "reachable-critical-audit", "build",
-                    "target", "dist", "vendor", "third_party", "libs", "test",
-                    "tests", "tool", "tools", "script", "scripts", "mock",
-                    "mocks", "unittest", "scratch", "demo"}
 
 # 短语言别名 → 规范名 (SWR-V3.4.6-001: _project_dom_lang 与 lang_of 共用)
 # v3.5.2 (P3): 补 typescript→javascript——否则 typescript 候选写入账本幻影列
@@ -231,20 +226,6 @@ def _project_dom_lang(project_root):
             pass
     return None
 
-
-
-def _detect_languages(project_root):
-    """统计项目各语言源文件数，返回按文件数降序的语言列表。"""
-    counts = {}
-    for root, dirs, files in os.walk(project_root):
-        dirs[:] = [d for d in dirs if d not in _R15_IGNORE_DIRS]
-        for f in files:
-            if ".min." in f:
-                continue
-            lang = _EXT_LANG.get(os.path.splitext(f)[1].lower())
-            if lang:
-                counts[lang] = counts.get(lang, 0) + 1
-    return sorted(counts.keys(), key=lambda l: -counts[l]), counts
 
 
 def load_queue(project_root):
@@ -999,7 +980,13 @@ def _warn_r4_enums(items):
                 "kind": "illegal_hypothesis_verdict", "hypothesis_id": hid,
                 "value": h.get("verdict"),
                 "hint": f"需归一化为 {R4_VERDICTS} 之一 (部分证伪但仍有 confirmed "
-                        f"finding → verdict=confirmed + 该条 title 标 [refuted])"})
+                        f"finding → verdict=confirmed + 该条 title 标 [refuted])",
+                # SWR-V3.15-003: 结构化建议映射 (nghttp2 H2/H4 实录形态:
+                # NO_REACHABLE_CONFIRMED/NOT_CONFIRMED) —— 只建议不自动改写
+                "suggestion": {"suggested": "reviewed_clean",
+                               "note": "非法 verdict 归一化建议: 无确认问题的假说"
+                                       "归 reviewed_clean; 有 confirmed finding "
+                                       "才归 confirmed"}})
         for n, fi in enumerate(h.get("findings", []) or [], 1):
             sev = (fi.get("severity") or "").strip().lower()
             if sev and sev not in R4_SEVERITIES:
@@ -1007,7 +994,11 @@ def _warn_r4_enums(items):
                     "kind": "illegal_finding_severity", "hypothesis_id": hid,
                     "finding": f"{hid}-F{n}", "value": fi.get("severity"),
                     "hint": f"需归一化为 {R4_SEVERITIES} 之一; 非法值会落到机械映射"
-                            f"兜底 (medium) 误导分级"})
+                            f"兜底 (medium) 误导分级",
+                    # SWR-V3.15-003: 结构化建议映射 (gpac H3-F1 informational 实录)
+                    "suggestion": {"suggested": "low",
+                                   "note": "informational 归一化建议: 核实类/"
+                                           "过程记录类 finding 归 Low"}})
             title = (fi.get("title") or "").lower()
             if "[refuted]" in title or "informational" in title:
                 warnings.append({
@@ -1701,7 +1692,10 @@ def stage_report(project_root, force=False):
             idx = body.find(m)
             if idx >= 0:
                 tail = body[idx + len(m):]
-                if "（主代理补充）" not in tail[:400]:
+                # SWR-V3.15-001: 双形态识别——机械模板占位为「本段由主代理补充」
+                # (无全角括号), 旧守卫单形态致未编辑重跑四次 REFUSED
+                if ("（主代理补充）" not in tail[:400]
+                        and "本段由主代理补充" not in tail[:400]):
                     print(json.dumps({
                         "status": "REPORT_REFUSED_OVERWRITE",
                         "note": "报告已含主代理段落; 重跑机械渲染将覆盖修复建议/结论/severity 裁决——如确需重生成请 --force"}, ensure_ascii=False), file=sys.stderr)
@@ -1849,7 +1843,20 @@ def _tracked_ids(project_root, queue, surfaces):
         except (OSError, ValueError):
             pass
     for f in queue.get("r4_findings", []) or []:
-        ids.update(f.get("hypothesis_tracked_surfaces", []) or [])
+        # SWR-V3.15-006: 假说级双字段并读——模板 canonical 为 tracked_surfaces
+        # (v3.10 条款), 历史队列亦存 hypothesis_tracked_surfaces (agent 漂移
+        # 形态) → 两字段并集消费
+        # v3.14.1 hotfix: hypothesis_tracked_surfaces 可为 dict 条目 (agent 富形态
+        # {surface_id, verdict, evidence} 实录) — 归一化提取 surface_id, 防 unhashable
+        _hts = list(f.get("tracked_surfaces") or []) \
+            + list(f.get("hypothesis_tracked_surfaces") or [])
+        for _x in _hts:
+            if isinstance(_x, dict):
+                _sid = _x.get("surface_id")
+                if _sid:
+                    ids.add(_sid)
+            elif _x:
+                ids.add(_x)
         for fi in f.get("findings", []) or []:
             ids.update(fi.get("tracked_surfaces", []) or [])
     for e in queue.get("coverage_bridge", []) or []:
@@ -2370,7 +2377,7 @@ def render_report_md(project_root, report_json=None):
         _render_problem_details(cands, queue),
         "",
         "## 三、修复建议与结论（主代理补充）",
-        "> 本段由主代理补充；补充后**不得重跑 `--stage report`**（机械渲染会覆盖本段）。",
+        "> （主代理补充）本段由主代理补充；补充后**不得重跑 `--stage report`**（机械渲染会覆盖本段）。",
         "",
         "## 附录 A：NEEDS_REVIEW 清单与同事实映射",
         _render_appendix_a_needs_review(queue),
@@ -2445,8 +2452,17 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
                 # SWR-V3.10.2-018: 物化增量面重开建议——物化目录与 R1 面
                 # entry_points 路径交叉 (建议级, 主代理裁决后落盘 scope_review)
                 try:
-                    changed_dirs = [str(x.get("path") or x.get("dir") or "")
-                                    for x in (diff.get("changes") or [])]
+                    # SWR-V3.15-007: affected_dirs 为机器通道 (主), changes 为
+                    # 人读描述字符串 (fallback 解析, nghttp2 子模块物化实录
+                    # AttributeError 根因——v3.14.1 热修保留为降级路径)
+                    def _chg_dir(x):
+                        if isinstance(x, str):
+                            m = re.search(r"(?:submodule|dir) ([^:]+):", x)
+                            return m.group(1) if m else ""
+                        return str(x.get("path") or x.get("dir") or "")
+                    changed_dirs = list(diff.get("affected_dirs") or [])
+                    if not changed_dirs:
+                        changed_dirs = [_chg_dir(x) for x in (diff.get("changes") or [])]
                     changed_dirs = [d for d in changed_dirs if d]
                     isurf_path = os.path.join(ar_dir, "input_surface.json")
                     reopen_candidates = []

@@ -68,7 +68,13 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
    reviewed_clean/not_applicable、或 confirmed 但 findings 为空时，在假说条目
    顶层填 `tracked_surfaces`——本假说审查过程中实际 Read/Grep 触及的全部
    surface id（原样引用清单）。有 finding 级载体时省略。防"审查触达与覆盖率
-   簿记脱节"（reviewed_clean 假说审大量面却零簿记, 覆盖率假失败实录）
+   簿记脱节"（reviewed_clean 假说审大量面却零簿记, 覆盖率假失败实录）。
+   **canonical 字段形态（v3.15, SWR-V3.15-008）**: `tracked_surfaces` 与
+   `hypothesis_tracked_surfaces` 必须是**字符串 id 列表**（门禁⑦/报告渲染消费
+   此形态）; 逐面复核证据（{surface_id, verdict, evidence} 富形态）写
+   `sweep_records` 字段, 不得混入 canonical 字段（gpac H2 实录: 富形态混入致
+   报告渲染 unhashable 崩溃 + 门禁⑦假失败）。落盘后门禁⑦ 会机械核对——自报
+   「已落盘」不可信, 以机械核对为准。
 2. **r3_link**: finding 与 R3 候选裁决重叠时引用候选 id + 裁决结论（严重度以 R3.5
    correction_record 为准, W6 §16.12）
 3. **empirical_result**: 异常路径描述必须实证抽验；实测纠正原证据机制

@@ -1,284 +1,299 @@
 {
-  "description": "裁决先例库 — 15 语言战役 17 项目沉淀的裁决规则机器化资产。每条先例必须带 applicability_scope 与 counterexample（W6 §11 教训：论据的适用前提范围先于论据本身判定）。裁决时先例匹配失败不阻塞，主代理可自由裁量并回填新先例。",
-  "precedents": [
-    {
-      "id": "PREC-CAPABILITY-001",
-      "name": "能力支配",
-      "criterion": "攻击者触发该 sink 所必须持有的前提，本身已蕴含更强能力（如会话内任意代码执行、框架文件写权限）→ 零能力增量 → 降级 NEEDS_REVIEW（残余为 defense-in-depth 意见）",
-      "counterexample": "隐式行为面（repo 内容即输入，克隆即执行，无需攻击者运行代码）不适用能力支配（W6 §11）",
-      "applicability_scope": "仅适用于『攻击者已持有代码执行/文件写能力』前提类；不适用于零代码执行前提的隐式面",
-      "applications": [
-        "配置对象静默合并 → 载荷守卫失效",
-        "shell 启动钩子注入 (trap)",
-        "插件级联加载目录覆盖",
-        "序列化缓冲倍增 2x",
-        "逗号拆分 ≡ 重复键覆盖",
-        "规则注入 vs 已有处理器冲突"
-      ],
-      "source_lessons": [
-        "W6 §11",
-        "W6 §12.4",
-        "W6 §13.8",
-        "W6 §16.11",
-        "W6 §18.4"
-      ]
-    },
-    {
-      "id": "PREC-TYPE-SYSTEM-001",
-      "name": "类型系统强约束",
-      "criterion": "编译期静态类型（如 receiveType 编译期静态、多态仅开发者注册类集）是比运行时白名单更强的阻断 → 先查类型系统再查配置",
-      "counterexample": "运行时反射/动态加载（C# Type.GetType(s, true)、Java 反序列化自动类型解析）不适用",
-      "applicability_scope": "静态类型语言的多态/反序列化类选择面",
-      "applications": [
-        "基于类型标记的多态反序列化"
-      ],
-      "source_lessons": [
-        "W6 §19.6"
-      ]
-    },
-    {
-      "id": "PREC-MATRIX-001",
-      "name": "矩阵保留",
-      "criterion": "前提成立与否取决于部署矩阵（gate 枚举值 × 读/写端、主题/编辑器组合）→ 按矩阵中最常见成立格裁决 REACHABLE，矩阵显式记录入报告",
-      "counterexample": "前提矩阵中无一格是常见/支持配置 → 按 PREC-CONFIG-FLIP-001 降级",
-      "applicability_scope": "gate 多值且部分值是常见部署的候选",
-      "applications": [
-        "主机白名单矩阵",
-        "角色×主题兼容矩阵"
-      ],
-      "source_lessons": [
-        "W6 §14.7",
-        "W6 §17.6"
-      ]
-    },
-    {
-      "id": "PREC-CONFIG-FLIP-001",
-      "name": "必然翻转的配置 gate vs 被警告的非默认操作",
-      "criterion": "存在任何可用部署必须翻转该 gate（文档支持翻转路径）→ 保留 REACHABLE + 记录矩阵；gate 翻转本身是文档警告的非默认操作 → 降级 NEEDS_REVIEW",
-      "counterexample": "无任何可用部署需要翻转的 gate（纯理论配置）→ UNREACHABLE",
-      "applicability_scope": "配置 gate 类候选",
-      "applications": [
-        "配置 gate 必然翻转 vs 被警告的非默认操作"
-      ],
-      "source_lessons": [
-        "W6 §14.7"
-      ]
-    },
-    {
-      "id": "PREC-HOST-FAMILY-001",
-      "name": "Host 采信族裁决树",
-      "criterion": "① 框架内建安全敏感消费者（密码重置/链接生成，零应用协作）→ REACHABLE；② 仅暴露 helper 供应用使用 → NEEDS_REVIEW；③ Host↔authority 一致性校验 → 直接封口",
-      "counterexample": "框架文档化 back+redirect 配对且受害方可触发 → 不落入 ②（见 PREC-VICTIM-TRIGGER-001 对 redirect-back 族的裁决）",
-      "applicability_scope": "Host 头/绝对 URI authority/X-Forwarded-Host 采信类候选",
-      "applications": [
-        "Host 投毒→密码重置 (①)",
-        "②→NEEDS_REVIEW",
-        "③ 有 400 校验→封口 + ②",
-        "②→NEEDS_REVIEW"
-      ],
-      "source_lessons": [
-        "W6 §23.4"
-      ],
-      "applicability_signals": {
-        "text": [
-          "host 头",
-          "host header",
-          "x-forwarded",
-          "authority",
-          "绝对 uri",
-          "绝对url",
-          "host 采信",
-          "redirect",
-          "重定向"
-        ]
-      }
-    },
-    {
-      "id": "PREC-VICTIM-TRIGGER-001",
-      "name": "受害方可触发性",
-      "criterion": "开放重定向/Host 投毒族第四维：referer 由受害者浏览器设置（攻击者布置入口页即控制）> Host（受害者导航携带，但攻击者不可控）> X-Forwarded-Host（浏览器导航无法携带，被投毒响应只出现在攻击者自身请求中）。仅 helper 降级论据对受害方可触发的 referer 类不适用",
-      "counterexample": "X-Forwarded-Host 投毒的密码重置场景（应用代码把 helper 输出放入敏感通道）——受害方触发依赖应用协作，按 ② 处理",
-      "applicability_scope": "开放重定向/URL 生成/投毒类候选",
-      "applications": [
-        "referer 触发 (保留 REACHABLE) vs XFF 触发 (降级)"
-      ],
-      "source_lessons": [
-        "W6 §24.1"
-      ]
-    },
-    {
-      "id": "PREC-DEFAULT-3LAYER-001",
-      "name": "三层默认开启",
-      "criterion": "『gate 默认开』必须拆三层验证：代码默认值 / 模块加载默认 / 部署前提——三层全开才算默认可达；裁决输出可为 gate 记录型 REACHABLE 而非二元",
-      "counterexample": "文档化有意 opt-in 的默认（README/CHANGELOG 明示）→ 不属『隐式默认开』（见 PREC-DOC-DESIGN-001）",
-      "applicability_scope": "一切声称『默认开启/默认可达』的 gate",
-      "applications": [
-        "SSI exec 代码层 vs 模块装载层 vs 写入原语部署层",
-        "feature 默认集 vs bind() 运行时 vs TLS 协商部署层"
-      ],
-      "source_lessons": [
-        "W6 §22.3",
-        "W6 §23.2"
-      ]
-    },
-    {
-      "id": "PREC-DOC-DESIGN-001",
-      "name": "文档化有意设计 ≠ 防护失效",
-      "criterion": "判定『默认防护失效』前必须查三处文档：README 对默认值的声明、CHANGELOG 中安全修复的意图、防护库自身 README 的装载说明——三者任一表明『有意 opt-in』即改判 defense-in-depth gap（R4 confirmed 保留），CWE-693 不成立",
-      "counterexample": "文档宣称防护但实现恒放行且无任何声明 → 真失效（CWE-693 成立）",
-      "applicability_scope": "『默认防护/中间件失效』类候选",
-      "applications": [
-        "Host 授权默认空集 (官方 opt-in, CVE 已公开)"
-      ],
-      "source_lessons": [
-        "W6 §24.2"
-      ]
-    },
-    {
-      "id": "PREC-DEV-FACE-001",
-      "name": "开发专用面 + 后果有界",
-      "criterion": "默认回环绑定 + 模块自述非生产 + 启动 WARNING + 后果有界（如残留字节仅同连接自混淆）→ 降级 NEEDS_REVIEW",
-      "counterexample": "开发面后果跨请求边界（协议走私实证成立）→ 不降级",
-      "applicability_scope": "开发服务器/调试端点类候选",
-      "applications": [
-        "开发服务器 (runserver)"
-      ],
-      "source_lessons": [
-        "W6 §14.4"
-      ]
-    },
-    {
-      "id": "PREC-ENGINE-MATRIX-001",
-      "name": "引擎矩阵",
-      "criterion": "多引擎框架的 REACHABLE 须在文档默认引擎成立；『某引擎成立』必须显式标注引擎矩阵",
-      "counterexample": "文档默认引擎即受影响引擎 → 正常 REACHABLE",
-      "applicability_scope": "多后端/多引擎框架（引擎分支执行差异）",
-      "applications": [
-        "引擎分支执行差异 (原生路径 vs 宽松解码器路径)"
-      ],
-      "source_lessons": [
-        "W6 §19.8"
-      ],
-      "applicability_signals": {
-        "text": [
-          "多引擎",
-          "引擎矩阵",
-          "cio",
-          "netty",
-          "reactor",
-          "multi-engine"
-        ]
-      }
-    },
-    {
-      "id": "PREC-GATE-RATING-001",
-      "name": "gate 评级规则",
-      "criterion": "框架硬化缺口 finding 的评级：gate 在部署者（symlink 写入/显式开启选项）→ Medium 上限；gate 无（默认链路直接成立）→ 可上 High",
-      "counterexample": "gate 无但攻击成本极高（带宽比例型无放大）→ 可下修 Low（带宽比例型无放大先例）",
-      "applicability_scope": "R4 defense-in-depth gap 类 finding 评级",
-      "applications": [
-        "同项目 H4 族 Medium 上限 vs Payload 无界 High"
-      ],
-      "source_lessons": [
-        "W6 §23.5"
-      ]
-    },
-    {
-      "id": "PREC-DUAL-LENS-001",
-      "name": "同事实双口径",
-      "criterion": "候选降级为 NEEDS_REVIEW 与同一事实以 R4 confirmed gap finding 保留可以共存——候选分类（可达性口径）与 finding 评级（硬化缺口口径）是两套口径；报告必须显式映射交叉引用",
-      "counterexample": "两口径结论实质矛盾（一边说机制不存在一边说机制存在）→ 冲突，需重审",
-      "applicability_scope": "NEEDS_REVIEW 候选与 R4 findings 重叠时",
-      "applications": [
-        "CAND-007↔H5-F1、CAND-010↔H7-F2、CAND-004↔H4-F2 同事实双口径",
-        "H5-F1/H7-F2↔R3.5 降级"
-      ],
-      "source_lessons": [
-        "W6 §24.9",
-        "W6 §16.12"
-      ]
-    },
-    {
-      "id": "PREC-CONDITIONAL-REACHABLE-001",
-      "name": "条件式 REACHABLE 前提透明保留",
-      "criterion": "verifier 在 blocking_point 显式记录部署前提且判定从未主张默认可达 → 保留 REACHABLE；报告必须逐条列出前提；前提被『默认当开』→ 按 PREC-DEFAULT-3LAYER-001 降级",
-      "counterexample": "前提隐藏在 evidence 文本中未结构化 → 按未记录前提处理",
-      "applicability_scope": "带部署前提的所有候选",
-      "applications": [
-        "配置目录环境变量启用类条件 (条件式 REACHABLE)"
-      ],
-      "source_lessons": [
-        "W6 §6"
-      ]
-    },
-    {
-      "id": "PREC-RUNTIME-VERSION-001",
-      "name": "运行时版本影响利用性",
-      "criterion": "漏洞利用性随运行时版本变化（如 net8 自动原子化 ReDoS）→ 实证前先做 pattern 搜索验证当前运行时行为；报告显式记录『运行时版本影响利用性』前提维度",
-      "counterexample": "机制不依赖运行时优化（纯算法复杂度）→ 无版本维度",
-      "applicability_scope": "ReDoS/性能类候选",
-      "applications": [
-        "正则回溯引擎版本差异 (net8 优化)",
-        "运行时正则引擎线性化 (版本相关)"
-      ],
-      "source_lessons": [
-        "W6 §13.4",
-        "W6 §24.3"
-      ]
-    },
-    {
-      "id": "PREC-STREAM-MATERIALIZE-001",
-      "name": "引擎流式 vs 应用物化",
-      "criterion": "WS/分片类声称先问『框架是否物化整条消息』（逐帧产/1:1 透传/逐项交付 = 流式，无框架级累积缓冲）——流式则 OOM 前提不存在，累积只在应用 handler = 应用能力面 → 降级",
-      "counterexample": "引擎头部解析即 allocate（2GiB 级）→ 框架物化成立",
-      "applicability_scope": "WS 帧/分片/流式协议累积类候选",
-      "applications": [
-        "引擎流式 vs 应用物化 (2/2 降级)",
-        "同向裁决"
-      ],
-      "source_lessons": [
-        "W6 §20.2",
-        "W6 §23.1"
-      ],
-      "applicability_signals": {
-        "text": [
-          "ws",
-          "websocket",
-          "分片",
-          "fragment",
-          "帧",
-          "流式",
-          "streaming",
-          "continuation"
-        ]
-      }
-    },
-    {
-      "id": "PREC-MULTI-LANG-001",
-      "name": "多语言裁决分组",
-      "criterion": "同 sink 家族一致性断言按 lang 维度分组——裁决按每个组件所属语言的生态惯例分别进行（Rust 侧按内存安全先例、C 侧按缓冲区先例、动态语言侧按注入先例）；跨语言组不强制一致",
-      "counterexample": "同 lang 组内的同 sink 形态仍强制一致性（W6 §18.3 先例继续生效）",
-      "applicability_scope": "混合语言项目（language_inventory 长度 ≥2）",
-      "applications": [],
-      "source_lessons": [
-        "v3.2 P-B 设计"
-      ],
-      "applicability_signals": {
-        "requires_lang_pair": true
-      }
-    },
-    {
-      "id": "PREC-STATE-GATE-REENTRY",
-      "name": "一次性门禁 vs 状态机重入",
-      "criterion": "容器类目标（多帧/多块/多记录格式）的门禁声称先对账『门禁执行时点 × 状态机重入路径』：门禁在初始化/open 加载时执行一次，而逐帧/逐块/逐条处理各自重跑状态机（每项改状态、门禁覆盖不到）→ 门禁被绕过，缺陷成立；门禁在每次重入路径上独立执行（含首/尾/零尺寸特例）→ 门禁成立，按既有等级裁决",
-      "counterexample": "单块/单记录目标（一次性解析，无逐项重入路径）不适用——无重入路径则一次性门禁覆盖全部处理窗口",
-      "applicability_scope": "多帧/多块/多记录容器与逐项状态机目标（图像容器、分片流、块传输、重协商流等逐项处理面）",
-      "applications": [
-        "多帧 seek 逐帧改尺寸 vs 初始化/open 一次性 bomb 检查（门禁时序 vs 状态机重入）"
-      ],
-      "source_lessons": [
-        "Pillow 批次 (SKILL_LESSONS_Pillow.md): DCX/MPO 同一缺陷家族两实例——发现方式为门禁时序 vs 状态机重入"
-      ]
-    }
-  ]
+ "description": "裁决先例库 — 15 语言战役 17 项目沉淀的裁决规则机器化资产。每条先例必须带 applicability_scope 与 counterexample（W6 §11 教训：论据的适用前提范围先于论据本身判定）。裁决时先例匹配失败不阻塞，主代理可自由裁量并回填新先例。",
+ "precedents": [
+  {
+   "id": "PREC-CAPABILITY-001",
+   "name": "能力支配",
+   "criterion": "攻击者触发该 sink 所必须持有的前提，本身已蕴含更强能力（如会话内任意代码执行、框架文件写权限）→ 零能力增量 → 降级 NEEDS_REVIEW（残余为 defense-in-depth 意见）",
+   "counterexample": "隐式行为面（repo 内容即输入，克隆即执行，无需攻击者运行代码）不适用能力支配（W6 §11）",
+   "applicability_scope": "仅适用于『攻击者已持有代码执行/文件写能力』前提类；不适用于零代码执行前提的隐式面",
+   "applications": [
+    "配置对象静默合并 → 载荷守卫失效",
+    "shell 启动钩子注入 (trap)",
+    "插件级联加载目录覆盖",
+    "序列化缓冲倍增 2x",
+    "逗号拆分 ≡ 重复键覆盖",
+    "规则注入 vs 已有处理器冲突"
+   ],
+   "source_lessons": [
+    "W6 §11",
+    "W6 §12.4",
+    "W6 §13.8",
+    "W6 §16.11",
+    "W6 §18.4"
+   ]
+  },
+  {
+   "id": "PREC-TYPE-SYSTEM-001",
+   "name": "类型系统强约束",
+   "criterion": "编译期静态类型（如 receiveType 编译期静态、多态仅开发者注册类集）是比运行时白名单更强的阻断 → 先查类型系统再查配置",
+   "counterexample": "运行时反射/动态加载（C# Type.GetType(s, true)、Java 反序列化自动类型解析）不适用",
+   "applicability_scope": "静态类型语言的多态/反序列化类选择面",
+   "applications": [
+    "基于类型标记的多态反序列化"
+   ],
+   "source_lessons": [
+    "W6 §19.6"
+   ]
+  },
+  {
+   "id": "PREC-MATRIX-001",
+   "name": "矩阵保留",
+   "criterion": "前提成立与否取决于部署矩阵（gate 枚举值 × 读/写端、主题/编辑器组合）→ 按矩阵中最常见成立格裁决 REACHABLE，矩阵显式记录入报告",
+   "counterexample": "前提矩阵中无一格是常见/支持配置 → 按 PREC-CONFIG-FLIP-001 降级",
+   "applicability_scope": "gate 多值且部分值是常见部署的候选",
+   "applications": [
+    "主机白名单矩阵",
+    "角色×主题兼容矩阵"
+   ],
+   "source_lessons": [
+    "W6 §14.7",
+    "W6 §17.6"
+   ]
+  },
+  {
+   "id": "PREC-CONFIG-FLIP-001",
+   "name": "必然翻转的配置 gate vs 被警告的非默认操作",
+   "criterion": "存在任何可用部署必须翻转该 gate（文档支持翻转路径）→ 保留 REACHABLE + 记录矩阵；gate 翻转本身是文档警告的非默认操作 → 降级 NEEDS_REVIEW",
+   "counterexample": "无任何可用部署需要翻转的 gate（纯理论配置）→ UNREACHABLE",
+   "applicability_scope": "配置 gate 类候选",
+   "applications": [
+    "配置 gate 必然翻转 vs 被警告的非默认操作"
+   ],
+   "source_lessons": [
+    "W6 §14.7"
+   ]
+  },
+  {
+   "id": "PREC-HOST-FAMILY-001",
+   "name": "Host 采信族裁决树",
+   "criterion": "① 框架内建安全敏感消费者（密码重置/链接生成，零应用协作）→ REACHABLE；② 仅暴露 helper 供应用使用 → NEEDS_REVIEW；③ Host↔authority 一致性校验 → 直接封口",
+   "counterexample": "框架文档化 back+redirect 配对且受害方可触发 → 不落入 ②（见 PREC-VICTIM-TRIGGER-001 对 redirect-back 族的裁决）",
+   "applicability_scope": "Host 头/绝对 URI authority/X-Forwarded-Host 采信类候选",
+   "applications": [
+    "Host 投毒→密码重置 (①)",
+    "②→NEEDS_REVIEW",
+    "③ 有 400 校验→封口 + ②",
+    "②→NEEDS_REVIEW"
+   ],
+   "source_lessons": [
+    "W6 §23.4"
+   ],
+   "applicability_signals": {
+    "text": [
+     "host 头",
+     "host header",
+     "x-forwarded",
+     "authority",
+     "绝对 uri",
+     "绝对url",
+     "host 采信",
+     "redirect",
+     "重定向"
+    ]
+   }
+  },
+  {
+   "id": "PREC-VICTIM-TRIGGER-001",
+   "name": "受害方可触发性",
+   "criterion": "开放重定向/Host 投毒族第四维：referer 由受害者浏览器设置（攻击者布置入口页即控制）> Host（受害者导航携带，但攻击者不可控）> X-Forwarded-Host（浏览器导航无法携带，被投毒响应只出现在攻击者自身请求中）。仅 helper 降级论据对受害方可触发的 referer 类不适用",
+   "counterexample": "X-Forwarded-Host 投毒的密码重置场景（应用代码把 helper 输出放入敏感通道）——受害方触发依赖应用协作，按 ② 处理",
+   "applicability_scope": "开放重定向/URL 生成/投毒类候选",
+   "applications": [
+    "referer 触发 (保留 REACHABLE) vs XFF 触发 (降级)"
+   ],
+   "source_lessons": [
+    "W6 §24.1"
+   ]
+  },
+  {
+   "id": "PREC-DEFAULT-3LAYER-001",
+   "name": "三层默认开启",
+   "criterion": "『gate 默认开』必须拆三层验证：代码默认值 / 模块加载默认 / 部署前提——三层全开才算默认可达；裁决输出可为 gate 记录型 REACHABLE 而非二元",
+   "counterexample": "文档化有意 opt-in 的默认（README/CHANGELOG 明示）→ 不属『隐式默认开』（见 PREC-DOC-DESIGN-001）",
+   "applicability_scope": "一切声称『默认开启/默认可达』的 gate",
+   "applications": [
+    "SSI exec 代码层 vs 模块装载层 vs 写入原语部署层",
+    "feature 默认集 vs bind() 运行时 vs TLS 协商部署层"
+   ],
+   "source_lessons": [
+    "W6 §22.3",
+    "W6 §23.2"
+   ]
+  },
+  {
+   "id": "PREC-DOC-DESIGN-001",
+   "name": "文档化有意设计 ≠ 防护失效",
+   "criterion": "判定『默认防护失效』前必须查三处文档：README 对默认值的声明、CHANGELOG 中安全修复的意图、防护库自身 README 的装载说明——三者任一表明『有意 opt-in』即改判 defense-in-depth gap（R4 confirmed 保留），CWE-693 不成立",
+   "counterexample": "文档宣称防护但实现恒放行且无任何声明 → 真失效（CWE-693 成立）",
+   "applicability_scope": "『默认防护/中间件失效』类候选",
+   "applications": [
+    "Host 授权默认空集 (官方 opt-in, CVE 已公开)"
+   ],
+   "source_lessons": [
+    "W6 §24.2"
+   ]
+  },
+  {
+   "id": "PREC-DEV-FACE-001",
+   "name": "开发专用面 + 后果有界",
+   "criterion": "默认回环绑定 + 模块自述非生产 + 启动 WARNING + 后果有界（如残留字节仅同连接自混淆）→ 降级 NEEDS_REVIEW",
+   "counterexample": "开发面后果跨请求边界（协议走私实证成立）→ 不降级",
+   "applicability_scope": "开发服务器/调试端点类候选",
+   "applications": [
+    "开发服务器 (runserver)"
+   ],
+   "source_lessons": [
+    "W6 §14.4"
+   ]
+  },
+  {
+   "id": "PREC-ENGINE-MATRIX-001",
+   "name": "引擎矩阵",
+   "criterion": "多引擎框架的 REACHABLE 须在文档默认引擎成立；『某引擎成立』必须显式标注引擎矩阵",
+   "counterexample": "文档默认引擎即受影响引擎 → 正常 REACHABLE",
+   "applicability_scope": "多后端/多引擎框架（引擎分支执行差异）",
+   "applications": [
+    "引擎分支执行差异 (原生路径 vs 宽松解码器路径)"
+   ],
+   "source_lessons": [
+    "W6 §19.8"
+   ],
+   "applicability_signals": {
+    "text": [
+     "多引擎",
+     "引擎矩阵",
+     "cio",
+     "netty",
+     "reactor",
+     "multi-engine"
+    ]
+   }
+  },
+  {
+   "id": "PREC-GATE-RATING-001",
+   "name": "gate 评级规则",
+   "criterion": "框架硬化缺口 finding 的评级：gate 在部署者（symlink 写入/显式开启选项）→ Medium 上限；gate 无（默认链路直接成立）→ 可上 High",
+   "counterexample": "gate 无但攻击成本极高（带宽比例型无放大）→ 可下修 Low（带宽比例型无放大先例）",
+   "applicability_scope": "R4 defense-in-depth gap 类 finding 评级",
+   "applications": [
+    "同项目 H4 族 Medium 上限 vs Payload 无界 High"
+   ],
+   "source_lessons": [
+    "W6 §23.5"
+   ]
+  },
+  {
+   "id": "PREC-DUAL-LENS-001",
+   "name": "同事实双口径",
+   "criterion": "候选降级为 NEEDS_REVIEW 与同一事实以 R4 confirmed gap finding 保留可以共存——候选分类（可达性口径）与 finding 评级（硬化缺口口径）是两套口径；报告必须显式映射交叉引用",
+   "counterexample": "两口径结论实质矛盾（一边说机制不存在一边说机制存在）→ 冲突，需重审",
+   "applicability_scope": "NEEDS_REVIEW 候选与 R4 findings 重叠时",
+   "applications": [
+    "CAND-007↔H5-F1、CAND-010↔H7-F2、CAND-004↔H4-F2 同事实双口径",
+    "H5-F1/H7-F2↔R3.5 降级"
+   ],
+   "source_lessons": [
+    "W6 §24.9",
+    "W6 §16.12"
+   ]
+  },
+  {
+   "id": "PREC-CONDITIONAL-REACHABLE-001",
+   "name": "条件式 REACHABLE 前提透明保留",
+   "criterion": "verifier 在 blocking_point 显式记录部署前提且判定从未主张默认可达 → 保留 REACHABLE；报告必须逐条列出前提；前提被『默认当开』→ 按 PREC-DEFAULT-3LAYER-001 降级",
+   "counterexample": "前提隐藏在 evidence 文本中未结构化 → 按未记录前提处理",
+   "applicability_scope": "带部署前提的所有候选",
+   "applications": [
+    "配置目录环境变量启用类条件 (条件式 REACHABLE)"
+   ],
+   "source_lessons": [
+    "W6 §6"
+   ]
+  },
+  {
+   "id": "PREC-RUNTIME-VERSION-001",
+   "name": "运行时版本影响利用性",
+   "criterion": "漏洞利用性随运行时版本变化（如 net8 自动原子化 ReDoS）→ 实证前先做 pattern 搜索验证当前运行时行为；报告显式记录『运行时版本影响利用性』前提维度",
+   "counterexample": "机制不依赖运行时优化（纯算法复杂度）→ 无版本维度",
+   "applicability_scope": "ReDoS/性能类候选",
+   "applications": [
+    "正则回溯引擎版本差异 (net8 优化)",
+    "运行时正则引擎线性化 (版本相关)"
+   ],
+   "source_lessons": [
+    "W6 §13.4",
+    "W6 §24.3"
+   ]
+  },
+  {
+   "id": "PREC-STREAM-MATERIALIZE-001",
+   "name": "引擎流式 vs 应用物化",
+   "criterion": "WS/分片类声称先问『框架是否物化整条消息』（逐帧产/1:1 透传/逐项交付 = 流式，无框架级累积缓冲）——流式则 OOM 前提不存在，累积只在应用 handler = 应用能力面 → 降级",
+   "counterexample": "引擎头部解析即 allocate（2GiB 级）→ 框架物化成立",
+   "applicability_scope": "WS 帧/分片/流式协议累积类候选",
+   "applications": [
+    "引擎流式 vs 应用物化 (2/2 降级)",
+    "同向裁决"
+   ],
+   "source_lessons": [
+    "W6 §20.2",
+    "W6 §23.1"
+   ],
+   "applicability_signals": {
+    "text": [
+     "ws",
+     "websocket",
+     "分片",
+     "fragment",
+     "帧",
+     "流式",
+     "streaming",
+     "continuation"
+    ]
+   }
+  },
+  {
+   "id": "PREC-MULTI-LANG-001",
+   "name": "多语言裁决分组",
+   "criterion": "同 sink 家族一致性断言按 lang 维度分组——裁决按每个组件所属语言的生态惯例分别进行（Rust 侧按内存安全先例、C 侧按缓冲区先例、动态语言侧按注入先例）；跨语言组不强制一致",
+   "counterexample": "同 lang 组内的同 sink 形态仍强制一致性（W6 §18.3 先例继续生效）",
+   "applicability_scope": "混合语言项目（language_inventory 长度 ≥2）",
+   "applications": [],
+   "source_lessons": [
+    "v3.2 P-B 设计"
+   ],
+   "applicability_signals": {
+    "requires_lang_pair": true
+   }
+  },
+  {
+   "id": "PREC-STATE-GATE-REENTRY",
+   "name": "一次性门禁 vs 状态机重入",
+   "criterion": "容器类目标（多帧/多块/多记录格式）的门禁声称先对账『门禁执行时点 × 状态机重入路径』：门禁在初始化/open 加载时执行一次，而逐帧/逐块/逐条处理各自重跑状态机（每项改状态、门禁覆盖不到）→ 门禁被绕过，缺陷成立；门禁在每次重入路径上独立执行（含首/尾/零尺寸特例）→ 门禁成立，按既有等级裁决",
+   "counterexample": "单块/单记录目标（一次性解析，无逐项重入路径）不适用——无重入路径则一次性门禁覆盖全部处理窗口",
+   "applicability_scope": "多帧/多块/多记录容器与逐项状态机目标（图像容器、分片流、块传输、重协商流等逐项处理面）",
+   "applications": [
+    "多帧 seek 逐帧改尺寸 vs 初始化/open 一次性 bomb 检查（门禁时序 vs 状态机重入）"
+   ],
+   "source_lessons": [
+    "Pillow 批次 (SKILL_LESSONS_Pillow.md): DCX/MPO 同一缺陷家族两实例——发现方式为门禁时序 vs 状态机重入"
+   ]
+  },
+  {
+   "id": "PREC-GUARD-SUBSET-001",
+   "name": "守卫封顶阻断主张必须枚举守卫通过子集",
+   "criterion": "阻断主张『守卫封顶/上限已封/有界』只实证拒绝路径 = 阻断不成立——必须枚举守卫通过子集: 文件真实包含声明尺寸/自动切换 tier (AUTO→TCP_ONLY)/重试路径/配置档位/平台条件分支; 任一通过子集未被封顶则按该子集重做后果分析",
+   "counterexample": "守卫对所有攻击者可控维度全覆盖 (尺寸/内容/结构/配置/平台五维) 且通过子集逐维度实证封顶时, 该先例不适用 (gpac avilib 短读守卫只覆盖文件短于声明的子集——真实内容文件直接绕过, 是适用本先例的实录)",
+   "applicability_scope": "阻断论证依赖『守卫/上限/门禁』的候选 (资源限制/尺寸门/缓冲契约类阻断)",
+   "applications": [
+    "短读守卫 (文件真实包含声明尺寸) → 索引放大复活存活 (gpac CAND-007)",
+    "缓冲契约门 (AUTO→TCP_ONLY 自动切换 1MB 档) → 复活推翻 (gpac CAND-001)"
+   ],
+   "source_lessons": [
+    "gpac CAND-007 avilib short-read guard bypass (2026-08)",
+    "gpac CAND-001 RTSP buffer tier auto-switch (2026-08)"
+   ]
+  }
+ ]
 }

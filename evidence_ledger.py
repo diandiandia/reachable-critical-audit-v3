@@ -20,6 +20,20 @@ VERDICTS = ("REACHABLE", "UNREACHABLE", "NEEDS_REVIEW")
 # v3.6 (P1-3): 8 类对齐 binder R5_CLAIM_TYPES 与 SKILL.md R5 触发判定
 EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos",
                     "rce", "leak")
+
+
+def is_claim_like(cand, fields=("claim_type", "evidence", "summary")):
+    """SWR-V3.15-002: 声称类判定单真相——复活池选样与门禁③c 同调此函数
+    (双实现漂移三次漏选实录: s2n CAND-009/nghttp2 CAND-011/gpac CAND-011)。
+    规则: claim_type 字段优先命中 EMPIRICAL_CLAIMS; 否则同字段集文本扫描降级。
+    否定语境词行为两处一致即可——统一优先于否定语义精化。"""
+    ct = str(cand.get("claim_type") or "").lower()
+    if ct and any(k in ct for k in EMPIRICAL_CLAIMS):
+        return True
+    text = " ".join(str(cand.get(k) or "") for k in fields).lower()
+    return any(k in text for k in EMPIRICAL_CLAIMS)
+
+
 HYPOTHESES_IDS = [f"H-{i}" for i in range(1, 8)]
 EMPIRICAL_MARKERS = ("实测", "实证", "empirically", "harness", "rack-test",
                      "cargo test", "curl", "e2e", "端到端", "probe", "pytest")
@@ -278,10 +292,8 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         for c in cands:
             if c.get("verdict") != "UNREACHABLE":
                 continue
-            text = " ".join(str(c.get(k) or "")
-                            for k in ("claim_type", "evidence", "summary")).lower()
-            if any(k in text for k in EMPIRICAL_CLAIMS) and \
-               not c.get("resurrection_review"):
+            # SWR-V3.15-002: 统一 claim 判定函数 (与 resurrect_pool 同源)
+            if is_claim_like(c) and not c.get("resurrection_review"):
                 violations.append({"gate": "resurrection_required", "id": c.get("id")})
     else:
         violations.append({"gate": "resurrection_exempted", "severity": "warn",

@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.14"
+TOOLING_VERSION = "3.15"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -33,9 +33,8 @@ except ImportError:  # pragma: no cover
     checklist_binder = None
     precedent_library = None
 
-# v3.2: 声称类集合 (与 evidence_ledger.EMPIRICAL_CLAIMS 同源; workflow 脚本
-# 模块独立性——不在顶层 import evidence_ledger 以免循环依赖)
-EMPIRICAL_CLAIMS = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos")
+# v3.15 (SWR-V3.15-002): 声称类判定单真相移入 evidence_ledger.is_claim_like
+# (resurrect_pool 内懒导入——模块独立性保留, 本地重复常量删除防双实现漂移)
 
 VERDICT_SCHEMA = {
     "type": "object",
@@ -299,8 +298,14 @@ return {
 # 次要段截断且必带标记。旧版 resurrect_prompt 1200 字符静默截断 (无标记)
 # 曾致复活者误读证据中段 (P0-P2 全部波次由主代理重建完整证据 args 规避)。
 # 锚定段首 (防止粘连段中后段关键词泄漏到次要段分类)
+# SWR-V3.15-005: 扩展三形态——verifier 证据的方括号段头 ([G1]/[PREC-*]/[CK-*])
+# 与平文 VERDICT:/复活 gap 逐条核实头 (gpac CAND-001/freetype CAND-002 双实录
+# 全 minor 切净的根因); 全 minor 首尾拼接兜底保证永不切净
 _TRUNC_KEY_HEAD = re.compile(
-    r"^【?(?:步骤 ?0|承重前提|实证|阻断|结论|claim 与实证|gap 核实|核对)")
+    r"^【?(?:步骤 ?0|承重前提|实证|阻断|结论|claim 与实证|gap 核实|核对)"
+    r"|^\[(?:G\d+|PREC-[\w-]+|CK-[\w-]+)\]"
+    r"|^VERDICT"
+    r"|^复活 gap 逐条核实")
 
 
 def _truncate_evidence(evidence, budget=None):
@@ -319,6 +324,16 @@ def _truncate_evidence(evidence, budget=None):
     key, minor = [], []
     for seg in segments:
         (key if _TRUNC_KEY_HEAD.match(seg) else minor).append(seg)
+    # v3.14.1 hotfix: 全 minor (0 关键段) 时不得切净——首尾拼接兜底
+    # (gpac CAND-001 / freetype CAND-002 双实录: 证伪者收 0 字证据;
+    #  key 集扩展留 v3.15 设计项)
+    if not key:
+        out = evidence
+        if budget:
+            half = max(budget // 2, 200)
+            out = evidence[:half] + evidence[-half:]
+        return out + (f" ...[截断: 无关键段头, 首尾拼接 {len(evidence)} 字符, 见 verify_queue.json]"
+                      if len(evidence) > len(out) else "")
     out = "".join(key)
     if minor:
         out += (f" ...[截断: 次要段 {sum(len(s) for s in minor)} 字符, "
@@ -439,18 +454,19 @@ return {
 
 def resurrect_pool(candidates, batch_size=8):
     """SWR-V3.2-040: UNREACHABLE 复活攻击抽样。
-    (1) 声称类 UNREACHABLE (claim_type 命中 EMPIRICAL_CLAIMS 或 evidence 含
-        unbounded/oom/xss/crash 等) → 全量;
+    (1) 声称类 UNREACHABLE (evidence_ledger.is_claim_like, SWR-V3.15-002
+        与门禁③c 同源判定) → 全量;
     (2) 其他类 → 20% 抽样, 最少 2, 上限 batch_size;
     已有 resurrection_review 的候选排除 (多波不重复, W6 §12.3 同构)。"""
     pool = [c for c in candidates
             if c.get("status") == "VERIFIED" and c.get("verdict") == "UNREACHABLE"
             and not c.get("resurrection_review")]
+    # SWR-V3.15-002: 与门禁③c 同源判定 (字段集一致; 含 rce/leak——旧本地副本
+    # 缺漏两声称类也是漂移源之一)
+    import evidence_ledger as _el
     claimed, other = [], []
     for c in pool:
-        text = " ".join(str(c.get(k) or "")
-                        for k in ("claim_type", "evidence", "summary", "sink_type")).lower()
-        if any(k in text for k in EMPIRICAL_CLAIMS):
+        if _el.is_claim_like(c):
             claimed.append(c)
         else:
             other.append(c)
@@ -472,7 +488,13 @@ def resurrect_prompt(c):
         f"  2. 承重前提是否真伪（严格相等门控/默认参数/常量值逐一核实）\n"
         f"  3. 三层默认语义是否误用（部署层前提被当默认关）\n"
         f"  4. 死代码豁免是否误用（'无生产调用者'是否漏了动态/反射调用）\n"
-        f"  5. 平台前提是否有实证（platform_excluded 是否凭惯例假设）\n\n"
+        f"  5. 平台前提是否有实证（platform_excluded 是否凭惯例假设）\n"
+        f"  6. 绑定依赖库契约是否漏查（vendored 解析器状态机/加密库校验——\n"
+        f"     目标树内缺校验≠缺陷成立, 先查绑定层, SWR-V3.15-011）\n"
+        f"  7. 守卫封顶类阻断是否枚举过守卫通过子集（文件真实包含声明尺寸/\n"
+        f"     自动切换 tier/重试路径, PREC-GUARD-SUBSET-001）\n"
+        f"  8. verifier 未实测的平台维度优先补测（32 位/LLP64 模拟重建等,\n"
+        f"     SWR-V3.15-012——revived=false 也欢迎补测固化阻断裁决）\n\n"
         f"原判定证据: {_truncate_evidence(c.get('evidence', ''))}\n"
         f"调用链: {c.get('call_chain', [])[:8]}\n\n"
         f"输出 revived=true/false + reason（附 file:line）；revived=true 时 "
@@ -515,7 +537,8 @@ def export_script_resurrect(project_root, batch_size=8):
                   and not c.get("resurrection_review") and c["id"] not in selected]
     with open(sample_path, "w") as f:
         json.dump({
-            "rule": ("声称类 (crash/panic/oom/unbounded/xss/protocol_dos) UNREACHABLE 全量 + "
+            "rule": ("声称类 (is_claim_like: crash/panic/oom/unbounded/xss/protocol_dos/rce/leak, "
+                     "SWR-V3.15-002 与门禁③c 同源) UNREACHABLE 全量 + "
                      "其他类 20% 抽样 (最少 2, 上限 batch_size), 已有 resurrection_review 排除"
                      + ("; v3.14 以主代理 sample 文件为权威池" if sample_authority
                         else "; v3.14 内部抽样 (文件缺失/漂移)")),
@@ -617,6 +640,14 @@ def _self_refutation_section(c):
     return "\n".join(lines)
 
 
+def _post_resurrect_advisory(ids):
+    """SWR-V3.15-004: 陈旧 refutation 字段致资格排除的提示 (提示级, 非强制)。"""
+    return {"ids": ids,
+            "note": ("带 re_verify_gap 的 REACHABLE 候选含陈旧 refutation 字段, "
+                     "被本波资格排除 (W6 排除条件)——重验后须先归档旧 refutation 至 "
+                     "refutation_history 再导出强制复核波 (libarchive CAND-020/011 实录形态)")}
+
+
 def export_script(project_root, mode="verify", batch_size=4):
     queue = bv.load_queue(project_root)
     candidates = queue["candidates"]
@@ -624,6 +655,7 @@ def export_script(project_root, mode="verify", batch_size=4):
     # 误判"仅 N 个合格" (jsrsasign R3.5 波次实测); 结果附 qualified_total +
     # truncated 标记 (verify 波次截断为设计行为, 计数同样有用)
     qualified_total = 0
+    advisory = []
     if mode == "verify":
         qualified = [c for c in candidates if c.get("status") == "PENDING"]
         qualified_total = len(qualified)
@@ -635,13 +667,22 @@ def export_script(project_root, mode="verify", batch_size=4):
                      if c.get("status") == "VERIFIED" and c.get("verdict") == "REACHABLE"
                      and c.get("evidence_grade") in ("edge_proven", "empirically_confirmed")
                      and "refutation" not in c]
+        # SWR-V3.15-004: 复活重验后带陈旧 refutation 的候选被资格排除 → 静默空转
+        # (libarchive CAND-020/011 实录) —— 导出结果附 advisory 提示归档
+        advisory = [c["id"] for c in candidates
+                    if c.get("re_verify_gap") and c.get("verdict") == "REACHABLE"
+                    and "refutation" in c]
         qualified_total = len(qualified)
         pool = qualified[:batch_size]
     else:
         raise ValueError(f"unknown mode {mode}")
     if not pool:
-        return {"status": "WORKFLOW_NOTHING_TO_DO", "mode": mode,
-                "qualified_total": qualified_total}
+        r = {"status": "WORKFLOW_NOTHING_TO_DO", "mode": mode,
+             "qualified_total": qualified_total}
+        # SWR-V3.15-004: 空池同样附 advisory——静默空转正是 libarchive 实录形态
+        if mode == "refutation" and advisory:
+            r["post_resurrect_advisory"] = _post_resurrect_advisory(advisory)
+        return r
 
     payload = []
     for c in pool:
@@ -666,6 +707,11 @@ def export_script(project_root, mode="verify", batch_size=4):
                                    + "".join(f"- {q}\n" for q in _m.get("probe_questions") or []))
                     prompt += ("\n步骤 3 的『同主体/DIRECT』判定必须逐条对照上表："
                                "任一平台机制使『调用者≠启动者本人』(异主体) 时按 ACROSS_BOUNDARY 处理。\n")
+                    # SWR-V3.15-012: 平台条件性前提必须显式列未实测平台/构建清单
+                    # (复活波按此清单定向补测, freetype CAND-002 实录)
+                    prompt += ("\n平台条件性前提 (32 位回绕/LLP64/平台 API 语义) 必须在 "
+                               "evidence 显式列出『未实测平台/构建清单』——已实测的写实测"
+                               "方式与结果, 未实测的逐项列名, 供复活波定向补测。\n")
                 # v3.11 (SWR-V3.11-006): 平台 API 契约注入 (阻断/放行判定的知识基线)
                 _contracts = _cb.platform_api_contracts(_plats)
                 if _contracts:
@@ -766,6 +812,9 @@ def export_script(project_root, mode="verify", batch_size=4):
         result["exported"] = len(payload)
         result["advice"] = (f"资格候选 {qualified_total} 个, 本波仅导出 {len(payload)} 个 "
                             f"(batch_size={batch_size})——若需全集请 --batch-size {qualified_total}")
+    # SWR-V3.15-004: post-resurrect advisory (提示级, 非强制)
+    if mode == "refutation" and advisory:
+        result["post_resurrect_advisory"] = _post_resurrect_advisory(advisory)
     return result
 
 

@@ -1049,7 +1049,10 @@ def _build_divergence(project_root):
 
 def scope_diff(project_root, snapshot):
     """v3.2.2 (REQ-V3.2.2-018): 现状 vs 快照差异。
-    返回 {changed: bool, changes: [描述], affected_dirs: [路径]}。"""
+    返回 {changed: bool, changes: [描述], affected_dirs: [路径]}。
+    SWR-V3.15-007 契约注: changes 为人读描述字符串 (如 "submodule x: a -> b"),
+    机器消费请用 affected_dirs——消费者解析人读形态是 nghttp2 AttributeError
+    实录根因, 本函数保持字符串形态不变。"""
     cur = scope_snapshot(project_root)
     changes = []
     affected = []

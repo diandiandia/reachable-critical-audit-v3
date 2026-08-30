@@ -43,6 +43,10 @@ KEYWORD_MAP = {
     "referer": ["PREC-VICTIM-TRIGGER-001"],
     "状态机": ["PREC-STATE-GATE-REENTRY"],
     "state machine": ["PREC-STATE-GATE-REENTRY"],
+    # v3.15 (SWR-V3.15-010): 守卫封顶类阻断主张——gpac CAND-007/001 复活推翻实录
+    "封顶": ["PREC-GUARD-SUBSET-001"],
+    "上限": ["PREC-GUARD-SUBSET-001"],
+    "有界": ["PREC-GUARD-SUBSET-001"],
 }
 
 _CACHE = {}
