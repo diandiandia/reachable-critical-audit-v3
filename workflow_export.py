@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.15"
+TOOLING_VERSION = "3.16"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -725,6 +725,13 @@ def export_script(project_root, mode="verify", batch_size=4):
                                    + "".join(f"- {q}\n" for q in _ct.get("probe") or []))
             except (ImportError, OSError, ValueError):
                 pass
+            # SWR-V3.16-004: 树外层清单——多树/框架树目标的阻断论证第一来源
+            # 在树外 (av CAND-013 Java fd 重定向→scheme 大小写变体契约实录);
+            # 无条件注入 (不依赖平台信号命中)
+            prompt += ("\n多树/框架树目标必须显式列『树外层清单』: 绑定依赖库 / "
+                       "框架语言层 (如 Java 侧门禁) / 系统策略层 (如 SELinux 域)"
+                       " —— 阻断论证引用树外门禁时须写层名与契约, 树外层不可枚举"
+                       "时如实注明。\n")
             # v3.1 (SWR-V3.1-044/045): 注入家族清单步骤 + 自证伪提示
             checklist_section = _checklist_section(c)
             hints = _self_refutation_section(c)

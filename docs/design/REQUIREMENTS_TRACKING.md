@@ -854,3 +854,15 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.15-012 | verifier 未测平台清单一行 | 已完成 | workflow_export.py PTM 注入块 |
 | REQ-V3.15-013 | R1 首行键锚定 + 域空签收 SKILL.md 文案 | 已完成 | SKILL.md R1 节 |
 | REQ-V3.15-014 | TOOLING==3.15 + v3.15 增量段 + 全量回归全绿 + 旧队列零新增告警 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量（356 passed） |
+
+## 系统需求（REQ-V3.16）（共 5 条）
+
+> 手工追加段（2026-08-30）。规范: REQ_V3_16.md / SWR_V3_16.md。评估: BIAS_EVAL_V3_16.md。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.16-001 | gate ③ audit_constraint 批量裁决建议（warn 级附项, 不自动改写） | 已完成 | evidence_ledger.py + tests/test_v316.py |
+| REQ-V3.16-002 | R4 verdict 模板枚举加粗+反面示例 | 已完成 | task_templates/biz_hypothesis.md + tests/test_v316.py |
+| REQ-V3.16-003 | CK-CHECKPOINT-AFTER-ACCUM 构造器链急切分配条目 | 已完成 | resources/checklist_library.json + tests/test_v316.py |
+| REQ-V3.16-004 | 树外层清单无条件注入条款 | 已完成 | workflow_export.py + tests/test_v316.py |
+| REQ-V3.16-005 | 账本双副本漂移 warn（相对形态 sibling 推导） | 已完成 | tools/batch_verify.py + tests/test_v316.py |

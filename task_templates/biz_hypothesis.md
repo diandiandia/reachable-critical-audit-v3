@@ -52,10 +52,14 @@ evidence 为单字符串、r3_link 为字符串或 null）：
   ⑤ **密码学/随机数默认值行（v3.3, REQ-V3.3-002 佐证）**: 随机 seed 来源
      （时间戳/地址/线性同余→红旗）、哈希用途是否安全敏感（校验替代/签名→红旗）
 
-## 强制: 三选一 verdict（confirmed / reviewed_clean / not_applicable）+ 覆盖范围说明
+## 强制: 三选一 verdict — **confirmed / reviewed_clean / not_applicable** + 覆盖范围说明
 
 v3.8 (SWR-V3.8-003 语义固化, tomcat 审计): verdict 只允许上述三值，禁止自创
-（PARTIAL/REFUTED/REFUTED_HIGH 等非法值会被 collect 层告警）。**部分证伪但仍有
+（PARTIAL/REFUTED/REFUTED_HIGH 等非法值会被 collect 层告警）。
+**反面示例 (v3.15, SWR-V3.16-002)**: REACHABLE / UNREACHABLE / NEEDS_REVIEW 是
+R3 候选的 verdict，不是本假说 verdict——av 批四文件全逃逸实录（H2/H4/H5/H6 各写
+一个非法值），写入这些值会被 r4-collect 报 R4_ENUM_WARNING 并给建议映射。
+**部分证伪但仍有
 成立 finding 的假说 → verdict=confirmed，证伪的断言不写进 findings 数组**；若必须
 保留证伪记录，该条 severity=Low 且 title 前缀标 `[refuted]`（进附录而非问题清单）。
 severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法值。
@@ -109,7 +113,7 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
    一句话带过（不占表格行）
 
 ## 产出（强制 JSON 写入 {out}，最终回复同 JSON）
-{"hypothesis_id":"{hypothesis_id}","verdict":"confirmed|reviewed_clean|not_applicable",
+{"hypothesis_id":"{hypothesis_id}","verdict":"confirmed|reviewed_clean|not_applicable（仅此三值）",
 "findings":[{"title":"...","cwe":["CWE-xxx"],"severity":"Critical|High|Medium|Low",
 "call_chain":["file:line",...],"evidence":"...","fix":"...",
 "tracked_surfaces":["<input_surface.json 原样 id>"],"r3_link":null|"CAND-xxx",

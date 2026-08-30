@@ -177,7 +177,7 @@ def test_precedent_state_reachable():
 # ---- SWR-V3.12-006: 版本链 ----
 
 def test_tooling_version_and_skillmd_counts():
-    assert we.TOOLING_VERSION == "3.15"  # v3.13 版本链前进 (SWR-V3.13-006)
+    assert we.TOOLING_VERSION == "3.16"  # v3.13 版本链前进 (SWR-V3.13-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.12 增量" in skill
     assert "39 条检查清单" in skill and "18 条裁决先例" in skill

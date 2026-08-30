@@ -1264,3 +1264,36 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 
 全量回归全绿（356 = 337 基线 + test_v315 19 用例）+ 旧队列复跑零新增告警
 （gpac/freetype/protobuf 六门禁）+ install 双副本同步。
+
+## 🆕 v3.16 增量（2026-08-30，v3.15 验收审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_16.md` + `SWR_V3_16.md` +
+> `SYSTEM_DESIGN_V3_16.md` + `SOFTWARE_DESIGN_V3_16.md` + `BIAS_EVAL_V3_16.md`。
+> v3.16 不改变阶段骨架、六门禁判据语义、队列数据模型主体；5 项修复全部
+> 建议级/warn 级/提示级（无新强制义务）。案例支撑全部为 av 验收批次会话内
+> 实录；四缺陷评估零违规（原拟第 6 项取证确认 SWR-V3.10-006 已在位，裁除）。
+
+- **audit_constraint 批量裁决建议（SWR-V3.16-001）**：候选携带
+  `audit_constraint`（no-build/no-device/tree-incomplete）时，gate ③ 对
+  约束下未实证的实证类 REACHABLE 附 warn 级 `batch_demote` 建议（统一理由
+  模板），主代理逐条确认落盘——不自动改写（av 批 11 条同构手工降级实录）。
+- **R4 verdict 枚举强化（SWR-V3.16-002）**：biz_hypothesis 模板三值枚举
+  加粗 + 反面示例（REACHABLE/UNREACHABLE/NEEDS_REVIEW 是 R3 候选 verdict，
+  写入会被 R4_ENUM_WARNING 报）——av 批四文件全逃逸实录。
+- **构造器链急切分配量级条目（SWR-V3.16-003）**：CK-CHECKPOINT-AFTER-ACCUM
+  增条目——无界计数类候选量级以对象图内部急切分配为准（per-Stream 192KB
+  急切缓冲实录，顶层对象尺寸低估 3-4 个数量级）。
+- **树外层清单条款（SWR-V3.16-004）**：verifier 任务书无条件注入——多树/
+  框架树目标必须显式列树外层（绑定库/框架语言层/系统策略层），阻断论证
+  引用树外门禁须写层名与契约（av CAND-013 Java fd 重定向契约实录）。
+- **账本双副本漂移 warn（SWR-V3.16-005）**：coverage-ledger --write 后
+  检查 dev/installed 双活副本账本 sources 一致性，不一致输出
+  LEDGER_COPY_DRIFT warn（附并集修复指引），不自动改写；sibling 定位
+  相对形态推导（第一原则：运行时禁硬编码机器路径）。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.16 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成。
+
+### 验收判据（Phase 3.16）
+
+全量回归全绿（365 = 356 基线 + test_v316 9 用例）+ 旧队列复跑零新增告警
+（gpac/freetype/av 六门禁）+ install 双副本同步。

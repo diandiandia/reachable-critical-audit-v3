@@ -1601,11 +1601,46 @@ def stage_coverage_ledger(project_root, write=False):
     ledger.setdefault("sources", []).append(_ledger_source_key(project_root))
     ledger["updated_at"] = datetime.date.today().isoformat()
     json.dump(ledger, open(ledger_path, "w"), ensure_ascii=False, indent=2)
+    # SWR-V3.16-005: 双副本漂移 warn——dev/installed 双活形态下另一副本账本
+    # sources 不一致时提示 (4 键漂移实录), 不自动改写
+    try:
+        _other = _sibling_skill_ledger(_parent)
+        if _other:
+            _o = json.load(open(_other))
+            if set(_o.get("sources") or []) != set(ledger.get("sources") or []):
+                print(json.dumps({"status": "LEDGER_COPY_DRIFT", "severity": "warn",
+                                  "note": "另一 skill 副本账本 sources 与本副本不一致"
+                                          "——双副本并集修复见 REQ_V3_16 D-5 "
+                                          "(sources 去重并 + rows 逐格 max)"},
+                                 ensure_ascii=False), file=sys.stderr)
+    except (OSError, ValueError):
+        pass
     print(json.dumps({"status": "LEDGER_WRITTEN", "project": project_root,
                       "new_counts": {f"{f}x{l}": n for (f, l), n in
                                      sorted(counts.items())}},
                      ensure_ascii=False, indent=2))
     return 0
+
+
+def _sibling_skill_ledger(skill_dir):
+    """SWR-V3.16-005: 定位双活副本的账本 (dev ↔ installed 形态), 无则 None。
+    相对形态推导 (第一原则: 运行时禁硬编码机器路径): dev 副本
+    <parent>/reachable-critical-audit-v3 与 installed 副本
+    <parent>/.claude/skills/reachable-critical-audit 互为 sibling。"""
+    base = os.path.basename(os.path.normpath(skill_dir))
+    if base == "reachable-critical-audit-v3":
+        sibling = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.normpath(skill_dir))), ".claude", "skills",
+            "reachable-critical-audit")
+    elif os.path.normpath(skill_dir).endswith(
+            os.path.join(".claude", "skills", "reachable-critical-audit")):
+        sibling = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.normpath(skill_dir))))),
+            "reachable-critical-audit-v3")
+    else:
+        return None
+    other = os.path.join(sibling, "resources", "issue_coverage_matrix.json")
+    return other if os.path.exists(other) else None
 
 
 # ---- v3.7 (SWR-V3.7-001): 报告严重程度机械映射 ----

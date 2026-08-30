@@ -250,4 +250,4 @@ def test_resurrect_prompt_dimensions_present():
 # ---------------- 版本链 ----------------
 
 def test_tooling_version_315():
-    assert we.TOOLING_VERSION == "3.15"
+    assert we.TOOLING_VERSION == "3.16"  # v3.16 版本链前进

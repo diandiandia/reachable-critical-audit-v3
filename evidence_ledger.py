@@ -255,6 +255,20 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
            c.get("evidence_grade") != "empirically_confirmed":
             violations.append({"gate": "empirical_required", "id": c.get("id"),
                                "claim": claim})
+            # SWR-V3.16-001: audit_constraint 下的批量裁决建议 (warn 级附项,
+            # 主条目阻断语义不变) —— av 批 11 条同构手工降级实录
+            constraint = c.get("audit_constraint")
+            if constraint:
+                violations.append({
+                    "gate": "empirical_required_constraint", "severity": "warn",
+                    "id": c.get("id"), "constraint": constraint,
+                    "suggestion": {
+                        "kind": "batch_demote",
+                        "reason_template": (
+                            "audit_constraint=" + str(constraint) +
+                            ": 实证类 claim 无实测支撑 → 按 v3.3 条款降 "
+                            "NEEDS_REVIEW (证据不足/环境受限), 主代理逐条确认"
+                            "落盘, 不自动改写")}})
     # v3.10.2 (SWR-V3.10.2-004): 实证保真度提示——等价复现候选分列 (判据不变)
     equivalent_ids = [c.get("id") for c in cands
                       if c.get("verdict") == "REACHABLE"
