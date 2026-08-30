@@ -832,3 +832,25 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | SWR-V3.14-007 | SKILL.md R1 写盘指引句存在 | 已完成 | tests/test_v314.py |
 | SWR-V3.14-008 | note 含字段名与层级 | 已完成 | tests/test_v314.py |
 | SWR-V3.14-009 | TOOLING==3.14 + v3.14 增量段 + 全量回归全绿 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量 |
+
+## 系统需求（REQ-V3.15）（共 14 条）
+
+> 手工追加段（2026-08-30）。规范: REQ_V3_15.md / SWR_V3_15.md /
+> SYSTEM_DESIGN_V3_15.md / SOFTWARE_DESIGN_V3_15.md。评估: BIAS_EVAL_V3_15.md。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.15-001 | 报告守卫双形态识别 + 模板标记（四次 REFUSED 根因） | 已完成 | tools/batch_verify.py + tests/test_v315.py |
+| REQ-V3.15-002 | is_claim_like 单真相（池与③c 同源，字段集一致含 rce/leak） | 已完成 | evidence_ledger.py + workflow_export.py + tests/test_v315.py |
+| REQ-V3.15-003 | R4 枚举告警附结构化建议映射（不自动改写） | 已完成 | tools/batch_verify.py + tests/test_v315.py |
+| REQ-V3.15-004 | post-resurrect advisory（空池路径同样附） | 已完成 | workflow_export.py + tests/test_v315.py |
+| REQ-V3.15-005 | 截断 key 集扩展 + 全 minor 首尾拼接兜底 | 已完成 | workflow_export.py + tests/test_v315.py |
+| REQ-V3.15-006 | tracked_surfaces canonical 契约 + _tracked_ids 双字段/dict 容忍 | 已完成 | tools/batch_verify.py + tests/test_v315.py |
+| REQ-V3.15-007 | scope_diff 消费优先 affected_dirs + docstring 契约注 | 已完成 | tools/batch_verify.py + surface_mapper.py + tests/test_v315.py |
+| REQ-V3.15-008 | 模板条款（canonical 字段名 + 域空签收） | 已完成 | task_templates/*.md + tests/test_v315.py |
+| REQ-V3.15-009 | CK-EMPIRICAL-SCOPE 基线对照条目 | 已完成 | resources/checklist_library.json + tests/test_v315.py |
+| REQ-V3.15-010 | PREC-GUARD-SUBSET-001 + 匹配词 | 已完成 | resources/precedent_library.json + precedent_library.py + tests/test_v315.py |
+| REQ-V3.15-011 | CK-VENDORED-CONTRACT + 复活维度 6-8 条 | 已完成 | resources/checklist_library.json + workflow_export.py + tests/test_v315.py |
+| REQ-V3.15-012 | verifier 未测平台清单一行 | 已完成 | workflow_export.py PTM 注入块 |
+| REQ-V3.15-013 | R1 首行键锚定 + 域空签收 SKILL.md 文案 | 已完成 | SKILL.md R1 节 |
+| REQ-V3.15-014 | TOOLING==3.15 + v3.15 增量段 + 全量回归全绿 + 旧队列零新增告警 | 已完成 | workflow_export.py + SKILL.md + tests/ 全量（356 passed） |

@@ -15,8 +15,14 @@
 | v3.1 开发 | ✅ 完成（SWR-V3.1 49/49，73 测试全绿） |
 | v3.1 验收 | ✅ Phase 3.1.3 PASS：拦截率 75%/66.7%/66.7% → 0%/20%/0%；零丢失 + 4 净增；六门禁全 PASS（详见 docs/design/ACCEPTANCE_V3_1.md） |
 | 发布 | ✅ 已合并 main + install 到 skill 目录（运行时权威 = v3.1） |
+| v3.2~v3.14 | ✅ 版本链持续演进（状态机/数值/错误处理族、平台信任模型清单、复活重验链、复审计幂等；各版设计件见 docs/design/） |
+| v3.15 | ✅ 完成（2026-08-30）：五项目批次收官缺陷修复 14 项，TOOLING 3.15，全量回归 356 passed，install 双副本同步 |
 
 ---
+
+**近期战绩**（2026-08-30 五项目批次收官，六门禁全 PASS）：libarchive 15 REACHABLE /
+s2n-tls 1 / nghttp2 3 / gpac 11 / freetype 1——含 hardlink 写穿族、静态票钥 mTLS 绕过、
+媒体脚本 RCE 主代理独立复现、gzip 解压 ~1000x CPU DoS 等 e2e 实证确认项。
 
 ## 1. 环境要求
 

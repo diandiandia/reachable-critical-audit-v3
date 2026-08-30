@@ -188,10 +188,10 @@ def test_new_checklists_deproject():
 # ---- SWR-V3.13-006: 版本链 ----
 
 def test_tooling_version_and_skillmd_counts():
-    assert we.TOOLING_VERSION == "3.14"
+    assert we.TOOLING_VERSION == "3.15"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.13 增量" in skill
-    assert "38 条检查清单" in skill and "17 条裁决先例" in skill
+    assert "39 条检查清单" in skill and "18 条裁决先例" in skill
     for token in ("NUMERIC 整数下溢（191", "NUMERIC 除零（369）",
                   "ERROR-HANDLING 未初始化（457）", "WEB 请求走私（444）",
                   "RESOURCE-DOS ReDoS（1333）", "NUMERIC 截断/不一致比较（681/697）",
