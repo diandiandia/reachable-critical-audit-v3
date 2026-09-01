@@ -66,6 +66,19 @@ def test_anomaly_mode_aware_threshold(tmp_path):
 def test_ledger_idempotent_merge_guidance(tmp_path, capsys):
     # 先首写烧 sources key (r4 前置需 H1-H7 全 VERIFIED), 再复跑验证幂等分支
     # manual_merge_guidance (delta=队列聚合非零)
+    # v3.17 收尾修复: 本测试写真实账本资产且无快照/恢复——installed 副本跑
+    # 全量测试时每次烧一个新 tmp_path hash 到账本 sources (双副本同步验收
+    # 实测抓出; test_batch_verify_v3 同款防污染先例)
+    import os as _os
+    _ledger_path = _os.path.join(ROOT, "resources", "issue_coverage_matrix.json")
+    _snapshot = open(_ledger_path).read()
+    try:
+        _run_ledger_guidance(tmp_path, capsys)
+    finally:
+        open(_ledger_path, "w").write(_snapshot)
+
+
+def _run_ledger_guidance(tmp_path, capsys):
     r4 = [{"hypothesis_id": h, "verdict": "reviewed_clean", "findings": [],
            "tracked_surfaces": [], "status": "VERIFIED"}
           for h in ["H-1", "H-2", "H-3", "H-4", "H-5", "H-6", "H-7"]]
