@@ -70,7 +70,10 @@ def profile_generation_exts(project_root):
         return set(), {}
     if not prof.get("signed_by"):
         return set(), {}
-    layers = prof.get("generation_layers") or []
+    # 落盘形态: recommended.generation_layers (target_profile.py --write);
+    # 顶层直挂形态容忍 (主代理手工编辑的旧式轮廓)
+    rec = prof.get("recommended") or {}
+    layers = rec.get("generation_layers") or prof.get("generation_layers") or []
     exts, fam = set(), {}
     for layer in layers:
         if not isinstance(layer, dict) or not layer.get("ext"):

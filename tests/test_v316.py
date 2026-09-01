@@ -117,4 +117,4 @@ def test_sibling_ledger_detection_unknown_dir():
 # ---------------- 版本链 ----------------
 
 def test_tooling_version_316():
-    assert we.TOOLING_VERSION == "3.16"
+    assert we.TOOLING_VERSION == "3.17"

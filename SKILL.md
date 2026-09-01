@@ -98,7 +98,12 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    - **library**：公共 API 即信任边界（库型先例）；仓内调用者缺失不是阻断；死代码豁免不适用
    - **hybrid**：按组件分别装载；无法确定归属时按 application（保守）
    未签收 → 门禁⑧ target_kind_required 不放行（旧队列复跑以 `require_target_kind=False` 豁免）。
-5. 初始化空 `verify_queue.json`：`{"candidates":[]}`。
+5. **target_profile 判定**（v3.17, SWR-V3.17-008）：
+   ```bash
+   python3 <skill_dir>/tools/target_profile.py <project> [--write]
+   ```
+   → 形态画像推荐 {surface_model, generation_layers, scale_class, containment_default, empirical_modes} + 逐信号证据。主代理复核签收（写入 signed_by/overrides）；**未签收 → 各消费者按全默认装载 = 现状行为**（零强制义务；与 target_kind 不同——profile 无门禁承载）。
+6. 初始化空 `verify_queue.json`：`{"candidates":[]}`。
 
 ## 🗺️ R1：输入面测绘（审计起点，禁止全库轰炸）
 
@@ -121,6 +126,17 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    >   "confidence":"high|medium|low","downstream_hints":["..."]}]
    > ```
    > 子智能体落盘到 `.audit_results/_r1_<域>.json`，最终回复同 JSON。
+> **super-large 两阶段测绘（v3.17, SWR-V3.17-002）**：size_tier 返回 super-large
+> （>2000 源文件）时，先落盘组件清单（tier 输出 components）→ 按（组件 × 域）
+> 派发，任务书注入「组件约束段」（{component_scope}），面 id 带组件缩写前缀，
+> 45min 硬时限按组件给——禁止对超大仓做全仓单域单 agent 测绘（引擎/内核量级
+> 失控实录, W6 §17.1）。
+> **语义轴测绘（v3.17, SWR-V3.17-005）**：target_profile 签收
+> surface_model=semantic/hybrid 时额外派发语义轴测绘子智能体（任务书
+> 「语义轴测绘段」）——轴 = 目标语言语义命名空间族（builtins 族/字节码族/
+> 语法产生式族），面附 semantic_axis 字段；R2 假设生成沿轴采样（一轴一族
+> 假设义务）；门禁⑦ tracked 计算轴即面（机械并入，无需手工 bridge）。
+
 3. **收集与校验**：`python3 surface_mapper.py validate .audit_results/_r1_<域>.json --root <project>`。
    校验器已内置归一化（裸数组/字符串 trust_boundary/HTML 实体/相对路径/空白折叠均容忍）与行号漂移裁决：
    - `[suggested_line=N]`（唯一命中）→ 主代理应用修正并写 `line_corrections`；
@@ -233,7 +249,7 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 标准键 `harness`/`method`/`input`/`result`/`verdict`/`backfilled_by`（自建 harness 回填用）；
 渲染器容错读双形态（保留键优先，缺失回退标准键）。
 
-1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
+1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
 3. 实测确认 → `empirical` 字段 + grade=empirically_confirmed；证伪 → correction_record 降级并回溯 verifier 错误（REQ-V3-051）。
 
@@ -311,10 +327,17 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
 无 cwe 命中 → claim_type 回退（rce/leak→严重，crash/panic/oom/unbounded/
 protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（REQ-V3.4.3-006）。
 
+**containment 调整（v3.17, SWR-V3.17-003）**：机械映射后按候选 `containment`
+降档——`language` 仅 critical→high；`process_sandbox` 逐档（critical→high→
+medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
+`severity_override` 仍绝对优先。调整时来源串写 `containment:xxx`，问题清单
+行尾渲染 `[语言防护]/[沙箱收敛]/[硬件隔离]` 标记。
+
 ## 📏 数据模型速查
 
-- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
-- **input_surface.json**：`{surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[]}], conflicts[], mirror_pairs[]}`
+- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
+- **input_surface.json**：`{surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[],semantic_axis?{namespace,anchor_files[],cardinality}}], conflicts[], mirror_pairs[]}`
+- **target_profile.json**：`{recommended:{surface_model:entry|semantic|hybrid,generation_layers[],scale_class,containment_default,empirical_modes[]},signals[],confidence,signed_by,overrides{}}`（v3.17 形态画像签收物；未签收 = 全默认 = 现状行为）
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
 - **语言词汇两轴（v3.5.2 注）**：① 签名标签 = 签名侧内部名，允许 superset（`cs`/`typescript`/`js` 等，校验白名单 VALID_LANGS）；② 账本/任务书/队列输出 = 归一化到账本 16 规范名（`cs↔csharp`、`ts`/`typescript`↔`javascript`、`ps↔powershell`）。跨模块 alias map 取值一致（有测试守卫），签名 L2 过滤双侧归一化后等值比较。
 - **形态判定两轴（v3.5.2 注）**：`project_kind`（R1 上下文信号，4 值 {framework, library, infra, app}）与 `target_kind`（R0 门禁签收，3 值 {application, library, hybrid}）是**两个独立轴**——前者是测绘期上下文提示，后者是验证期门禁判据；不要混用（surface_mapper.py docstring 交叉引用）。
@@ -1304,3 +1327,60 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 
 全量回归全绿（365 = 356 基线 + test_v316 9 用例）+ 旧队列复跑零新增告警
 （gpac/freetype/av 六门禁）+ install 双副本同步。
+
+## 🆕 v3.17 增量（2026-09-01，运行时/引擎形态能力补全）
+
+> 设计文档: `docs/design/REQ_V3_17.md` + `SWR_V3_17.md` +
+> `SYSTEM_DESIGN_V3_17.md` + `SOFTWARE_DESIGN_V3_17.md` + `BIAS_EVAL_V3_17.md`。
+> 能力增量版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：2026-09-01 会话 Chrome V8 审计可行性评估（六缺陷 + 取证行号）
+> + 仓内先例（W6 §17.1、v3.8 扩展名单事实源、v3.11 attacker_tier 管线、
+> v3.12/v3.13 纯数据族先例）。全部新字段缺省 = 现状（旧队列复跑零新增告警）。
+
+### 生成层注册表（SWR-V3.17-001）
+- 新 `resources/generation_registry.json`（默认扩展名视图与 CODE_EXTENSIONS
+  逐位一致 + 通用 DSL 族：proto/yacc/lex/fbs/ragel/asn1/idl，每条 role/generates/
+  lang_family）；新 `generation_registry.py` 模块（merged_view / lang_family_for /
+  provenance_for / load_target_profile）
+- 三消费端接线：surface_mapper（采样/语言清单/规模档位）、signature_matcher
+  （索引）、batch_verify（候选语言推断）——DSL 与生成物文件计入源码普查并带
+  provenance
+- 项目专属 DSL（引擎自研代码生成语言）**不入运行时资产**：经
+  target_profile.generation_layers 审计期局部署名（两段式，第一原则三禁止①）
+
+### 形态画像签收工件（SWR-V3.17-008/002/005）
+- 新 `tools/target_profile.py`（mirror target_kind.py 先例）：五轴推荐
+  {surface_model, generation_layers, scale_class, containment_default,
+  empirical_modes} + 逐信号证据 + --write；主代理签收后生效，未签收 = 全默认
+- `size_tier` 新增 super-large 档（>2000 源文件）：组件清单 + 两阶段测绘
+  （组件清单 → 组件×域派发），45min 硬时限按组件给
+- `surface_model=semantic` 时 R1 增派语义轴测绘（轴 = 语言语义命名空间族，
+  面附 semantic_axis）；R2 沿轴采样；门禁⑦ tracked 轴即面（_tracked_ids 机械并入）
+
+### 防护边界维度（SWR-V3.17-003）
+- 候选 `containment ∈ {none, language, process_sandbox, hardware_isolated}`
+  （缺省 none）：严重度机械映射后按 containment 降档（language 仅 critical→high；
+  process_sandbox 逐档；hardware_isolated 两档；medium 封底），override 绝对优先；
+  verifier 任务书提问（profile 签收 containment_default ≠ none 才注入）；
+  collect 缺省推导；报告行尾渲染 [语言防护]/[沙箱收敛]/[硬件隔离]
+
+### 差分执行实证模式（SWR-V3.17-004）
+- 新 `templates/harness/differential_probe.py`（langs:["any"]，argv 驱动：
+  N 组运行配置 × 共享语料 × 比较器规格）——配置轴类声称（JIT 层级/优化旗标/
+  特性开关/GC 模式）的实证首选；`mixed_build.md` 补「生成物重超大型构建」章节
+  （gn/ninja/bazel/meson/depot_tools 类通用流程）
+
+### 佐证器 cap 缩放 + 运行时内存模型清单族（SWR-V3.17-006/007）
+- `signature_matcher.scaled_caps`：索引文件 >2000 → 窗口/层 cap ×2，
+  >8000 → ×3（上限常数化）；缺省路径零变化
+- 清单 39→44：`runtime-memory-model` 族 4 条（CK-GC-WRITE-BARRIER /
+  CK-GC-ROOT-SCAN / CK-TIER-TRANSITION / CK-ALLOC-ESCAPE）+
+  `generated-code` 族 CK-GENERATED-CODE——纯数据零 binder 改动，多词短语
+  门控（禁裸词 gc/barrier/collector）
+
+### 验收判据（Phase 3.17）
+全量回归全绿（368 基线 + test_v317 24 用例）+ 去项目化扫描 0 命中（新注册表/
+模板/清单族机制形态）+ `signature_lib.py selfcheck <非 fixture 项目>` exit 0 +
+install 双副本同步 + 旧队列复跑零新增告警（本环境无历史队列，兼容性由
+test_v317 缺省路径用例与全量回归承载）。未审计新项目验收：待用户指令后对
+/root/v8 执行（首个运行时/引擎形态验收项目）。

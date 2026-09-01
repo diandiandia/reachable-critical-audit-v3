@@ -866,3 +866,19 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.16-003 | CK-CHECKPOINT-AFTER-ACCUM 构造器链急切分配条目 | 已完成 | resources/checklist_library.json + tests/test_v316.py |
 | REQ-V3.16-004 | 树外层清单无条件注入条款 | 已完成 | workflow_export.py + tests/test_v316.py |
 | REQ-V3.16-005 | 账本双副本漂移 warn（相对形态 sibling 推导） | 已完成 | tools/batch_verify.py + tests/test_v316.py |
+
+## 系统需求（REQ-V3.17）（共 8 条）
+
+> 手工追加段（2026-09-01）。规范: REQ_V3_17.md / SWR_V3_17.md /
+> SYSTEM_DESIGN_V3_17.md / SOFTWARE_DESIGN_V3_17.md。评估: BIAS_EVAL_V3_17.md。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.17-001 | 生成层注册表（默认视图零行为变化 + 通用 DSL 族 + 三消费端接线 + 项目专属 DSL 不入库） | 已完成 | resources/generation_registry.json + generation_registry.py + tests/test_v317.py |
+| REQ-V3.17-002 | size_tier super-large 档（>2000 文件两阶段测绘 + 组件清单） | 已完成 | surface_mapper.py + task_templates/surface_map_domain.md + tests/test_v317.py |
+| REQ-V3.17-003 | containment 维度（严重度降档/collect 推导/任务书提问/报告标记） | 已完成 | tools/batch_verify.py + workflow_export.py + tests/test_v317.py |
+| REQ-V3.17-004 | 差分执行实证模板 + mixed_build 超大型构建章节 | 已完成 | templates/harness/differential_probe.py + harness_manuals/mixed_build.md + tests/test_v317.py |
+| REQ-V3.17-005 | 语义面投影（semantic_axis 字段/tracked 并入/R2 沿轴采样条款） | 已完成 | task_templates/surface_map_domain.md + tools/batch_verify.py + tests/test_v317.py |
+| REQ-V3.17-006 | 运行时内存模型 + 生成物溯源清单族（39→44，纯数据） | 已完成 | resources/checklist_library.json + tests/test_v317.py |
+| REQ-V3.17-007 | scaled_caps 三档缩放（缺省路径零变化） | 已完成 | signature_matcher.py + tests/test_v317.py |
+| REQ-V3.17-008 | target_profile 签收工件（未签收 = 全默认，零强制义务） | 已完成 | tools/target_profile.py + generation_registry.py + tests/test_v317.py |
