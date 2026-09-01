@@ -738,10 +738,32 @@ def validate_surfaces(data, project_root=None):
     return (len(errors) == 0), errors
 
 
+def _component_inventory(project_root, exts, cap=30):
+    """SWR-V3.17-002: super-large 档组件清单——深度 1 目录按文件数降序
+    (排除 SKIP_DIRS), 附构建清单信号 hits。两阶段测绘的 A 阶段机械输入。"""
+    depth1 = {}
+    for d in os.listdir(project_root):
+        p = os.path.join(project_root, d)
+        if not os.path.isdir(p) or d.lower() in SKIP_DIRS:
+            continue
+        n = 0
+        for dirpath, _dirs, files in os.walk(p):
+            _dirs[:] = [x for x in _dirs if x.lower() not in SKIP_DIRS]
+            for f in files:
+                if os.path.splitext(f)[1].lower() in exts:
+                    n += 1
+        if n:
+            depth1[d] = n
+    return [{"dir": d, "file_count": n}
+            for d, n in sorted(depth1.items(), key=lambda x: -x[1])[:cap]]
+
+
 def size_tier(project_root):
     """SWR-V3.1-010 (W6 §17.1/§18.6/§20.5/§24.7): 规模自适应档位。
     <100 文件 → small: 2 agents 无限时; 100-500 → medium: 4 agents 无限时;
-    >500 → large: 4 agents + 45min 硬时限 + 每 10 分钟中间产物落盘。"""
+    >500 → large: 4 agents + 45min 硬时限 + 每 10 分钟中间产物落盘。
+    v3.17 (SWR-V3.17-002): >2000 → super-large: 两阶段测绘
+    (组件清单 → 组件×域派发), 45min 硬时限按组件给。"""
     # v3.8 (SWR-V3.8-020): 与 signature_matcher.CODE_EXTENSIONS 单事实源——
     # 旧内联集合缺 .cpp/.cc/.hpp/.m/.mm/.sql, C++ (top-2) 源码不计入档位
     # (BIAS_EVAL F1)。同 language_inventory 写法。
@@ -779,8 +801,18 @@ def size_tier(project_root):
                 "checkpoint_every_min": None, "domains_split": ds,
                 "rationale": "W6 §20.5 (495 文件是 R1 agent 舒适区)"}
     ds = mixed_domains if n_langs >= 2 else DOMAINS
+    if count > 2000:
+        # v3.17 (SWR-V3.17-002): super-large——两阶段测绘 (A 组件清单 →
+        # B 组件×域派发), 时限按组件给 (V8 评估 D-2: 3325 文件单目录实测)。
+        comps = _component_inventory(project_root, exts)
+        return {"tier": "super-large", "agent_count": 4,
+                "time_limit_min": 45, "checkpoint_every_min": 10,
+                "domains_split": ds, "two_phase": True, "components": comps,
+                "rationale": (f"SWR-V3.17-002: {count} 文件 >2000 阈值——"
+                              f"两阶段测绘 ({len(comps)} 组件), 45min 按组件给")}
     return {"tier": "large", "agent_count": 4, "time_limit_min": 45,
             "checkpoint_every_min": 10, "domains_split": ds,
+            "two_phase": False, "components": [],
             "rationale": "W6 §17.1/§18.6 (审计失控实录 2.5h+; 失控判据=超时+无落盘)"}
 
 

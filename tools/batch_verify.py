@@ -398,6 +398,26 @@ def _detect_journal_anomaly(transcript_dir, max_distinct_per_id=1):
     return [cid for cid, hashes in by_id.items()
             if len(hashes) > max_distinct_per_id]
 
+def _derive_containment(v, c, project_root):
+    """SWR-V3.17-003: containment 缺省推导——verifier 未显式给出时按
+    profile.containment_default 推导; 未签收 profile → none (零告警零行为变化)。
+    非法值 warn + none。"""
+    if v.get("containment") in ("none", "language", "process_sandbox",
+                                "hardware_isolated"):
+        return v["containment"]
+    if str(v.get("containment") or ""):
+        print(f"Warning: {c.get('id')} 非法 containment={v.get('containment')!r} "
+              f"回退缺省推导", file=sys.stderr)
+    try:
+        import generation_registry as gr
+        prof = gr.load_target_profile(project_root)
+    except Exception:
+        prof = {}
+    if prof.get("containment_default") not in (None, "none"):
+        return prof["containment_default"]
+    return "none"
+
+
 def _derive_attacker_tier(v, c):
     """SWR-V3.11-002: attacker_tier 缺省推导——verifier 未显式给出时按
     reachability_type/trust_boundary/evidence 信号推导; 无法判定返回 None
@@ -450,6 +470,8 @@ def stage_collect(project_root, batch_id, verdicts):
         tier = _derive_attacker_tier(v, cand_map[cand_id])
         if tier:
             v["attacker_tier"] = tier
+        # v3.17 (SWR-V3.17-003): containment 落盘 (显式或 profile 缺省推导)
+        v["containment"] = _derive_containment(v, cand_map[cand_id], project_root)
 
         # Validate call chain depth
         call_chain = v.get("call_chain", [])
@@ -492,6 +514,8 @@ def stage_collect(project_root, batch_id, verdicts):
         if v.get("severity_override"):
             entry["severity_override"] = v["severity_override"]
             entry["severity_override_reason"] = v.get("severity_override_reason", "")
+        # v3.17 (SWR-V3.17-003): containment 落盘 (verifier 显式或 profile 推导)
+        entry["containment"] = v.get("containment", "none") or "none"
         # SWR-V3.4.3-004/005: verifier 自报 grade 存 grade_self_reported 仅追溯;
         # evidence_grade 由 grade_verdict 机械重算为唯一权威 (对齐 SKILL.md
         # 原意——P0/P1 共 9+ 候选自报 empirically 而无结构化实证, 机械重算后
@@ -1663,6 +1687,12 @@ def _sibling_skill_ledger(skill_dir):
 # 消费者=render_report_md 的分组与排序; 悔例=override 无 reason/非法值 → 渲染告警行。
 SEVERITY_ORDER = {"critical": 3, "high": 2, "medium": 1}
 SEVERITY_LABELS = {"critical": "严重", "high": "高", "medium": "中"}
+# v3.17 (SWR-V3.17-003): 防护边界维度——沙箱/语言防护/硬件隔离收敛的缺陷
+# 降一档呈现 (medium 封底不降), 与 attacker_tier (攻方维度) 配成守方维度。
+CONTAINMENT_LABELS = {"language": "语言防护", "process_sandbox": "沙箱收敛",
+                      "hardware_isolated": "硬件隔离"}
+_CONTAINMENT_DOWNSTEP = {"language": 1, "process_sandbox": 1,
+                         "hardware_isolated": 2}
 SEVERITY_BY_CWE = {
     # 命令/代码注入 + 反序列化 + MEMORY-SAFETY 全族 + NUMERIC 整数下溢 (191, 与 190 对称)
     "critical": {78, 94, 77, 502, 787, 125, 416, 415, 476, 190, 129, 191},
@@ -1711,17 +1741,46 @@ def severity_for(candidate):
     return _mechanical_severity(candidate)
 
 
+def _apply_containment(sev, containment):
+    """SWR-V3.17-003: 机械降档 (确定性步, 非猜测性改写)。
+    language 仅 critical→high; process_sandbox 逐档 (critical→high→medium);
+    hardware_isolated 两档; medium 封底; none/未知 → 零变化。"""
+    if containment not in _CONTAINMENT_DOWNSTEP:
+        return sev
+    step = _CONTAINMENT_DOWNSTEP[containment]
+    if containment == "language" and sev != "critical":
+        return sev
+    for _ in range(step):
+        if sev == "critical":
+            sev = "high"
+        elif sev == "high":
+            sev = "medium"
+        else:
+            break
+    return sev
+
+
 def _mechanical_severity(candidate):
     cwes = _parse_cwes(candidate)
     hits = sorted(n for n in cwes
                   if any(n in ids for ids in SEVERITY_BY_CWE.values()))
+    containment = (candidate.get("containment") or "none").strip().lower()
     if hits:
         by_cwe = {sev for sev, ids in SEVERITY_BY_CWE.items() for n in hits if n in ids}
         top = max(by_cwe, key=lambda s: SEVERITY_ORDER[s])
-        return top, "cwe:" + ",".join(f"CWE-{n}" for n in hits)
+        adj = _apply_containment(top, containment)
+        src = "cwe:" + ",".join(f"CWE-{n}" for n in hits)
+        if adj != top:
+            return adj, src + f";containment:{containment}"
+        return top, src
     ct = (candidate.get("claim_type") or "").strip().lower()
     if ct in CLAIM_TYPE_SEVERITY:
-        return CLAIM_TYPE_SEVERITY[ct], f"claim_type({ct})"
+        top = CLAIM_TYPE_SEVERITY[ct]
+        adj = _apply_containment(top, containment)
+        src = f"claim_type({ct})"
+        if adj != top:
+            return adj, src + f";containment:{containment}"
+        return top, src
     return "medium", "default"
 
 
@@ -1825,6 +1884,15 @@ def _tier_suffix(c):
     return ""
 
 
+def _containment_suffix(c):
+    """SWR-V3.17-003: 防护边界标注——containment != none 时附加在 tier 标注后
+    (严重度已按 containment 调整, 标注让读者看到调整依据)。"""
+    ct = (c.get("containment") or "none").strip().lower()
+    if ct in CONTAINMENT_LABELS:
+        return f" [{CONTAINMENT_LABELS[ct]}]"
+    return ""
+
+
 def _needs_review_cause(cand):
     """REQ-V3.3-011: NEEDS_REVIEW 成因双分——显式字段优先, 关键词启发式兜底
     (机械侧近似, 未注明则主代理确认)。"""
@@ -1910,6 +1978,16 @@ def _tracked_ids(project_root, queue, surfaces):
     for e in queue.get("coverage_bridge", []) or []:
         if isinstance(e, dict) and e.get("surface"):
             ids.add(e["surface"])
+    # v3.17 (SWR-V3.17-005): 语义轴自动并入 tracked——semantic_axis 面是
+    # R1 语义轴测绘的轴单元 (R2 沿轴采样的义务载体), 轴本身即跟踪单元;
+    # 非语义面零影响 (旧队列行为不变)。surfaces 容忍 dict 包裹与裸数组
+    # 双形态 (历史调用方形态漂移, 渲染铁律: 缺失降级不抛异常)。
+    if surfaces:
+        surfs = surfaces.get("surfaces", []) if isinstance(surfaces, dict) \
+            else surfaces
+        for s in surfs or []:
+            if isinstance(s, dict) and s.get("semantic_axis") and s.get("id"):
+                ids.add(s["id"])
     return sorted(ids)
 
 
@@ -1926,6 +2004,7 @@ def stage_tracked_ids(project_root):
         except (OSError, ValueError):
             pass
     total = len(surfaces.get("surfaces", [])) if surfaces else 0
+    # v3.17 (SWR-V3.17-005): 语义轴并入在 _tracked_ids 内统一处理 (单一事实源)
     tracked = _tracked_ids(project_root, queue, surfaces)
     all_ids = {s.get("id") for s in surfaces.get("surfaces", [])} if surfaces else set()
     missing = sorted(all_ids - set(tracked))
@@ -2063,7 +2142,7 @@ def _render_problem_list(cands, queue):
                 c = it["obj"]
                 cwes = [f"CWE-{n}" for n in sorted(_parse_cwes(c))]
                 sev_note = " ⚠override非法" if it["source"] == "invalid_override" else ""
-                out.append(f"| {c.get('id')} | {_problem_summary(c)}{_tier_suffix(c)} | "
+                out.append(f"| {c.get('id')} | {_problem_summary(c)}{_tier_suffix(c)}{_containment_suffix(c)} | "
                            f"`{c.get('source_file')}:{c.get('source_line')}` | "
                            f"{', '.join(cwes) or '-'} | {c.get('evidence_grade', '-')} | "
                            f"{_refutation_line(c)}{sev_note} |")

@@ -120,3 +120,41 @@ def provenance_for(ext):
     if ext in e.get("generates", []):
         return e["ext"], "generated"
     return ext, "dsl"
+
+
+# ---- v3.17 (SWR-V3.17-008): target_profile 消费者装载契约 ----
+
+_PROFILE_DEFAULTS = {
+    "surface_model": "entry",
+    "generation_layers": [],
+    "scale_class": None,
+    "containment_default": "none",
+    "empirical_modes": [],
+}
+
+
+def load_target_profile(project_root):
+    """读 .audit_results/target_profile.json (签收后生效)。
+
+    消费者统一契约: 文件缺失/形态非法/未签收 (signed_by 空) → 全默认 dict
+    = 现状行为 (零强制义务)。签收后返回 recommended ∪ overrides。
+    """
+    prof = dict(_PROFILE_DEFAULTS)
+    if not project_root:
+        return prof
+    try:
+        with open(os.path.join(project_root, ".audit_results",
+                               "target_profile.json"), encoding="utf-8") as f:
+            raw = json.load(f)
+    except OSError:
+        return prof
+    if not raw.get("signed_by"):
+        return prof
+    rec = raw.get("recommended") or {}
+    ovr = raw.get("overrides") or {}
+    for k in _PROFILE_DEFAULTS:
+        if k in ovr:
+            prof[k] = ovr[k]
+        elif k in rec:
+            prof[k] = rec[k]
+    return prof

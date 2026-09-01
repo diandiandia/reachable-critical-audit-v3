@@ -732,6 +732,22 @@ def export_script(project_root, mode="verify", batch_size=4):
                        "框架语言层 (如 Java 侧门禁) / 系统策略层 (如 SELinux 域)"
                        " —— 阻断论证引用树外门禁时须写层名与契约, 树外层不可枚举"
                        "时如实注明。\n")
+            # v3.17 (SWR-V3.17-003): 防护边界提问——仅 profile 签收
+            # containment_default != none 时注入 (未签收 = 零注入零行为变化)
+            try:
+                import generation_registry as _gr
+                _prof = _gr.load_target_profile(project_root)
+            except Exception:
+                _prof = {}
+            _cont = (_prof.get("containment_default") or "none")
+            if _cont != "none":
+                prompt += ("\n防护边界 (containment) 判定义务: 本项目存在防护边界"
+                           f"信号 (containment_default={_cont})。步骤 3 判定时必须"
+                           "在 evidence 写明缺陷是否被该边界收敛——沙箱/语言防护/"
+                           "硬件隔离等收敛层存在时, 缺陷的真实影响与未收敛场景"
+                           "不同; 输出字段 containment 取 none|language|"
+                           "process_sandbox|hardware_isolated 之一 (显式给值, "
+                           "缺省由 collect 按 profile 推导)。\n")
             # v3.1 (SWR-V3.1-044/045): 注入家族清单步骤 + 自证伪提示
             checklist_section = _checklist_section(c)
             hints = _self_refutation_section(c)
