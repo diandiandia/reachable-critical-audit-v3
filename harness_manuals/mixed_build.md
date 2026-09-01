@@ -22,3 +22,18 @@
 - 跨语言字符串编码（UTF-8 vs wchar vs 平台默认）
 - 释放责任错配（Python 侧 free 了 C 侧 malloc 的内存）
 - 两侧编译优化级别不一致导致的 ABI 行为差异
+
+## 5. 生成物重超大型构建（v3.17, SWR-V3.17-004）
+> 适用：gn/ninja/bazel/meson/depot_tools 类构建系统 + 生成物占比高的目标
+> （运行时/引擎形态）。实证前置探测按 ENVIRONMENT_PROBES.md 探针清单执行。
+
+- 工具存在性探测: `which gn ninja bazel meson` 逐项记录——缺失即写 blocker，
+  触发 R5 可选路径裁决（不实证不申报）
+- 生成物目录约定: 输出目录以项目构建清单声明为准（不可臆断 out/ 类默认名）；
+  `gn desc` / `bazel query` / `meson introspect` 类命令优先于目录猜测
+- 构建成本预对齐: 首次全量构建耗时与磁盘占用先行估算（增量构建计时 + 目标
+  产物路径从构建清单推导），超预算的实证目标走 NEEDS_REVIEW（环境受限）路径
+- 目标产物: 可执行体/动态库路径从构建清单推导，实证 harness 引用该路径，
+  不得引用源码树内中间产物
+- 差分实证配合: 存在配置轴（优化层级/特性开关/GC 模式）时优先
+  templates/harness/differential_probe.py（--cmd-N 按构建变体产物路径给）

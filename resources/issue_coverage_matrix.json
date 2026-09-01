@@ -272,7 +272,7 @@
       "family": "RESOURCE-DOS",
       "langs": {
         "perl": 3,
-        "go": 81,
+        "go": 83,
         "csharp": 11,
         "powershell": 1,
         "rust": 26,
@@ -389,7 +389,9 @@
     "429d1c56b5d13ce5",
     "069c011ab02a0385",
     "9dfa60b4e8f2c7ce",
-    "2e9dcb02879c4583"
+    "2e9dcb02879c4583",
+    "f6d79f460d2bc21d",
+    "cc0b62548278cb28"
   ],
   "updated_at": "2026-09-01"
 }

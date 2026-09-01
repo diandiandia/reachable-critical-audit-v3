@@ -66,6 +66,20 @@ TEMPLATES = {
                      "拒绝计数上升 → 资源边界信号 (verdict 供主代理裁决)",
         "script": "templates/harness/resource_rate_probe.py",
     },
+    # v3.17 (SWR-V3.17-004): differential——通用差分执行探针。
+    # 同一语料 × N 组运行配置 (优化层级/编译旗标/特性开关/GC 模式) 比对分歧;
+    # langs:["any"] 无机械消费者, 主代理按声称类/配置轴选型; 零项目名
+    # (argv 必传 --configs/--cmd-N + --corpus|--gen)。
+    "differential": {
+        "langs": ["any"],
+        "attack": "共享输入语料在 N 组运行配置间执行, 比对 exit code/输出"
+                  "哈希/stderr/RSS 分歧——配置相关缺陷 (JIT 层级/优化旗标/"
+                  "特性开关) 的差分实证",
+        "metrics": ["divergent", "consistent", "per_config", "diff"],
+        "judgement": "任一输入在配置间结果分歧 → 分歧确认 (供 verifier 定级, "
+                     "分歧 ≠ 漏洞成立); 零分歧 → 该配置轴下一致性确认",
+        "script": "templates/harness/differential_probe.py",
+    },
 }
 
 SAMPLING_PROTOCOL = (
