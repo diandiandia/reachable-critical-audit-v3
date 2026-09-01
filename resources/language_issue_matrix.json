@@ -802,6 +802,55 @@
     "SIG-SWIFT-UNSAFE-001 (签名库 L2 词族)"
    ],
    "status": "seeded"
+  },
+  {
+   "lang": "cpp",
+   "family": "MEMORY-SAFETY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-787",
+    "CWE-125"
+   ],
+   "patterns": [
+    "反序列化器尺寸字段无门: wire 字节解码的长度直接进入分配/写操作"
+   ],
+   "sinks": [
+    "GetUint30/varint 解码点",
+    "size_in_tagged*常量乘法",
+    "分配尺寸参数直通",
+    "头部魔数/偏移无长度守卫读取"
+   ],
+   "pitfalls": [
+    "『快照/缓存为受信输入』是信任模型声明不是代码防御——防御纵深建议仍需尺寸门 (code-cache 侧 size<kHeaderSize 守卫先例)",
+    "乘法回绕必须在分配前检查 (SignedMulOverflow), 回绕后小尺寸分配成立即越界写",
+    "后置 CHECK 不阻断首块写——检查点在写窗口之后属后置检查形态, 按 CK-POSTOP-INVARIANT 判缺陷"
+   ],
+   "source_lessons": [
+    "V8 审计 2026-09-01 (CAND-013 size_in_tagged 无门分配 / CAND-049 GetMagicNumber 越界读, R3/R3.5 双复核确认)"
+   ]
+  },
+  {
+   "lang": "cpp",
+   "family": "STATE",
+   "status": "seeded",
+   "cwes": [
+    "CWE-696"
+   ],
+   "patterns": [
+    "异步任务对象生命周期契约: 后台线程执行体被主线程无同步销毁"
+   ],
+   "sinks": [
+    "后台任务 Release/reset 点",
+    "缓存命中早退分支",
+    "无同步原语的 task 析构"
+   ],
+   "pitfalls": [
+    "散文契约句 (文档注释) 不构成代码级阻断——但契约成立且全部实测使用者遵守时按平台契约规则判 UNREACHABLE (SWR-V3.11-004~006)",
+    "『缓存命中分支遗漏保护』类 gap 主张必须核实全 API 的成立前提——整体依赖同一契约时非分支级缺口"
+   ],
+   "source_lessons": [
+    "V8 审计 2026-09-01 (CAND-022 流式 API Run-返回契约, 复活重验改判后 2/2 证伪拦截)"
+   ]
   }
  ]
 }
