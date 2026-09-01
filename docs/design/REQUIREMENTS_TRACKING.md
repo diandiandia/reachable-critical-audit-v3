@@ -882,3 +882,14 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.17-006 | 运行时内存模型 + 生成物溯源清单族（39→44，纯数据） | 已完成 | resources/checklist_library.json + tests/test_v317.py |
 | REQ-V3.17-007 | scaled_caps 三档缩放（缺省路径零变化） | 已完成 | signature_matcher.py + tests/test_v317.py |
 | REQ-V3.17-008 | target_profile 签收工件（未签收 = 全默认，零强制义务） | 已完成 | tools/target_profile.py + generation_registry.py + tests/test_v317.py |
+
+## 系统需求（REQ-V3.18）（共 3 条）
+
+> 手工追加段（2026-09-01）。规范: REQ_V3_18.md / SWR_V3_18.md /
+> SYSTEM_DESIGN_V3_18.md / SOFTWARE_DESIGN_V3_18.md。评估: BIAS_EVAL_V3_18.md。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.18-001 | 语言问题矩阵（16×12 格, 首版种 32 格诚实占位 160, langs/families 与账本逐位一致） | 已完成 | resources/language_issue_matrix.json + tests/test_v318.py |
+| REQ-V3.18-002 | 加载器 + R2 提示条款（cells/stats CLI, 别名归一, pending 零注入） | 已完成 | language_issue_matrix.py + SKILL.md R2 节 + tests/test_v318.py |
+| REQ-V3.18-003 | 回填纪律条款（验收收官两段式回填, 非 gate） | 已完成 | SKILL.md v3.18 增量段/验收判据 + tests/test_v318.py |

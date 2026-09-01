@@ -147,7 +147,16 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 
 ## 🎯 R2：假设生成（LLM 主路径）→ LLM 筛选
 
-**假设生成主路径**：LLM 直接基于 surface 图生成假设（主代理或限时 agent）。签名匹配是**可选佐证器**（SWR-V3.3.2-053）：
+**假设生成主路径**：LLM 直接基于 surface 图生成假设（主代理或限时 agent）。
+**语言问题矩阵提示（v3.18, SWR-V3.18-002）**：生成假设前执行
+```bash
+python3 <skill_dir>/language_issue_matrix.py cells <surface.lang>
+```
+——返回该语言已种格的族条目（典型漏洞形态/关键 sink/判定要点），作为
+假设空间提示（提示级，无强制义务；未种格 pending 零注入零提示）。
+矩阵回填纪律（SWR-V3.18-003）：每版本验收审计收官时把验收项目覆盖的
+语言×族格两段式回填进矩阵（去项目化提炼 + source_lessons 含日期）——
+账本记覆盖计数，矩阵供知识，两者互补。签名匹配是**可选佐证器**（SWR-V3.3.2-053）：
 - 库型/非服务端框架目标签名命中率趋近 0（七项目批次 7/7 项目 0 命中实测），**R2 不强制跑 index/match 链路**；
 - 如需佐证（服务端框架目标、或主代理判断签名面相关），按序运行：
   1. `python3 signature_matcher.py index <project>`（粗粒度调用索引，窗口展开用）
@@ -351,7 +360,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 ## 📚 附录：资产地图
 
-- 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
+- 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
 - `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`resources/checklist_library.json`：44 条检查清单（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
@@ -1384,3 +1393,33 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 install 双副本同步 + 旧队列复跑零新增告警（本环境无历史队列，兼容性由
 test_v317 缺省路径用例与全量回归承载）。未审计新项目验收：待用户指令后对
 /root/v8 执行（首个运行时/引擎形态验收项目）。
+
+## 🆕 v3.18 增量（2026-09-01，语言问题矩阵：per-language 知识基座）
+
+> 设计文档: `docs/design/REQ_V3_18.md` + `SWR_V3_18.md` +
+> `SYSTEM_DESIGN_V3_18.md` + `SOFTWARE_DESIGN_V3_18.md` + `BIAS_EVAL_V3_18.md`。
+> 内容型增量：零新机制（无新门禁/无新阶段/无新强制义务/binder 零改动）。
+> 案例支撑：2026-09-01 会话战略评估（原目标"Top15 语言 × 每语言 Top10
+> 安全问题"的知识资产维度 0% 建成、账本 111/192、ERROR-HANDLING/NUMERIC
+> 空壳族）——用户裁定方案 C：流程机器不动，补数据驱动的内容基座。
+
+### 语言问题矩阵（SWR-V3.18-001~003）
+- 新 `resources/language_issue_matrix.json`：16 语言 × 12 族 = 192 格
+  （langs/families 与 issue_coverage_matrix.json 逐位一致，测试守卫双向
+  断言）；每条种格 {lang, family, status:seeded, cwes[], patterns[],
+  sinks[], pitfalls[], source_lessons[]}；首版种 32 格（每格 source_lessons
+  指向仓内证据：L2 签名语义/清单与先例/机制形态实录），其余 160 格
+  pending（零注入零提示，stats 可见——v3.6 confirmed:false 诚实占位先例）
+- 新 `language_issue_matrix.py` 加载器：`cells <lang> [family]` / `stats`
+  CLI + lang 别名归一（cs↔csharp、ts↔javascript，与 _LANG_ALIAS 同规则）
+- R2 条款：主代理生成假设前读该语言已种格作为假设空间提示（提示级）
+- **回填纪律（SWR-V3.18-003）**：每版本验收审计收官时把验收项目覆盖的
+  语言×族格两段式回填进矩阵（去项目化提炼 + source_lessons 含日期）——
+  账本记覆盖计数，矩阵供知识，两者互补；无新门禁，回填是验收判据条款
+- 种格诚实纪律：无仓内证据的格一律 pending，禁止凭通用知识臆造种格
+  （矩阵的问责性来自每格可追溯）
+
+### 验收判据（Phase 3.18）
+全量回归全绿（392 基线 + test_v318 新增）+ 去项目化扫描 0 命中（矩阵种格
+正文 DEPROJECT_BLACKLIST 断言）+ install 双副本同步 + 账本双副本稳定复验。
+未审计新项目验收随 V8 审计启动后执行（首个验收即回填 V8 覆盖的语言×族格）。

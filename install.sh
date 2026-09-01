@@ -15,7 +15,7 @@ cp "$SRC"/SKILL.md "$DST/"
 cp "$SRC"/README.md "$DST/"
 cp "$SRC"/docs/legacy/SKILL_V2.1.md "$DST/docs/legacy/"
 cp "$SRC"/surface_mapper.py "$SRC"/signature_lib.py "$SRC"/signature_matcher.py \
-   "$SRC"/generation_registry.py \
+   "$SRC"/generation_registry.py "$SRC"/language_issue_matrix.py \
    "$SRC"/evidence_ledger.py "$SRC"/harness_runner.py "$SRC"/workflow_export.py \
    "$SRC"/checklist_binder.py "$SRC"/precedent_library.py "$SRC"/r2_guard.py \
    "$SRC"/lessons_recorder.py "$DST/"

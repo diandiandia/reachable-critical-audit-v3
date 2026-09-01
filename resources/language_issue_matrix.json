@@ -1,0 +1,807 @@
+{
+ "description": "语言问题矩阵 (v3.18, SWR-V3.18-001) — per-language 知识基座。langs/families 与 issue_coverage_matrix.json 逐位一致 (16 语言 × 12 族 = 192 格)。本文件只落已种格 (status=seeded); 未出现的 (语言, 族) 组合为 pending——加载器零注入零提示, 只 stats 可见 (v3.6 confirmed:false 诚实占位先例)。种格纪律: 每条格必须有仓内案例支撑 (L2 签名语义/清单与先例 source_lessons/SKILL.md 机制形态实录), 禁止凭通用知识臆造; cell 正文机制形态零项目名, 项目归属只进 source_lessons。回填纪律 (SWR-V3.18-003): 每版本验收审计收官时主代理把验收项目覆盖的语言×族格两段式回填 (去项目化提炼 + source_lessons 含日期)。",
+ "langs": [
+  "perl",
+  "powershell",
+  "shell",
+  "csharp",
+  "python",
+  "javascript",
+  "java",
+  "kotlin",
+  "scala",
+  "go",
+  "c",
+  "cpp",
+  "rust",
+  "php",
+  "ruby",
+  "swift"
+ ],
+ "families": [
+  "RESOURCE-DOS",
+  "MEMORY-SAFETY",
+  "INJECTION",
+  "CRYPTO",
+  "AUTHN",
+  "DATA-INTEGRITY",
+  "WEB",
+  "RACE",
+  "STATE",
+  "NUMERIC",
+  "ERROR-HANDLING",
+  "OTHER"
+ ],
+ "cells": [
+  {
+   "lang": "perl",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-78",
+    "CWE-94"
+   ],
+   "patterns": [
+    "动态代码执行: 不可信数据进入 eval/系统命令执行路径"
+   ],
+   "sinks": [
+    "eval",
+    "system",
+    "exec",
+    "open 双参管道形态",
+    "反引号命令执行"
+   ],
+   "pitfalls": [
+    "open 的双参数可变语义 (文件句柄 vs 管道) 是漏报高发区",
+    "『参数已转义』声称必须逐字符核实转义函数覆盖的字符集"
+   ],
+   "source_lessons": [
+    "SIG-PERL-EXEC-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "perl",
+   "family": "WEB",
+   "cwes": [
+    "CWE-79"
+   ],
+   "patterns": [
+    "输出编码缺失: 用户数据进入 HTML/属性/脚本上下文"
+   ],
+   "sinks": [
+    "print/CGI 输出路径",
+    "模板变量直插"
+   ],
+   "pitfalls": [
+    "清洗白名单必须逐字符核实字符集实际内容 (白名单含 '.' 即 '..' 序列合法)",
+    "上下文差异: 同一数据在属性/脚本上下文编码要求不同"
+   ],
+   "source_lessons": [
+    "xss_path_sim 模板实战形态 (templates/harness/xss_path_sim.pl)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "powershell",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-94",
+    "CWE-78"
+   ],
+   "patterns": [
+    "动态脚本块执行: 不可信字符串进入脚本块/命令构造"
+   ],
+   "sinks": [
+    "ScriptBlock::Create",
+    "Invoke-Expression",
+    "& 调用运算符"
+   ],
+   "pitfalls": [
+    "双引号字符串变量插值早于转义——先插值后防护的形态必漏",
+    "管道对象传递 ≠ 字符串拼接 (对象形态不构成注入)"
+   ],
+   "source_lessons": [
+    "SIG-PS-SCRIPTBLOCK-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "shell",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-78"
+   ],
+   "patterns": [
+    "命令拼接执行: 变量进入命令字符串"
+   ],
+   "sinks": [
+    "eval",
+    "命令替换 $()",
+    "xargs 接不可信输入",
+    "参数展开注入"
+   ],
+   "pitfalls": [
+    "引号嵌套层级与参数展开次序是判定核心——逐层展开核实",
+    "env 覆盖形态: 攻击者已能写框架文件时的能力支配裁决 (默认文件覆盖 env)"
+   ],
+   "source_lessons": [
+    "SIG-SH-EVAL-001 (签名库 L2 词族)",
+    "shell 手册裁决模式四连模板 (能力支配/用户中介/opt-in)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "csharp",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-502"
+   ],
+   "patterns": [
+    "反序列化输入面: 类型解析受攻击者控制 (多态类型开关)"
+   ],
+   "sinks": [
+    "TypeNameHandling 类类型开关",
+    "BinaryFormatter",
+    "XmlSerializer 不可信输入"
+   ],
+   "pitfalls": [
+    "默认拒绝/配置接受双侧对照: 默认关闭的开关必须按实际部署配置判定, 不得以代码零值推定",
+    "『仅受信通道』声称必须给出信源链证据"
+   ],
+   "source_lessons": [
+    "SIG-CS-DESER-001 (签名库 L2 词族)",
+    "cs 手册对照矩阵 (T2 默认拒绝 vs 配置接受实测)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "csharp",
+   "family": "AUTHN",
+   "cwes": [
+    "CWE-306"
+   ],
+   "patterns": [
+    "安全配置默认可达性: 鉴权/防护开关键代码零值与实际提交值不一致"
+   ],
+   "sinks": [
+    "鉴权开关键",
+    "tls/ssl 防护开关键",
+    "监听地址/端口绑定键"
+   ],
+   "pitfalls": [
+    "『默认可达』声称必须引用 shipped-config 盘点 (提交值 vs 代码零值)",
+    "显式关闭也是提交值——不得把显式关闭误读为默认开启"
+   ],
+   "source_lessons": [
+    "shipped-config 盘点条款 (REQ-V3.2.1-030, 防护开关代码零值误判实录)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "csharp",
+   "family": "ERROR-HANDLING",
+   "cwes": [
+    "CWE-457"
+   ],
+   "patterns": [
+    "模块存在 ≠ 被导入: 依赖注入/动态加载路径的静默失效"
+   ],
+   "sinks": [
+    "DI 容器注册点",
+    "动态加载/反射入口",
+    "启动链初始化序列"
+   ],
+   "pitfalls": [
+    "broken_edge 类阻断必须核实导入注册链, 不得以模块存在推定",
+    "启动链正则与扫描器吞错路径双查"
+   ],
+   "source_lessons": [
+    "步骤 0.5 模块可导入性预检 (REQ-V3.2.1-010, 模块导入 404 先例)",
+    "CK-IMPORT-REGISTRATION"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "python",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-502"
+   ],
+   "patterns": [
+    "反序列化输入面: 不可信字节流反序列化为对象图"
+   ],
+   "sinks": [
+    "pickle.loads",
+    "yaml.load (非 SafeLoader)",
+    "eval/exec"
+   ],
+   "pitfalls": [
+    "序列化边界 ≠ 信任边界——文件来源/消息队列来源均不可推定受信",
+    "『仅受信输入』声称必须给出信源链证据行"
+   ],
+   "source_lessons": [
+    "SIG-PY-PICKLE-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "python",
+   "family": "STATE",
+   "cwes": [
+    "CWE-841"
+   ],
+   "patterns": [
+    "多帧/多块格式状态机: 逐帧门禁与一次性门禁语义混淆"
+   ],
+   "sinks": [
+    "逐帧解析循环",
+    "块索引推进点",
+    "帧计数/门禁检查点"
+   ],
+   "pitfalls": [
+    "一次性门禁检查 ≠ 状态机重入门禁——逐状态转移行核实 (逐帧/逐块形态)",
+    "跳步/重放/乱序序对依赖必须逐项验证"
+   ],
+   "source_lessons": [
+    "CK-FRAME-GATE-REENTRY",
+    "PREC-STATE-GATE-REENTRY (图像容器 DCX/MPO 机制化)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "python",
+   "family": "MEMORY-SAFETY",
+   "cwes": [
+    "CWE-787",
+    "CWE-125"
+   ],
+   "patterns": [
+    "C 扩展边界: 共享 helper/allocator 的边界检查归属"
+   ],
+   "sinks": [
+    "C 扩展模块内存操作",
+    "共享 helper/allocator/工厂调用点"
+   ],
+   "pitfalls": [
+    "边界检查必须沿调用链双向核实——被调函数内有检查 ≠ 调用者未挡, 反之亦然",
+    "判『缺检查/缺上界』前必须 Read 两侧源码并各引证据行"
+   ],
+   "source_lessons": [
+    "REQ-V3.9-008 双向核实条款 (两次误报同模式实录)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "javascript",
+   "family": "RESOURCE-DOS",
+   "cwes": [
+    "CWE-400",
+    "CWE-770"
+   ],
+   "patterns": [
+    "流式累积无上限: 数据事件逐块累积到内存"
+   ],
+   "sinks": [
+    "socket/stream 'data' 事件累积",
+    "Buffer 拼接循环",
+    "chunk 数组 push"
+   ],
+   "pitfalls": [
+    "分片到达序不可控——按到达累积的量级必须以上限为界",
+    "背压缺失 (消费者不停读) 使累积无平台期"
+   ],
+   "source_lessons": [
+    "SIG-TS-ACCUM-001 (签名库 L2 词族, ts 组)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "javascript",
+   "family": "CRYPTO",
+   "cwes": [
+    "CWE-327",
+    "CWE-347"
+   ],
+   "patterns": [
+    "加密库参数校验: 算法/密钥参数未白名单化"
+   ],
+   "sinks": [
+    "签名验证入口",
+    "哈希算法选择点",
+    "密钥长度/曲线参数入口"
+   ],
+   "pitfalls": [
+    "弱算法回退链 (协商降级) 是主判轴——逐降级分支核实",
+    "『标准用法』声称必须对照库契约 (低阶点校验形态)"
+   ],
+   "source_lessons": [
+    "CRYPTO 族 JS 审计形态 (jsrsasign 审计 2026-08)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "java",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-502"
+   ],
+   "patterns": [
+    "反序列化输入面: 对象流反序列化受攻击者控制"
+   ],
+   "sinks": [
+    "readObject/ObjectInputStream",
+    "SerializationUtils 类工具",
+    "JNDI 查找点"
+   ],
+   "pitfalls": [
+    "反序列化过滤 (ObjectInputFilter 类) 缺省不启用——『默认防护』声称必须核实启用点",
+    "gadget 链判定按可达类路径枚举, 不得以单类推定"
+   ],
+   "source_lessons": [
+    "SIG-JAVA-DESER-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "java",
+   "family": "ERROR-HANDLING",
+   "cwes": [
+    "CWE-457"
+   ],
+   "patterns": [
+    "异常逃逸: 解析/校验异常穿透正常路径成为判定依据差异"
+   ],
+   "sinks": [
+    "日期时间解析",
+    "类型转换点",
+    "枚举解析点"
+   ],
+   "pitfalls": [
+    "异常逃逸类缺陷常被多个假说同事实共享实证——去重后主申报方承载 severity",
+    "吞错转正常路径与逃逸判定的方向不得颠倒"
+   ],
+   "source_lessons": [
+    "java-jwt H2/H7 同事实共享实证实录 (DateTimeException 逃逸形态)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "kotlin",
+   "family": "RESOURCE-DOS",
+   "cwes": [
+    "CWE-400",
+    "CWE-770"
+   ],
+   "patterns": [
+    "流式接收累积无上限: 协程通道/流逐块累积"
+   ],
+   "sinks": [
+    "Channel.receive 循环",
+    "流式 API 累积收集",
+    "缓冲写入点"
+   ],
+   "pitfalls": [
+    "协程取消与累积交互: 取消点缺失使累积持续",
+    "帧上限必须对每个分片帧 (含 continuation) 强制"
+   ],
+   "source_lessons": [
+    "SIG-KT-RECEIVE-001 (签名库 L2 词族)",
+    "CK-WS-MATERIALIZE (ws 分片物化形态)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "scala",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-78"
+   ],
+   "patterns": [
+    "进程执行注入: 不可信数据进入进程执行路径"
+   ],
+   "sinks": [
+    "Runtime.getRuntime.exec",
+    "ProcessBuilder",
+    "sys.process 字符串形态"
+   ],
+   "pitfalls": [
+    "字符串形态与参数数组形态的注入面不同——按实际调用形态判定",
+    "『参数化已防注入』声称必须核实底层 shell 是否介入"
+   ],
+   "source_lessons": [
+    "SIG-SCALA-UNSAFE-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "go",
+   "family": "RESOURCE-DOS",
+   "cwes": [
+    "CWE-400",
+    "CWE-770"
+   ],
+   "patterns": [
+    "流式拷贝/累积无上限: 读端无界累积"
+   ],
+   "sinks": [
+    "io.Copy 无上限目标",
+    "ReadAll",
+    "bufio 累积循环"
+   ],
+   "pitfalls": [
+    "io.Copy 对不可信源必须包 LimitReader——裸拷贝是默认缺陷形态",
+    "『调用方已限流』声称必须核实读取侧实际到达量 (投递量≠到达量)"
+   ],
+   "source_lessons": [
+    "SIG-GO-ACCUM-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "c",
+   "family": "RESOURCE-DOS",
+   "cwes": [
+    "CWE-789",
+    "CWE-770"
+   ],
+   "patterns": [
+    "远端控制分配大小无上限: 攻击者控制长度进入分配"
+   ],
+   "sinks": [
+    "malloc 家族",
+    "realloc 扩展",
+    "calloc 计数×尺寸"
+   ],
+   "pitfalls": [
+    "分配请求 ≠ 资源耗尽: 提交内存受输入限制时判 Low (PREC-ALLOC-VIRTUAL-001)",
+    "累积型 (逐块预留) 与一次性分配的量级判定不同"
+   ],
+   "source_lessons": [
+    "SIG-C-ALLOC-001 (签名库 L2 词族)",
+    "PREC-ALLOC-VIRTUAL-001"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "c",
+   "family": "MEMORY-SAFETY",
+   "cwes": [
+    "CWE-787",
+    "CWE-125"
+   ],
+   "patterns": [
+    "解析器边界计算: 长度/索引字段驱动内存访问"
+   ],
+   "sinks": [
+    "长度字段驱动的 memcpy/索引",
+    "asn1/tlv 类长度解析",
+    "偏移计算点"
+   ],
+   "pitfalls": [
+    "长度字段极值 + 截断矩阵实证是声称类强制 (parser_fuzz 模板)",
+    "有符号下溢语义保留/边界指针语义在 stub 复刻时必须逐字保留"
+   ],
+   "source_lessons": [
+    "parser_fuzz 模板实战形态 (asn1_get_len ASan 2M+ 输入实录)",
+    "libarchive/freetype 解析器审计形态 (2026-08)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "c",
+   "family": "CRYPTO",
+   "cwes": [
+    "CWE-347",
+    "CWE-327"
+   ],
+   "patterns": [
+    "低阶点/对等端校验缺失: 协议层参数未验"
+   ],
+   "sinks": [
+    "椭圆曲线点接收点",
+    "Diffie-Hellman 公钥接收点",
+    "协商参数入口"
+   ],
+   "pitfalls": [
+    "目标树内缺校验 ≠ 缺陷成立——先查绑定层契约 (加密库低阶点/对等端校验)",
+    "阻断论证引用绑定层补全校验时必须写绑定层 file:line"
+   ],
+   "source_lessons": [
+    "CK-VENDORED-CONTRACT (X25519 kZeros/DH Ys=p-1 契约实录)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "c",
+   "family": "STATE",
+   "cwes": [
+    "CWE-696"
+   ],
+   "patterns": [
+    "vendored 状态机: 续接分支/暂停恢复语义"
+   ],
+   "sinks": [
+    "状态机转移点",
+    "pause/resume 续接点",
+    "帧/块边界门禁"
+   ],
+   "pitfalls": [
+    "『死代码/不可达』类阻断对 vendored 状态机必须做状态机级复核 (逐状态转移行核实)",
+    "续接分支被 verifier 判死代码为假的高发形态"
+   ],
+   "source_lessons": [
+    "CK-VENDORED-CONTRACT (llhttp pause/resume/upgrade 转移实录)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "c",
+   "family": "NUMERIC",
+   "cwes": [
+    "CWE-191",
+    "CWE-681"
+   ],
+   "patterns": [
+    "截断先于检查/哨兵算术: 数值语义缺陷"
+   ],
+   "sinks": [
+    "截断 cast 点",
+    "哨兵值算术",
+    "回绕过检的计数点"
+   ],
+   "pitfalls": [
+    "截断先于检查 = 检查死代码——核实检查与截断的先后",
+    "哨兵值算术 (如 -1 表示) 与无符号下溢的交互是漏报高发区"
+   ],
+   "source_lessons": [
+    "CK-NUMERIC-TRUNCATION",
+    "CK-NUMERIC-SEMANTICS (v3.13 数值族盘点)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "c",
+   "family": "ERROR-HANDLING",
+   "cwes": [
+    "CWE-457",
+    "CWE-665"
+   ],
+   "patterns": [
+    "错误分支与清理完整性: 错误路径处理缺陷"
+   ],
+   "sinks": [
+    "错误分支条件点",
+    "清理/释放序列",
+    "未初始化变量使用点"
+   ],
+   "pitfalls": [
+    "错误分支条件反转/静默阻断/吞没转正常路径三类逐查",
+    "宿主复用残留 (清理不完整) 是库型目标的高发形态"
+   ],
+   "source_lessons": [
+    "CK-ERROR-BRANCH",
+    "CK-ERROR-CLEANUP (v3.13 错误路径族盘点)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "cpp",
+   "family": "RESOURCE-DOS",
+   "cwes": [
+    "CWE-789",
+    "CWE-770"
+   ],
+   "patterns": [
+    "远端控制分配: new[]/容器预留受攻击者控制"
+   ],
+   "sinks": [
+    "new[] 攻击者控制长度",
+    "reserve/resize 点",
+    "vector 累积 push"
+   ],
+   "pitfalls": [
+    "容器自动增长的累积量级以对象图内部急切分配为准 (成员缓冲/嵌套对象)",
+    "顶层对象尺寸低估 3-4 个数量级的形态必须按构造器链枚举"
+   ],
+   "source_lessons": [
+    "SIG-CPP-ALLOC-001 (签名库 L2 词族)",
+    "CK-CHECKPOINT-AFTER-ACCUM 构造器链条目"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "cpp",
+   "family": "WEB",
+   "cwes": [
+    "CWE-22"
+   ],
+   "patterns": [
+    "路径穿越: 用户路径与白名单/前缀拼接"
+   ],
+   "sinks": [
+    "路径拼接点",
+    "白名单检查点",
+    "文件服务入口"
+   ],
+   "pitfalls": [
+    "白名单必须逐字符核实字符集实际内容——白名单含 '.' 即 '..' 序列合法",
+    "防御声称不能只 grep '/' 或 '\\' 就推定穿越被阻止"
+   ],
+   "source_lessons": [
+    "SWR-V3.8-009 路径面条款 (cpp-httplib 类形态实测)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "rust",
+   "family": "MEMORY-SAFETY",
+   "cwes": [
+    "CWE-787",
+    "CWE-125",
+    "CWE-416"
+   ],
+   "patterns": [
+    "unsafe 块边界: 安全不变量在 unsafe 内的自证义务"
+   ],
+   "sinks": [
+    "unsafe 块",
+    "裸指针解引用",
+    "transmute 点",
+    "FFI 调用点"
+   ],
+   "pitfalls": [
+    "内层安全不变量必须在 unsafe 块内自证——『外层已保证』声称必须给出作用域证据",
+    "safe 包 unsafe 的边界检查归属双向核实"
+   ],
+   "source_lessons": [
+    "SIG-RS-UNSAFE-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "php",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-94",
+    "CWE-78"
+   ],
+   "patterns": [
+    "动态代码执行: 不可信数据进入 eval/回调形态"
+   ],
+   "sinks": [
+    "eval",
+    "assert 字符串形态",
+    "call_user_func 动态回调",
+    "include 动态路径"
+   ],
+   "pitfalls": [
+    "回调形态 (动态函数名/类名) 与 eval 同族——不得漏判",
+    "include 动态路径兼文件包含面, 双面登记"
+   ],
+   "source_lessons": [
+    "SIG-PHP-EVAL-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "php",
+   "family": "CRYPTO",
+   "cwes": [
+    "CWE-327",
+    "CWE-347"
+   ],
+   "patterns": [
+    "加密库参数校验: 算法/密钥参数未白名单化"
+   ],
+   "sinks": [
+    "签名验证入口",
+    "哈希算法选择点",
+    "密钥长度/曲线参数入口"
+   ],
+   "pitfalls": [
+    "弱算法回退链 (协商降级) 是主判轴——逐降级分支核实",
+    "『标准用法』声称必须对照库契约 (低阶点校验形态)"
+   ],
+   "source_lessons": [
+    "CRYPTO×php 覆盖格回填实录 (phpseclib 验收 2026-08)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "ruby",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-94",
+    "CWE-78"
+   ],
+   "patterns": [
+    "动态代码执行: 不可信数据进入 eval/系统调用"
+   ],
+   "sinks": [
+    "eval",
+    "system/exec/反引号",
+    "send 动态方法分发",
+    "constantize"
+   ],
+   "pitfalls": [
+    "send/constantize 动态分发与 eval 同族——漏判高发",
+    "『调用者受信』声称必须给信源链证据"
+   ],
+   "source_lessons": [
+    "SIG-RB-EVAL-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "ruby",
+   "family": "AUTHN",
+   "cwes": [
+    "CWE-862",
+    "CWE-306"
+   ],
+   "patterns": [
+    "调试/控制端点零鉴权: 暴露组件缺鉴权门禁"
+   ],
+   "sinks": [
+    "控制端点/状态页路由",
+    "调试接口注册点",
+    "缺 before_action 类守卫的控制器"
+   ],
+   "pitfalls": [
+    "『默认受保护』声称必须核实路由挂载与守卫链",
+    "无 token 形态的端点常被框架默认放行——按实际路由判定"
+   ],
+   "source_lessons": [
+    "H5 形态实录 (no_token 控制端点零鉴权, 2026-08)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "ruby",
+   "family": "STATE",
+   "cwes": [
+    "CWE-696"
+   ],
+   "patterns": [
+    "跨租户状态共享: 状态机序对缺陷 (停服/恢复/会话序)"
+   ],
+   "sinks": [
+    "跨用户共享状态点",
+    "启动/停止序对",
+    "会话/锁归属点"
+   ],
+   "pitfalls": [
+    "跨用户停服类序对缺陷的 owner 归属必须逐请求核实",
+    "状态机序对 (启动→停止→启动) 的非法转移按逐转移行判定"
+   ],
+   "source_lessons": [
+    "H-6-F1 跨用户停服实录 (2026-08)"
+   ],
+   "status": "seeded"
+  },
+  {
+   "lang": "swift",
+   "family": "INJECTION",
+   "cwes": [
+    "CWE-78",
+    "CWE-94"
+   ],
+   "patterns": [
+    "进程执行注入: 不可信数据进入进程执行路径"
+   ],
+   "sinks": [
+    "Process 执行点",
+    "NSTask 类 API",
+    "动态库加载点"
+   ],
+   "pitfalls": [
+    "字符串形态与参数数组形态的注入面不同——按实际调用形态判定",
+    "『参数化已防注入』声称必须核实底层 shell 是否介入"
+   ],
+   "source_lessons": [
+    "SIG-SWIFT-UNSAFE-001 (签名库 L2 词族)"
+   ],
+   "status": "seeded"
+  }
+ ]
+}
