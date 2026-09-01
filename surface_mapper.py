@@ -24,6 +24,8 @@ import re
 import subprocess
 import sys
 
+import generation_registry as gr
+
 DOMAINS = ["network", "data", "process", "storage"]
 # v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
 BOUNDARY_DOMAIN = "boundary"
@@ -233,6 +235,9 @@ def _sample_source_files(root, cap=120):
     v3.3.2: 前缀族匹配覆盖进行时/复数变体 (cjson 实测: 'fuzzing' 目录不在
     精确名 'fuzz/fuzzer' 列表中致 exec:main 误报)。"""
     out = []
+    # v3.17 (SWR-V3.17-001): 生成层注册表合并视图——通用 DSL 与生成物
+    # (.proto/.pb.cc 类) 计入源码采样; 项目局部 DSL 经 profile 局部署名。
+    exts = gr.merged_view(root)
     exact_skip = {".git", ".audit_results", "vendor", "node_modules",
                   "third_party", "build", "target"}
     prefix_skip = ("test", "fuzz", "bench", "example", "sample", "misc",
@@ -244,7 +249,7 @@ def _sample_source_files(root, cap=120):
                        and not d.lower().startswith(prefix_skip)]
         for fn in filenames:
             ext = os.path.splitext(fn)[1].lower()
-            if ext in _SRC_EXTS:
+            if ext in exts:
                 out.append(os.path.join(dirpath, fn))
                 if len(out) >= cap:
                     return out
@@ -357,8 +362,10 @@ def language_inventory(root):
     v3.2.2 (REQ-V3.2.2-023): 运行时占比修正——语言文件 >90% 位于
     scripts/tests/tools/docs/configs 目录时 role=build-config (mbedtls 实证:
     .sh 构建脚本曾被标 server-side 触发 "4 语言混合" 过配)。
-    单语言项目清单长度 1 (向后兼容)。"""
-    from signature_matcher import CODE_EXTENSIONS
+    单语言项目清单长度 1 (向后兼容)。
+    v3.17 (SWR-V3.17-001): 扩展名视图 = 生成层注册表合并视图; DSL/生成物
+    经 lang_family_for 归入对应语言组 (含 provenance 语义)。"""
+    exts = gr.merged_view(root)
     inv = {}
     BIND_DIRS = {"bindings", "ffi", "ctypes", "csrc", "native", "ext", "napi"}
     NON_RUNTIME_SEGS = {"scripts", "script", "tests", "test", "tools", "tool",
@@ -379,12 +386,11 @@ def language_inventory(root):
         is_runtime_dir = not (parts & NON_RUNTIME_SEGS)
         for f in files:
             ext = os.path.splitext(f)[1].lower()
-            if ext not in CODE_EXTENSIONS:
+            if ext not in exts:
                 continue
-            lang = ext
             # v3.2: 头文件归并到 C 语言组 (h/hpp/cc 是 C 组件的组成部分而非独立语言)
-            if lang in (".h", ".hpp"):
-                lang = ".c"
+            # v3.17: DSL/生成物经 lang_family_for 归入对应语言组
+            lang = gr.lang_family_for(ext, root)
             rec = inv.setdefault(lang, {"file_count": 0, "runtime_files": 0,
                                         "dirs": set(), "component_hint": hint})
             rec["file_count"] += 1
@@ -739,14 +745,15 @@ def size_tier(project_root):
     # v3.8 (SWR-V3.8-020): 与 signature_matcher.CODE_EXTENSIONS 单事实源——
     # 旧内联集合缺 .cpp/.cc/.hpp/.m/.mm/.sql, C++ (top-2) 源码不计入档位
     # (BIAS_EVAL F1)。同 language_inventory 写法。
-    from signature_matcher import CODE_EXTENSIONS
+    # v3.17 (SWR-V3.17-001): 单事实源前移到生成层注册表合并视图。
+    exts = gr.merged_view(project_root)
     count = 0
     for dirpath, _dirs, files in os.walk(project_root):
         if any(p.lower() in SKIP_DIRS for p in dirpath.split(os.sep)):
             continue
         for f in files:
             ext = os.path.splitext(f)[1].lower()
-            if ext in CODE_EXTENSIONS:
+            if ext in exts:
                 count += 1
     inv = language_inventory(project_root)
     # v3.2.2 (REQ-V3.2.2-023): 语言混合度只计运行时语言 (server-side 组件角色)——

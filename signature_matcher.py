@@ -43,6 +43,17 @@ ENTRY_LINE_CONTEXT = 60   # 第 0 层: entry 行 ±N 行邻域
 LAYER_CAP = 40            # 每层 BFS 新增节点上限
 WINDOW_CAP = 300          # 总窗口节点上限
 
+
+def scaled_caps(indexed_file_count):
+    """SWR-V3.17-007: 佐证器 cap 随索引文件数缩放 (上限常数化, 不无限放大)。
+    <=2000 文件 → 现状常量 (零行为变化); >2000 → 窗口/层 cap ×2; >8000 → ×3。
+    案例: 超大仓 (引擎/内核量级) 全库命中瞬间封顶, 佐证器退化 (V8 评估 D-7)。"""
+    if indexed_file_count > 8000:
+        return 180, 80, 900
+    if indexed_file_count > 2000:
+        return 120, 60, 600
+    return ENTRY_LINE_CONTEXT, LAYER_CAP, WINDOW_CAP
+
 SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build", "dist",
              ".build", "vendor", "third_party", ".audit_results", "spec"}
 
@@ -56,9 +67,14 @@ CODE_EXTENSIONS = {".c", ".h", ".cc", ".cpp", ".hpp", ".rs", ".rb", ".py",
                    ".sql"}
 
 
-def build_project_index(project_root):
+def build_project_index(project_root, exts=None):
     """SWR-V3-020: {callee_name: [(file, line, caller_func)]} 轻量调用索引。
-    函数定义与调用点均由正则粗粒度识别（服务于窗口展开，不需完整调用图精度）。"""
+    函数定义与调用点均由正则粗粒度识别（服务于窗口展开，不需完整调用图精度）。
+    v3.17 (SWR-V3.17-001): exts 缺省 = 生成层注册表合并视图
+    (默认 ∪ 通用 DSL ∪ 生成物, 无 profile 时纯增量)。"""
+    if exts is None:
+        import generation_registry as gr
+        exts = gr.merged_view(project_root)
     index = {}
     # Ruby 方法名带 ! ? = 后缀 (dispatch!/call!/merge!/attr=); 对 C 系语言 `foo!(x)` 的
     # 副作用仅为多一个 foo! 索引条目 (窗口展开提示用, 无害)
@@ -74,7 +90,7 @@ def build_project_index(project_root):
     for dirpath, dirs, files in os.walk(project_root):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for fname in files:
-            if os.path.splitext(fname)[1].lower() not in CODE_EXTENSIONS:
+            if os.path.splitext(fname)[1].lower() not in exts:
                 continue
             fpath = os.path.join(dirpath, fname)
             try:
@@ -116,18 +132,22 @@ def _current_func(lines, lineno):
     return "<toplevel>"
 
 
-def expand_window(entry, project_index, depth=DEFAULT_DEPTH):
+def expand_window(entry, project_index, depth=DEFAULT_DEPTH, caps=None):
     """SWR-V3-021: 从 entry 沿调用图展开 depth 层，返回窗口内调用点集合。
     第 0 层 = entry 行 ±ENTRY_LINE_CONTEXT 行邻域内的调用点（近似 entry 所在函数;
     W5 回归发现: "整个文件全部调用点"在 god-file 上爆炸——base.rb 2000 行
-    直接窗口覆盖全库）。每层 BFS 带 cap, 总窗口带 cap。"""
+    直接窗口覆盖全库）。每层 BFS 带 cap, 总窗口带 cap。
+    v3.17 (SWR-V3.17-007): caps=(entry_ctx, layer_cap, window_cap) 缺省为
+    现状常量, 调用方按索引规模传 scaled_caps 结果。"""
+    entry_ctx, layer_cap, window_cap = caps or (
+        ENTRY_LINE_CONTEXT, LAYER_CAP, WINDOW_CAP)
     window = []
     seen = set()
     if os.path.exists(entry["file"]):
         lines = open(entry["file"], errors="ignore").read().splitlines()
         call_re = re.compile(r"\b([A-Za-z_][\w]*)\s*\(")
-        lo = max(1, entry["line"] - ENTRY_LINE_CONTEXT)
-        hi = min(len(lines), entry["line"] + ENTRY_LINE_CONTEXT)
+        lo = max(1, entry["line"] - entry_ctx)
+        hi = min(len(lines), entry["line"] + entry_ctx)
         for lineno in range(lo, hi + 1):
             for m in call_re.finditer(lines[lineno - 1]):
                 site = {"file": entry["file"], "line": lineno, "callee": m.group(1)}
@@ -158,12 +178,12 @@ def expand_window(entry, project_index, depth=DEFAULT_DEPTH):
                         line = file_line_cache[call_site["file"]][call_site["line"] - 1]
                         next_frontier.update(m.group(1) for m in
                                              call_re.finditer(line))
-                    if len(window) >= WINDOW_CAP:
+                    if len(window) >= window_cap:
                         break
-            if len(window) >= WINDOW_CAP:
+            if len(window) >= window_cap:
                 break
-        frontier = list(next_frontier)[:LAYER_CAP]  # 每层 cap; 空则终止
-        if len(window) >= WINDOW_CAP:
+        frontier = list(next_frontier)[:layer_cap]  # 每层 cap; 空则终止
+        if len(window) >= window_cap:
             break
     return window
 
@@ -189,9 +209,13 @@ def match_signatures(surfaces, signatures, project_index, depth=DEFAULT_DEPTH):
             # 归一后与 surface 规范名等值比较 (cs↔csharp, ts/typescript↔javascript)
             return norm_lang(surface.get("lang")) == norm_lang(sig["lang"])
         return True
+    # v3.17 (SWR-V3.17-007): 窗口 cap 按索引规模缩放——超大仓 (引擎/内核量级)
+    # 固定 300 窗口全库命中瞬间封顶, 佐证器退化 (V8 评估 D-7 实录)。
+    caps = scaled_caps(len({s["file"]
+                            for sites in project_index.values() for s in sites}))
     for surface in surfaces:
         for entry in surface.get("entry_points", []):
-            window = expand_window(entry, project_index, depth)
+            window = expand_window(entry, project_index, depth, caps=caps)
             for site in window:
                 # v3.2.2 (REQ-V3.2.2-003): tests/ 路径排除——
                 # 测试辅助代码的匹配是噪声 (mbedtls tests/src/test_helpers 实证)

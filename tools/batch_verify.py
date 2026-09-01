@@ -171,6 +171,17 @@ _LANG_ALIAS = {"py": "python", "pl": "perl", "ts": "javascript", "js": "javascri
                "cs": "csharp", "rs": "rust", "typescript": "javascript"}
 
 
+def _registry_lang(ext, project_root=None):
+    """SWR-V3.17-001: DSL/生成物扩展名 → 规范语言名 (生成层注册表 + profile
+    局部层)。未知 → None (调用方兜底 unknown)。"""
+    try:
+        import generation_registry as gr
+    except ImportError:
+        return None
+    fam = gr.lang_family_for(ext, project_root)
+    return _EXT_LANG.get(fam)
+
+
 def _norm_lang(lg):
     """归一化语言标识: 去点/短别名/unknown 占位 → 规范名或 None。"""
     lg = (lg or "").strip().lstrip(".")
@@ -517,7 +528,9 @@ def stage_collect(project_root, batch_id, verdicts):
         # SWR-V3-057: language 缺失时按扩展名推断
         if not entry.get("language"):
             src = entry.get("source_file", "")
-            entry["language"] = _EXT_LANG.get(os.path.splitext(src)[1].lower(), "unknown")
+            ext = os.path.splitext(src)[1].lower()
+            entry["language"] = (_EXT_LANG.get(ext)
+                                 or _registry_lang(ext, project_root) or "unknown")
         updated += 1
 
     # 只要有任何合法结果就落盘（部分成功优于整批丢弃）。

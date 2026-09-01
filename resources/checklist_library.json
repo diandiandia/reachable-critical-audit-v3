@@ -1259,6 +1259,209 @@
     "nghttp2 CAND-002 llhttp state-machine misjudgment (2026-08)",
     "s2n-tls binding-layer contracts x2 (2026-08)"
    ]
+  },
+  {
+   "id": "CK-GC-WRITE-BARRIER",
+   "name": "写屏障/分代收集不变量检查",
+   "family": "runtime-memory-model",
+   "binding": {
+    "cwe": [
+     "CWE-416",
+     "CWE-415"
+    ],
+    "keywords": [
+     "写屏障",
+     "write barrier",
+     "分代",
+     "generational",
+     "托管堆",
+     "managed heap"
+    ]
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "指针写入托管堆是否全部经写屏障 (屏障缺失 = 分代晋升漏记 = UAF 类缺陷) ? 列出屏障绕过点 (原生层直写/汇编内联/生成代码路径) 并逐点核实",
+    "屏障顺序是否正确 (先记账后写, 并发屏障的同步语义) ? 引用源码证据行论证",
+    "阻断论证声称『屏障覆盖完整』时, 必须枚举生成代 (young gen) 的全部写路径——含 DSL/生成代码/内建函数写路径, 缺枚举即阻断不成立"
+   ],
+   "source_lessons": [
+    "2026-09-01 运行时/引擎形态能力评估 (机制级案例: 分代收集器写屏障为托管运行时 CWE-416 主判定轴)"
+   ],
+   "applicability_signals": {
+    "text": [
+     "write barrier",
+     "写屏障",
+     "generational collector",
+     "young generation",
+     "分代收集",
+     "managed heap",
+     "托管堆"
+    ],
+    "note": "SWR-V3.17-006: 多词短语门控 (词边界匹配), 禁裸词 gc/barrier (子串误配纪律)"
+   }
+  },
+  {
+   "id": "CK-GC-ROOT-SCAN",
+   "name": "根枚举/保守扫描完整性检查",
+   "family": "runtime-memory-model",
+   "binding": {
+    "cwe": [
+     "CWE-416"
+    ],
+    "keywords": [
+     "根枚举",
+     "根扫描",
+     "保守扫描",
+     "conservative scanning",
+     "stack scan"
+    ]
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "根枚举是否遗漏宿主提供的根 (宿主栈/全局句柄/嵌入方引用) ? 宿主不注册根即提前回收 = 宿主可控 UAF",
+    "保守扫描假根方向: 栈上整数值误判为指针会延长生命周期 (漏报), 反向的真根漏扫才构成缺陷——判定方向不得颠倒",
+    "回收时机声称必须给出根注册点的源码证据, 不得以『GC 语义惯例』替代证据"
+   ],
+   "source_lessons": [
+    "2026-09-01 运行时/引擎形态能力评估 (机制级案例: 宿主根注册为嵌入型运行时 CWE-416 主判定轴)"
+   ],
+   "applicability_signals": {
+    "text": [
+     "root scan",
+     "根扫描",
+     "conservative scanning",
+     "handle scope",
+     "持久句柄",
+     "embedded runtime"
+    ],
+    "note": "SWR-V3.17-006: 多词短语门控"
+   }
+  },
+  {
+   "id": "CK-TIER-TRANSITION",
+   "name": "优化层级间状态一致性检查",
+   "family": "runtime-memory-model",
+   "binding": {
+    "cwe": [
+     "CWE-696"
+    ],
+    "keywords": [
+     "优化层级",
+     "tier transition",
+     "deopt",
+     "去优化",
+     "解释器",
+     "编译器"
+    ]
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "层级间切换 (解释→编译/编译→去优化) 时的中间状态是否一致 (帧状态/对象布局/类型假设) ? 逐切换点列假设清单",
+    "去优化点假设 (deopt point) 与重编译假设是否同一前提集 ? 前提漂移 = 类型混淆类缺陷的根源",
+    "『仅优化层级可达』的阻断论证必须给出触发前提 (feedback/形状假设/并发编译窗口), 并核实解释器路径是否同样触发"
+   ],
+   "source_lessons": [
+    "2026-09-01 运行时/引擎形态能力评估 (机制级案例: JIT 层级切换为引擎类 CWE-696/843 主判定轴)"
+   ],
+   "applicability_signals": {
+    "text": [
+     "tier transition",
+     "优化层级",
+     "deopt",
+     "去优化",
+     "bytecode",
+     "编译管线"
+    ],
+    "note": "SWR-V3.17-006: 多词短语门控"
+   }
+  },
+  {
+   "id": "CK-ALLOC-ESCAPE",
+   "name": "托管分配逃逸 native 层检查",
+   "family": "runtime-memory-model",
+   "binding": {
+    "cwe": [
+     "CWE-787",
+     "CWE-125"
+    ],
+    "keywords": [
+     "托管分配",
+     "managed alloc",
+     "原生层",
+     "native 边界",
+     "ffi 边界"
+    ]
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "托管分配对象逃逸到原生层时尺寸/生命周期契约是否成立 (尺寸未检/重定位后指针失效/回收后原生引用) ?",
+    "宿主传入指针进入托管堆的尺寸信任来源是什么? 宿主可控尺寸 + 无上界 = 越界读写原语",
+    "移动式回收器场景: 原生层持有的裸指针在重定位后是否失效? 失效即 UAF——判『GC 期间无原生访问』必须附并发窗口证据"
+   ],
+   "source_lessons": [
+    "2026-09-01 运行时/引擎形态能力评估 (机制级案例: 托管↔原生边界为嵌入型运行时 CWE-787/125 主判定轴)"
+   ],
+   "applicability_signals": {
+    "text": [
+     "managed alloc",
+     "托管分配",
+     "native 边界",
+     "宿主指针",
+     "重定位",
+     "moving collector"
+    ],
+    "note": "SWR-V3.17-006: 多词短语门控"
+   }
+  },
+  {
+   "id": "CK-GENERATED-CODE",
+   "name": "生成物溯源检查",
+   "family": "generated-code",
+   "binding": {
+    "cwe": [],
+    "keywords": [
+     "生成物",
+     "generated file",
+     "生成代码",
+     "code generation",
+     "dsl 编译",
+     "生成器"
+    ]
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "生成物 (DSL 编译产物/生成器输出) 中的缺陷根源在生成器源——判定缺陷必须沿 provenance 上溯到 DSL 源/生成器代码行, 生成文件本身不是可审计单元",
+    "生成器输出是否随输入 (DSL 定义/配置) 变化? 攻击者能否影响生成器输入从而注入缺陷代码? 输入面测绘须把生成器输入列为面",
+    "『生成物非攻击可达』的阻断论证必须核实生成物在运行时的实际调用方, 不得以『生成文件』形态推定"
+   ],
+   "source_lessons": [
+    "2026-09-01 运行时/引擎形态能力评估 (机制级案例: DSL 生成代码为引擎类目标的主要实现载体)"
+   ],
+   "applicability_signals": {
+    "text": [
+     "generated file",
+     "生成物",
+     "code generation",
+     "生成器输出",
+     "dsl 编译"
+    ],
+    "note": "SWR-V3.17-006: 多词短语门控"
+   }
   }
  ],
  "platform_trust_models": [

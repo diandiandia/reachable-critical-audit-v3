@@ -1,0 +1,18 @@
+{
+ "description": "生成层注册表 (v3.17, SWR-V3.17-001) — 源码扩展名默认视图 + 通用 DSL 族映射。默认视图与 signature_matcher.CODE_EXTENSIONS 逐位一致 (零行为变化)。dsl_entries 只收多项目通用 DSL 族; 项目专属 DSL (如单项目引擎的代码生成语言) 不得入库——经 target_profile.generation_layers 审计期局部署名 (两段式: 机制入库, 项目专属扩展名不入运行时资产)。",
+ "default_extensions": [
+  ".c", ".h", ".cc", ".cpp", ".hpp", ".rs", ".rb", ".py",
+  ".js", ".ts", ".java", ".go", ".php", ".swift", ".kt",
+  ".scala", ".cs", ".pl", ".pm", ".sh", ".ps1", ".m", ".mm",
+  ".sql"
+ ],
+ "dsl_entries": [
+  {"ext": ".proto", "role": "dsl", "lang_family": ".c", "generates": [".pb.cc", ".pb.h"]},
+  {"ext": ".y", "role": "dsl", "lang_family": ".c", "generates": [".c"]},
+  {"ext": ".l", "role": "dsl", "lang_family": ".c", "generates": [".c"]},
+  {"ext": ".fbs", "role": "dsl", "lang_family": ".c", "generates": [".cc", ".h"]},
+  {"ext": ".rl", "role": "dsl", "lang_family": ".c", "generates": [".c"]},
+  {"ext": ".asn1", "role": "dsl", "lang_family": ".c", "generates": [".c", ".h"]},
+  {"ext": ".idl", "role": "dsl", "lang_family": ".c", "generates": [".c", ".h"]}
+ ]
+}
