@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SWR-V3.18: 语言问题矩阵 per-language 知识基座测试 (10 用例)。
+"""SWR-V3.18: 语言问题矩阵 per-language 知识基座测试 (8 用例)。
 
 覆盖: schema 合法 / langs、families 与账本逐位一致 / 种格全字段 +
 pending 零注入 / cells_for 别名归一与未知语言 / stats 形态 / CLI 两命令 /
