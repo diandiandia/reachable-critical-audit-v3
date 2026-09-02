@@ -229,6 +229,6 @@ def test_skillmd_guidance_texts():
 # ---- SWR-V3.14-009: 版本链 ----
 
 def test_tooling_version_v314():
-    assert we.TOOLING_VERSION == "3.18"  # v3.15 版本链前进
+    assert we.TOOLING_VERSION == "3.19"  # v3.15 版本链前进
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.14 增量" in skill

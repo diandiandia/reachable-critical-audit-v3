@@ -893,3 +893,17 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.18-001 | 语言问题矩阵（16×12 格, 首版种 32 格诚实占位 160, langs/families 与账本逐位一致） | 已完成 | resources/language_issue_matrix.json + tests/test_v318.py |
 | REQ-V3.18-002 | 加载器 + R2 提示条款（cells/stats CLI, 别名归一, pending 零注入） | 已完成 | language_issue_matrix.py + SKILL.md R2 节 + tests/test_v318.py |
 | REQ-V3.18-003 | 回填纪律条款（验收收官两段式回填, 非 gate） | 已完成 | SKILL.md v3.18 增量段/验收判据 + tests/test_v318.py |
+
+## 系统需求（REQ-V3.19）（共 6 条）
+
+> 手工追加段（2026-09-02）。规范: REQ_V3_19.md / SWR_V3_19.md /
+> SYSTEM_DESIGN_V3_19.md / SOFTWARE_DESIGN_V3_19.md。评估: BIAS_EVAL_V3_19.md。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.19-001 | correction_record 双形态 lenient（str 跳过/dict 检查保留/零改写） | 已完成 | evidence_ledger.py + tests/test_v319.py |
+| REQ-V3.19-002 | verifier 步骤 0 缺陷可达性区分提示句 | 已完成 | tools/batch_verify.py + tests/test_v319.py |
+| REQ-V3.19-003 | 实质机制优先实证提示（R3.5-N/R5 条款） | 已完成 | SKILL.md + tests/test_v319.py |
+| REQ-V3.19-004 | 实证降级簿记契约明示（resurrection_review 同步写） | 已完成 | SKILL.md + tests/test_v319.py |
+| REQ-V3.19-005 | ENVIRONMENT_PROBES sanitizer-dcheck 条目 | 已完成 | harness_manuals/ENVIRONMENT_PROBES.md + tests/test_v319.py |
+| REQ-V3.19-006 | 复活第 9 维构建配置矩阵 | 已完成 | workflow_export.py + tests/test_v319.py |
