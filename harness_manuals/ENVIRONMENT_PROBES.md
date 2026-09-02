@@ -49,3 +49,14 @@ R5 步骤 0（harness 选择前）：按声称机制跑第 1 节探针；构建�
 探针结果写入 EMPIRICAL_REPORT.md「环境探针」段：{probe, result, blocker?}。
 blocker 存在 → R5 可选路径裁决（主代理降级 NEEDS_REVIEW + correction_record），
 不实证不申报。
+
+## 6. sanitizer 构建变体与 dcheck 交互（v3.19, SWR-V3.19-005）
+- **ASan 实证必须用 dcheck 关闭的变体**（is_asan + dcheck_always_on=false）：
+  dcheck 开启时 DEBUG 层不变量（DCHECK/DEBUG-only 校验）会在畸形输入到达目标
+  sink 之前前置拦截——ASan 精确定位被阻（快照 blob 注入被 DEBUG 层容器校验
+  拦截的实录形态）
+- 若环境只有 dcheck 开启的 sanitizer 变体：实证结论必须注明前置拦截点
+  （哪个 DEBUG 检查拦的）与"输入未到达目标 sink"的事实——不得以 DEBUG 崩溃
+  冒充目标机制实证，也不得以 DEBUG 拦截冒充防御存在（release 语义另证）
+- 对照实验义务：同输入跑 release 变体 + sanitizer 变体 + 未补丁基线三组,
+  因果性由差异建立（单组崩溃不足归因）

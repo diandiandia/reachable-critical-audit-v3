@@ -261,6 +261,10 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
 3. 实测确认 → `empirical` 字段 + grade=empirically_confirmed；证伪 → correction_record 降级并回溯 verifier 错误（REQ-V3-051）。
+   **实证降级簿记（v3.19, SWR-V3.19-004）**：主代理把候选实证降级为
+   UNREACHABLE 时，必须同步写候选级 `resurrection_review {revived:false,
+   outcome:"实证证伪原因"}`（gate ③c 簿记契约——机制 v3.2.2 已存在，本条明示
+   裁决动作与簿记字段的对应关系，V8 审计门禁 FAIL→补记→PASS 实录）。
 
 ## 🔒 六门禁（队列关闭判据，全部通过才允许出报告）
 
@@ -345,6 +349,10 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 ## 📏 数据模型速查
 
 - **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
+  （v3.19 注：`correction_record[]` 双形态——str 为注记、dict 为 demote 裁决
+  {demote_to, reason, adjudication_verification}，assert_ledger 对 str 条目
+  lenient 跳过；`resurrection_review` 为主代理实证降级 UNREACHABLE 时的同步
+  簿记 {revived:false, outcome}）
 - **input_surface.json**：`{surfaces:[{id,name,type,entry_points[],taint_channels[],trust_boundary:{type},confidence,downstream_hints[],semantic_axis?{namespace,anchor_files[],cardinality}}], conflicts[], mirror_pairs[]}`
 - **target_profile.json**：`{recommended:{surface_model:entry|semantic|hybrid,generation_layers[],scale_class,containment_default,empirical_modes[]},signals[],confidence,signed_by,overrides{}}`（v3.17 形态画像签收物；未签收 = 全默认 = 现状行为）
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
@@ -462,6 +470,11 @@ akka-http / etcd / actix-web 三项目复跑对照:
 - 声称类（crash/panic/oom/unbounded/xss/protocol_dos）UNREACHABLE 全量 + 其他 20%
   抽样（最少 2，上限 8）做 N=1 尽力复活复核；抽样决策落盘 `_resurrect_sample.json`
   （selected/unselected/rule）——未入池候选无复活复核义务
+- **实质机制优先实证提示（v3.19, SWR-V3.19-003）**：抽样与实证裁决时，
+  claim=other 但携带"机制静态确证"信号（证伪 0 票 + 证伪者补强
+  strengthened 非空 / 双证伪者确认机制属实）的候选优先纳入实证池——
+  claim=other 的实证豁免不遮蔽已静态确证的实质机制（V8 审计 CAND-013/049
+  实证升格 empirically_confirmed 实录）
 - `workflow_export.export_script_resurrect` 导出；revived=true 回 R3 重验（附 gap），
   不直接改 verdict；全部候选落盘 resurrection_review（六门禁新增检查）
 - **落盘契约（v3.2.2 文档化，REQ-V3.2.2-015）**：`resurrection_review` 必须写为
@@ -1423,3 +1436,34 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 全量回归全绿（392 基线 + test_v318 新增）+ 去项目化扫描 0 命中（矩阵种格
 正文 DEPROJECT_BLACKLIST 断言）+ install 双副本同步 + 账本双副本稳定复验。
 未审计新项目验收随 V8 审计启动后执行（首个验收即回填 V8 覆盖的语言×族格）。
+
+## 🆕 v3.19 增量（2026-09-02，V8 审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_19.md` + `SWR_V3_19.md` +
+> `SYSTEM_DESIGN_V3_19.md` + `SOFTWARE_DESIGN_V3_19.md` + `BIAS_EVAL_V3_19.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：/root/v8/.audit_results/lessons.md 六条目（V8 首个运行时/引擎
+> 形态验收项目 + 实证复活波，2026-09-01/02 会话实录）。
+
+### 六项修复（全部提示级/内容级/容错级, 零新机制）
+1. **correction_record 双形态 lenient**（SWR-V3.19-001）：assert_ledger 的
+   adjudication_verification 检查对 str 条目跳过（注记形态），dict 条目检查
+   保留（demote 裁决形态）——主代理自然写法不再使门禁检查崩溃；数据模型
+   速查补双形态注记
+2. **verifier 步骤 0 缺陷可达性区分**（SWR-V3.19-002）：库型目标下
+   "sink 可达 ≠ 缺陷可达"——claim 声明前必须给具体缺陷机制静态证据，否则
+   claim_type=other（V8 24/30 证伪分歧票集中于此类的制度化）
+3. **实质机制优先实证提示**（SWR-V3.19-003）：claim=other 但机制静态确证
+   （0 票证伪+补强）的候选优先纳入复活波实证池（V8 CAND-013/049 升格实录）
+4. **实证降级簿记契约明示**（SWR-V3.19-004）：实证降级 UNREACHABLE 必须同步
+   写候选级 resurrection_review {revived:false, outcome}（机制已存在，明示
+   裁决动作与簿记字段的对应关系）
+5. **ENVIRONMENT_PROBES sanitizer-dcheck 条目**（SWR-V3.19-005）：ASan 实证
+   需 dcheck 关闭变体；DEBUG 层不变量是畸形输入的前置拦截器；三组对照义务
+6. **复活第 9 维：构建配置矩阵**（SWR-V3.19-006）：指针压缩/sandbox/特性
+   开关/GC 模式逐项枚举——默认构建可能把内存破坏路径变成 OOM/拒绝路径
+
+### 验收判据（Phase 3.19）
+全量回归全绿（400 基线 + test_v319 新增）+ V8 真实队列复跑 assert_ledger
+零崩溃零新增 warn（str+dict 混形态 correction_record 为验收对象）+
+去项目化扫描 0 命中 + install 双副本同步。

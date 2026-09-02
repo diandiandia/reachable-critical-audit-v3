@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.18"
+TOOLING_VERSION = "3.19"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -494,7 +494,11 @@ def resurrect_prompt(c):
         f"  7. 守卫封顶类阻断是否枚举过守卫通过子集（文件真实包含声明尺寸/\n"
         f"     自动切换 tier/重试路径, PREC-GUARD-SUBSET-001）\n"
         f"  8. verifier 未实测的平台维度优先补测（32 位/LLP64 模拟重建等,\n"
-        f"     SWR-V3.15-012——revived=false 也欢迎补测固化阻断裁决（验收批次 32 位模拟补测实录））\n\n"
+        f"     SWR-V3.15-012——revived=false 也欢迎补测固化阻断裁决（验收批次 32 位模拟补测实录））\n"
+        f"  9. 构建配置前提是否已枚举（指针压缩/sandbox/特性开关/GC 模式等\n"
+        f"     build-config 维度）——默认构建可能把内存破坏路径变成 OOM/拒绝\n"
+        f"     路径, verifier 未按配置矩阵陈述影响的阻断论证不完整\n"
+        f"     （SWR-V3.19-006; noPC 变体实证实录）\n\n"
         f"原判定证据: {_truncate_evidence(c.get('evidence', ''))}\n"
         f"调用链: {c.get('call_chain', [])[:8]}\n\n"
         f"输出 revived=true/false + reason（附 file:line）；revived=true 时 "

@@ -2818,6 +2818,11 @@ def _build_prompt(cand, ctx, project_root):
 回溯开始前，先 grep 一句话能证实/证伪的**假设承重前提**（严格相等门控/默认参数/
 调用存在性/常量值）。前提断裂 → 立即终止回溯，verdict 按断裂方向判定。
 verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重前提"（W6 §17.10/§19.5）。
+（v3.19, SWR-V3.19-002）库型目标（target_kind=library）下公共 API 静态存在
+即攻击面只解决"面存在"——sink 可达 ≠ 缺陷可达：claim 声明（crash/oom/rce
+等）之前必须给出具体缺陷机制的静态证据（无门校验/回绕算术/越界写窗等
+file:line）；证据不足时 claim_type=other 并在 evidence 写明"结构性可达,
+缺陷未确证"。
 
 {step05}
 - 模板产物存在性（v3.11, SWR-V3.11-008）: sink 所在模板/生成器文件不随源码

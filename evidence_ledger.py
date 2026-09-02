@@ -434,6 +434,11 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
         unverified_demotes = []
         for c in cands:
             for cr in c.get("correction_record") or []:
+                # v3.19 (SWR-V3.19-001): 双形态 lenient——str 为注记形态
+                # (主代理自然写法, V8 审计实录), dict 为 demote 裁决形态
+                # (v3.10.2 契约)。str 条目跳过, 不改写任何字段。
+                if isinstance(cr, str):
+                    continue
                 if cr.get("demote_to") and not cr.get("adjudication_verification"):
                     unverified_demotes.append(c.get("id"))
                     break
