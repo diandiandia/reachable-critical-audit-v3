@@ -641,7 +641,8 @@
     "CWE-416"
    ],
    "patterns": [
-    "unsafe 块边界: 安全不变量在 unsafe 内的自证义务"
+    "unsafe 块边界: 安全不变量在 unsafe 内的自证义务",
+    "FFI 边界契约双侧核实: unsafe extern 的指针/长度契约承重在调用侧 (C++ CheckedInt/UTF-8 门) — unsafe 块自证义务的载体是跨语言调用契约而非 rust 侧单边"
    ],
    "sinks": [
     "unsafe 块",
@@ -651,10 +652,12 @@
    ],
    "pitfalls": [
     "内层安全不变量必须在 unsafe 块内自证——『外层已保证』声称必须给出作用域证据",
-    "safe 包 unsafe 的边界检查归属双向核实"
+    "safe 包 unsafe 的边界检查归属双向核实",
+    "safe Rust 解析器的递归/深度防护以解析器内建上限为机制 (嵌套块深度门), 非 unsafe 问题但仍属该格防护形态"
    ],
    "source_lessons": [
-    "SIG-RS-UNSAFE-001 (签名库 L2 词族)"
+    "SIG-RS-UNSAFE-001 (签名库 L2 词族)",
+    "Firefox 审计 2026-09-04 (stylo/webrender/neqo/encoding_rs/mp4parse/rsdparsa/qcms 21 面核查: 安全不变量承重全部在 FFI 契约双侧)"
    ],
    "status": "seeded"
   },
