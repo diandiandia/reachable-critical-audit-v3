@@ -127,4 +127,4 @@ def test_skillmd_v319_clauses():
 
 
 def test_tooling_version_319():
-    assert we.TOOLING_VERSION == "3.21"
+    assert we.TOOLING_VERSION == "3.22"

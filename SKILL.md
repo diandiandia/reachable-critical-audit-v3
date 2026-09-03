@@ -148,6 +148,9 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 ## 🎯 R2：假设生成（LLM 主路径）→ LLM 筛选
 
 **假设生成主路径**：LLM 直接基于 surface 图生成假设（主代理或限时 agent）。
+**面覆盖前置核对（v3.22, SWR-V3.22-010）**：假设生成完成后机械核对
+`hypotheses[].surface_ids` 集合 ⊇ input_surface 全集——缺面即补生成假设
+（门禁⑦ 前置化；111/111 零缺口闭合轮 vs 缺口闭合三连重派的对照实录）。
 **语言问题矩阵提示（v3.18, SWR-V3.18-002）**：生成假设前执行
 ```bash
 python3 <skill_dir>/language_issue_matrix.py cells <surface.lang>
@@ -353,7 +356,11 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 ## 📏 数据模型速查
 
 - **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome},guard_pass_subsets[]?,premises_verified[]?}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
-  （v3.19 注：`correction_record[]` 双形态——str 为注记、dict 为 demote 裁决
+  （v3.22 注：refutation 签收字段存储键为**单数**
+  `attribution_correction`/`strengthened_verified_by`/
+  `attribution_correction_verified_by`——主代理签写脚本须以队列实际
+  存储键为准（复数误写两段式清理实录）
+（v3.19 注：`correction_record[]` 双形态——str 为注记、dict 为 demote 裁决
   {demote_to, reason, adjudication_verification}，assert_ledger 对 str 条目
   lenient 跳过；`resurrection_review` 为主代理实证降级 UNREACHABLE 时的同步
   簿记 {revived:false, outcome}）
@@ -437,7 +444,9 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
   缺失项时，R3 派发前向用户报预期 NEEDS_REVIEW 占比并给三选一决策点
   （补装运行库 / 借运行面 / 接受上限）——决策权在用户，主代理不得代选。
   static-only 轨候选的证伪票价值=机制静态确证（非浪费），派发时明示。
-  该表为笔记级产物（不落 schema、不进队列）
+  该表为笔记级产物（不落 schema、不进队列）；落盘形态须含
+  `decision {by, date, choice}`——用户三选一决策必须签入工件（主代理
+  不得代选），未签入即审计问责链不完整（v3.22, SWR-V3.22-007）
 - 对照矩阵模式（默认拒绝 + 弱化接受，W6 §24.4）；源事实级降级规则（哨兵值/算术类，
   网络阻断记录 blocker，W6 §21.4）
 
@@ -449,6 +458,10 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - 顶层 const 模板字面量禁 `${}` 插值（`lint_script` 静态检查，W6 §17.2）
 - resume 必须携带与首跑一致 args（脚本内 `args ?? {}` 防御，W6 §5）
 - args 从落盘文件整读整传，禁止复制预览截断（W6 §10.3）
+- **薄封装默认派发（v3.22, SWR-V3.22-009）**：Mode W 三模式（verify/
+  refutation/resurrect）导出均落盘任务书文件 + slim payload（taskFile/
+  taskFiles 引用）——任务书内联进 args 为回退形态；主代理派发使用
+  `<mode>_payload_slim.json`（payload 104KB→8KB 实录）
 - journal 提取兼容 result/value 双字段；半程输出作废，只采信 schema-validated 最终返回
 - collect 全家族 lenient load + 单遍转义修复（`evidence_ledger.load_lenient`，W6 §3.1-3.3）
 
@@ -598,6 +611,10 @@ python3 lessons_recorder.py <project> --write
    入库清单/先例（两段式：具体发现 → 去项目化 → 入库，来源留追溯字段）；
    低价值条目留项目 lessons 轨迹
 3. **未执行 R6 的审计不得闭合**（报告阶段门禁）
+5. **蒸馏失败模式清单（v3.22, SWR-V3.22-011）**：收官蒸馏必须逐项过
+   已知失败模式 checklist——截断自愈 / 契约漂移 / 簿记缺位 / 签收错名 /
+   落盘契约 / 决策记录 / 严重度映射 / 派发简写与模板不一致——任一模式
+   在本审计发生即必须蒸馏（报漏补记周期实录：跨机制契约类漏项每轮重现）
 4. **蒸馏与收官同周期绑定（v3.21, SWR-V3.21-003）**：价值判定必须在报告
    闭合前完成——高价值条目去项目化后并入 lessons.md「对 skill 的教训」节
    （skill-optimizer 唯一读入口），低价值条目留项目 lessons 轨迹；
@@ -1528,6 +1545,44 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 全部可复算；残余 1 例为闭卷后手工回写所致存储不一致 + 2 例陈旧标记
 如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
 collect 结果不污染队列文件 + install 双副本同步。
+
+
+## 🆕 v3.22 增量（2026-09-04，Firefox 验收审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_22.md` + `SWR_V3_22.md` +
+> `SYSTEM_DESIGN_V3_22.md` + `SOFTWARE_DESIGN_V3_22.md` + `BIAS_EVAL_V3_22.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：/root/firefox/.audit_results/lessons.md §一.1/4/6 + §一补.7-13
+> （v3.19-v3.21 联合验收项目, 2026-09-03/04 会话实录; DDL 消化: V8/WebKit
+> 全部条目已消化或显式裁除）。
+
+### 十项修复（5 P1 机械 + 1 P2 结构 + 3 P3 内容 + 1 P4 条款, 2 项取证裁除）
+1. **size_tier 分支调序**（SWR-V3.22-001）：super-large 判断前置于多语言
+   保底——3+ 语言大仓不再被遮蔽（20 万文件手工绕行实录）
+2. **claim=other 严重度封顶**（SWR-V3.22-002）：结构性可达条目按 CWE 映射
+   虚高至严重/高的机械修正（34 例批量 override 实录）; override 通道不变
+3. **复活未选中自动簿记**（SWR-V3.22-004）：r35n-collect 自动补写
+   resurrection_review（幂等, selected 集内无记录不写）
+4. **refutation 预算与链阈值**（SWR-V3.22-005）：evidence budget 800→3000,
+   chain 阈值 8→12（3 例截断自愈实录）
+5. **导出 taskFile 薄封装默认化**（SWR-V3.22-009）：refutation/resurrect
+   导出对齐 verify 形态, slim payload 落盘（104KB→8KB 实录）
+6. **R4 落盘契约**（SWR-V3.22-006）：biz_hypothesis 落盘 _r4_hN.json +
+   UNWRITTEN 契约 + default_value_table 全量保留
+7. **决策签入工件**（SWR-V3.22-007）：feasibility 表 decision {by,date,choice}
+8. **R2 面覆盖前置核对**（SWR-V3.22-010）：假设生成后机械核对 surface_ids
+   覆盖全集（门禁⑦前置化）
+9. **R6 蒸馏失败模式清单**（SWR-V3.22-011）：收官蒸馏逐项过已知失败模式
+   checklist（截断自愈/契约漂移/簿记缺位/签收错名/落盘契约/决策记录/
+   严重度映射/派发简写偏差）
+10. **数据模型速查键名注记**（SWR-V3.22-003 裁除注记）：refutation 签收
+    字段存储键为单数
+
+### 验收判据（Phase 3.22）
+全量回归全绿（431 基线 + test_v322 新增 13 用例）+ 旧队列复跑零新增告警
+（WebKit/v8/Firefox 三队列 assert_ledger）+ Firefox 真实队列复跑 claim=other
+渲染降为 medium 与既有 override 一致 + 去项目化扫描 0 命中 + install
+双副本同步。
 
 ## 🆕 v3.21 增量（2026-09-03，WebKit 审计复盘缺陷修复·第二批次）
 

@@ -935,3 +935,25 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.21-001 | 探针→可行性路由前移（empirical_feasibility 三轨 + 用户决策点） | 已完成 | SKILL.md + tests/test_v3210.py |
 | REQ-V3.21-002 | R1 谓词矛盾扫描（contradiction record + grep 清单） | 已完成 | SKILL.md + tests/test_v3210.py |
 | REQ-V3.21-003 | lessons 回填断链三连修（recorder 文案 + 蒸馏绑定 + skill-optimizer DDL） | 已完成 | lessons_recorder.py + SKILL.md + skill-optimizer/SKILL.md + tests/test_v3210.py |
+
+## 系统需求（REQ-V3.22）（共 10 条）
+
+> 手工追加段（2026-09-04）。规范: REQ_V3_22.md / SWR_V3_22.md /
+> SYSTEM_DESIGN_V3_22.md / SOFTWARE_DESIGN_V3_22.md。评估: BIAS_EVAL_V3_22.md。
+> 案例支撑: /root/firefox/.audit_results/lessons.md §一.1/4/6 + §一补.7-13。
+> DDL 消化: V8 全条目→v3.19; WebKit §一.3/4+§一补.5-9→v3.19-v3.21;
+> WebKit §一.2 改名裁除; D-3/D-8 取证裁除（既有机制/操作失误）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.22-001 | size_tier 分支调序（super-large 前置于多语言保底） | 已完成 | surface_mapper.py + tests/test_v322.py |
+| REQ-V3.22-002 | claim=other 严重度封顶 medium | 已完成 | tools/batch_verify.py + tests/test_v322.py |
+| REQ-V3.22-003 | 签收字段名注记（单数存储键, 裁除注记） | 已完成 | SKILL.md 数据模型速查 + tests/test_v322.py |
+| REQ-V3.22-004 | 复活未选中自动簿记（幂等） | 已完成 | tools/batch_verify.py r35n-collect + tests/test_v322.py |
+| REQ-V3.22-005 | refutation budget 3000 + chain 阈值 12 | 已完成 | workflow_export.py + tests/test_v322.py |
+| REQ-V3.22-006 | R4 落盘契约 + default_value_table 全量保留 | 已完成 | task_templates/biz_hypothesis.md + tests/test_v322.py |
+| REQ-V3.22-007 | 决策签入工件（decision 字段义务） | 已完成 | SKILL.md + tests/test_v322.py |
+| REQ-V3.22-008 | severity 分派指引（取证裁除, 并入-011 清单） | 已完成 | 裁除记录（SWR_V3_22.md） |
+| REQ-V3.22-009 | 导出 taskFile 薄封装默认化（refutation/resurrect） | 已完成 | workflow_export.py + tests/test_v322.py |
+| REQ-V3.22-010 | R2 面覆盖前置核对条款 | 已完成 | SKILL.md + tests/test_v322.py |
+| REQ-V3.22-011 | R6 蒸馏失败模式清单条款 | 已完成 | SKILL.md + tests/test_v322.py |

@@ -122,4 +122,4 @@ def test_tooling_version_318():
         "workflow_export", os.path.join(ROOT, "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.21"
+    assert we.TOOLING_VERSION == "3.22"

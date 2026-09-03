@@ -38,6 +38,8 @@ VERSIONS = [
     ("V3.20",  "docs/design/REQ_V3_20.md",  "docs/design/SWR_V3_20.md"),
     # v3.21 登记 (同 v3.20 语义)
     ("V3.21",  "docs/design/REQ_V3_21.md",  "docs/design/SWR_V3_21.md"),
+    # v3.22 登记 (同 v3.21 语义)
+    ("V3.22",  "docs/design/REQ_V3_22.md",  "docs/design/SWR_V3_22.md"),
 ]
 DOCS = {f"{k}-{label}": p for label, rp, sp in VERSIONS
         for k, p in (("REQ", rp), ("SWR", sp))}
