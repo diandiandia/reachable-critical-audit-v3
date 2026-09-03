@@ -922,3 +922,16 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.20-004 | 守卫通过子集枚举义务 + guard_pass_subsets 条件触发字段（warn 不阻断） | 已完成 | tools/batch_verify.py + workflow_export.py + tests/test_v320.py |
 | REQ-V3.20-005 | premises_verified 条件触发字段（同 D-4 形态） | 已完成 | 同上 + tests/test_v320.py |
 | REQ-V3.20-006 | canonical 保留键推断（grade_verdict lenient + canonical 键集补 status） | 已完成 | evidence_ledger.py + SKILL.md + tests/test_v320.py |
+
+## 系统需求（REQ-V3.21）（共 3 条）
+
+> 手工追加段（2026-09-03）。规范: REQ_V3_21.md / SWR_V3_21.md /
+> SYSTEM_DESIGN_V3_21.md / SOFTWARE_DESIGN_V3_21.md。评估: BIAS_EVAL_V3_21.md。
+> 案例支撑: /root/WebKit/.audit_results/lessons.md §一补第 7/8/9 条。
+> 本版为 WebKit 批次收官版（§一补五条全部消化：5/6→v3.20，7/8/9→v3.21）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.21-001 | 探针→可行性路由前移（empirical_feasibility 三轨 + 用户决策点） | 已完成 | SKILL.md + tests/test_v3210.py |
+| REQ-V3.21-002 | R1 谓词矛盾扫描（contradiction record + grep 清单） | 已完成 | SKILL.md + tests/test_v3210.py |
+| REQ-V3.21-003 | lessons 回填断链三连修（recorder 文案 + 蒸馏绑定 + skill-optimizer DDL） | 已完成 | lessons_recorder.py + SKILL.md + skill-optimizer/SKILL.md + tests/test_v3210.py |
