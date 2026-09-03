@@ -115,9 +115,12 @@ def render(project_root, process_notes=None):
         lines += ["## 主代理过程观察（人工补充）", ""]
         lines += [f"- {n}" for n in process_notes]
         lines.append("")
-    lines += ["## 待回填", "",
-              "- 本文件的价值判定由主代理完成：高价值条目应并入 W6_MORE_LANGS_FINDINGS.md 或对应语言 lessons；",
-              "  低价值条目保留在本文件作为审计轨迹。", ""]
+    lines += ["## 价值判定（v3.21, SWR-V3.21-003）", "",
+              "- 本文件是机械证据：价值判定由主代理在审计收官落盘",
+              "  `<project>/.audit_results/lessons.md` 时同步完成（蒸馏与收官同周期",
+              "  绑定）——高价值条目去项目化后并入「对 skill 的教训」节（skill-optimizer",
+              "  唯一读入口），低价值条目保留本文件作为审计轨迹。", "",
+              "- 本文件不承载待办事项。", ""]
     return "\n".join(lines), data
 
 

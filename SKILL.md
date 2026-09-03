@@ -430,6 +430,14 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - **环境能力探针（v3.3.2, SWR-V3.3.2-060）**：实证前按声称机制跑
   `harness_manuals/ENVIRONMENT_PROBES.md` 探针清单（syscall/依赖物化/工具替代/
   shell 陷阱）——探针失败记录 blocker 并触发 R5 可选路径裁决，不实证不申报
+- **探针→可行性路由前移（v3.21, SWR-V3.21-001）**：R0 探针落盘后、R3 派发前，
+  主代理输出 empirical_feasibility 表（每候选三轨：real-target /
+  equivalent-harness / static-only），R3 任务书按轨注入实证路径预期；
+  R5 的 harness 目标清单在 R3 定，不在 R5 现找。探针含 no-\* 关键运行面
+  缺失项时，R3 派发前向用户报预期 NEEDS_REVIEW 占比并给三选一决策点
+  （补装运行库 / 借运行面 / 接受上限）——决策权在用户，主代理不得代选。
+  static-only 轨候选的证伪票价值=机制静态确证（非浪费），派发时明示。
+  该表为笔记级产物（不落 schema、不进队列）
 - 对照矩阵模式（默认拒绝 + 弱化接受，W6 §24.4）；源事实级降级规则（哨兵值/算术类，
   网络阻断记录 blocker，W6 §21.4）
 
@@ -562,6 +570,14 @@ fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退
 
 六门禁通过后、报告定稿前，强制生成代码审计问题文档：
 
+**R1 谓词矛盾扫描（v3.21, SWR-V3.21-002，报告定稿前义务）**：对每个
+REACHABLE finding，检查其是否否定任一 R1 surface 条目的阻断谓词（拒绝/
+拦截/白名单/过滤/仅允许/不允许类结论）。命中即生成 contradiction record
+（surface id + 被否定谓词 + finding 证据引用），并按缺口闭合流程反向测绘
+该面。机械辅助清单（固定 grep 形态）：谓词关键词
+`拒绝|拦截|白名单|过滤|仅允许|不允许|禁止` × 每个 REACHABLE finding 的
+sink 文件与调用链文件，逐对复核——语义判定由主代理裁决，不做自动改写。
+
 ```bash
 python3 lessons_recorder.py <project> --write
 # 机械提取: 裁决纠正/降级/复活/分级重算/paraphrased 标记/验收记录——
@@ -582,6 +598,10 @@ python3 lessons_recorder.py <project> --write
    入库清单/先例（两段式：具体发现 → 去项目化 → 入库，来源留追溯字段）；
    低价值条目留项目 lessons 轨迹
 3. **未执行 R6 的审计不得闭合**（报告阶段门禁）
+4. **蒸馏与收官同周期绑定（v3.21, SWR-V3.21-003）**：价值判定必须在报告
+   闭合前完成——高价值条目去项目化后并入 lessons.md「对 skill 的教训」节
+   （skill-optimizer 唯一读入口），低价值条目留项目 lessons 轨迹；
+   SKILL_LESSONS_*.md 只作机械证据、不承载待办，禁止留下悬空"待回填"
 
 > **覆盖账本回填时序（v3.6 强制）**：`--stage coverage-ledger --write` 带两道机械前置——
 > r4-assert（H1-H7 全 VERIFIED）与 r4_feedback 无未决冲突，不满足输出
@@ -1508,3 +1528,30 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 全部可复算；残余 1 例为闭卷后手工回写所致存储不一致 + 2 例陈旧标记
 如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
 collect 结果不污染队列文件 + install 双副本同步。
+
+## 🆕 v3.21 增量（2026-09-03，WebKit 审计复盘缺陷修复·第二批次）
+
+> 设计文档: `docs/design/REQ_V3_21.md` + `SWR_V3_21.md` +
+> `SYSTEM_DESIGN_V3_21.md` + `SOFTWARE_DESIGN_V3_21.md` + `BIAS_EVAL_V3_21.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型。
+> 案例支撑：/root/WebKit/.audit_results/lessons.md §一补第 7/8/9 条
+> （本版消化完毕 WebKit 批次全部报漏条目，v3.21 为 WebKit 批次收官版）。
+
+### 三项修复（全部条款级，零新工具/零新阶段/零新门禁）
+1. **探针→可行性路由前移**（SWR-V3.21-001）：R0 探针落盘后、R3 派发前输出
+   empirical_feasibility 表（三轨）；R5 harness 目标清单在 R3 定；探针含
+   no-* 运行面缺失时向用户报预期 NEEDS_REVIEW 占比 + 三选一决策点
+   （决策权在用户）；static-only 轨证伪票价值明示
+2. **R1 谓词矛盾扫描**（SWR-V3.21-002）：报告定稿前对每个 REACHABLE finding
+   检查其是否否定 R1 surface 阻断谓词——命中生成 contradiction record 并
+   反向测绘该面；固定 grep 清单辅助，语义判定主代理裁决
+3. **lessons 回填断链三连修**（SWR-V3.21-003）：recorder 渲染移除悬空
+   "待回填"指向（W6_MORE_LANGS_FINDINGS 为 v3.16.1 冻结档案）；蒸馏与收官
+   同周期绑定；skill-optimizer 阶段 0 增 DDL 消化条款（每份 lessons.md 条目
+   必须在本次启动缺陷清单中出现或显式裁除，不得静默跳过）
+
+### 验收判据（Phase 3.21）
+全量回归全绿（423 基线 + test_v3210 新增 7 用例）+ 旧队列复跑 assert_ledger
+零新增告警 + recorder 渲染无悬空待回填 + 新条款段零项目名（grep 断言）+
+install 双副本同步。
+
