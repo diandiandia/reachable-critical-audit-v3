@@ -255,6 +255,10 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 `empirical` 结构化 dict 只允许发生在 verifier/证伪者证据文本含真实实测的场景——必须带
 `backfilled_by` 标记 + 实测数字依据（成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
 **canonical 键集**：保留键 `outcome`/`evidence_numbers`/`report`（报告渲染既有消费键）+
+  `status:"confirmed"`（v3.20, SWR-V3.20-006: 机械判级条件键——缺 status 的
+  canonical 回填会被 grade_verdict 按保留键推断 empirically_confirmed 并附
+  回填提示，但回填时直接写 status 才是正解；status/scope 缺省且三保留键
+  不全的 dict 不判 empirically_confirmed）+
 标准键 `harness`/`method`/`input`/`result`/`verdict`/`backfilled_by`（自建 harness 回填用）；
 渲染器容错读双形态（保留键优先，缺失回退标准键）。
 
@@ -348,7 +352,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 ## 📏 数据模型速查
 
-- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome}}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
+- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome},guard_pass_subsets[]?,premises_verified[]?}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
   （v3.19 注：`correction_record[]` 双形态——str 为注记、dict 为 demote 裁决
   {demote_to, reason, adjudication_verification}，assert_ledger 对 str 条目
   lenient 跳过；`resurrection_review` 为主代理实证降级 UNREACHABLE 时的同步
@@ -1467,3 +1471,40 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 全量回归全绿（400 基线 + test_v319 新增）+ V8 真实队列复跑 assert_ledger
 零崩溃零新增 warn（str+dict 混形态 correction_record 为验收对象）+
 去项目化扫描 0 命中 + install 双副本同步。
+
+## 🆕 v3.20 增量（2026-09-03，WebKit 审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_20.md` + `SWR_V3_20.md` +
+> `SYSTEM_DESIGN_V3_20.md` + `SOFTWARE_DESIGN_V3_20.md` + `BIAS_EVAL_V3_20.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、evidence_grade 机械重算
+> 规则（evidence_ledger 零改动）。案例支撑：/root/WebKit/.audit_results/
+> lessons.md §一补第 5/6 条（首个 super-large 浏览器引擎验收项目，
+> 2026-09-02 会话实录 + 2026-09-03 取证核实）。
+
+### 六项修复（全部提示级/warn 级/optional schema, 零改写零新门禁）
+1. **verifier 自报分级三值枚举 + 机械口径注记**（SWR-V3.20-001）：输出格式节
+   evidence_grade 补 empirically_confirmed；明示"自报仅追溯、collect 机械
+   重算为唯一权威"，evidence 文本中的 grep 命中必须结构化进 edge_evidence
+   （WebKit 15/20 漂移：6 例实证升档结构性不可自报 + 9 例边证据重工）
+2. **collect drift_summary**（SWR-V3.20-002）：落盘结果附自报分级漂移汇总
+   （方向对计数 stored→mechanical，无根因臆测）——收波时即见，不必等报告期
+3. **lessons_recorder 方向对**（SWR-V3.20-003）：grade_recomputed 条目 detail
+   附方向对——同名裸条目成噪声致蒸馏整体丢弃的修正
+4. **守卫通过子集枚举义务 + guard_pass_subsets 字段**（SWR-V3.20-004）：
+   步骤 4 增义务条文（守卫封顶类阻断必须枚举守卫通过子集）；条件触发输出
+   字段（阻断引用守卫/封顶时必填）；collect 条件校验 warn（UNREACHABLE 且
+   非死代码豁免而无该字段 → warn，不阻断）
+5. **premises_verified 字段**（SWR-V3.20-005）：前提断裂终止回溯时逐条记录
+   承重前提——resurrect 派发可机械评估前提核验覆盖（同 D-4 形态）
+6. **canonical 保留键推断**（SWR-V3.20-006）：SKILL.md R5 回填规范的
+   canonical 键集与 grade_verdict 判级条件互斥（按规范回填的 empirical dict
+   永无法机械评到 empirically_confirmed）——grade_verdict 三保留键齐全时
+   lenient 推断 + 回填提示；canonical 键集补 `status:"confirmed"`
+
+### 验收判据（Phase 3.20）
+全量回归全绿（408 + test_v319 8 用例基线 + test_v320 新增 15 用例）+
+旧队列复跑 assert_ledger 零新增告警 + WebKit 真实队列只读复算对账
+（16 例重算漂移中 15 例存储分级可复算；6 例实证候选经 SWR-V3.20-006
+全部可复算；残余 1 例为闭卷后手工回写所致存储不一致 + 2 例陈旧标记
+如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
+collect 结果不污染队列文件 + install 双副本同步。

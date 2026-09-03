@@ -907,3 +907,18 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.19-004 | 实证降级簿记契约明示（resurrection_review 同步写） | 已完成 | SKILL.md + tests/test_v319.py |
 | REQ-V3.19-005 | ENVIRONMENT_PROBES sanitizer-dcheck 条目 | 已完成 | harness_manuals/ENVIRONMENT_PROBES.md + tests/test_v319.py |
 | REQ-V3.19-006 | 复活第 9 维构建配置矩阵 | 已完成 | workflow_export.py + tests/test_v319.py |
+
+## 系统需求（REQ-V3.20）（共 6 条）
+
+> 手工追加段（2026-09-03）。规范: REQ_V3_20.md / SWR_V3_20.md /
+> SYSTEM_DESIGN_V3_20.md / SOFTWARE_DESIGN_V3_20.md。评估: BIAS_EVAL_V3_20.md。
+> 案例支撑: /root/WebKit/.audit_results/lessons.md §一补第 5/6 条。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.20-001 | verifier 任务书 evidence_grade 三值枚举 + 机械口径注记（自报仅追溯） | 已完成 | tools/batch_verify.py + tests/test_v320.py |
+| REQ-V3.20-002 | collect drift_summary（方向对计数, 无根因臆测） | 已完成 | tools/batch_verify.py + tests/test_v320.py |
+| REQ-V3.20-003 | lessons_recorder grade_recomputed detail 附方向对 | 已完成 | lessons_recorder.py + tests/test_v320.py |
+| REQ-V3.20-004 | 守卫通过子集枚举义务 + guard_pass_subsets 条件触发字段（warn 不阻断） | 已完成 | tools/batch_verify.py + workflow_export.py + tests/test_v320.py |
+| REQ-V3.20-005 | premises_verified 条件触发字段（同 D-4 形态） | 已完成 | 同上 + tests/test_v320.py |
+| REQ-V3.20-006 | canonical 保留键推断（grade_verdict lenient + canonical 键集补 status） | 已完成 | evidence_ledger.py + SKILL.md + tests/test_v320.py |
