@@ -195,7 +195,7 @@
         "kotlin": 1,
         "c": 5,
         "shell": 5,
-        "cpp": 7,
+        "cpp": 8,
         "php": 1,
         "powershell": 9,
         "other": 12,
@@ -209,9 +209,9 @@
       "family": "MEMORY-SAFETY",
       "langs": {
         "java": 2,
-        "c": 56,
+        "c": 58,
         "perl": 1,
-        "cpp": 19,
+        "cpp": 90,
         "php": 3,
         "powershell": 2,
         "other": 3,
@@ -220,7 +220,7 @@
         "ruby": 4,
         "javascript": 1,
         "swift": 2,
-        "rust": 19,
+        "rust": 22,
         "go": 8
       }
     },
@@ -237,7 +237,7 @@
         "c": 61,
         "perl": 17,
         "shell": 2,
-        "cpp": 13,
+        "cpp": 14,
         "php": 13,
         "powershell": 5,
         "other": 15,
@@ -283,7 +283,7 @@
         "java": 26,
         "kotlin": 12,
         "javascript": 16,
-        "cpp": 34,
+        "cpp": 39,
         "ruby": 10,
         "swift": 14,
         "php": 22
@@ -292,7 +292,8 @@
     {
       "family": "STATE",
       "langs": {
-        "c": 1
+        "c": 1,
+        "cpp": 1
       }
     },
     {
@@ -302,7 +303,7 @@
         "kotlin": 2,
         "c": 4,
         "perl": 8,
-        "cpp": 6,
+        "cpp": 7,
         "php": 10,
         "powershell": 2,
         "other": 1,
@@ -395,7 +396,8 @@
     "fa1f9bc77c7fe7bf",
     "fe416ba298fa6ae9",
     "ffadf01bf071fee7",
-    "ffdd8e9a5eba6c1a"
+    "ffdd8e9a5eba6c1a",
+    "276053b83fbe3470"
   ],
-  "updated_at": "2026-09-01"
+  "updated_at": "2026-09-04"
 }
