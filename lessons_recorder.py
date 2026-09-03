@@ -60,8 +60,19 @@ def collect(project_root):
             issues.append({"stage": "R3.5-N", "kind": "resurrection",
                            "detail": f"{cid}: {rr.get('outcome', '')[:200]}"})
         if c.get("grade_recomputed_by"):
+            # v3.20 (SWR-V3.20-003): detail 附方向对 (stored→mechanical)——
+            # 同名裸条目成噪声致蒸馏整体丢弃 (15 条同 source 实录); 方向对
+            # 是既有字段 (grade_self_reported/evidence_grade) 的纯事实渲染;
+            # 当前值一致时 (重 collect 无新漂移的陈旧标记, 对账实录 1 例)
+            # 如实标注"历史标记, 当前一致", 不再产出伪方向对噪声
+            _sr = c.get("grade_self_reported", "?")
+            _eg = c.get("evidence_grade", "?")
+            if _sr == _eg:
+                _pair = f"{_sr} (历史标记, 当前一致)"
+            else:
+                _pair = f"{_sr}->{_eg}"
             issues.append({"stage": "R3", "kind": "grade_recomputed",
-                           "detail": f"{cid}: 机械分级重算 ({c['grade_recomputed_by'][:80]})"})
+                           "detail": f"{cid}: 机械分级重算 {_pair} ({c['grade_recomputed_by'][:80]})"})
         if c.get("paraphrased"):
             issues.append({"stage": "R3", "kind": "paraphrased_evidence",
                            "detail": f"{cid}: 证据被标记 paraphrased"})

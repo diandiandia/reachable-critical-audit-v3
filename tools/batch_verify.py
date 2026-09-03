@@ -40,6 +40,8 @@ import hashlib
 import datetime
 
 BATCH_SIZE = 4
+# v3.20 (SWR-V3.20-002): 证据分级 rank 序——collect drift_summary 方向判定用
+_GRADE_RANK = {"static_only": 0, "edge_proven": 1, "empirically_confirmed": 2}
 REQUIRED_VERDICT_KEYS = {"verdict", "reachability_type", "call_chain", "call_chain_depth", "evidence"}
 MIN_CALL_CHAIN_DEPTH = 3
 VALID_VERDICTS = {"REACHABLE", "UNREACHABLE", "NEEDS_REVIEW"}
@@ -454,6 +456,11 @@ def stage_collect(project_root, batch_id, verdicts):
 
     updated = 0
     errors = []
+    # v3.20 (SWR-V3.20-002/004/005): 漂移统计与条件校验 warn——
+    # 只报方向对事实 (不猜根因归属), warn 不阻断落盘
+    drift_pairs = {}
+    drift_promoted = drift_demoted = 0
+    warnings = []
     for cand_id, v in verdicts.items():
         # 非法条目：单独记入 errors 并跳过该条，但**不影响同批其他合法条目落盘**。
         # 出错的候选保持原有 PENDING 状态，下一轮 --stage next 会再次出队重试，
@@ -531,6 +538,13 @@ def stage_collect(project_root, batch_id, verdicts):
             entry["evidence_grade"] = _g
             if entry.get("grade_self_reported") and _g != entry["grade_self_reported"]:
                 entry["grade_recomputed_by"] = "collect-mechanical-recompute"
+                # v3.20 (SWR-V3.20-002): 方向对统计 (stored→mechanical)
+                _pair = f"{entry['grade_self_reported']}->{_g}"
+                drift_pairs[_pair] = drift_pairs.get(_pair, 0) + 1
+                if _GRADE_RANK.get(_g, 0) > _GRADE_RANK.get(entry["grade_self_reported"], 0):
+                    drift_promoted += 1
+                else:
+                    drift_demoted += 1
                 # SWR-V3.10-006: 边缺口显式信号——自报 edge_proven 级被重算
                 # static_only 时, 最可能是合并边 (v3.8 契约: 逐跳一条, 总条数
                 # >= 跳数-1); 此前只有静默降级, 主代理要等报告阶段才发现
@@ -555,6 +569,19 @@ def stage_collect(project_root, batch_id, verdicts):
             ext = os.path.splitext(src)[1].lower()
             entry["language"] = (_EXT_LANG.get(ext)
                                  or _registry_lang(ext, project_root) or "unknown")
+        # v3.20 (SWR-V3.20-004/005): 条件触发字段白名单落盘 (非空才落, 与
+        # edge_evidence 落盘形态同构) + 条件校验 warn (不阻断、不改 verdict)——
+        # UNREACHABLE 阻断论证若缺守卫通过子集枚举/承重前提逐条记录, resurrect
+        # 派发前主代理应据此评估缺口维度
+        if v.get("guard_pass_subsets"):
+            entry["guard_pass_subsets"] = v["guard_pass_subsets"]
+        if v.get("premises_verified"):
+            entry["premises_verified"] = v["premises_verified"]
+        if v.get("verdict") == "UNREACHABLE" and not dead_code_exempt:
+            if not v.get("guard_pass_subsets"):
+                warnings.append(f"{cand_id}: UNREACHABLE 阻断论证未附 guard_pass_subsets 枚举 (SWR-V3.20-004)")
+            if not v.get("premises_verified"):
+                warnings.append(f"{cand_id}: UNREACHABLE 前提断裂判定未附 premises_verified (SWR-V3.20-005)")
         updated += 1
 
     # 只要有任何合法结果就落盘（部分成功优于整批丢弃）。
@@ -565,6 +592,14 @@ def stage_collect(project_root, batch_id, verdicts):
         "batch_id": batch_id,
         "updated": updated,
         "errors": errors,
+        # v3.20 (SWR-V3.20-002): 自报分级漂移汇总——收波时即见, 不必等报告期对账
+        "drift_summary": {
+            "recomputed": drift_promoted + drift_demoted,
+            "promoted": drift_promoted,
+            "demoted": drift_demoted,
+            "pairs": drift_pairs,
+        },
+        "warnings": warnings,
         "remaining_pending": remaining,
         "progress_pct": round((1 - remaining / len(candidates)) * 100, 1) if candidates else 0
     }
@@ -2823,6 +2858,10 @@ verifier 最常犯的错误是"沿假设惯性向前推，未回头验证承重�
 等）之前必须给出具体缺陷机制的静态证据（无门校验/回绕算术/越界写窗等
 file:line）；证据不足时 claim_type=other 并在 evidence 写明"结构性可达,
 缺陷未确证"。
+（v3.20, SWR-V3.20-005）前提断裂终止回溯时，断裂前提必须**逐条**写入
+premises_verified 字段（每项 premise/file:line/status）——只写结论不写
+条目清单的前提断裂会在 collect 侧产生 warn，且 resurrect 派发无法机械
+评估承重前提的核验覆盖。
 
 {step05}
 - 模板产物存在性（v3.11, SWR-V3.11-008）: sink 所在模板/生成器文件不随源码
@@ -2886,6 +2925,11 @@ file:line）；证据不足时 claim_type=other 并在 evidence 写明"结构性
 ### 步骤 4: 阻断检测
 - 强类型转换、掩码（`& 0xFF`）、参数化绑定（`?` 占位符）、边界检查（`offset+len <= total`）
 - 阻断必须覆盖所有攻击者可控制维度——多维度中只要有一维无阻断，仍为 REACHABLE
+- 守卫封顶类阻断必须枚举**守卫通过子集**（文件真实包含的声明尺寸/自动切换
+  tier/重试路径/错误路径分支）——只论证主路径的封顶不构成完整阻断。
+  枚举结果逐条写入 guard_pass_subsets 字段（v3.20, SWR-V3.20-004）：
+  该缺口（守卫通过子集未枚举）已在实战被复活波命中，是 verifier 阻断
+  论证的最高频翻转维度之一。
 - 运行时版本条件（v3.11, SWR-V3.11-011）: 版本 API 级判断（版本宏/运行时能力
   检测）与构建变体差异（调试/发布配置）影响攻击面维度——同一代码路径在不同
   平台版本有不同攻击面（低版本无限制/高版本有门）; 阻断论证必须按**受影响
@@ -2929,12 +2973,20 @@ NEEDS_REVIEW 成因三选一并在 evidence 注明 (v3.10.2, SWR-V3.10.2-013):
   "blocking_point": "file:line / no production callers / N/A",
   "evidence": "包含调用链和每层数据流路径分析的说明",
   "cwe": ["CWE-xxx"],
-  "evidence_grade": "static_only | edge_proven",
+  "evidence_grade": "static_only | edge_proven | empirically_confirmed",
   "edge_evidence": [{"edge": "f1->f2", "proof": "grep 命中: file:line"}],
-  "claim_type": "crash|panic|oom|unbounded|xss|protocol_dos|rce|other"
+  "claim_type": "crash|panic|oom|unbounded|xss|protocol_dos|rce|other",
+  "guard_pass_subsets": [{"guard_location": "file:line", "enumerated_subsets": "...", "coverage": "全覆盖 | 有未枚举子集"}],
+  "premises_verified": [{"premise": "...", "file": "file:line", "status": "verified | broken"}]
 }
 ## v3 强制规则（REQ-V3-040/042/046）
 1. call_chain 每相邻两跳必须附 edge_evidence（grep 调用方的命中行）; 缺证据 → evidence_grade=static_only
+   （v3.20, SWR-V3.20-001）evidence_grade 是自报值，**仅追溯**——collect 落盘时由
+   evidence_ledger 机械重算为唯一权威：empirical 结构化字段非空 → empirically_confirmed；
+   REACHABLE 逐跳 edge_evidence 计数 ≥ 链长-1 → edge_proven，否则 static_only。
+   evidence 文本中的 grep 调用方命中必须结构化进 edge_evidence 数组（合并边必须
+   拆分）——文本证据不会被机械分级采纳。verifier 不产出实证，empirically_confirmed
+   由主代理 R5 实证回填决定，自报该值只在与结构化 empirical 字段并存时成立
 2. REACHABLE 且无逐跳边证据 → static_only（不得申报）
 3. 死代码豁免: 无生产调用者 → blocking_point="no production callers", verdict=UNREACHABLE, 不强制凑 3 层链
 4. 前提维度: platform_precondition 无 platform_evidence → NEEDS_REVIEW

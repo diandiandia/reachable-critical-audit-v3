@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.19"
+TOOLING_VERSION = "3.20"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -62,6 +62,11 @@ VERDICT_SCHEMA = {
         # 此前被迫归 other 失去语义)
         "claim_type": {"enum": ["crash", "panic", "oom", "unbounded", "xss",
                                 "protocol_dos", "rce", "leak", "other", "null"]},
+        # v3.20 (SWR-V3.20-004/005): 条件触发字段 (optional, 不进 required)——
+        # 阻断论证引用守卫/封顶时枚举守卫通过子集; 前提断裂终止回溯时逐条记录
+        # 承重前提。条件校验在 collect 侧 (warn 不阻断)
+        "guard_pass_subsets": {"type": "array"},
+        "premises_verified": {"type": "array"},
     },
 }
 

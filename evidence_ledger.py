@@ -129,8 +129,21 @@ def grade_verdict(v):
     if scope_infer:
         errors.append("旧 empirical schema 缺 status, 按 scope=e2e/full_chain 推断 "
                       "empirically_confirmed (建议回填 status:'confirmed')")
+    # v3.20 (SWR-V3.20-006): canonical 保留键推断——SKILL.md R5 回填规范的
+    # canonical 键集 (outcome/evidence_numbers/report) 与 status 判级互斥:
+    # 按规范回填的 dict 永无法机械评到 empirically_confirmed, 存储分级不可
+    # 复算 (WebKit 6 例实证候选实录)。三键齐全按已实测证据推断 confirmed,
+    # 附回填提示 (同 v3.4.1 scope_infer 先例形态)
+    canonical_infer = (isinstance(empirical, dict)
+                       and not status and not scope_infer
+                       and all(k in empirical for k in
+                               ("outcome", "evidence_numbers", "report")))
+    if canonical_infer:
+        errors.append("empirical 缺 status, 按 canonical 保留键 (outcome/"
+                      "evidence_numbers/report) 推断 empirically_confirmed "
+                      "(建议回填 status:'confirmed')")
     if empirical and isinstance(empirical, dict) and \
-       (status in CONFIRMED_EMPIRICAL_STATUSES or scope_infer):
+       (status in CONFIRMED_EMPIRICAL_STATUSES or scope_infer or canonical_infer):
         grade = "empirically_confirmed"
     else:
         # v3.4.2: 旧队列显式 null (JSON null → None) 守卫——actix-web 复跑
