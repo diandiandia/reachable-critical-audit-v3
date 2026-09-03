@@ -130,15 +130,18 @@ def test_cli_stage_workflow_script_empty():
 
 
 def test_refutation_prompt_truncation_marker():
-    """v3.2.3 (Lua 审计): evidence 超 800 字符截断必须带 [截断] 标记
-    (旧版静默 [:800] 曾在句子中段断句误导证伪者)。"""
+    """v3.2.3 (Lua 审计): evidence 超预算截断必须带 [截断] 标记。
+    v3.22 (SWR-V3.22-005): 预算 800→3000——1500 字符不再截断 (无标记),
+    超 3000 字符仍截断且带标记; 全链 12 跳在阈值内不截。"""
     c = {"id": "CAND-X", "evidence": "x" * 1500,
          "call_chain": [f"f{i}:1" for i in range(12)],
          "claim_type": "oom", "summary": "", "evidence_grade": "edge_proven"}
     p = we.refute_prompt(c, 0)
-    assert "[截断" in p
-    assert "1500" in p
-    assert "全链 12 跳" in p
+    assert "[截断" not in p          # 1500 < 3000 新预算: 不截
+    c2 = dict(c, evidence="y" * 4000)
+    p2 = we.refute_prompt(c2, 0)
+    assert "[截断" in p2
+    assert "全链 12 跳" not in p2    # 12 跳在阈值内: 无链截断注记
 
 
 def test_claim_type_enum_has_rce_and_other():

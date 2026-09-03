@@ -663,13 +663,32 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
             "outcome": (d.get("reason") or d.get("gap") or "").strip(),
         }
         updated += 1
+    # v3.22 (SWR-V3.22-004): 复活抽样未选中候选的簿记机制化——③c 要求全部
+    # UNREACHABLE 落盘 resurrection_review, 此前未选中靠主代理手工补写
+    # (3 例实录); selected 集内无 journal 记录=异常, 交主代理不自动写
+    auto_bookkept = []
+    sample_file = os.path.join(project_root, ".audit_results", "_resurrect_sample.json")
+    selected = set()
+    if os.path.exists(sample_file):
+        try:
+            selected = set(json.load(open(sample_file)).get("selected", []))
+        except (ValueError, OSError):
+            pass
+    for c in queue["candidates"]:
+        if c.get("verdict") == "UNREACHABLE" and not c.get("resurrection_review"):
+            if c["id"] in selected:
+                continue
+            c["resurrection_review"] = {"revived": False,
+                                        "outcome": "复活抽样未选中 (规则见 _resurrect_sample.json)"}
+            auto_bookkept.append(c["id"])
     save_queue(project_root, queue)
     tw = _tooling_version_warning(project_root)
     if tw:
         print(f"Warning (SWR-V3.4.4-008): {tw}", file=sys.stderr)
     print(json.dumps({"status": "R35N_COLLECTED",
                       "updated": updated, "skipped_existing": skipped,
-                      "candidates": [d["id"] for d in decisions]},
+                      "candidates": [d["id"] for d in decisions],
+                      "auto_bookkept": auto_bookkept},
                      ensure_ascii=False))
     return 0
 
@@ -1801,6 +1820,14 @@ def _mechanical_severity(candidate):
                   if any(n in ids for ids in SEVERITY_BY_CWE.values()))
     containment = (candidate.get("containment") or "none").strip().lower()
     if hits:
+        # v3.22 (SWR-V3.22-002): claim=other 结构性可达封顶 medium——缺陷未确证
+        # 的条目按 CWE 映射虚高至严重/高 (34 例批量手工 override 实录);
+        # severity_override 仍绝对优先 (severity_for 先查 override), 主代理
+        # 有实质机制证据时可升档 (SWR-V3.7-001 通道不受影响)
+        if (candidate.get("claim_type") or "").strip().lower() == "other":
+            return "medium", ("claim_type(other) 结构性可达封顶;cwe:"
+                              + ",".join(f"CWE-{n}" for n in hits))
+        by_cwe = {sev for sev, ids in SEVERITY_BY_CWE.items() for n in hits if n in ids}
         by_cwe = {sev for sev, ids in SEVERITY_BY_CWE.items() for n in hits if n in ids}
         top = max(by_cwe, key=lambda s: SEVERITY_ORDER[s])
         adj = _apply_containment(top, containment)

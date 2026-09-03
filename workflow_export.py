@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.21"
+TOOLING_VERSION = "3.22"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -376,12 +376,12 @@ def refute_prompt(c, idx):
         toolbox = f"\n证伪工具箱建议: {REFUTER_TOOLBOX['proxy/divergence']}"
     # SWR-V3.4.3-020: 截断协议统一——关键段(承重前提/实证/阻断/结论)必保留,
     # 次要段截断且必带标记 (旧版静默 [:800] 曾让证伪者误读上下文)
-    evidence = _truncate_evidence(c.get('evidence', ''), budget=800)
+    evidence = _truncate_evidence(c.get('evidence', ''), budget=3000)
     chain = c.get('call_chain', [])
     chain_note = ""
-    if len(chain) > 8:
+    if len(chain) > 12:
         chain_note = f" ...[截断: 全链 {len(chain)} 跳, 见 verify_queue.json]"
-        chain = chain[:8]
+        chain = chain[:12]
     return (
         f"你是独立证伪者 #{idx}（对抗性复核）。候选 {c['id']} 被判 REACHABLE。\n"
         f"任务: 尽力证伪该结论。默认立场: 有疑问即 refuted=true。\n"
@@ -589,6 +589,18 @@ def export_script_resurrect(project_root, batch_size=8):
                            f"{_ct.get('behavior')} (security_effect="
                            f"{_ct.get('security_effect')})\n")
         payload.append({"id": c["id"], "prompt": prompt})
+    # v3.22 (SWR-V3.22-009): 薄封装默认化——同 refutation 形态
+    _tasks_dir = os.path.join(project_root, ".audit_results", "_tasks")
+    os.makedirs(_tasks_dir, exist_ok=True)
+    for c in payload:
+        tf = os.path.join(_tasks_dir, f"resurrect_{c['id']}.md")
+        with open(tf, "w") as f:
+            f.write(c["prompt"])
+        c["taskFile"] = f".audit_results/_tasks/resurrect_{c['id']}.md"
+    slim = [{"id": c["id"], "taskFile": c["taskFile"]} for c in payload]
+    with open(os.path.join(project_root, ".audit_results",
+                           "resurrect_payload_slim.json"), "w") as f:
+        json.dump(slim, f, ensure_ascii=False, indent=1)
     js = _inject_project_marker(
         RESURRECT_SCRIPT.replace("__SCHEMA__", json.dumps(RESURRECT_SCHEMA, ensure_ascii=False)),
         project_root)
@@ -814,6 +826,22 @@ def export_script(project_root, mode="verify", batch_size=4):
                     "prompts": [refute_prompt(c, i) + _refutation_checklist_section(c)
                                 for i in range(2)]}
                    for c in pool]
+        # v3.22 (SWR-V3.22-009): 薄封装默认化——任务书落盘 + taskFiles 引用
+        # (verify 同形; prompts 保留为回退, 写入失败时派发侧仍可用)
+        _tasks_dir = os.path.join(project_root, ".audit_results", "_tasks")
+        os.makedirs(_tasks_dir, exist_ok=True)
+        for c in payload:
+            tfs = []
+            for i, pr in enumerate(c["prompts"]):
+                tf = os.path.join(_tasks_dir, f"refute_{c['id']}_{i}.md")
+                with open(tf, "w") as f:
+                    f.write(pr)
+                tfs.append(f".audit_results/_tasks/refute_{c['id']}_{i}.md")
+            c["taskFiles"] = tfs
+        slim = [{"id": c["id"], "taskFiles": c["taskFiles"]} for c in payload]
+        with open(os.path.join(project_root, ".audit_results",
+                               "refutation_payload_slim.json"), "w") as f:
+            json.dump(slim, f, ensure_ascii=False, indent=1)
 
     result = {
         "status": "WORKFLOW_SCRIPT_READY",

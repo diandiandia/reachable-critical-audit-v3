@@ -54,6 +54,13 @@ evidence 为单字符串、r3_link 为字符串或 null）：
 
 ## 强制: 三选一 verdict — **confirmed / reviewed_clean / not_applicable** + 覆盖范围说明
 
+## 落盘契约（v3.22, SWR-V3.22-006）
+产出 JSON 必须**同时写入** `.audit_results/_r4_hN.json`（N=本假说号：
+H1→_r4_h1.json … H7→_r4_h7.json），最终回复同 JSON。若环境阻止写文件，
+最终回复末尾附一行 `UNWRITTEN: <原因>`（R1/R2 同形契约）——禁止只写
+"已保存"而实际未落盘。**default_value_table 全量保留**：主代理 merge 时
+不得精简（高密度默认值证据表被精简即审计记录丢失, 已发生实录）。
+
 v3.8 (SWR-V3.8-003 语义固化): verdict 只允许上述三值，禁止自创
 （PARTIAL/REFUTED/REFUTED_HIGH 等非法值会被 collect 层告警）。
 **反面示例 (v3.15, SWR-V3.16-002)**: REACHABLE / UNREACHABLE / NEEDS_REVIEW 是

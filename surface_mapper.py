@@ -784,6 +784,20 @@ def size_tier(project_root):
     runtime_langs = [x for x in inv if x.get("component_role") == "server-side"]
     n_langs = len(runtime_langs)
     mixed_domains = DOMAINS + [BOUNDARY_DOMAIN]
+    # v3.22 (SWR-V3.22-001): super-large 判断前置于多语言保底——3+ 语言大仓
+    # (浏览器引擎必属) 此前被 n_langs>2 提前返回遮蔽, 永远走不到两阶段测绘
+    # (20 万文件手工绕行实录); super-large 分支 domains_split 已用 mixed_domains,
+    # 多语言兼容零语义损失
+    ds = mixed_domains if n_langs >= 2 else DOMAINS
+    if count > 2000:
+        # v3.17 (SWR-V3.17-002): super-large——两阶段测绘 (A 组件清单 →
+        # B 组件×域派发), 时限按组件给 (V8 评估 D-2: 3325 文件单目录实测)。
+        comps = _component_inventory(project_root, exts)
+        return {"tier": "super-large", "agent_count": 4,
+                "time_limit_min": 45, "checkpoint_every_min": 10,
+                "domains_split": ds, "two_phase": True, "components": comps,
+                "rationale": (f"SWR-V3.17-002: {count} 文件 >2000 阈值——"
+                              f"两阶段测绘 ({len(comps)} 组件), 45min 按组件给")}
     if n_langs > 2:
         # v3.2 (SWR-V3.2-014): 3+ 语言混合项目保底 large 档 (多组件审计成本)
         return {"tier": "large", "agent_count": 5, "time_limit_min": 45,
@@ -800,16 +814,6 @@ def size_tier(project_root):
         return {"tier": "medium", "agent_count": 4, "time_limit_min": None,
                 "checkpoint_every_min": None, "domains_split": ds,
                 "rationale": "W6 §20.5 (495 文件是 R1 agent 舒适区)"}
-    ds = mixed_domains if n_langs >= 2 else DOMAINS
-    if count > 2000:
-        # v3.17 (SWR-V3.17-002): super-large——两阶段测绘 (A 组件清单 →
-        # B 组件×域派发), 时限按组件给 (V8 评估 D-2: 3325 文件单目录实测)。
-        comps = _component_inventory(project_root, exts)
-        return {"tier": "super-large", "agent_count": 4,
-                "time_limit_min": 45, "checkpoint_every_min": 10,
-                "domains_split": ds, "two_phase": True, "components": comps,
-                "rationale": (f"SWR-V3.17-002: {count} 文件 >2000 阈值——"
-                              f"两阶段测绘 ({len(comps)} 组件), 45min 按组件给")}
     return {"tier": "large", "agent_count": 4, "time_limit_min": 45,
             "checkpoint_every_min": 10, "domains_split": ds,
             "two_phase": False, "components": [],
