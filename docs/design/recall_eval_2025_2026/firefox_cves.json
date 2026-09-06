@@ -1,0 +1,4772 @@
+[
+ {
+  "cve": "CVE-2024-43097",
+  "sev": "critical",
+  "title": "Overflow when growing an SkRegion's RunArray",
+  "desc": "In resizeToAtLeast of SkRegion.cpp, there was a possible out of bounds write due to an integer overflow",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 115.21; Firefox ESR 128.8; Thunderbird 128.8",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-0244",
+  "sev": "high",
+  "title": "Address bar spoofing using an invalid protocol scheme on Firefox for Android",
+  "desc": "When redirecting to an invalid protocol scheme, an attacker could spoof the address bar. Note: This issue only affected Android operating systems. Other operating systems are unaffected.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-0245",
+  "sev": "moderate",
+  "title": "Lock screen setting bypass in Firefox Focus for Android",
+  "desc": "Under certain circumstances, a user opt-in setting that Focus should require authentication before use could have been be bypassed.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2025-0246",
+  "sev": "moderate",
+  "title": "Address bar spoofing using an invalid protocol scheme on Firefox for Android",
+  "desc": "When using an invalid protocol scheme, an attacker could spoof the address bar. Note: This issue only affected Android operating systems. Other operating systems are unaffected. *Note: This issue is a different issue from CVE-2025-0244.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-0237",
+  "sev": "moderate",
+  "title": "WebChannel APIs susceptible to confused deputy attack",
+  "desc": "The WebChannel API, which is used to transport various information across processes, did not check the sending principal but rather accepted the principal being sent. This could have led to privilege escalation attacks.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Thunderbird 134; Thunderbird 128.6",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-0238",
+  "sev": "moderate",
+  "title": "Use-after-free when breaking lines in text",
+  "desc": "Assuming a controlled failed memory allocation, an attacker could have caused a use-after-free, leading to a potentially exploitable crash.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Firefox ESR 115.19; Thunderbird 134; Thunderbird 128.6",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-0239",
+  "sev": "moderate",
+  "title": "Alt-Svc ALPN validation failure when redirected",
+  "desc": "When using Alt-Svc, ALPN did not properly validate certificates when the original server is redirecting to an insecure site.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Thunderbird 134; Thunderbird 128.6",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-0240",
+  "sev": "moderate",
+  "title": "Compartment mismatch when parsing JavaScript JSON module",
+  "desc": "Parsing a JavaScript module as JSON could, under some circumstances, cause cross-compartment access, which may result in a use-after-free.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Thunderbird 134; Thunderbird 128.6",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-0241",
+  "sev": "moderate",
+  "title": "Memory corruption when using JavaScript Text Segmentation",
+  "desc": "When segmenting specially crafted text, segmentation would corrupt memory leading to a potentially exploitable crash.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Thunderbird 134; Thunderbird 128.6",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-0242",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 134, Thunderbird 134, Firefox ESR 115.19, Firefox ESR 128.6, Thunderbird 115.19, and Thunderbird 128.6",
+  "desc": "Memory safety bugs present in Firefox 133, Thunderbird 133, Firefox ESR 115.18, Firefox ESR 128.5, Thunderbird 115.18, and Thunderbird 128.5. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Firefox ESR 115.19; Thunderbird 134; Thunderbird 128.6",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-0243",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 134, Thunderbird 134, Firefox ESR 128.6, and Thunderbird 128.6",
+  "desc": "Memory safety bugs present in Firefox 133, Thunderbird 133, Firefox ESR 128.5, and Thunderbird 128.5. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Firefox ESR 128.6; Thunderbird 134; Thunderbird 128.6",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-0247",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 134 and Thunderbird 134",
+  "desc": "Memory safety bugs present in Firefox 133 and Thunderbird 133. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-01-07",
+  "fixed": "Firefox 134; Thunderbird 134",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2024-50336",
+  "sev": "moderate",
+  "title": "matrix-js-sdk has insufficient MXC URI validation which could allow client-side path traversal",
+  "desc": "The Matrix specification demands homeservers to perform validation of the server-name and media-id components of MXC URIs with the intent to prevent path traversal. However, it is not mentioned that a similar check must also be performed on the client to prevent client-side path traversal. matrix-js-sdk fails to perform this validation.",
+  "date": "2025-01-07",
+  "fixed": "Thunderbird 134",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-23108",
+  "sev": "moderate",
+  "title": "Firefox Mobile iOS Full Address Bar Spoof Using Open in New Tab and Javascript URI",
+  "desc": "Opening Javascript links in a new tab via long-press in the Firefox iOS client could result in a malicious script spoofing the URL of the new tab.",
+  "date": "2025-01-10",
+  "fixed": "Firefox for iOS 134",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-23109",
+  "sev": "moderate",
+  "title": "Address bar spoofing on iOS using long hostnames",
+  "desc": "Long hostnames in URLs could be leveraged to obscure the actual host of the website or spoof the website address",
+  "date": "2025-01-10",
+  "fixed": "Firefox for iOS 134",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-1009",
+  "sev": "high",
+  "title": "Use-after-free in XSLT",
+  "desc": "An attacker could have caused a use-after-free via crafted XSLT data, leading to a potentially exploitable crash.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Firefox ESR 115.20; Firefox ESR 128.7; Thunderbird 128.7; Thunderbird 135",
+  "comp": "XML/XSLT"
+ },
+ {
+  "cve": "CVE-2025-1010",
+  "sev": "high",
+  "title": "Use-after-free in Custom Highlight",
+  "desc": "An attacker could have caused a use-after-free via the Custom Highlight API, leading to a potentially exploitable crash.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Firefox ESR 115.20; Firefox ESR 128.7; Thunderbird 128.7; Thunderbird 135",
+  "comp": "CSS"
+ },
+ {
+  "cve": "CVE-2025-1018",
+  "sev": "moderate",
+  "title": "Fullscreen notification is not displayed when fullscreen is re-requested",
+  "desc": "The fullscreen notification is prematurely hidden when fullscreen is re-requested quickly by the user. This could have been leveraged to perform a potential spoofing attack.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Thunderbird 135",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-1011",
+  "sev": "moderate",
+  "title": "A bug in WebAssembly code generation could result in a crash",
+  "desc": "A bug in WebAssembly code generation could have lead to a crash. It may have been possible for an attacker to leverage this to achieve code execution.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Firefox ESR 128.7; Thunderbird 128.7; Thunderbird 135",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2025-1012",
+  "sev": "moderate",
+  "title": "Use-after-free during concurrent delazification",
+  "desc": "A race during concurrent delazification could have led to a use-after-free.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Firefox ESR 115.20; Firefox ESR 128.7; Thunderbird 128.7; Thunderbird 135",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-1019",
+  "sev": "moderate",
+  "title": "Fullscreen notification not properly displayed",
+  "desc": "The z-order of the browser windows could be manipulated to hide the fullscreen notification. This could potentially be leveraged to perform a spoofing attack.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Thunderbird 135",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-1016",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 135, Thunderbird 135, Firefox ESR 115.20, Firefox ESR 128.7, Thunderbird 115.20, and Thunderbird 128.7",
+  "desc": "Memory safety bugs present in Firefox 134, Thunderbird 134, Firefox ESR 115.19, Firefox ESR 128.6, Thunderbird 115.19, and Thunderbird 128.6. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Firefox ESR 115.20; Firefox ESR 128.7; Thunderbird 128.7; Thunderbird 135",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-1017",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 135, Thunderbird 135, Firefox ESR 128.7, and Thunderbird 128.7",
+  "desc": "Memory safety bugs present in Firefox 134, Thunderbird 134, Firefox ESR 128.6, and Thunderbird 128.6. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Firefox ESR 128.7; Thunderbird 128.7; Thunderbird 135",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-1020",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 135 and Thunderbird 135",
+  "desc": "Memory safety bugs present in Firefox 134 and Thunderbird 134. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-02-04",
+  "fixed": "Firefox 135; Thunderbird 135",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-0510",
+  "sev": "high",
+  "title": "Address of e-mail sender can be spoofed by malicious email",
+  "desc": "Thunderbird displayed an incorrect sender address if the From field of an email used the invalid group name syntax that is described in CVE-2024-49040.",
+  "date": "2025-02-04",
+  "fixed": "Thunderbird 128.7; Thunderbird 135",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2025-1414",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 135.0.1",
+  "desc": "Memory safety bugs present in Firefox 135. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-02-18",
+  "fixed": "Firefox 135.0.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-27426",
+  "sev": "high",
+  "title": "Firefox Mobile iOS Full Address Bar Spoof Using Server-Side Redirect to internal error page",
+  "desc": "Malicious websites utilizing a server-side redirect to an internal error page could result in a spoofed website URL",
+  "date": "2025-02-24",
+  "fixed": "Firefox for iOS 136",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-27424",
+  "sev": "moderate",
+  "title": "Firefox Mobile iOS Address Bar Spoof Using Server-Side Redirect to non-http Scheme",
+  "desc": "Websites redirecting to a non-HTTP scheme URL could allow a website address to be spoofed for a malicious page",
+  "date": "2025-02-24",
+  "fixed": "Firefox for iOS 136",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-1930",
+  "sev": "high",
+  "title": "AudioIPC StreamData could trigger a use-after-free in the Browser process",
+  "desc": "On Windows, a compromised content process could use bad StreamData sent over AudioIPC to trigger a use-after-free in the Browser process. This could have led to a sandbox escape.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 115.21; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2025-1939",
+  "sev": "high",
+  "title": "Tapjacking in Android Custom Tabs using transition animations",
+  "desc": "Android apps can load web pages using the Custom Tabs feature. This feature supports a transition animation that could have been used to trick a user into granting sensitive permissions by hiding what the user was actually clicking.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-1931",
+  "sev": "high",
+  "title": "Use-after-free in WebTransportChild",
+  "desc": "It was possible to cause a use-after-free in the content process side of a WebTransport connection, leading to a potentially exploitable crash.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 115.21; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2025-1932",
+  "sev": "high",
+  "title": "Inconsistent comparator in XSLT sorting led to out-of-bounds access",
+  "desc": "An inconsistent comparator in xslt/txNodeSorter could have resulted in potentially exploitable out-of-bounds access. Only affected version 122 and later.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "XML/XSLT"
+ },
+ {
+  "cve": "CVE-2025-1933",
+  "sev": "high",
+  "title": "JIT corruption of WASM i32 return values on 64-bit CPUs",
+  "desc": "On 64-bit CPUs, when the JIT compiles WASM i32 return values they can pick up bits from left over memory. This can potentially cause them to be treated as a different type.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 115.21; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2025-1940",
+  "sev": "moderate",
+  "title": "Android Intent confirmation prompt tapjacking using Select options",
+  "desc": "A select option could partially obscure the confirmation prompt shown before launching external apps. This could be used to trick a user in to launching an external app unexpectedly. This issue only affects Android versions of Firefox.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2024-9956",
+  "sev": "moderate",
+  "title": "Passkey phishing within Bluetooth range",
+  "desc": "Malicious pages could use Firefox for Android to pass FIDO: links to the OS and trigger the \"hybrid\" passkey transport. An attacker within Bluetooth range could have used this to trick the user into using their passkey to log the attacker's computer into the target account.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136",
+  "comp": "WebAuthn/Crypto"
+ },
+ {
+  "cve": "CVE-2025-1934",
+  "sev": "moderate",
+  "title": "Unexpected GC during RegExp bailout processing",
+  "desc": "It was possible to interrupt the processing of a RegExp bailout and run additional JavaScript, potentially triggering garbage collection when the engine was not expecting it.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-1941",
+  "sev": "moderate",
+  "title": "Lock screen setting bypass in Firefox Focus for Android",
+  "desc": "Under certain circumstances, a user opt-in setting that Focus should require authentication before use could have been be bypassed (distinct from CVE-2025-0245).",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2025-1942",
+  "sev": "moderate",
+  "title": "Disclosure of uninitialized memory when .toUpperCase() causes string to get longer",
+  "desc": "When String.toUpperCase() caused a string to get longer it was possible for uninitialized memory to be incorporated into the result string",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Thunderbird 136",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-1937",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 136, Thunderbird 136, Firefox ESR 115.21, Firefox ESR 128.8, and Thunderbird 128.8",
+  "desc": "Memory safety bugs present in Firefox 135, Thunderbird 135, Firefox ESR 115.20, Firefox ESR 128.7, and Thunderbird 128.7. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 115.21; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-1938",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 136, Thunderbird 136, Firefox ESR 128.8, and Thunderbird 128.8",
+  "desc": "Memory safety bugs present in Firefox 135, Thunderbird 135, Firefox ESR 128.7, and Thunderbird 128.7. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Firefox ESR 128.8; Thunderbird 136; Thunderbird 128.8",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-1943",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 136 and Thunderbird 136",
+  "desc": "Memory safety bugs present in Firefox 135 and Thunderbird 135. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-03-04",
+  "fixed": "Firefox 136; Thunderbird 136",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-26696",
+  "sev": "moderate",
+  "title": "Crafted email message incorrectly shown as being encrypted",
+  "desc": "Certain crafted MIME email messages that claimed to contain an encrypted OpenPGP message, which instead contained an OpenPGP signed message, were wrongly shown as being encrypted.",
+  "date": "2025-03-04",
+  "fixed": "Thunderbird 136; Thunderbird 128.8",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2025-2857",
+  "sev": "critical",
+  "title": "Incorrect handle could lead to sandbox escapes",
+  "desc": "Following the recent Chrome sandbox escape (CVE-2025-2783), various Firefox developers identified a similar pattern in our IPC code. A compromised child process could cause the parent process to return an unintentionally powerful handle, leading to a sandbox escape. The original vulnerability was being exploited in the wild. This only affects Firefox on Windows. Other operating systems are unaffected.",
+  "date": "2025-03-27",
+  "fixed": "Firefox 136.0.4; Firefox ESR 115.21.1; Firefox ESR 128.8.1",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2025-3028",
+  "sev": "high",
+  "title": "Use-after-free triggered by XSLTProcessor",
+  "desc": "JavaScript code running while transforming a document with the XSLTProcessor could lead to a use-after-free.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137; Firefox ESR 115.22; Firefox ESR 128.9; Thunderbird 137; Thunderbird 128.9",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-3031",
+  "sev": "moderate",
+  "title": "JIT optimization bug with different stack slot sizes",
+  "desc": "An attacker could read 32 bits of values spilled onto the stack in a JIT compiled function.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137; Thunderbird 137",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-3032",
+  "sev": "moderate",
+  "title": "Leaking file descriptors from the fork server",
+  "desc": "Leaking of file descriptors from the fork server to web content processes could allow for privilege escalation attacks.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137; Thunderbird 137",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2025-3029",
+  "sev": "moderate",
+  "title": "URL bar spoofing via non-BMP Unicode characters",
+  "desc": "A crafted URL containing specific Unicode characters could have hidden the true origin of the page, resulting in a potential spoofing attack.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137; Firefox ESR 128.9; Thunderbird 137; Thunderbird 128.9",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-3035",
+  "sev": "moderate",
+  "title": "Tab title disclosure across pages when using AI chatbot",
+  "desc": "By first using the AI chatbot in one tab and later activating it in another tab, the document title of the previous tab would leak into the chat prompt.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-3030",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 137, Thunderbird 137, Firefox ESR 128.9, and Thunderbird 128.9",
+  "desc": "Memory safety bugs present in Firefox 136, Thunderbird 136, Firefox ESR 128.8, and Thunderbird 128.8. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137; Firefox ESR 128.9; Thunderbird 137; Thunderbird 128.9",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-3034",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 137 and Thunderbird 137",
+  "desc": "Memory safety bugs present in Firefox 136 and Thunderbird 136. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-04-01",
+  "fixed": "Firefox 137; Thunderbird 137",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-3608",
+  "sev": "high",
+  "title": "Race condition in nsHttpTransaction could lead to memory corruption",
+  "desc": "A race condition existed in nsHttpTransaction that could have been exploited to cause memory corruption, potentially leading to an exploitable condition.",
+  "date": "2025-04-15",
+  "fixed": "Firefox 137.0.2",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-3522",
+  "sev": "high",
+  "title": "Leak of hashed Window credentials via crafted attachment URL",
+  "desc": "Thunderbird processes the X-Mozilla-External-Attachment-URL header to handle attachments which can be hosted externally. When an email is opened, Thunderbird accesses the specified URL to determine file size, and navigates to it when the user clicks the attachment. Because the URL is not validated or sanitized, it can reference internal resources like chrome:// or SMB share file:// links, potentially leading to hashed Windows credential leakage and opening the door to more serious security issues.",
+  "date": "2025-04-15",
+  "fixed": "Thunderbird 137.0.2; Thunderbird 128.9.2",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2025-2830",
+  "sev": "high",
+  "title": "Information Disclosure of /tmp directory listing",
+  "desc": "By crafting a malformed file name for an attachment in a multipart message, an attacker can trick Thunderbird into including a directory listing of /tmp when the message is forwarded or edited as a new message. This vulnerability could allow attackers to disclose sensitive information from the victim's system. This vulnerability is not limited to Linux; similar behavior has been observed on Windows as well.",
+  "date": "2025-04-15",
+  "fixed": "Thunderbird 137.0.2; Thunderbird 128.9.2",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-2817",
+  "sev": "high",
+  "title": "Privilege escalation in Firefox Updater",
+  "desc": "Mozilla Firefox's update mechanism allowed a medium-integrity user process to interfere with the SYSTEM-level updater by manipulating the file-locking behavior. By injecting code into the user-privileged process, an attacker could bypass intended access controls, allowing SYSTEM-level file operations on paths controlled by a non-privileged user and enabling privilege escalation.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Firefox ESR 128.10; Firefox ESR 115.23; Thunderbird 138; Thunderbird 128.10",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-4082",
+  "sev": "high",
+  "title": "WebGL shader attribute memory corruption in Firefox for macOS",
+  "desc": "Modification of specific WebGL shader attributes could trigger an out-of-bounds read, which, when chained with other vulnerabilities, could be used to escalate privileges. This bug only affects Firefox for macOS. Other versions of Firefox are unaffected.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Firefox ESR 128.10; Firefox ESR 115.23; Thunderbird 138; Thunderbird 128.10",
+  "comp": "WebGL"
+ },
+ {
+  "cve": "CVE-2025-4083",
+  "sev": "high",
+  "title": "Process isolation bypass using \"javascript:\" URI links in cross-origin frames",
+  "desc": "A process isolation vulnerability in Firefox stemmed from improper handling of javascript: URIs, which could allow content to execute in the top-level document's process instead of the intended frame, potentially enabling a sandbox escape.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Firefox ESR 128.10; Firefox ESR 115.23; Thunderbird 138; Thunderbird 128.10",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-4085",
+  "sev": "moderate",
+  "title": "Potential information leakage and privilege escalation in UITour actor",
+  "desc": "An attacker with control over a content process could potentially leverage the privileged UITour actor to leak sensitive information or escalate privileges.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Thunderbird 138",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2025-4086",
+  "sev": "moderate",
+  "title": "Specially crafted filename could be used to obscure download type",
+  "desc": "A specially crafted filename containing a large number of encoded newline characters could obscure the file's extension when displayed in the download dialog. This bug only affects Firefox for Android. Other versions of Firefox are unaffected.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Thunderbird 138",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-4087",
+  "sev": "moderate",
+  "title": "Unsafe attribute access during XPath parsing",
+  "desc": "A vulnerability was identified in Firefox where XPath parsing could trigger undefined behavior due to missing null checks during attribute access. This could lead to out-of-bounds read access and potentially, memory corruption.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Firefox ESR 128.10; Thunderbird 138; Thunderbird 128.10",
+  "comp": "XML/XSLT"
+ },
+ {
+  "cve": "CVE-2025-4088",
+  "sev": "moderate",
+  "title": "Cross-site request forgery via storage access API redirects",
+  "desc": "A security vulnerability in Firefox allowed malicious sites to use redirects to send credentialed requests to arbitrary endpoints on any site that had invoked the Storage Access API. This enabled potential Cross-Site Request Forgery attacks across origins.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Thunderbird 138",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-4089",
+  "sev": "moderate",
+  "title": "Potential local code execution in \"copy as cURL\" command",
+  "desc": "Due to insufficient escaping of special characters in the \"copy as cURL\" feature, an attacker could trick a user into using this command, potentially leading to local code execution on the user's system.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Thunderbird 138",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-4091",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 138, Thunderbird 138, Firefox ESR 128.10, and Thunderbird 128.10",
+  "desc": "Memory safety bugs present in Firefox 137, Thunderbird 137, Firefox ESR 128.9, and Thunderbird 128.9. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Firefox ESR 128.10; Thunderbird 138; Thunderbird 128.10",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-4092",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 138 and Thunderbird 138",
+  "desc": "Memory safety bugs present in Firefox 137 and Thunderbird 137. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-04-29",
+  "fixed": "Firefox 138; Thunderbird 138",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-4084",
+  "sev": "moderate",
+  "title": "Potential local code execution in \"copy as cURL\" command",
+  "desc": "Due to insufficient escaping of the special characters in the \"copy as cURL\" feature, an attacker could trick a user into using this command, potentially leading to local code execution on the user's system. This bug only affects Firefox for Windows. Other versions of Firefox are unaffected.",
+  "date": "2025-04-29",
+  "fixed": "Firefox ESR 128.10; Firefox ESR 115.23; Thunderbird 128.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-4093",
+  "sev": "high",
+  "title": "Memory safety bug fixed in Firefox ESR 128.10 and Thunderbird 128.10",
+  "desc": "Memory safety bug present in Firefox ESR 128.9, and Thunderbird 128.9. This bug showed evidence of memory corruption and we presume that with enough effort this could have been exploited to run arbitrary code.",
+  "date": "2025-04-29",
+  "fixed": "Firefox ESR 128.10; Thunderbird 128.10",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-3859",
+  "sev": "moderate",
+  "title": "Firefox Focus elide URL allows address bar spoofing",
+  "desc": "Websites directing users to long URLs that caused eliding to occur in the location view could leverage the truncating behavior to potentially trick users into thinking they were on a different webpage",
+  "date": "2025-04-21",
+  "fixed": "Focus 138",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-3875",
+  "sev": "high",
+  "title": "Sender Spoofing via Malformed From Header in Thunderbird",
+  "desc": "Thunderbird parses addresses in a way that can allow sender spoofing in case the server allows an invalid From address to be used. For example, if the From header contains an (invalid) value \"Spoofed Name spoofed@example.com legitimate@example.com \", Thunderbird treats spoofed@example.com as the actual address.",
+  "date": "2025-05-13",
+  "fixed": "Thunderbird 128.10.1; Thunderbird 138.0.1",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-3909",
+  "sev": "high",
+  "title": "JavaScript Execution via Spoofed PDF Attachment and file:/// Link",
+  "desc": "Thunderbird's handling of the X-Mozilla-External-Attachment-URL header can be exploited to execute JavaScript in the file:/// context. By crafting a nested email attachment (message/rfc822) and setting its content type to application/pdf, Thunderbird may incorrectly render it as HTML when opened, allowing the embedded JavaScript to run without requiring a file download. This behavior relies on Thunderbird auto-saving the attachment to /tmp and linking to it via the file:/// protocol, potentially enabling JavaScript execution as part of the HTML.",
+  "date": "2025-05-13",
+  "fixed": "Thunderbird 128.10.1; Thunderbird 138.0.1",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-4918",
+  "sev": "critical",
+  "title": "Out-of-bounds access when resolving Promise objects",
+  "desc": "An attacker was able to perform an out-of-bounds read or write on a JavaScript Promise object.",
+  "date": "2025-05-17",
+  "fixed": "Firefox 138.0.4; Firefox ESR 128.10.1; Firefox ESR 115.23.1; Thunderbird 128.10.2; Thunderbird 138.0.2",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-4919",
+  "sev": "critical",
+  "title": "Out-of-bounds access when optimizing linear sums",
+  "desc": "An attacker was able to perform an out-of-bounds read or write on a JavaScript object by confusing array index sizes.",
+  "date": "2025-05-17",
+  "fixed": "Firefox 138.0.4; Firefox ESR 128.10.1; Firefox ESR 115.23.1; Thunderbird 128.10.2; Thunderbird 138.0.2",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-5283",
+  "sev": "critical",
+  "title": "Double-free in libvpx encoder",
+  "desc": "A double-free could have occurred in vpx_codec_enc_init_multi after a failed allocation when initializing the encoder for WebRTC. This could have caused memory corruption and a potentially exploitable crash.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Firefox ESR 115.24; Firefox ESR 128.11; Thunderbird 139; Thunderbird 128.11",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-5263",
+  "sev": "moderate",
+  "title": "Error handling for script execution was incorrectly isolated from web content",
+  "desc": "Error handling for script execution was incorrectly isolated from web content, which could have allowed cross-origin leak attacks.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Firefox ESR 115.24; Firefox ESR 128.11; Thunderbird 139; Thunderbird 128.11",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-5264",
+  "sev": "moderate",
+  "title": "Potential local code execution in “Copy as cURL” command",
+  "desc": "Due to insufficient escaping of the newline character in the “Copy as cURL” feature, an attacker could trick a user into using this command, potentially leading to local code execution on the user's system.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Firefox ESR 115.24; Firefox ESR 128.11; Thunderbird 139; Thunderbird 128.11",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-5265",
+  "sev": "moderate",
+  "title": "Potential local code execution in “Copy as cURL” command",
+  "desc": "Due to insufficient escaping of the ampersand character in the “Copy as cURL” feature, an attacker could trick a user into using this command, potentially leading to local code execution on the user's system. This bug only affects Firefox for Windows. Other versions of Firefox are unaffected.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Firefox ESR 115.24; Firefox ESR 128.11; Thunderbird 139; Thunderbird 128.11",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-5266",
+  "sev": "moderate",
+  "title": "Script element events leaked cross-origin resource status",
+  "desc": "Script elements loading cross-origin resources generated load and error events which leaked information enabling XS-Leaks attacks.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Firefox ESR 128.11; Thunderbird 139; Thunderbird 128.11",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-5268",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 139, Thunderbird 139, Firefox ESR 128.11, and Thunderbird 128.11",
+  "desc": "Memory safety bugs present in Firefox 138, Thunderbird 138, Firefox ESR 128.10, and Thunderbird 128.10. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Firefox ESR 128.11; Thunderbird 139; Thunderbird 128.11",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-5272",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 139 and Thunderbird 139",
+  "desc": "Memory safety bugs present in Firefox 138 and Thunderbird 138. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-05-27",
+  "fixed": "Firefox 139; Thunderbird 139",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-5269",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox ESR 128.11 and Thunderbird 128.11",
+  "desc": "Memory safety bug present in Firefox ESR 128.10, and Thunderbird 128.10. This bug showed evidence of memory corruption and we presume that with enough effort this could have been exploited to run arbitrary code.",
+  "date": "2025-05-27",
+  "fixed": "Firefox ESR 128.11; Thunderbird 128.11",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-49709",
+  "sev": "high",
+  "title": "Memory corruption in canvas surfaces",
+  "desc": "Certain canvas operations could have lead to memory corruption.",
+  "date": "2025-06-10",
+  "fixed": "Firefox 139.0.4",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-49710",
+  "sev": "high",
+  "title": "Integer overflow in OrderedHashTable",
+  "desc": "An integer overflow was present in OrderedHashTable used by the JavaScript engine",
+  "date": "2025-06-10",
+  "fixed": "Firefox 139.0.4",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-5687",
+  "sev": "high",
+  "title": "Local privilege escalation vulnerability in Mozilla VPN clients for macOS v2.27.0 and below.",
+  "desc": "A vulnerability in Mozilla VPN on macOS allows privilege escalation from a normal user to root. This bug only affects Mozilla VPN on macOS. Other operating systems are unaffected.",
+  "date": "2025-05-30",
+  "fixed": "Mozilla VPN 2.28.0 (macOS)",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-5986",
+  "sev": "high",
+  "title": "Unsolicited File Download, Disk Space Exhaustion, and Credential Leakage via mailbox:/// Links",
+  "desc": "A crafted HTML email using mailbox:/// links can trigger automatic, unsolicited downloads of .pdf files to the user's desktop or home directory without prompting, even if auto-saving is disabled. This behavior can be abused to fill the disk with garbage data (e.g. using /dev/urandom on Linux) or to leak Windows credentials via SMB links when the email is viewed in HTML mode. While user interaction is required to download the .pdf file, visual obfuscation can conceal the download trigger. Viewing the email in HTML mode is enough to load external content.",
+  "date": "2025-06-10",
+  "fixed": "Thunderbird 128.11.1; Thunderbird 139.0.2",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-6424",
+  "sev": "high",
+  "title": "Use-after-free in FontFaceSet",
+  "desc": "A use-after-free in FontFaceSet resulted in a potentially exploitable crash.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Firefox ESR 115.25; Firefox ESR 128.12; Thunderbird 140; Thunderbird 128.12",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-6425",
+  "sev": "moderate",
+  "title": "The WebCompat WebExtension shipped with Firefox exposed a persistent UUID",
+  "desc": "An attacker who enumerated resources from the WebCompat extension could have obtained a persistent UUID that identified the browser, and persisted between containers and normal/private browsing mode, but not profiles.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Firefox ESR 115.25; Firefox ESR 128.12; Thunderbird 140; Thunderbird 128.12",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-6426",
+  "sev": "moderate",
+  "title": "No warning when opening executable terminal files on macOS",
+  "desc": "The executable file warning did not warn users before opening files with the terminal extension. This bug only affects Firefox for macOS. Other versions of Firefox are unaffected.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Firefox ESR 128.12; Thunderbird 140; Thunderbird 128.12",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-6427",
+  "sev": "moderate",
+  "title": "connect-src Content Security Policy restriction could be bypassed",
+  "desc": "An attacker was able to bypass the connect-src directive of a Content Security Policy by manipulating subdocuments. This would have also hidden the connections from the Network tab in Devtools.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Thunderbird 140",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-6428",
+  "sev": "moderate",
+  "title": "Firefox for Android opened URLs specified in a link querystring parameter",
+  "desc": "When a URL was provided in a link querystring parameter, Firefox for Android would follow that URL instead of the correct URL, potentially leading to phishing attacks. This bug only affects Firefox for Android. Other versions of Firefox are unaffected.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2025-6429",
+  "sev": "moderate",
+  "title": "Incorrect parsing of URLs could have allowed embedding of youtube.com",
+  "desc": "Firefox could have incorrectly parsed a URL and rewritten it to the youtube.com domain when parsing the URL specified in an embed tag. This could have bypassed website security checks that restricted which domains users were allowed to embed.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Firefox ESR 128.12; Thunderbird 140; Thunderbird 128.12",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-6430",
+  "sev": "moderate",
+  "title": "Content-Disposition header ignored when a file is included in an embed or object tag",
+  "desc": "When a file download is specified via the Content-Disposition header, that directive would be ignored if the file was included via a or tag, potentially making a website vulnerable to a cross-site scripting attack.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Firefox ESR 128.12; Thunderbird 140; Thunderbird 128.12",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-6431",
+  "sev": "moderate",
+  "title": "The prompt in Firefox for Android that asks before opening a link in an external application could be bypassed",
+  "desc": "When a link can be opened in an external application, Firefox for Android will, by default, prompt the user before doing so. An attacker could have bypassed this prompt, potentially exposing the user to security vulnerabilities or privacy leaks in external applications. This bug only affects Firefox for Android. Other versions of Firefox are unaffected.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2025-6436",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 140 and Thunderbird 140",
+  "desc": "Memory safety bugs present in Firefox 139 and Thunderbird 139. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-06-24",
+  "fixed": "Firefox 140; Thunderbird 140",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-8027",
+  "sev": "high",
+  "title": "JavaScript engine only wrote partial return value to stack",
+  "desc": "On 64-bit platforms IonMonkey-JIT only wrote 32 bits of the 64-bit return value space on the stack. Baseline-JIT, however, read the entire 64 bits.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 115.26; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-8028",
+  "sev": "high",
+  "title": "Large branch table could lead to truncated instruction",
+  "desc": "On arm64, a WASM br_table instruction with a lot of entries could lead to the label being too far from the instruction causing truncation and incorrect computation of the branch address.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 115.26; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2025-8041",
+  "sev": "moderate",
+  "title": "Incorrect URL truncation in Firefox for Android",
+  "desc": "In the address bar, Firefox for Android truncated the display of URLs from the end instead of prioritizing the origin.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-8042",
+  "sev": "moderate",
+  "title": "Sandboxed iframe could start downloads",
+  "desc": "Firefox for Android allowed a sandboxed iframe without the allow-downloads attribute to start downloads.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-8029",
+  "sev": "moderate",
+  "title": "javascript: URLs executed on object and embed tags",
+  "desc": "Firefox executed javascript: URLs when used in object and embed tags.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-8036",
+  "sev": "moderate",
+  "title": "DNS rebinding circumvents CORS",
+  "desc": "Firefox cached CORS preflight responses across IP address changes. This allowed circumventing CORS with DNS rebinding.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 140.1; Thunderbird 141; Thunderbird 140.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-8037",
+  "sev": "moderate",
+  "title": "Nameless cookies shadow secure cookies",
+  "desc": "Setting a nameless cookie with an equals sign in the value shadowed other cookies. Even if the nameless cookie was set over HTTP and the shadowed cookie included the Secure attribute.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 140.1; Thunderbird 141; Thunderbird 140.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-8030",
+  "sev": "moderate",
+  "title": "Potential user-assisted code execution in “Copy as cURL” command",
+  "desc": "Insufficient escaping in the “Copy as cURL” feature could potentially be used to trick a user into executing unexpected code.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-8043",
+  "sev": "moderate",
+  "title": "Incorrect URL truncation",
+  "desc": "Focus incorrectly truncated URLs towards the beginning instead of around the origin.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-8031",
+  "sev": "moderate",
+  "title": "Incorrect URL stripping in CSP reports",
+  "desc": "The username:password part was not correctly stripped from URLs in CSP reports potentially leaking HTTP Basic Authentication credentials.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2025-8032",
+  "sev": "moderate",
+  "title": "XSLT documents could bypass CSP",
+  "desc": "XSLT document loading did not correctly propagate the source document which bypassed its CSP.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "XML/XSLT"
+ },
+ {
+  "cve": "CVE-2025-8044",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 141 and Thunderbird 141",
+  "desc": "Memory safety bugs present in Firefox 140 and Thunderbird 140. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Thunderbird 141",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-8034",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.26, Firefox ESR 128.13, Thunderbird ESR 128.13, Firefox ESR 140.1, Thunderbird ESR 140.1, Firefox 141 and Thunderbird 141",
+  "desc": "Memory safety bugs present in Firefox ESR 115.25, Firefox ESR 128.12, Thunderbird ESR 128.12, Firefox ESR 140.0, Thunderbird ESR 140.0, Firefox 140 and Thunderbird 140. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 115.26; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-8040",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.1, Thunderbird ESR 140.1, Firefox 141 and Thunderbird 141",
+  "desc": "Memory safety bugs present in Firefox ESR 140.0, Thunderbird ESR 140.0, Firefox 140 and Thunderbird 140. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 140.1; Thunderbird 141; Thunderbird 140.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-8035",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 128.13, Thunderbird ESR 128.13, Firefox ESR 140.1, Thunderbird ESR 140.1, Firefox 141 and Thunderbird 141",
+  "desc": "Memory safety bugs present in Firefox ESR 128.12, Thunderbird ESR 128.12, Firefox ESR 140.0, Thunderbird ESR 140.0, Firefox 140 and Thunderbird 140. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-07-22",
+  "fixed": "Firefox 141; Firefox ESR 128.13; Firefox ESR 140.1; Thunderbird 141; Thunderbird 128.13; Thunderbird 140.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-54143",
+  "sev": "moderate",
+  "title": "Sandboxed iframes could allow local downloads despite sandbox restrictions",
+  "desc": "Sandboxed iframes on webpages could potentially allow downloads to the device, bypassing the expected sandbox restrictions declared on the parent page",
+  "date": "2025-07-22",
+  "fixed": "Firefox for iOS 141",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-54144",
+  "sev": "moderate",
+  "title": "Internal Firefox open-text URL scheme allowed loading of arbitrary URLs",
+  "desc": "The URL scheme used by Firefox to facilitate searching of text queries could incorrectly allow attackers to open arbitrary website URLs or internal pages if a user was tricked into clicking a link",
+  "date": "2025-07-22",
+  "fixed": "Firefox for iOS 141",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-54145",
+  "sev": "moderate",
+  "title": "Scanning a malicious URL utilizing Firefox's open-text scheme with the QR code scanner could load arbitrary websites",
+  "desc": "The QR scanner could allow arbitrary websites to be opened if a user was tricked into scanning a malicious link that leveraged Firefox's open-text URL scheme",
+  "date": "2025-07-22",
+  "fixed": "Firefox for iOS 141",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-9179",
+  "sev": "high",
+  "title": "Sandbox escape due to invalid pointer in the Audio/Video: GMP component",
+  "desc": "An attacker was able to perform memory corruption in the GMP process which processes encrypted media. This process is also heavily sandboxed, but represents slightly different privileges from the content process.",
+  "date": "2025-08-19",
+  "fixed": "Firefox 142; Firefox ESR 115.27; Firefox ESR 128.14; Firefox ESR 140.2; Thunderbird 142; Thunderbird 128.14; Thunderbird 140.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-9180",
+  "sev": "high",
+  "title": "Same-origin policy bypass in the Graphics: Canvas2D component",
+  "desc": "Same-origin policy bypass in the Graphics: Canvas2D component.",
+  "date": "2025-08-19",
+  "fixed": "Firefox 142; Firefox ESR 115.27; Firefox ESR 128.14; Firefox ESR 140.2; Thunderbird 142; Thunderbird 128.14; Thunderbird 140.2",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-9181",
+  "sev": "moderate",
+  "title": "Uninitialized memory in the JavaScript Engine component",
+  "desc": "Uninitialized memory in the JavaScript Engine component.",
+  "date": "2025-08-19",
+  "fixed": "Firefox 142; Firefox ESR 128.14; Firefox ESR 140.2; Thunderbird 142; Thunderbird 128.14; Thunderbird 140.2",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-9187",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 142 and Thunderbird 142",
+  "desc": "Memory safety bugs present in Firefox 141 and Thunderbird 141. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-08-19",
+  "fixed": "Firefox 142; Thunderbird 142",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-9184",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.2, Thunderbird ESR 140.2, Firefox 142 and Thunderbird 142",
+  "desc": "Memory safety bugs present in Firefox ESR 140.1, Thunderbird ESR 140.1, Firefox 141 and Thunderbird 141. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-08-19",
+  "fixed": "Firefox 142; Firefox ESR 140.2; Thunderbird 142; Thunderbird 140.2",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-9185",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.27, Firefox ESR 128.14, Thunderbird ESR 128.14, Firefox ESR 140.2, Thunderbird ESR 140.2, Firefox 142 and Thunderbird 142",
+  "desc": "Memory safety bugs present in Firefox ESR 115.26, Firefox ESR 128.13, Thunderbird ESR 128.13, Firefox ESR 140.1, Thunderbird ESR 140.1, Firefox 141 and Thunderbird 141. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-08-19",
+  "fixed": "Firefox 142; Firefox ESR 115.27; Firefox ESR 128.14; Firefox ESR 140.2; Thunderbird 142; Thunderbird 128.14; Thunderbird 140.2",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-55030",
+  "sev": "high",
+  "title": "Content-Disposition headers incorrectly ignored for some MIME types",
+  "desc": "Firefox for iOS would not respect a Content-Disposition header of type Attachment and would incorrectly display the content inline rather than downloading, potentially allowing for XSS attacks",
+  "date": "2025-08-19",
+  "fixed": "Firefox for iOS 142",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2025-55028",
+  "sev": "moderate",
+  "title": "JavaScript alerts could impede UI interaction or allow denial of service attacks",
+  "desc": "Malicious scripts utilizing repetitive JavaScript alerts could prevent client user interaction in some scenarios and allow for denial of service attacks",
+  "date": "2025-08-19",
+  "fixed": "Firefox for iOS 142",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-55031",
+  "sev": "moderate",
+  "title": "Passkey phishing within Bluetooth range",
+  "desc": "Malicious pages could use Firefox for iOS to pass FIDO: links to the OS and trigger the hybrid passkey transport. An attacker within Bluetooth range could have used this to trick the user into using their passkey to log the attacker's computer into the target account.",
+  "date": "2025-08-19",
+  "fixed": "Firefox for iOS 142; Focus for iOS 142",
+  "comp": "WebAuthn/Crypto"
+ },
+ {
+  "cve": "CVE-2025-55032",
+  "sev": "high",
+  "title": "Focus incorrectly ignores Content-Disposition headers for some MIME types",
+  "desc": "Focus for iOS would not respect a Content-Disposition header of type Attachment and would incorrectly display the content inline, potentially allowing for XSS attacks",
+  "date": "2025-08-19",
+  "fixed": "Focus for iOS 142",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2025-55033",
+  "sev": "moderate",
+  "title": "Drag and drop gestures in Focus for iOS could allow JavaScript links to be executed incorrectly",
+  "desc": "Dragging JavaScript links to the URL bar in Focus for iOS could be utilized to run malicious scripts, potentially resulting in XSS attacks",
+  "date": "2025-08-19",
+  "fixed": "Focus for iOS 142",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-10527",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Firefox ESR 140.3; Thunderbird 143; Thunderbird 140.3",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-10528",
+  "sev": "high",
+  "title": "Sandbox escape due to undefined behavior, invalid pointer in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Firefox ESR 140.3; Thunderbird 143; Thunderbird 140.3",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-10529",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Layout component",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Firefox ESR 140.3; Thunderbird 143; Thunderbird 140.3",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-10530",
+  "sev": "moderate",
+  "title": "Spoofing issue in the WebAuthn component in Firefox for Android",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Thunderbird 143",
+  "comp": "WebAuthn/Crypto"
+ },
+ {
+  "cve": "CVE-2025-10531",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Web Compatibility: Tooling component",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Thunderbird 143",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-10532",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the JavaScript: GC component",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Firefox ESR 140.3; Thunderbird 143; Thunderbird 140.3",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-10533",
+  "sev": "moderate",
+  "title": "Integer overflow in the SVG component",
+  "desc": "",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Firefox ESR 115.28; Firefox ESR 140.3; Thunderbird 143; Thunderbird 140.3",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-10537",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.3, Thunderbird ESR 140.3, Firefox 143 and Thunderbird 143",
+  "desc": "Memory safety bugs present in Firefox ESR 140.2, Thunderbird ESR 140.2, Firefox 142 and Thunderbird 142. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-09-16",
+  "fixed": "Firefox 143; Firefox ESR 140.3; Thunderbird 143; Thunderbird 140.3",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-10290",
+  "sev": "moderate",
+  "title": "Opening links via the contextual menu in Focus for iOS would not update the toolbar UI correctly, allowing attackers to spoof websites",
+  "desc": "Opening links via the contextual menu in Focus iOS for certain URL schemes would fail to load but would not refresh the toolbar correctly, allowing attackers to spoof websites if users were coerced into opening a link explicitly through a long-press",
+  "date": "2025-09-16",
+  "fixed": "Focus for iOS 143",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-10859",
+  "sev": "moderate",
+  "title": "Data stored in cookies for non-HTML content while browsing Incognito could be viewed after closing private tabs",
+  "desc": "Cookie storage for non-HTML temporary documents was being shared incorrectly with normal browsing content, allowing information from private tabs to escape Incognito mode even after the user closed all tabs",
+  "date": "2025-09-28",
+  "fixed": "Firefox for iOS 143.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-11152",
+  "sev": "high",
+  "title": "Sandbox escape due to integer overflow in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2025-09-30",
+  "fixed": "Firefox 143.0.3",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-11153",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2025-09-30",
+  "fixed": "Firefox 143.0.3",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-11708",
+  "sev": "high",
+  "title": "Use-after-free in MediaTrackGraphImpl::GetInstance()",
+  "desc": "Use-after-free in MediaTrackGraphImpl::GetInstance()",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-11709",
+  "sev": "high",
+  "title": "Out of bounds read/write in a privileged process triggered by WebGL textures",
+  "desc": "A compromised web process was able to trigger out of bounds reads and writes in a more privileged process using manipulated WebGL textures.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 115.29; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "WebGL"
+ },
+ {
+  "cve": "CVE-2025-11710",
+  "sev": "high",
+  "title": "Cross-process information leaked due to malicious IPC messages",
+  "desc": "A compromised web process using malicious IPC messages could have caused the privileged browser process to reveal blocks of its memory to the compromised process.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 115.29; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2025-11711",
+  "sev": "high",
+  "title": "Some non-writable Object properties could be modified",
+  "desc": "There was a way to change the value of JavaScript Object properties that were supposed to be non-writeable.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 115.29; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-11716",
+  "sev": "moderate",
+  "title": "Sandboxed iframes allowed links to open in external apps (Android only)",
+  "desc": "Links in a sandboxed iframe could open an external app on Android without the required \"allow-\" permission.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Thunderbird 144",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-11717",
+  "sev": "moderate",
+  "title": "The password edit screen was not hidden in Android card view",
+  "desc": "When switching between Android apps using the card carousel Firefox shows a black screen as its card image when a password-related screen was the last one being used. Prior to Firefox 144 the password edit screen was visible.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-11712",
+  "sev": "moderate",
+  "title": "An OBJECT tag type attribute overrode browser behavior on web resources without a content-type",
+  "desc": "A malicious page could have used the type attribute of an OBJECT tag to override the default browser behavior when encountering a web resource served without a content-type. This could have contributed to an XSS on a site that unsafely serves files without a content-type header.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-11718",
+  "sev": "moderate",
+  "title": "Address bar could be spoofed on Android using visibilitychange",
+  "desc": "When the address bar was hidden due to scrolling on Android, a malicious page could create a fake address bar to fool the user in response to a visibilitychange event",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-11713",
+  "sev": "moderate",
+  "title": "Potential user-assisted code execution in “Copy as cURL” command",
+  "desc": "Insufficient escaping in the “Copy as cURL” feature could have been used to trick a user into executing unexpected code on Windows. This did not affect Firefox running on other operating systems.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2025-11719",
+  "sev": "moderate",
+  "title": "Use-after-free caused by the native messaging web extension API on Windows",
+  "desc": "Starting in Firefox 143, the use of the native messaging API by web extensions on Windows could lead to crashes caused by use-after-free memory corruption.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Thunderbird 144",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-11714",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.29, Firefox ESR 140.4, Thunderbird ESR 140.4, Firefox 144 and Thunderbird 144",
+  "desc": "Memory safety bugs present in Firefox ESR 115.28, Firefox ESR 140.3, Thunderbird ESR 140.3, Firefox 143 and Thunderbird 143. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 115.29; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-11715",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.4, Thunderbird ESR 140.4, Firefox 144 and Thunderbird 144",
+  "desc": "Memory safety bugs present in Firefox ESR 140.3, Thunderbird ESR 140.3, Firefox 143 and Thunderbird 143. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Firefox ESR 140.4; Thunderbird 144; Thunderbird 140.4",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-11721",
+  "sev": "high",
+  "title": "Memory safety bug fixed in Firefox 144 and Thunderbird 144",
+  "desc": "Memory safety bug present in Firefox 143 and Thunderbird 143. This bug showed evidence of memory corruption and we presume that with enough effort this could have been exploited to run arbitrary code.",
+  "date": "2025-10-14",
+  "fixed": "Firefox 144; Thunderbird 144",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-12380",
+  "sev": "high",
+  "title": "Use-after-free in WebGPU internals triggered from a compromised child process",
+  "desc": "Starting with Firefox 142, it was possible for a compromised child process to trigger a use-after-free in the GPU or browser process using WebGPU-related IPC calls. This may have been usable to escape the child process sandbox.",
+  "date": "2025-10-28",
+  "fixed": "Firefox 144.0.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13021",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13022",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13012",
+  "sev": "high",
+  "title": "Race condition in the Graphics component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Firefox ESR 115.30; Thunderbird 145; Thunderbird 140.5",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-13023",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13016",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Thunderbird 145; Thunderbird 140.5",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2025-13024",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-13025",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13026",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13017",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the DOM: Notifications component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Thunderbird 145; Thunderbird 140.5",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-13018",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Thunderbird 145; Thunderbird 140.5",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-13019",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the DOM: Workers component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Thunderbird 145; Thunderbird 140.5",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-13013",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Firefox ESR 115.30; Thunderbird 145; Thunderbird 140.5",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-13020",
+  "sev": "moderate",
+  "title": "Use-after-free in the WebRTC: Audio/Video component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Thunderbird 145; Thunderbird 140.5",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13014",
+  "sev": "moderate",
+  "title": "Use-after-free in the Audio/Video component",
+  "desc": "",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Firefox ESR 140.5; Firefox ESR 115.30; Thunderbird 145; Thunderbird 140.5",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-13027",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 145 and Thunderbird 145",
+  "desc": "Memory safety bugs present in Firefox 144 and Thunderbird 144. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-11-11",
+  "fixed": "Firefox 145; Thunderbird 145",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-14321",
+  "sev": "high",
+  "title": "Use-after-free in the WebRTC: Signaling component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-14322",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Graphics: CanvasWebGL component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 115.31; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-14323",
+  "sev": "high",
+  "title": "Privilege escalation in the DOM: Notifications component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 115.31; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2025-14324",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 115.31; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-14325",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-14326",
+  "sev": "moderate",
+  "title": "Use-after-free in the Audio/Video: GMP component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Thunderbird 146",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2025-14327",
+  "sev": "moderate",
+  "title": "Spoofing issue in the Downloads Panel component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Thunderbird 146; Firefox ESR 140.7; Thunderbird 140.7",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2025-14328",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Netmonitor component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-14329",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Netmonitor component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-14330",
+  "sev": "moderate",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2025-14331",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Request Handling component",
+  "desc": "",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 115.31; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2025-14332",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 146 and Thunderbird 146",
+  "desc": "Memory safety bugs present in Firefox 145 and Thunderbird 145. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Thunderbird 146",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-14333",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.6, Thunderbird ESR 140.6, Firefox 146 and Thunderbird 146",
+  "desc": "Memory safety bugs present in Firefox ESR 140.5, Thunderbird ESR 140.5, Firefox 145 and Thunderbird 145. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-12-09",
+  "fixed": "Firefox 146; Firefox ESR 140.6; Thunderbird 146; Thunderbird 140.6",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2025-14860",
+  "sev": "high",
+  "title": "Use-after-free in the Disability Access APIs component",
+  "desc": "",
+  "date": "2025-12-18",
+  "fixed": "Firefox 146.0.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2025-14861",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 146.0.1",
+  "desc": "Memory safety bugs present in Firefox 146. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2025-12-18",
+  "fixed": "Firefox 146.0.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-0877",
+  "sev": "high",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 115.32; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-0878",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Graphics: CanvasWebGL component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-0879",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Graphics component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 115.32; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-0880",
+  "sev": "high",
+  "title": "Sandbox escape due to integer overflow in the Graphics component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 115.32; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-0881",
+  "sev": "high",
+  "title": "Sandbox escape in the Messaging System component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Thunderbird 147",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-0882",
+  "sev": "high",
+  "title": "Use-after-free in the IPC component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 115.32; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-0883",
+  "sev": "moderate",
+  "title": "Information disclosure in the Networking component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-0884",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-0885",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-0886",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Graphics component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 115.32; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-0887",
+  "sev": "moderate",
+  "title": "Clickjacking issue, information disclosure in the PDF Viewer component",
+  "desc": "",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "PDF"
+ },
+ {
+  "cve": "CVE-2026-0891",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.7, Thunderbird ESR 140.7, Firefox 147 and Thunderbird 147",
+  "desc": "Memory safety bugs present in Firefox ESR 140.6, Thunderbird ESR 140.6, Firefox 146 and Thunderbird 146. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Firefox ESR 140.7; Thunderbird 147; Thunderbird 140.7",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-0892",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox 147 and Thunderbird 147",
+  "desc": "Memory safety bugs present in Firefox 146 and Thunderbird 146. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-01-13",
+  "fixed": "Firefox 147; Thunderbird 147",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-24868",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Privacy: Anti-Tracking component",
+  "desc": "",
+  "date": "2026-01-27",
+  "fixed": "Firefox 147.0.2",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-24869",
+  "sev": "high",
+  "title": "Use-after-free in the Layout: Scrolling and Overflow component",
+  "desc": "",
+  "date": "2026-01-27",
+  "fixed": "Firefox 147.0.2",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-0818",
+  "sev": "moderate",
+  "title": "CSS-based exfiltration of the content from partially encrypted emails when allowing remote content",
+  "desc": "When a user explicitly requested Thunderbird to decrypt an inline OpenPGP message that was embedded in a text section of an email that was formatted and styled with HTML and CSS, then the decrypted contents were rendered in a context in which the CSS styles from the outer messages were active. If the user had additionally allowed loading of the remote content referenced by the outer email message, and the email was crafted by the sender using a combination of CSS rules and fonts and animations, then it was possible to extract the secret contents of the email.",
+  "date": "2026-01-27",
+  "fixed": "Thunderbird 147.0.1; Thunderbird 140.7.1",
+  "comp": "CSS"
+ },
+ {
+  "cve": "CVE-2026-2032",
+  "sev": "high",
+  "title": "Interrupted page loads in new tabs could allow website spoofing under trusted domains in Firefox iOS",
+  "desc": "Malicious scripts that interrupt new tab page loading could cause desynchronization between the address bar and page content, allowing the attacker to spoof arbitrary HTML under a trusted domain.",
+  "date": "2026-02-09",
+  "fixed": "Firefox for iOS 147.2.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2447",
+  "sev": "high",
+  "title": "Heap buffer overflow in libvpx",
+  "desc": "",
+  "date": "2026-02-16",
+  "fixed": "Firefox 147.0.4; Firefox ESR 115.32.1; Firefox ESR 140.7.1; Thunderbird 140.7.2; Thunderbird 147.0.2",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-2634",
+  "sev": "high",
+  "title": "Spoofed web content presented under trusted domains using scripted navigation on Firefox iOS",
+  "desc": "Malicious scripts could cause desynchronization between the address bar and web content before a response is received in Firefox iOS, allowing attacker-controlled pages to be presented under spoofed domains.",
+  "date": "2026-02-20",
+  "fixed": "Firefox for iOS 147.4",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2026-2757",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the WebRTC: Audio/Video component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-2794",
+  "sev": "high",
+  "title": "Information disclosure due to uninitialized memory in Firefox and Firefox Focus for Android",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2026-2758",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2759",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: ImageLib component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-2795",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2760",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-2761",
+  "sev": "high",
+  "title": "Sandbox escape in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-2762",
+  "sev": "high",
+  "title": "Integer overflow in the JavaScript: Standard Library component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2763",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2764",
+  "sev": "high",
+  "title": "JIT miscompilation, use-after-free in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2796",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-2797",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2765",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2766",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2767",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-2768",
+  "sev": "high",
+  "title": "Sandbox escape in the Storage: IndexedDB component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2798",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2769",
+  "sev": "high",
+  "title": "Use-after-free in the Storage: IndexedDB component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2799",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2770",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Bindings (WebIDL) component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2771",
+  "sev": "high",
+  "title": "Undefined behavior in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2772",
+  "sev": "high",
+  "title": "Use-after-free in the Audio/Video: Playback component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-2773",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Web Audio component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-2774",
+  "sev": "high",
+  "title": "Integer overflow in the Audio/Video component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-2775",
+  "sev": "high",
+  "title": "Mitigation bypass in the DOM: HTML Parser component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2776",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Telemetry component in External Software",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-2777",
+  "sev": "high",
+  "title": "Privilege escalation in the Messaging System component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-2778",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2779",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Networking: JAR component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-2800",
+  "sev": "moderate",
+  "title": "Spoofing issue in the WebAuthn component in Firefox for Android",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "WebAuthn/Crypto"
+ },
+ {
+  "cve": "CVE-2026-2780",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Netmonitor component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-2781",
+  "sev": "moderate",
+  "title": "Integer overflow in the Libraries component in NSS",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8; Firefox ESR 115.35",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-2801",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-2782",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Netmonitor component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-2783",
+  "sev": "moderate",
+  "title": "Information disclosure due to JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2802",
+  "sev": "moderate",
+  "title": "Race condition in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2803",
+  "sev": "moderate",
+  "title": "Information disclosure, mitigation bypass in the Settings UI component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-2784",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2785",
+  "sev": "moderate",
+  "title": "Invalid pointer in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2804",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-2786",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-2805",
+  "sev": "moderate",
+  "title": "Invalid pointer in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2787",
+  "sev": "moderate",
+  "title": "Use-after-free in the DOM: Window and Location component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-2788",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Audio/Video: GMP component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-2789",
+  "sev": "moderate",
+  "title": "Use-after-free in the Graphics: ImageLib component",
+  "desc": "",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-2807",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 148 and Thunderbird 148",
+  "desc": "Memory safety bugs present in Firefox 147 and Thunderbird 147. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Thunderbird 148",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-2792",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.8, Thunderbird ESR 140.8, Firefox 148 and Thunderbird 148",
+  "desc": "Memory safety bugs present in Firefox ESR 140.7, Thunderbird ESR 140.7, Firefox 147 and Thunderbird 147. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-2793",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.33, Firefox ESR 140.8, Thunderbird ESR 140.8, Firefox 148 and Thunderbird 148",
+  "desc": "Memory safety bugs present in Firefox ESR 115.32, Firefox ESR 140.7, Thunderbird ESR 140.7, Firefox 147 and Thunderbird 147. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-02-24",
+  "fixed": "Firefox 148; Firefox ESR 115.33; Firefox ESR 140.8; Thunderbird 148; Thunderbird 140.8",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-2919",
+  "sev": "high",
+  "title": "Attacker-controlled content shown under spoofed domains in Focus for iOS via stalled navigation and iframe redirect",
+  "desc": "Malicious scripts could display attacker-controlled web content under spoofed domains in Focus for iOS by stalling a _self navigation to an invalid port and triggering an iframe redirect, causing the UI to display a trusted domain without user interaction.",
+  "date": "2026-03-02",
+  "fixed": "Focus for iOS 148.2",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-3845",
+  "sev": "high",
+  "title": "Heap buffer overflow in the Audio/Video: Playback component in Firefox for Android",
+  "desc": "",
+  "date": "2026-03-10",
+  "fixed": "Firefox 148.0.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-3846",
+  "sev": "high",
+  "title": "Same-origin policy bypass in the CSS Parsing and Computation component",
+  "desc": "",
+  "date": "2026-03-10",
+  "fixed": "Firefox 148.0.2",
+  "comp": "CSS"
+ },
+ {
+  "cve": "CVE-2026-3847",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 148.0.2",
+  "desc": "Memory safety bugs present in Firefox 148.0.2. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-03-10",
+  "fixed": "Firefox 148.0.2",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-4684",
+  "sev": "high",
+  "title": "Race condition, use-after-free in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-4685",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4686",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4687",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Telemetry component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4688",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the Disability Access APIs component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4689",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions, integer overflow in the XPCOM component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4690",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions, integer overflow in the XPCOM component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4691",
+  "sev": "high",
+  "title": "Use-after-free in the CSS Parsing and Computation component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "CSS"
+ },
+ {
+  "cve": "CVE-2026-4692",
+  "sev": "high",
+  "title": "Sandbox escape in the Responsive Design Mode component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4693",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: Playback component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4694",
+  "sev": "high",
+  "title": "Incorrect boundary conditions, integer overflow in the Graphics component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-4695",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: Web Codecs component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4696",
+  "sev": "high",
+  "title": "Use-after-free in the Layout: Text and Fonts component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-4697",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: Web Codecs component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4698",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-4699",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Layout: Text and Fonts component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4700",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Networking: HTTP component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-4701",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-4722",
+  "sev": "moderate",
+  "title": "Privilege escalation in the IPC component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Thunderbird 149",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-4702",
+  "sev": "moderate",
+  "title": "JIT miscompilation in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-4723",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Thunderbird 149",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-4724",
+  "sev": "moderate",
+  "title": "Undefined behavior in the Audio/Video component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Thunderbird 149",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4704",
+  "sev": "moderate",
+  "title": "Denial-of-service in the WebRTC: Signaling component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4705",
+  "sev": "moderate",
+  "title": "Undefined behavior in the WebRTC: Signaling component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4706",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4707",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4708",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Graphics component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4709",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: GMP component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4710",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Audio/Video component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4711",
+  "sev": "moderate",
+  "title": "Use-after-free in the Widget: Cocoa component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-4725",
+  "sev": "moderate",
+  "title": "Sandbox escape due to use-after-free in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Thunderbird 149",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4712",
+  "sev": "moderate",
+  "title": "Information disclosure in the Widget: Cocoa component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4713",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Graphics component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4714",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Audio/Video component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-4715",
+  "sev": "moderate",
+  "title": "Uninitialized memory in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-4716",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions, uninitialized memory in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-4717",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Netmonitor component",
+  "desc": "",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-4720",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.9, Thunderbird ESR 140.9, Firefox 149 and Thunderbird 149",
+  "desc": "Memory safety bugs present in Firefox ESR 140.8, Thunderbird ESR 140.8, Firefox 148 and Thunderbird 148. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-4729",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 149 and Thunderbird 149",
+  "desc": "Memory safety bugs present in Firefox 148 and Thunderbird 148. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Thunderbird 149",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-4721",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.34, Firefox ESR 140.9, Thunderbird ESR 140.9, Firefox 149 and Thunderbird 149",
+  "desc": "Memory safety bugs present in Firefox ESR 115.33, Firefox ESR 140.8, Thunderbird ESR 140.8, Firefox 148 and Thunderbird 148. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-03-24",
+  "fixed": "Firefox 149; Firefox ESR 115.34; Firefox ESR 140.9; Thunderbird 149; Thunderbird 140.9",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-4371",
+  "sev": "high",
+  "title": "Out of bounds read in IMAP parsing",
+  "desc": "A malicious mail server could send malformed strings with negative lengths, causing the parser to read memory outside the buffer. If a mail server or connection to a mail server were compromised, an attacker could cause the parser to malfunction, potentially crashing Thunderbird or leaking sensitive data.",
+  "date": "2026-03-24",
+  "fixed": "Thunderbird 149; Thunderbird 140.9",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2026-5732",
+  "sev": "high",
+  "title": "Incorrect boundary conditions, integer overflow in the Graphics: Text component",
+  "desc": "",
+  "date": "2026-04-07",
+  "fixed": "Firefox 149.0.2; Firefox ESR 140.9.1; Thunderbird 149.0.2; Thunderbird 140.9.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-5733",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-04-07",
+  "fixed": "Firefox 149.0.2; Thunderbird 149.0.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-5731",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.34.1, Firefox ESR 140.9.1, Thunderbird ESR 140.9.1, Firefox 149.0.2 and Thunderbird 149.0.2",
+  "desc": "Memory safety bugs present in Firefox ESR 115.34.0, Firefox ESR 140.9.0, Thunderbird ESR 140.9.0, Firefox 149.0.1 and Thunderbird 149.0.1. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-07",
+  "fixed": "Firefox 149.0.2; Firefox ESR 115.34.1; Firefox ESR 140.9.1; Thunderbird 149.0.2; Thunderbird 140.9.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-5734",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.9.1, Thunderbird ESR 140.9.1, Firefox 149.0.2 and Thunderbird 149.0.2",
+  "desc": "Memory safety bugs present in Firefox ESR 140.9.0, Thunderbird ESR 140.9.0, Firefox 149.0.1 and Thunderbird 149.0.1. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-07",
+  "fixed": "Firefox 149.0.2; Firefox ESR 140.9.1; Thunderbird 149.0.2; Thunderbird 140.9.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-5735",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 149.0.2 and Thunderbird 149.0.2",
+  "desc": "Memory safety bugs present in Firefox 149.0.1 and Thunderbird 149.0.1. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-07",
+  "fixed": "Firefox 149.0.2; Thunderbird 149.0.2",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-6746",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6747",
+  "sev": "high",
+  "title": "Use-after-free in the WebRTC component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-6748",
+  "sev": "high",
+  "title": "Uninitialized memory in the Audio/Video: Web Codecs component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-6749",
+  "sev": "high",
+  "title": "Information disclosure due to uninitialized memory in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-6750",
+  "sev": "high",
+  "title": "Privilege escalation in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-6751",
+  "sev": "high",
+  "title": "Uninitialized memory in the Audio/Video: Web Codecs component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-6752",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the WebRTC component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-6753",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the WebRTC component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-6754",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-6755",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: postMessage component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6756",
+  "sev": "moderate",
+  "title": "Mitigation bypass in Firefox for Android",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2026-6757",
+  "sev": "moderate",
+  "title": "Invalid pointer in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-6758",
+  "sev": "moderate",
+  "title": "Use-after-free in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-6759",
+  "sev": "moderate",
+  "title": "Use-after-free in the Widget: Cocoa component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-6760",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Networking: Cookies component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-6761",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Networking component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-6762",
+  "sev": "moderate",
+  "title": "Spoofing issue in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6763",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the File Handling component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-6764",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the DOM: Device Interfaces component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6765",
+  "sev": "moderate",
+  "title": "Information disclosure in the Form Autofill component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6766",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Libraries component in NSS",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-6767",
+  "sev": "moderate",
+  "title": "Other issue in the Libraries component in NSS",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-6768",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Networking: Cookies component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-6769",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Debugger component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-6770",
+  "sev": "moderate",
+  "title": "Other issue in the Storage: IndexedDB component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6771",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-6772",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Libraries component in NSS",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-7321",
+  "sev": "moderate",
+  "title": "Sandbox escape due to incorrect boundary conditions in the WebRTC: Networking component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150; Firefox ESR 140.10.1; Thunderbird 140.10.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-8091",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: Playback component",
+  "desc": "",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150; Firefox ESR 140.10.1; Thunderbird 140.10.1; Firefox ESR 115.35.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-6784",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 150 and Thunderbird 150",
+  "desc": "Memory safety bugs present in Firefox 149 and Thunderbird 149. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Thunderbird 150",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-6785",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.35, Firefox ESR 140.10, Thunderbird ESR 140.10, Firefox 150 and Thunderbird 150",
+  "desc": "Memory safety bugs present in Firefox ESR 115.34, Firefox ESR 140.9, Thunderbird ESR 140.9, Firefox 149 and Thunderbird 149. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 115.35; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-6786",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.10, Thunderbird ESR 140.10, Firefox 150 and Thunderbird 150",
+  "desc": "Memory safety bugs present in Firefox ESR 140.9, Thunderbird ESR 140.9, Firefox 149 and Thunderbird 149. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-21",
+  "fixed": "Firefox 150; Firefox ESR 140.10; Thunderbird 150; Thunderbird 140.10",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-7320",
+  "sev": "high",
+  "title": "Information disclosure due to incorrect boundary conditions in the Audio/Video component",
+  "desc": "",
+  "date": "2026-04-28",
+  "fixed": "Firefox 150.0.1; Firefox ESR 140.10.1; Firefox ESR 115.35.1; Thunderbird 150.0.1; Thunderbird 140.10.1",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-7322",
+  "sev": "critical",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.35.1, Firefox ESR 140.10.1 and Firefox 150.0.1",
+  "desc": "Memory safety bugs present in Firefox ESR 115.35.0, Firefox ESR 140.10.0 and Firefox 150.0.0. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-28",
+  "fixed": "Firefox 150.0.1; Firefox ESR 140.10.1; Firefox ESR 115.35.1; Thunderbird 150.0.1; Thunderbird 140.10.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-7323",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.10.1 and Firefox 150.0.1",
+  "desc": "Memory safety bugs present in Firefox ESR 140.10.0 and Firefox 150.0.0. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-28",
+  "fixed": "Firefox 150.0.1; Firefox ESR 140.10.1; Thunderbird 150.0.1; Thunderbird 140.10.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-7324",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 150.0.1",
+  "desc": "Memory safety bugs present in Firefox 150.0.0. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-04-28",
+  "fixed": "Firefox 150.0.1; Thunderbird 150.0.1",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-8090",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Networking component",
+  "desc": "",
+  "date": "2026-05-07",
+  "fixed": "Firefox 150.0.2; Firefox ESR 140.10.2; Firefox ESR 115.35.2; Thunderbird 150.0.2; Thunderbird 140.10.2",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-8092",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.35.2, Firefox ESR 140.10.2 and Firefox 150.0.2",
+  "desc": "Memory safety bugs present in Firefox ESR 115.35.1, Firefox ESR 140.10.1 and Firefox 150.0.1. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-05-07",
+  "fixed": "Firefox 150.0.2; Firefox ESR 140.10.2; Firefox ESR 115.35.2; Thunderbird 150.0.2; Thunderbird 140.10.2",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-8093",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 150.0.2",
+  "desc": "Memory safety bugs present in Firefox 150.0.1. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-05-07",
+  "fixed": "Firefox 150.0.2; Thunderbird 150.0.2",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-8094",
+  "sev": "high",
+  "title": "Other issue in the WebRTC component",
+  "desc": "",
+  "date": "2026-05-07",
+  "fixed": "Firefox ESR 140.10.2; Thunderbird 140.10.2",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-8388",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-05-12",
+  "fixed": "Firefox 150.0.3; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 140.11",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-8389",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-05-12",
+  "fixed": "Firefox 150.0.3",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-8390",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-05-12",
+  "fixed": "Firefox 150.0.3",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-8391",
+  "sev": "high",
+  "title": "Other issue in the JavaScript Engine component",
+  "desc": "",
+  "date": "2026-05-12",
+  "fixed": "Firefox 150.0.3; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 140.11",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-8401",
+  "sev": "high",
+  "title": "Sandbox escape in the Profile Backup component",
+  "desc": "",
+  "date": "2026-05-12",
+  "fixed": "Firefox 150.0.3; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 140.11",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-8945",
+  "sev": "high",
+  "title": "Sandbox escape in Firefox and Firefox Focus for Android",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-8946",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: Web Codecs component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-8947",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Bindings (WebIDL) component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-8948",
+  "sev": "high",
+  "title": "Same-origin policy bypass in the DOM: Networking component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Thunderbird 151",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-8949",
+  "sev": "moderate",
+  "title": "Integer overflow in the Widget: Win32 component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-8950",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Networking: HTTP component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-8951",
+  "sev": "moderate",
+  "title": "Spoofing issue in the Toolbar component in Firefox for Android",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2026-8952",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Application Update component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Thunderbird 151",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-8953",
+  "sev": "moderate",
+  "title": "Sandbox escape due to use-after-free in the Disability Access APIs component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-8954",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions, integer overflow in the Audio/Video component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-8955",
+  "sev": "moderate",
+  "title": "Privilege escalation in the DOM: Workers component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-8956",
+  "sev": "moderate",
+  "title": "Integer overflow in the Networking: JAR component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-8957",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Enterprise Policies component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-8958",
+  "sev": "moderate",
+  "title": "Information disclosure, sandbox escape in the Security: Process Sandboxing component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-8959",
+  "sev": "moderate",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Widget: Win32 component",
+  "desc": "",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-8973",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 151",
+  "desc": "Memory safety bugs present in Firefox 150. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Thunderbird 151",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-8974",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.11 and Firefox 151",
+  "desc": "Memory safety bugs present in Firefox ESR 140.10 and Firefox 150. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-8975",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.36, Firefox ESR 140.11 and Firefox 151",
+  "desc": "Memory safety bugs present in Firefox ESR 115.35, Firefox ESR 140.10 and Firefox 150. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-05-19",
+  "fixed": "Firefox 151; Firefox ESR 115.36; Firefox ESR 140.11; Thunderbird 151; Thunderbird 140.11",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-8706",
+  "sev": "high",
+  "title": "Sensitive user data could be leaked to other applications through Reader mode",
+  "desc": "Firefox for iOS hosted Reader mode on an unauthenticated local web server, allowing another application on the same device to request arbitrary URLs and receive the response rendered with the signed-in user's cookies.",
+  "date": "2026-05-19",
+  "fixed": "Firefox for iOS 151",
+  "comp": "Cookies"
+ },
+ {
+  "cve": "CVE-2026-9308",
+  "sev": "high",
+  "title": "Arbitrary JavaScript execution in Reader View due to wrong HTML replacement order",
+  "desc": "Firefox for iOS Reader View replaced page content in its HTML template before replacing other internal placeholders. A malicious page could include a placeholder string that was later substituted with JSON-LD data, potentially resulting in arbitrary JavaScript execution.",
+  "date": "2026-06-01",
+  "fixed": "Firefox for iOS 151.2",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-9309",
+  "sev": "high",
+  "title": "Arbitrary JavaScript execution in internal pages via Reader View JSON-LD injection",
+  "desc": "Firefox for iOS Reader View did not properly escape HTML tags in JSON-LD metadata. A malicious page could inject markup that changed Reader View behavior and leaked sensitive URL parameters. These parameters could then be used to access internal pages, potentially resulting in arbitrary JavaScript execution in an internal origin.",
+  "date": "2026-06-01",
+  "fixed": "Firefox for iOS 151.2",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-10701",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics: Text component",
+  "desc": "",
+  "date": "2026-06-02",
+  "fixed": "Firefox 151.0.3",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-10702",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-06-02",
+  "fixed": "Firefox 151.0.3",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-11799",
+  "sev": "high",
+  "title": "UXSS in Focus for iOS / Klar Webkit navigation",
+  "desc": "",
+  "date": "2026-06-09",
+  "fixed": "Focus for iOS 151.3.1; Klar for iOS 151.3.1",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2026-53899",
+  "sev": "high",
+  "title": "Cross-origin cookies could be leaked when opening a PDF link",
+  "desc": "Firefox for iOS used partial domain matching when attaching cookies to PDF requests, allowing a malicious site on a suffix domain to receive cookies belonging to the target site.",
+  "date": "2026-06-16",
+  "fixed": "Firefox for iOS 152",
+  "comp": "PDF"
+ },
+ {
+  "cve": "CVE-2026-53900",
+  "sev": "high",
+  "title": "Cookie injection was possible when opening a PDF link",
+  "desc": "Firefox for iOS preserved cookies set on the initial PDF request across cross-origin HTTP redirects in TemporaryDocument, allowing a malicious site to inject arbitrary cookies into requests to an unrelated target domain.",
+  "date": "2026-06-16",
+  "fixed": "Firefox for iOS 152",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-12289",
+  "sev": "high",
+  "title": "Privilege escalation in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-12290",
+  "sev": "high",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12291",
+  "sev": "high",
+  "title": "Use-after-free in the Networking: HTTP component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-12292",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Web Audio component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-12293",
+  "sev": "high",
+  "title": "Use-after-free in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Thunderbird 152",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-12294",
+  "sev": "high",
+  "title": "Sandbox escape in the DOM: Workers component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-12295",
+  "sev": "high",
+  "title": "Sandbox escape in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-12296",
+  "sev": "high",
+  "title": "Sandbox escape in the Security: Process Sandboxing component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-12297",
+  "sev": "high",
+  "title": "Sandbox escape due to incorrect boundary conditions in the Networking component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-12298",
+  "sev": "high",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12299",
+  "sev": "high",
+  "title": "JIT miscompilation in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-12300",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Thunderbird 152",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12301",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Thunderbird 152",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12302",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-12303",
+  "sev": "moderate",
+  "title": "Information disclosure due to incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Thunderbird 152",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-12304",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Networking: Cookies component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-12305",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12306",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12307",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12308",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12309",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12310",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12311",
+  "sev": "moderate",
+  "title": "Information disclosure, sandbox escape in the Security: Process Sandboxing component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-12312",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12313",
+  "sev": "moderate",
+  "title": "Information disclosure, sandbox escape in the Security: Process Sandboxing component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-12314",
+  "sev": "moderate",
+  "title": "Memory safety bug fixed in Firefox 152",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12315",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-12316",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Thunderbird 152",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-12326",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 152 and Thunderbird 152",
+  "desc": "Memory safety bugs present in Firefox 151 and Thunderbird 151. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Thunderbird 152",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12327",
+  "sev": "moderate",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.12, Thunderbird ESR 140.12, Firefox 152 and Thunderbird 152",
+  "desc": "Memory safety bugs present in Firefox ESR 140.11, Thunderbird ESR 140.11, Firefox 151 and Thunderbird 151. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12328",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.37, Firefox ESR 140.12, Thunderbird ESR 140.12, Firefox 152 and Thunderbird 152",
+  "desc": "Memory safety bugs present in Firefox ESR 115.36, Firefox ESR 140.11, Thunderbird ESR 140.11, Firefox 151 and Thunderbird 151. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-06-16",
+  "fixed": "Firefox 152; Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 152; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12329",
+  "sev": "high",
+  "title": "Memory safety bug fixed in Firefox ESR 140.12",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox ESR 140.12; Thunderbird 140.12",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-12330",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Internationalization component",
+  "desc": "",
+  "date": "2026-06-16",
+  "fixed": "Firefox ESR 140.12; Firefox ESR 115.37; Thunderbird 140.12",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-14241",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 152.0.4",
+  "desc": "Memory safety bugs present in Firefox 152.0.3. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-06-30",
+  "fixed": "Firefox 152.0.4",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-57962",
+  "sev": "medium",
+  "title": "Denial-of-service via malicious LDAP address-book server",
+  "desc": "A malicious LDAP server, which a Thunderbird user is configured to query for address-book autocomplete, can stash arbitrarily large amounts of attacker-supplied data into the Thunderbird LDAP client until it crashes due to memory exhaustion.",
+  "date": "2026-06-30",
+  "fixed": "Thunderbird 152.0.1; Thunderbird 140.12.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-57963",
+  "sev": "high",
+  "title": "Chat UI manipulation by injection",
+  "desc": "An attacker who can send HTML chat messages (via Matrix or XMPP) can inject arbitrary styled content, phishing links, and CSS that manipulates the chat UI.",
+  "date": "2026-06-30",
+  "fixed": "Thunderbird 152.0.1; Thunderbird 140.12.1",
+  "comp": "CSS"
+ },
+ {
+  "cve": "CVE-2026-13356",
+  "sev": "moderate",
+  "title": "Interrupted navigation could allow address bar origin spoofing in Firefox for iOS",
+  "desc": "A malicious webpage could interrupt a pending navigation by enqueuing a synchronous JavaScript dialog, causing the browser UI to display the destination origin in the address bar while continuing to render attacker-controlled content.",
+  "date": "2026-07-05",
+  "fixed": "Firefox for iOS 152.3",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-15718",
+  "sev": "critical",
+  "title": "Invalid pointer in the JavaScript: WebAssembly component",
+  "desc": "We are aware that exploit code for this is public however we are not aware of any attacks in the wild abusing this flaw.",
+  "date": "2026-07-14",
+  "fixed": "Firefox 152.0.6; Firefox ESR 140.13; Thunderbird 140.13",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-15719",
+  "sev": "critical",
+  "title": "Site isolation in the DOM: Navigation component",
+  "desc": "We are aware that exploit code for this is public however we are not aware of any attacks in the wild abusing this flaw.",
+  "date": "2026-07-14",
+  "fixed": "Firefox 152.0.6; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 140.13",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16349",
+  "sev": "high",
+  "title": "Same-origin policy bypass in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16350",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: cubeb component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16362",
+  "sev": "high",
+  "title": "Use-after-free in the WebRTC: Audio/Video component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16351",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16352",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the Disability Access APIs component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-16363",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-16364",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Audio/Video: Playback component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16365",
+  "sev": "high",
+  "title": "Privilege escalation in the DOM: Workers component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153; Firefox ESR 140.15; Thunderbird 140.15",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16366",
+  "sev": "high",
+  "title": "Privilege escalation in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16353",
+  "sev": "high",
+  "title": "Invalid pointer in the DOM: Bindings (WebIDL) component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16354",
+  "sev": "high",
+  "title": "Information disclosure in the Graphics: ImageLib component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16367",
+  "sev": "high",
+  "title": "Sandbox escape due to invalid pointer in the Disability Access APIs component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-16368",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-16369",
+  "sev": "high",
+  "title": "Integer overflow in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-16355",
+  "sev": "high",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-16356",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the Disability Access APIs component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-16357",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Graphics component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-16370",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Networking component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16371",
+  "sev": "moderate",
+  "title": "Privilege escalation in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13; Firefox ESR 140.15; Thunderbird 140.15",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16372",
+  "sev": "moderate",
+  "title": "Privilege escalation in the DOM: Content Processes component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-16373",
+  "sev": "moderate",
+  "title": "Information disclosure in the Privacy component in Firefox for Android",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2026-16374",
+  "sev": "moderate",
+  "title": "Information disclosure in the Framework component in DevTools",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2026-16375",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Networking: HTTP component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16376",
+  "sev": "moderate",
+  "title": "Denial-of-service in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16377",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the PDF Viewer component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "PDF"
+ },
+ {
+  "cve": "CVE-2026-16378",
+  "sev": "moderate",
+  "title": "Other issue in the DOM: Copy & Paste and Drag & Drop component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16379",
+  "sev": "moderate",
+  "title": "Privilege escalation in the DOM: Content Processes component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "IPC"
+ },
+ {
+  "cve": "CVE-2026-16358",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-16380",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Networking component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16381",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Networking: DNS component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16382",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Service Workers component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16383",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Networking component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16384",
+  "sev": "moderate",
+  "title": "Information disclosure due to uninitialized memory in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16385",
+  "sev": "moderate",
+  "title": "Information disclosure due to uninitialized memory in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16386",
+  "sev": "moderate",
+  "title": "Information disclosure due to uninitialized memory in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16387",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Networking component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16388",
+  "sev": "moderate",
+  "title": "Sandbox escape in the DOM: Networking component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-16389",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions, integer overflow in the Libraries component in NSS",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-16390",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Enterprise Policies component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-16391",
+  "sev": "moderate",
+  "title": "Information disclosure in the Storage: IndexedDB component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16392",
+  "sev": "moderate",
+  "title": "JIT miscompilation in the JavaScript Engine: JIT component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-16393",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16359",
+  "sev": "moderate",
+  "title": "Incorrect boundary conditions in the Audio/Video: GMP component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16394",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the DOM: Security component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16395",
+  "sev": "moderate",
+  "title": "Integer overflow in the Audio/Video component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16396",
+  "sev": "moderate",
+  "title": "Privilege escalation in WebExtensions",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-16397",
+  "sev": "moderate",
+  "title": "Clickjacking issue in the WebExtensions component in Firefox for Android",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-16398",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Graphics component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-16399",
+  "sev": "moderate",
+  "title": "Site isolation issue in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16400",
+  "sev": "moderate",
+  "title": "Information disclosure in the DOM: Security component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-16401",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Data Loss Prevention component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-16402",
+  "sev": "moderate",
+  "title": "Integer overflow in the Graphics: ImageLib component",
+  "desc": "",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-16411",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox 153",
+  "desc": "Memory safety bugs present in Firefox 152. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Thunderbird 153",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-16412",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 140.13 and Firefox 153",
+  "desc": "Memory safety bugs present in Firefox ESR 140.12 and Firefox 152. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-16360",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.38, Firefox ESR 140.13 and Firefox 153",
+  "desc": "Memory safety bugs present in Firefox ESR 115.37, Firefox ESR 140.12 and Firefox 152. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-07-21",
+  "fixed": "Firefox 153; Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 153; Thunderbird 140.13",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-16361",
+  "sev": "high",
+  "title": "Memory safety bugs fixed in Firefox ESR 115.38 and Firefox ESR 140.13",
+  "desc": "Memory safety bugs present in Firefox ESR 115.37 and Firefox ESR 140.12. Some of these bugs showed evidence of memory corruption and we presume that with enough effort some of these could have been exploited to run arbitrary code.",
+  "date": "2026-07-21",
+  "fixed": "Firefox ESR 115.38; Firefox ESR 140.13; Thunderbird 140.13",
+  "comp": "Memory safety"
+ },
+ {
+  "cve": "CVE-2026-14899",
+  "sev": "moderate",
+  "title": "Off-by-one out of bounds read in MIME header parser for forwarding",
+  "desc": "The code to parse MIME headers for display when forwarding a message (if the setting to view all headers was enabled) had an off-by-one error, allowing a single byte to be read from the memory after the buffer for the headers, and potentially crashing Thunderbird.",
+  "date": "2026-07-21",
+  "fixed": "Thunderbird 153; Thunderbird 140.13",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2026-18809",
+  "sev": "high",
+  "title": "Information disclosure in Firefox for Android and Firefox Focus for Android",
+  "desc": "",
+  "date": "2026-08-04",
+  "fixed": "Firefox 153.0.3",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2026-75874",
+  "sev": "high",
+  "title": "Sandbox escape in the Remote Settings Client component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Thunderbird 154; Firefox ESR 115.40; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74934",
+  "sev": "high",
+  "title": "Site isolation issue in the Graphics: CanvasWebGL component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74935",
+  "sev": "high",
+  "title": "Privilege escalation in the DOM: Networking component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-74936",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: WebAssembly component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "WebAssembly"
+ },
+ {
+  "cve": "CVE-2026-74937",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-74938",
+  "sev": "high",
+  "title": "Mitigation bypass in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-74939",
+  "sev": "high",
+  "title": "Privilege escalation in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74940",
+  "sev": "high",
+  "title": "Use-after-free in the Graphics: Text component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74941",
+  "sev": "high",
+  "title": "Privilege escalation in the Graphics: CanvasWebGL component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74942",
+  "sev": "high",
+  "title": "Privilege escalation in the Remote Settings Client component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74943",
+  "sev": "high",
+  "title": "Use-after-free in the Graphics: ImageLib component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-74944",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74945",
+  "sev": "high",
+  "title": "Information disclosure in the Graphics: Text component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74946",
+  "sev": "high",
+  "title": "Privilege escalation due to incorrect boundary conditions in the Graphics: CanvasWebGL component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74947",
+  "sev": "high",
+  "title": "Privilege escalation due to invalid pointer in the Graphics component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74948",
+  "sev": "high",
+  "title": "Information disclosure in the Graphics component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74950",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Downloads API component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74951",
+  "sev": "moderate",
+  "title": "Clickjacking issue in Firefox for Android",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74952",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Application Update component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Thunderbird 154; Firefox ESR 153.2; Thunderbird 153.2",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74953",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Networking: Cookies component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-74954",
+  "sev": "moderate",
+  "title": "Information disclosure due to side-channel in the Storage: Cache API component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74955",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Request Handling component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74956",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the DOM: Service Workers component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74957",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Safe Browsing component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74958",
+  "sev": "moderate",
+  "title": "Information disclosure in the WebRTC component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74959",
+  "sev": "moderate",
+  "title": "Mitigation bypass in the Storage: Cache API component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74960",
+  "sev": "moderate",
+  "title": "Site isolation issue in the WebExtensions component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74961",
+  "sev": "moderate",
+  "title": "Side-channel in the Web Audio component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74962",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Networking: Cookies component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-74963",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Networking: Cookies component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-74964",
+  "sev": "moderate",
+  "title": "Integer overflow in the Graphics component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74965",
+  "sev": "moderate",
+  "title": "Privilege escalation in the Shell Integration component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74966",
+  "sev": "moderate",
+  "title": "Information disclosure in the Form Autofill component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74967",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Audio/Video: Playback component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-74968",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Graphics: WebRender component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74969",
+  "sev": "moderate",
+  "title": "Use-after-free in the Layout: Text and Fonts component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74970",
+  "sev": "moderate",
+  "title": "Site isolation issue in the Graphics component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-74971",
+  "sev": "moderate",
+  "title": "Information disclosure in the DOM: UI Events & Focus Handling component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74972",
+  "sev": "moderate",
+  "title": "Information disclosure in the DOM: Push Subscriptions component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-74949",
+  "sev": "high",
+  "title": "Privilege escalation due to use-after-free in the Graphics: Canvas2D component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-74973",
+  "sev": "moderate",
+  "title": "Race condition, use-after-free in the Graphics component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74974",
+  "sev": "moderate",
+  "title": "Same-origin policy bypass in the Graphics: ImageLib component",
+  "desc": "",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-74987",
+  "sev": "high",
+  "title": "Internally found bugs fixed in Firefox ESR 140.14, Firefox ESR 153.1 and Firefox 154",
+  "desc": "Internally found bugs present in Firefox ESR 140.13, Firefox ESR 153.0 and Firefox 153. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74988",
+  "sev": "high",
+  "title": "Internally found bugs fixed in Firefox ESR 153.1 and Firefox 154",
+  "desc": "Internally found bugs present in Firefox ESR 153.0 and Firefox 153. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 153.1; Thunderbird 154; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74989",
+  "sev": "moderate",
+  "title": "Internally found bugs fixed in Firefox 154",
+  "desc": "Internally found bugs present in Firefox 153. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Thunderbird 154",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-74990",
+  "sev": "high",
+  "title": "Internally found bugs fixed in Firefox ESR 115.39, Firefox ESR 140.14, Firefox ESR 153.1 and Firefox 154",
+  "desc": "Internally found bugs present in Firefox ESR 115.38, Firefox ESR 140.13, Firefox ESR 153.0 and Firefox 153. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-08-18",
+  "fixed": "Firefox 154; Firefox ESR 115.39; Firefox ESR 140.14; Firefox ESR 153.1; Thunderbird 154; Thunderbird 140.14; Thunderbird 153.1",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-81267",
+  "sev": "moderate",
+  "title": "Stalled popup navigation could allow address bar origin spoofing in Firefox for iOS",
+  "desc": "A malicious webpage could stall a popup's cross-origin navigation after commit, causing the address bar to display the destination origin while continuing to render attacker-controlled content.",
+  "date": "2026-08-31",
+  "fixed": "Firefox for iOS 155",
+  "comp": "Browser UI/Spoofing"
+ },
+ {
+  "cve": "CVE-2026-84117",
+  "sev": "high",
+  "title": "Privilege escalation in Firefox for Android",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-84118",
+  "sev": "high",
+  "title": "Use-after-free in the JavaScript: GC component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "JS Engine"
+ },
+ {
+  "cve": "CVE-2026-84119",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 115.40; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-84120",
+  "sev": "high",
+  "title": "Use-after-free in the Audio/Video component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 115.40; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-84121",
+  "sev": "high",
+  "title": "Sandbox escape due to use-after-free in the DOM: Security component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 115.40; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-84122",
+  "sev": "high",
+  "title": "Use-after-free in the Audio/Video component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-84123",
+  "sev": "high",
+  "title": "Privilege escalation due to use-after-free in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-84124",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-84125",
+  "sev": "high",
+  "title": "Use-after-free in the DOM: Core & HTML component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-84126",
+  "sev": "high",
+  "title": "Incorrect boundary conditions in the Layout: Grid component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Thunderbird 155",
+  "comp": "Misc/Other"
+ },
+ {
+  "cve": "CVE-2026-84127",
+  "sev": "moderate",
+  "title": "Information disclosure in the WebExtensions component in Firefox for Android",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155",
+  "comp": "Platform (iOS/Android/Focus)"
+ },
+ {
+  "cve": "CVE-2026-84128",
+  "sev": "moderate",
+  "title": "Privilege escalation in the WebDriver BiDi component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Thunderbird 155",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-84129",
+  "sev": "moderate",
+  "title": "Site isolation issue in the DOM: Navigation component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "DOM/HTML"
+ },
+ {
+  "cve": "CVE-2026-84130",
+  "sev": "moderate",
+  "title": "Information disclosure in the Graphics: WebGPU component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "Graphics (Canvas/Skia/Images)"
+ },
+ {
+  "cve": "CVE-2026-84131",
+  "sev": "moderate",
+  "title": "Privilege escalation due to invalid pointer in the Graphics component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 115.40; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Content/Security Policy"
+ },
+ {
+  "cve": "CVE-2026-84132",
+  "sev": "moderate",
+  "title": "Information disclosure in the Networking: HTTP component",
+  "desc": "",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "Network"
+ },
+ {
+  "cve": "CVE-2026-84142",
+  "sev": "moderate",
+  "title": "Internally found bugs fixed in Firefox 155",
+  "desc": "Internally found bugs present in Firefox 154. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Thunderbird 155",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-84143",
+  "sev": "high",
+  "title": "Internally found bugs fixed in Firefox 155, Firefox ESR 153.2 and Firefox ESR 140.15",
+  "desc": "Internally found bugs present in Firefox 154, Firefox ESR 153.1 and Firefox ESR 140.14. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-84144",
+  "sev": "high",
+  "title": "Internally found bugs fixed in Firefox 155 and Firefox ESR 153.2",
+  "desc": "Internally found bugs present in Firefox 154 and Firefox ESR 153.1. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 153.2; Thunderbird 155; Thunderbird 153.2",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-84145",
+  "sev": "high",
+  "title": "Internally found bugs fixed in Firefox 155, Firefox ESR 153.2, Firefox ESR 140.15 and Firefox ESR 115.40",
+  "desc": "Internally found bugs present in Firefox 154, Firefox ESR 153.1, Firefox ESR 140.14 and Firefox ESR 115.39. Some of these bugs showed evidence of memory corruption or another security-relevant defect and we presume that with enough effort some of these could have been exploited.",
+  "date": "2026-09-01",
+  "fixed": "Firefox 155; Firefox ESR 115.40; Firefox ESR 140.15; Firefox ESR 153.2; Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Memory safety (generic)"
+ },
+ {
+  "cve": "CVE-2026-84639",
+  "sev": "high",
+  "title": "Uninitialized memory in MIME parsing",
+  "desc": "Triggering an error condition in certain MIME bodies would cause uninitialized memory to be used.",
+  "date": "2026-09-01",
+  "fixed": "Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Mail (Thunderbird)"
+ },
+ {
+  "cve": "CVE-2026-84640",
+  "sev": "medium",
+  "title": "One byte overflow read in mail parser",
+  "desc": "A maliciously constructed mail header could lead to a one byte read past the end of a buffer.",
+  "date": "2026-09-01",
+  "fixed": "Thunderbird 155; Thunderbird 140.15; Thunderbird 153.2",
+  "comp": "Mail (Thunderbird)"
+ }
+]

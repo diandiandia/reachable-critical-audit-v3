@@ -1,0 +1,1154 @@
+[
+ {
+  "cve": "CVE-2025-24167",
+  "sev": "critical",
+  "layer": "L0d",
+  "rationale": "desc: download's origin/settings incorrectly associated -> 下载来源信任 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24201",
+  "sev": "critical",
+  "layer": "L0d",
+  "rationale": "desc: out-of-bounds write + may be able to break out of WebContent 沙箱; 内存机制词与沙箱 headline 双映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24264",
+  "sev": "critical",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-30466",
+  "sev": "critical",
+  "layer": "L0d",
+  "rationale": "desc: bypass Same Origin Policy -> 同源信任边界"
+ },
+ {
+  "cve": "CVE-2025-43342",
+  "sev": "critical",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43343",
+  "sev": "critical",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43526",
+  "sev": "critical",
+  "layer": "L0d",
+  "rationale": "desc: Lockdown Mode + web content opened via a file URL; 安全模式/文件访问授权边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2023-42875",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2023-42970",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2023-43000",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2023-43010",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2024-27856",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2024-4367",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: PDF.js + type check was missing + arbitrary JavaScript execution -> 开源 vendored 解析器数据面"
+ },
+ {
+  "cve": "CVE-2024-54543",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2024-54551",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved memory handling + denial-of-service; 内存机制词优先, DoS 为结局 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-13502",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2025-13947",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(permitted to read) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-14174",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "desc: ANGLE (+GPU) + out-of-bounds memory access / sandbox escape -> 图形/GPU 边界条件"
+ },
+ {
+  "cve": "CVE-2025-24150",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "desc: Web Inspector + command injection -> 开发者工具面盲区"
+ },
+ {
+  "cve": "CVE-2025-24189",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24209",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2025-24213",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "desc: type confusion + improved handling of floats (JavaScriptCore 上下文) -> JIT 类型混淆"
+ },
+ {
+  "cve": "CVE-2025-24223",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31204",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31223",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31238",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31273",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31277",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31278",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43213",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43214",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43227",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive user information) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43376",
+  "sev": "high",
+  "layer": "L2f",
+  "rationale": "desc: track users / Private Relay DNS leak / visited-link -> 隐私跟踪 UX 盲区"
+ },
+ {
+  "cve": "CVE-2025-43419",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43431",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43433",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43438",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43441",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43457",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43480",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2025-43502",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive data) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43511",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43529",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-6558",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "desc: ANGLE (+GPU) + out-of-bounds memory access / sandbox escape -> 图形/GPU 边界条件"
+ },
+ {
+  "cve": "CVE-2025-66287",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-20608",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-20635",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-20636",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-20644",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-20652",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved memory handling + denial-of-service; 内存机制词优先, DoS 为结局 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-20664",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28847",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28857",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28859",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: outside the sandbox / break out of -> 沙箱逃逸信任边界"
+ },
+ {
+  "cve": "CVE-2026-28883",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-28901",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28902",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28903",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28904",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28905",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28907",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: Content Security Policy (bypass / prevent enforced) -> CSP 绕过信任边界"
+ },
+ {
+  "cve": "CVE-2026-28913",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28942",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-28946",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-28947",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-28953",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28955",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28962",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive user information) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43658",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43660",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: Content Security Policy (bypass / prevent enforced) -> CSP 绕过信任边界"
+ },
+ {
+  "cve": "CVE-2026-43670",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: Content Security Policy (bypass / prevent enforced) -> CSP 绕过信任边界"
+ },
+ {
+  "cve": "CVE-2026-43701",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: outside the sandbox / break out of -> 沙箱逃逸信任边界"
+ },
+ {
+  "cve": "CVE-2026-43705",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: type confusion + state handling/checks; 非 JSC/JIT 上下文, 通用映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43715",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43725",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: outside the sandbox / break out of -> 沙箱逃逸信任边界"
+ },
+ {
+  "cve": "CVE-2026-43731",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43735",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2026-43794",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-64713",
+  "sev": "high",
+  "layer": "L2f",
+  "rationale": "desc: track users / Private Relay DNS leak / visited-link -> 隐私跟踪 UX 盲区"
+ },
+ {
+  "cve": "CVE-2026-64719",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2026-64757",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-64783",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2024-44192",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2024-54467",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2024-54658",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved memory handling + denial-of-service; 内存机制词优先, DoS 为结局 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24113",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-24128",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-24143",
+  "sev": "medium",
+  "layer": "L2f",
+  "rationale": "desc: may be able to fingerprint the user -> 隐私指纹/跟踪盲区"
+ },
+ {
+  "cve": "CVE-2025-24158",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved memory handling + denial-of-service; 内存机制词优先, DoS 为结局 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24162",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24188",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-24208",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: (universal) cross-site scripting -> 同源/信任边界"
+ },
+ {
+  "cve": "CVE-2025-24216",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-30425",
+  "sev": "medium",
+  "layer": "L2f",
+  "rationale": "desc: track users / Private Relay DNS leak / visited-link -> 隐私跟踪 UX 盲区"
+ },
+ {
+  "cve": "CVE-2025-30427",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-30467",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-31192",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(without user consent) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31205",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2025-31206",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: type confusion + state handling/checks; 非 JSC/JIT 上下文, 通用映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31215",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31217",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31254",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: improved URL validation + unexpected URL redirection; 无内存/信任机制词, 导航/UI 信任语义 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31257",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-31266",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-43211",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved memory handling + denial-of-service; 内存机制词优先, DoS 为结局 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43212",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43216",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43228",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-43229",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: (universal) cross-site scripting -> 同源/信任边界"
+ },
+ {
+  "cve": "CVE-2025-43240",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: download's origin/settings incorrectly associated -> 下载来源信任 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43265",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2025-43272",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43327",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-43356",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(without user consent) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43368",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43392",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2025-43421",
+  "sev": "medium",
+  "layer": "L1a",
+  "rationale": "desc: disabling array allocation sinking -> JIT 优化正确性修复"
+ },
+ {
+  "cve": "CVE-2025-43425",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43427",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43429",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2025-43430",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43432",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43434",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43435",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43440",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43443",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43458",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43493",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-43495",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(user permission) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43501",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2025-43503",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2025-43535",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43536",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2025-43541",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: type confusion + state handling/checks; 非 JSC/JIT 上下文, 通用映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-46282",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive user data) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-46298",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-46299",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: memory initialization issue + improved memory handling -> 未初始化内存"
+ },
+ {
+  "cve": "CVE-2026-20643",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: bypass Same Origin Policy -> 同源信任边界"
+ },
+ {
+  "cve": "CVE-2026-20665",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: Content Security Policy (bypass / prevent enforced) -> CSP 绕过信任边界"
+ },
+ {
+  "cve": "CVE-2026-20676",
+  "sev": "medium",
+  "layer": "L2f",
+  "rationale": "desc: track users / Private Relay DNS leak / visited-link -> 隐私跟踪 UX 盲区"
+ },
+ {
+  "cve": "CVE-2026-20691",
+  "sev": "medium",
+  "layer": "L2f",
+  "rationale": "desc: may be able to fingerprint the user -> 隐私指纹/跟踪盲区"
+ },
+ {
+  "cve": "CVE-2026-28861",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2026-28871",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: (universal) cross-site scripting -> 同源/信任边界"
+ },
+ {
+  "cve": "CVE-2026-28917",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28958",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive user data) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28971",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: download's origin/settings incorrectly associated -> 下载来源信任 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-28984",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-39872",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43663",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43676",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2026-43699",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43700",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2026-43707",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43708",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: cross-origin / exfiltrate data -> 信任边界"
+ },
+ {
+  "cve": "CVE-2026-43709",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43712",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43713",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive data) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43716",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43720",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43721",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(clipboard) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43726",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43727",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43732",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive user information) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43734",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43740",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43742",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-43745",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2026-43792",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(sensitive user data) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43795",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-43804",
+  "sev": "medium",
+  "layer": "L0e",
+  "rationale": "desc: denial-of-service (无内存机制词) -> 资源耗尽类"
+ },
+ {
+  "cve": "CVE-2026-43821",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(read files outside) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-64715",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-64728",
+  "sev": "medium",
+  "layer": "L0d",
+  "rationale": "desc: violate iframe sandboxing policy -> 信任边界"
+ },
+ {
+  "cve": "CVE-2026-64730",
+  "sev": "medium",
+  "layer": "L2b",
+  "rationale": "desc: address bar / user interface / domain spoofing -> UI 信任指示层盲区"
+ },
+ {
+  "cve": "CVE-2026-64780",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-64781",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: crash/termination/correctness 但无具体机制词; 数据面内存默认映射 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-64784",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: out-of-bounds / buffer overflow / integer underflow -> 数据面内存安全"
+ },
+ {
+  "cve": "CVE-2026-64787",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: use-after-free + improved memory management -> 生命周期内存安全"
+ },
+ {
+  "cve": "CVE-2026-65331",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65332",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65333",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65334",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65335",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65336",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65337",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65338",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65340",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65341",
+  "sev": "medium",
+  "layer": "L0a",
+  "rationale": "desc: improved/improper memory handling + crash/corruption; 机制不可细分 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-65351",
+  "sev": "medium",
+  "layer": "L0b",
+  "rationale": "desc: improved state management/handling + crash -> 生命周期/状态机方向 [ambig]"
+ },
+ {
+  "cve": "CVE-2025-43531",
+  "sev": "low",
+  "layer": "L0b",
+  "rationale": "desc: race condition + improved state handling -> 竞态生命周期"
+ },
+ {
+  "cve": "CVE-2026-20656",
+  "sev": "low",
+  "layer": "L0d",
+  "rationale": "desc: 权限/授权/consent 谓词(safari history) -> 授权逻辑信任边界 [ambig]"
+ },
+ {
+  "cve": "CVE-2026-64782",
+  "sev": "low",
+  "layer": "L0b",
+  "rationale": "desc: improved locking + memory corruption + crash -> 并发/生命周期方向 [ambig]"
+ }
+]

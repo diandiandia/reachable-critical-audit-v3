@@ -1,0 +1,1730 @@
+[
+ {
+  "cve": "CVE-2025-24167",
+  "sev": "critical",
+  "component": "Safari(下载)",
+  "desc": "This issue was addressed through improved state management. A download's origin may be incorrectly associated.",
+  "fixed": "Safari 18",
+  "date": "2025-03-31",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-24201",
+  "sev": "critical",
+  "component": "WebKit(WebContent沙箱)",
+  "desc": "An out-of-bounds write issue was addressed with improved checks to prevent unauthorized actions. Maliciously crafted web content may be able to break out of Web",
+  "fixed": "GTK 2.48.0 | Safari 18",
+  "date": "2025-03-11",
+  "source": "WSA-2025-0002"
+ },
+ {
+  "cve": "CVE-2025-24264",
+  "sev": "critical",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.1 | Safari 18",
+  "date": "2025-03-31",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-30466",
+  "sev": "critical",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. A website may be able to bypass Same Origin Policy.",
+  "fixed": "Safari 18",
+  "date": "2025-05-29",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43342",
+  "sev": "critical",
+  "component": "WebKit(通用)",
+  "desc": "A correctness issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.48.7 | Safari 26, iOS 18",
+  "date": "2025-09-15",
+  "source": "WSA-2025-0006"
+ },
+ {
+  "cve": "CVE-2025-43343",
+  "sev": "critical",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.1 | Safari 26, iOS 26, iPadOS 26",
+  "date": "2025-09-15",
+  "source": "WSA-2025-0007"
+ },
+ {
+  "cve": "CVE-2025-43526",
+  "sev": "critical",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed with improved URL validation. On a Mac with Lockdown Mode enabled, web content opened via a file URL may be able",
+  "fixed": "Safari 26",
+  "date": "2025-12-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2023-42875",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "Processing web content may lead to arbitrary code execution. The issue was addressed with improved memory handling.",
+  "fixed": "GTK 2.42.0 | iOS 17, iPadOS 17, macOS Sonoma 14",
+  "date": "2025-04-11",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2023-42970",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing web content may lead to arbitrary code execution.",
+  "fixed": "GTK 2.42.0 | iOS 17, iPadOS 17, macOS Sonoma 14",
+  "date": "2025-04-11",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2023-43000",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.42.0 | macOS Ventura 13",
+  "date": "2025-11-05",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2023-43010",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.44.0 | iOS 17",
+  "date": "2026-03-12",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2024-27856",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing a file may lead to unexpected app termination or arbitrary code execution.",
+  "fixed": "GTK 2.46.0 | Safari 17",
+  "date": "2025-01-15",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2024-4367",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A type check was missing when handling fonts in PDF.js, which would allow arbitrary JavaScript execution in the PDF.js context. This vulnerability affects Firefox <",
+  "fixed": "GTK 2.52.5",
+  "date": "2024-05-14",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2024-54543",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.46.5 | Safari 18",
+  "date": "2025-01-27",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2024-54551",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing web content may lead to a denial-of-service.",
+  "fixed": "GTK 2.48.1 | Safari 17",
+  "date": "2025-03-21",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-13502",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A flaw was found in WebKitGTK and WPE WebKit. This vulnerability allows an out-of-bounds read and integer underflow, leading to a UIProcess crash (DoS) via",
+  "fixed": "GTK 2.50.2",
+  "date": "2025-11-25",
+  "source": "WSA-2025-0009"
+ },
+ {
+  "cve": "CVE-2025-13947",
+  "sev": "high",
+  "component": "WebKit(信息泄露)",
+  "desc": "A flaw was found in WebKitGTK. This vulnerability allows remote, user-assisted information disclosure that can reveal any file the user is permitted to read via",
+  "fixed": "GTK 2.50.3",
+  "date": "2025-12-03",
+  "source": "WSA-2025-0009"
+ },
+ {
+  "cve": "CVE-2025-14174",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "Out of bounds memory access in ANGLE in Google Chrome on Mac prior to 143.0.7499.110 allowed a remote attacker to perform out of bounds memory",
+  "fixed": "GTK 2.50.4",
+  "date": "2025-12-12",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2025-24150",
+  "sev": "high",
+  "component": "Web Inspector",
+  "desc": "A privacy issue was addressed with improved handling of files. Copying a URL from Web Inspector may lead to command injection.",
+  "fixed": "GTK 2.46.6 | Safari 18",
+  "date": "2025-01-27",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2025-24189",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.48.0 | Safari 18",
+  "date": "2025-05-19",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-24209",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A buffer overflow issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.48.1 | Safari 18",
+  "date": "2025-03-31",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-24213",
+  "sev": "high",
+  "component": "JavaScriptCore/浮点处理",
+  "desc": "This issue was addressed with improved handling of floats. A type confusion issue could lead to memory corruption.",
+  "fixed": "GTK 2.48.1 | Safari 18",
+  "date": "2025-03-31",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-24223",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.48.2 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2025-31204",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.48.2 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2025-31223",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.50.0 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-31238",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "Safari 18",
+  "date": "2025-05-12",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-31273",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-31277",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.50.0 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-31278",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43213",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.50.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43214",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.50.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43227",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may disclose sensitive user information.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43376",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A logic issue was addressed with improved state management. A remote attacker may be able to view leaked DNS queries with Private Relay turned on.",
+  "fixed": "Safari 26, iOS 18",
+  "date": "2025-11-04",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43419",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.50.0 | Safari 26, iOS 26, iPadOS 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43431",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43433",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43438",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43441",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43457",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43480",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. A malicious website may exfiltrate data cross-origin.",
+  "fixed": "GTK 2.46.0 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43502",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A privacy issue was addressed by removing sensitive data. An app may be able to bypass certain Privacy preferences.",
+  "fixed": "Safari 26",
+  "date": "2025-11-04",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43511",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.5 | Safari 26",
+  "date": "2025-12-12",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2025-43529",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to arbitrary code execution. Apple is aware of a",
+  "fixed": "GTK 2.50.4 | Safari 26",
+  "date": "2025-12-17",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2025-6558",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "Insufficient validation of untrusted input in ANGLE and GPU in Google Chrome prior to 138.0.7204.157 allowed a remote attacker to potentially perform a sandbox escape",
+  "fixed": "GTK 2.48.5",
+  "date": "2025-07-15",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-66287",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A flaw was found in WebKitGTK. Processing malicious web content can cause an unexpected process crash due to improper memory handling.",
+  "fixed": "GTK 2.50.3",
+  "date": "2025-12-04",
+  "source": "WSA-2025-0009"
+ },
+ {
+  "cve": "CVE-2026-20608",
+  "sev": "high",
+  "component": "WebKit",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2026-02-11",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20635",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2026-02-11",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20636",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2026-02-11",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20644",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2026-02-11",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20652",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. A remote attacker may be able to cause a denial-of-service.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2026-02-11",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20664",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-28847",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28857",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-28859",
+  "sev": "high",
+  "component": "WebKit(沙箱)",
+  "desc": "The issue was addressed with improved memory handling. A malicious website may be able to process restricted web content outside the sandbox.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-28883",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28901",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28902",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28903",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28904",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28905",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28907",
+  "sev": "high",
+  "component": "WebKit(CSP)",
+  "desc": "The issue was addressed with improved input validation. Processing maliciously crafted web content may prevent Content Security Policy from being enforced.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28913",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "Safari 26",
+  "date": "2026-05-11",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-28942",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28946",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28947",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28953",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28955",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28962",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed with improved access restrictions. Processing maliciously crafted web content may disclose sensitive user information.",
+  "fixed": "Safari 26",
+  "date": "2026-05-11",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43658",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-43660",
+  "sev": "high",
+  "component": "WebKit(CSP)",
+  "desc": "A validation issue was addressed with improved logic. Processing maliciously crafted web content may prevent Content Security Policy from being enforced.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-43670",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A Content Security Policy bypass was addressed with improved enforcement in AudioWorklet contexts. Processing maliciously crafted web content may bypass Content Security Policy.",
+  "fixed": "Safari 26",
+  "date": "2026-08-25",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43701",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. A malicious website may be able to process restricted web content outside the sandbox.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43705",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A type confusion issue was addressed with improved checks. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43715",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43725",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved input validation. A malicious website may be able to process restricted web content outside the sandbox.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43731",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43735",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. A malicious website may exfiltrate data cross-origin.",
+  "fixed": "Safari 26",
+  "date": "2026-06-29",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43794",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A memory corruption issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64713",
+  "sev": "high",
+  "component": "WebKit(链接访问泄露)",
+  "desc": "This issue was addressed with improved checks. Websites may know if the user has visited a given link.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-64719",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "An out-of-bounds access issue was addressed with improved bounds checking. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-64757",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A memory corruption issue was addressed with improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-64783",
+  "sev": "high",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2024-44192",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.48.0 | Safari 18, iOS 18, iPadOS 18",
+  "date": "2025-03-10",
+  "source": "WSA-2025-0002"
+ },
+ {
+  "cve": "CVE-2024-54467",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A cookie management issue was addressed with improved state management. A malicious website may exfiltrate data cross-origin.",
+  "fixed": "GTK 2.48.0 | Safari 18, iOS 18, iPadOS 18",
+  "date": "2025-03-10",
+  "source": "WSA-2025-0002"
+ },
+ {
+  "cve": "CVE-2024-54658",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing web content may lead to a denial-of-service.",
+  "fixed": "GTK 2.44.0 | Safari 17",
+  "date": "2025-02-10",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2025-24113",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved UI. Visiting a malicious website may lead to user interface spoofing.",
+  "fixed": "Safari 18",
+  "date": "2025-01-27",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-24128",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed by adding additional logic. Visiting a malicious website may lead to address bar spoofing.",
+  "fixed": "Safari 18",
+  "date": "2025-01-27",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-24143",
+  "sev": "medium",
+  "component": "WebKit(指纹/文件系统)",
+  "desc": "The issue was addressed with improved access restrictions to the file system. A maliciously crafted webpage may be able to fingerprint the user.",
+  "fixed": "GTK 2.46.6 | Safari 18",
+  "date": "2025-01-27",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2025-24158",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing web content may lead to a denial-of-service.",
+  "fixed": "GTK 2.46.6 | Safari 18",
+  "date": "2025-01-27",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2025-24162",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.46.6 | Safari 18",
+  "date": "2025-01-27",
+  "source": "WSA-2025-0001"
+ },
+ {
+  "cve": "CVE-2025-24188",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A logic issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 18",
+  "date": "2025-07-30",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-24208",
+  "sev": "medium",
+  "component": "DOM/iframe权限",
+  "desc": "A permissions issue was addressed with additional restrictions. Loading a malicious iframe may lead to a cross-site scripting attack.",
+  "fixed": "GTK 2.48.1 | Safari 18",
+  "date": "2025-03-31",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-24216",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.1 | Safari 18",
+  "date": "2025-03-31",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-30425",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. A malicious website may be able to track users in Safari private browsing mode.",
+  "fixed": "Safari 18",
+  "date": "2025-03-31",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-30427",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.1 | Safari 18",
+  "date": "2025-03-31",
+  "source": "WSA-2025-0003"
+ },
+ {
+  "cve": "CVE-2025-30467",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Visiting a malicious website may lead to address bar spoofing.",
+  "fixed": "Safari 18",
+  "date": "2025-03-31",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-31192",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. A website may be able to access sensor information without user consent.",
+  "fixed": "Safari 18",
+  "date": "2025-03-31",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-31205",
+  "sev": "medium",
+  "component": "WebKit(cookie跨域)",
+  "desc": "The issue was addressed with improved checks. A malicious website may exfiltrate data cross-origin.",
+  "fixed": "GTK 2.48.2 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2025-31206",
+  "sev": "medium",
+  "component": "WebKit(type confusion)",
+  "desc": "A type confusion issue was addressed with improved state handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.2 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2025-31215",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.48.2 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2025-31217",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved input validation. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 18",
+  "date": "2025-05-12",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-31254",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed with improved URL validation. Processing maliciously crafted web content may lead to unexpected URL redirection.",
+  "fixed": "Safari 26, iOS 26, iPadOS 26",
+  "date": "2025-09-15",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-31257",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.2 | Safari 18",
+  "date": "2025-05-12",
+  "source": "WSA-2025-0004"
+ },
+ {
+  "cve": "CVE-2025-31266",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A spoofing issue was addressed with improved truncation when displaying the fully qualified domain name. A website may be able to spoof the domain name",
+  "fixed": "Safari 18",
+  "date": "2025-11-21",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43211",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing web content may lead to a denial-of-service.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43212",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43216",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43228",
+  "sev": "medium",
+  "component": "Safari UI(地址栏)",
+  "desc": "The issue was addressed with improved UI. Visiting a malicious website may lead to address bar spoofing.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43229",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to universal cross site scripting.",
+  "fixed": "Safari 18",
+  "date": "2025-07-30",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43240",
+  "sev": "medium",
+  "component": "Safari(下载来源)",
+  "desc": "A logic issue was addressed with improved checks. A download's origin may be incorrectly associated.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43265",
+  "sev": "medium",
+  "component": "WebKit(OOB read)",
+  "desc": "An out-of-bounds read was addressed with improved input validation. Processing maliciously crafted web content may disclose internal states of the app.",
+  "fixed": "GTK 2.48.5 | Safari 18",
+  "date": "2025-07-30",
+  "source": "WSA-2025-0005"
+ },
+ {
+  "cve": "CVE-2025-43272",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.7 | Safari 26, iOS 26, iPadOS 26",
+  "date": "2025-09-15",
+  "source": "WSA-2025-0006"
+ },
+ {
+  "cve": "CVE-2025-43327",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed by adding additional logic. Visiting a malicious website may lead to address bar spoofing.",
+  "fixed": "Safari 26, macOS Tahoe 26",
+  "date": "2025-09-15",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43356",
+  "sev": "medium",
+  "component": "WebKit(sensor权限)",
+  "desc": "The issue was addressed with improved handling of caches. A website may be able to access sensor information without user consent.",
+  "fixed": "GTK 2.48.7 | Safari 26, iOS 18",
+  "date": "2025-09-15",
+  "source": "WSA-2025-0006"
+ },
+ {
+  "cve": "CVE-2025-43368",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.48.7 | Safari 26, iOS 26, iPadOS 26",
+  "date": "2025-09-15",
+  "source": "WSA-2025-0006"
+ },
+ {
+  "cve": "CVE-2025-43392",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved handling of caches. A website may exfiltrate image data cross-origin.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43421",
+  "sev": "medium",
+  "component": "JavaScriptCore(JIT)",
+  "desc": "Multiple issues were addressed by disabling array allocation sinking. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.3 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0009"
+ },
+ {
+  "cve": "CVE-2025-43425",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43427",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43429",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A buffer overflow was addressed with improved bounds checking. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43430",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43432",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43434",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43435",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "Safari 26",
+  "date": "2025-11-04",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43440",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43443",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.2 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0008"
+ },
+ {
+  "cve": "CVE-2025-43458",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.3 | Safari 26",
+  "date": "2025-11-04",
+  "source": "WSA-2025-0009"
+ },
+ {
+  "cve": "CVE-2025-43493",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Visiting a malicious website may lead to address bar spoofing.",
+  "fixed": "Safari 26",
+  "date": "2025-11-04",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43495",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. An app may be able to monitor keystrokes without user permission.",
+  "fixed": "iOS 18",
+  "date": "2025-11-04",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43501",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A buffer overflow issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.4 | Safari 26",
+  "date": "2025-12-17",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2025-43503",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "An inconsistent user interface issue was addressed with improved state management. Visiting a malicious website may lead to user interface spoofing.",
+  "fixed": "Safari 26",
+  "date": "2025-11-04",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43535",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.4 | Safari 26",
+  "date": "2025-12-17",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2025-43536",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.4 | Safari 26",
+  "date": "2025-12-17",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2025-43541",
+  "sev": "medium",
+  "component": "WebKit(type confusion)",
+  "desc": "A type confusion issue was addressed with improved state handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.50.4 | Safari 26",
+  "date": "2025-12-17",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2025-46282",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with additional permissions checks. An app may be able to access sensitive user data.",
+  "fixed": "Safari 26",
+  "date": "2025-12-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-46298",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "Safari 26",
+  "date": "2026-01-09",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-46299",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A memory initialization issue was addressed with improved memory handling. Processing maliciously crafted web content may disclose internal states of the app.",
+  "fixed": "GTK 2.52.0 | Safari 26",
+  "date": "2026-01-09",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20643",
+  "sev": "medium",
+  "component": "WebCore/Navigation API",
+  "desc": "A cross-origin issue in the Navigation API was addressed with improved input validation. Processing maliciously crafted web content may bypass Same Origin Policy.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-17",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-20665",
+  "sev": "medium",
+  "component": "WebKit(CSP)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may prevent Content Security Policy from being enforced.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-20676",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. A website may be able to track users through Safari web extensions.",
+  "fixed": "GTK 2.50.6 | Safari 26",
+  "date": "2026-02-11",
+  "source": "WSA-2026-0001"
+ },
+ {
+  "cve": "CVE-2026-20691",
+  "sev": "medium",
+  "component": "WebKit(Sandboxing)",
+  "desc": "An authorization issue was addressed with improved state management. A maliciously crafted webpage may be able to fingerprint the user.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-28861",
+  "sev": "medium",
+  "component": "WebKit(script message handler跨源)",
+  "desc": "A logic issue was addressed with improved state management. A malicious website may be able to access script message handlers intended for other origins.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-28871",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A logic issue was addressed with improved checks. Visiting a maliciously crafted website may lead to a cross-site scripting attack.",
+  "fixed": "GTK 2.52.1 | Safari 26",
+  "date": "2026-03-25",
+  "source": "WSA-2026-0002"
+ },
+ {
+  "cve": "CVE-2026-28917",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved input validation. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "Safari 26",
+  "date": "2026-05-11",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-28958",
+  "sev": "medium",
+  "component": "WebKit(敏感数据访问)",
+  "desc": "This issue was addressed with improved data protection. An app may be able to access sensitive user data.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-05-11",
+  "source": "WSA-2026-0003"
+ },
+ {
+  "cve": "CVE-2026-28971",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved UI handling. A malicious iframe may use another website’s download settings.",
+  "fixed": "Safari 26",
+  "date": "2026-05-11",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-28984",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.4 | Safari 26",
+  "date": "2026-08-17",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-39872",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43663",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43676",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "An out-of-bounds access issue was addressed with improved bounds checking. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43699",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43700",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A cross-origin issue was addressed with improved tracking of security origins. Processing maliciously crafted web content may disclose sensitive user information.",
+  "fixed": "Safari 26",
+  "date": "2026-06-29",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43707",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A memory corruption issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43708",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved input validation. A malicious website may exfiltrate data cross-origin.",
+  "fixed": "Safari 26",
+  "date": "2026-06-29",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43709",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "Safari 26",
+  "date": "2026-06-29",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43712",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43713",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A permissions issue was addressed with additional restrictions. Visiting a website may leak sensitive data.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43716",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43720",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43721",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. A malicious website may be able to silently hijack clipboard data.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43726",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43727",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43732",
+  "sev": "medium",
+  "component": "WebKit(路径处理)",
+  "desc": "A path handling issue was addressed with improved validation. Processing maliciously crafted web content may disclose sensitive user information.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43734",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43740",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may result in the disclosure of process memory.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43742",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43745",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "An out-of-bounds write issue was addressed with improved input validation. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-06-29",
+  "source": "WSA-2026-0004"
+ },
+ {
+  "cve": "CVE-2026-43792",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "An authorization issue was addressed with improved state management. An app may be able to access sensitive user data.",
+  "fixed": "Safari 26",
+  "date": "2026-07-27",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43795",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-43804",
+  "sev": "medium",
+  "component": "WebKit(DoS)",
+  "desc": "This issue was addressed through improved state management. Visiting a website may lead to an app denial-of-service.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-43821",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "An access issue was addressed with improved access restrictions. An app may be able to read files outside of its sandbox.",
+  "fixed": "Safari 26",
+  "date": "2026-07-27",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64715",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64728",
+  "sev": "medium",
+  "component": "iframe沙箱策略",
+  "desc": "A permissions issue was addressed with improved validation. Maliciously crafted web content may violate iframe sandboxing policy.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-64730",
+  "sev": "medium",
+  "component": "Safari UI(UI spoofing)",
+  "desc": "The issue was addressed with improved UI. Visiting a website that frames malicious content may lead to UI spoofing.",
+  "fixed": "GTK 2.52.6 | Safari 26",
+  "date": "2026-07-27",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-64780",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved checks. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64781",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved input validation. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64784",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "An out-of-bounds access issue was addressed with improved bounds checking. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64787",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A use-after-free issue was addressed with improved memory management. Processing maliciously crafted web content may lead to an unexpected process termination.",
+  "fixed": "GTK 2.52.5 | Safari 26",
+  "date": "2026-08-17",
+  "source": "WSA-2026-0005"
+ },
+ {
+  "cve": "CVE-2026-65331",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65332",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65333",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65334",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "A memory corruption issue was addressed with improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65335",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65336",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65337",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65338",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65340",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65341",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "The issue was addressed with improved memory handling. Processing maliciously crafted web content may lead to memory corruption.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-65351",
+  "sev": "medium",
+  "component": "WebKit(通用)",
+  "desc": "This issue was addressed through improved state management. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2025-43531",
+  "sev": "low",
+  "component": "WebKit(通用)",
+  "desc": "A race condition was addressed with improved state handling. Processing maliciously crafted web content may lead to an unexpected process crash.",
+  "fixed": "GTK 2.50.4 | Safari 26",
+  "date": "2025-12-17",
+  "source": "WSA-2025-0010"
+ },
+ {
+  "cve": "CVE-2026-20656",
+  "sev": "low",
+  "component": "WebKit(通用)",
+  "desc": "A logic issue was addressed with improved validation. An app may be able to access a user's Safari history.",
+  "fixed": "Safari 26",
+  "date": "2026-02-11",
+  "source": "Apple 公告"
+ },
+ {
+  "cve": "CVE-2026-64782",
+  "sev": "low",
+  "component": "WebKit(通用)",
+  "desc": "A memory corruption vulnerability was addressed with improved locking. Processing maliciously crafted web content may lead to an unexpected Safari crash.",
+  "fixed": "Safari 26",
+  "date": "2026-08-17",
+  "source": "Apple 公告"
+ }
+]

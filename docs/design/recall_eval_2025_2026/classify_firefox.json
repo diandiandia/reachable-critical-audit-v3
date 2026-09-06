@@ -1,0 +1,3182 @@
+[
+ {
+  "cve": "CVE-2024-43097",
+  "sev": "critical",
+  "layer": "L0c",
+  "rationale": "out of bounds; integer overflow; integer overflow+out of bounds write in SkRegion (Skia/Canvas 图形数据面)"
+ },
+ {
+  "cve": "CVE-2025-0244",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "spoof; address bar"
+ },
+ {
+  "cve": "CVE-2025-0245",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Focus Android lock-screen 设置绕过 — Android 平台层"
+ },
+ {
+  "cve": "CVE-2025-0246",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "spoof; address bar"
+ },
+ {
+  "cve": "CVE-2025-0237",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "privilege escalation; WebChannel confused deputy: 未校验发送 principal — 信任边界逻辑"
+ },
+ {
+  "cve": "CVE-2025-0238",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "use-after-free"
+ },
+ {
+  "cve": "CVE-2025-0239",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Alt-Svc ALPN 证书校验逻辑(重定向到不安全站点)"
+ },
+ {
+  "cve": "CVE-2025-0240",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "use-after-free; cross-compartment; cross-compartment access(JSON module 解析, JS 引擎跨区生命周期 UAF)"
+ },
+ {
+  "cve": "CVE-2025-0241",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "text segmentation corrupt memory — 引擎数据面(crafted text)"
+ },
+ {
+  "cve": "CVE-2025-0242",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-0243",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-0247",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2024-50336",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "matrix-js-sdk(Thunderbird chat) MXC URI 校验缺失 — 非 web 输入面(mail 依赖)[ambig]"
+ },
+ {
+  "cve": "CVE-2025-23108",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "spoofing"
+ },
+ {
+  "cve": "CVE-2025-23109",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "spoof"
+ },
+ {
+  "cve": "CVE-2025-1009",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "use-after-free"
+ },
+ {
+  "cve": "CVE-2025-1010",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free"
+ },
+ {
+  "cve": "CVE-2025-1018",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "fullscreen notification; spoofing"
+ },
+ {
+  "cve": "CVE-2025-1011",
+  "sev": "moderate",
+  "layer": "L1a",
+  "rationale": "code generation"
+ },
+ {
+  "cve": "CVE-2025-1012",
+  "sev": "moderate",
+  "layer": "L1b",
+  "rationale": "use-after-free; concurrent delazification"
+ },
+ {
+  "cve": "CVE-2025-1019",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "fullscreen notification; spoofing"
+ },
+ {
+  "cve": "CVE-2025-1016",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-1017",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-1020",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-0510",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "邮件 From 头显示欺骗(Thunderbird 信任指示)"
+ },
+ {
+  "cve": "CVE-2025-1414",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-27426",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "spoof"
+ },
+ {
+  "cve": "CVE-2025-27424",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "spoof"
+ },
+ {
+  "cve": "CVE-2025-1930",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "use-after-free; sandbox escape; AudioIPC StreamData UAF in Browser process — IPC 消息数据面(内含 sandbox escape 字样, 根机制为 IPC UAF)"
+ },
+ {
+  "cve": "CVE-2025-1939",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "title: Tapjacking in Android Custom Tabs using transition animations"
+ },
+ {
+  "cve": "CVE-2025-1931",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; WebTransportChild UAF — WebTransport 连接子进程侧生命周期"
+ },
+ {
+  "cve": "CVE-2025-1932",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "out-of-bounds"
+ },
+ {
+  "cve": "CVE-2025-1933",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT corruption of WASM i32 return values(64-bit) — 部分返回值/表示假设族"
+ },
+ {
+  "cve": "CVE-2025-1940",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "title: Android Intent confirmation prompt tapjacking using Select options"
+ },
+ {
+  "cve": "CVE-2024-9956",
+  "sev": "moderate",
+  "layer": "L2f",
+  "rationale": "Bluetooth range; passkey"
+ },
+ {
+  "cve": "CVE-2025-1934",
+  "sev": "moderate",
+  "layer": "L1b",
+  "rationale": "RegExp bailout"
+ },
+ {
+  "cve": "CVE-2025-1941",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Focus Android lock-screen 设置绕过(同 0245 类) — 平台层"
+ },
+ {
+  "cve": "CVE-2025-1942",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "uninitialized memory"
+ },
+ {
+  "cve": "CVE-2025-1937",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-1938",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-1943",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-26696",
+  "sev": "moderate",
+  "layer": "L2f",
+  "rationale": "OpenPGP 加密/签名 UI 误显 — 安全 UX"
+ },
+ {
+  "cve": "CVE-2025-2857",
+  "sev": "critical",
+  "layer": "L0d",
+  "rationale": "sandbox escape"
+ },
+ {
+  "cve": "CVE-2025-3028",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "use-after-free"
+ },
+ {
+  "cve": "CVE-2025-3031",
+  "sev": "moderate",
+  "layer": "L1a",
+  "rationale": "title: JIT optimization bug with different stack slot sizes"
+ },
+ {
+  "cve": "CVE-2025-3032",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "privilege escalation"
+ },
+ {
+  "cve": "CVE-2025-3029",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "spoofing"
+ },
+ {
+  "cve": "CVE-2025-3035",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "AI chatbot tab title 泄露 — 内部 feature 逻辑[ambig]"
+ },
+ {
+  "cve": "CVE-2025-3030",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-3034",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-3608",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "memory corruption; race condition"
+ },
+ {
+  "cve": "CVE-2025-3522",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "X-Mozilla-External-Attachment-URL 处理(邮件附件) — 非 web 输入面[ambig]"
+ },
+ {
+  "cve": "CVE-2025-2830",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "multipart 附件畸形文件名 → /tmp 目录列举(邮件解析面)[ambig]"
+ },
+ {
+  "cve": "CVE-2025-2817",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "privilege escalation; Updater 文件锁操作 — SYSTEM 级本地特权提升(内部组件)"
+ },
+ {
+  "cve": "CVE-2025-4082",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "out-of-bounds"
+ },
+ {
+  "cve": "CVE-2025-4083",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "sandbox escape; process isolation"
+ },
+ {
+  "cve": "CVE-2025-4085",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "title: Potential information leakage and privilege escalation in UITour actor"
+ },
+ {
+  "cve": "CVE-2025-4086",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "title: Specially crafted filename could be used to obscure download type"
+ },
+ {
+  "cve": "CVE-2025-4087",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "undefined behavior; out-of-bounds"
+ },
+ {
+  "cve": "CVE-2025-4088",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Cross-Site Request Forgery"
+ },
+ {
+  "cve": "CVE-2025-4089",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Potential local code execution in \"copy as cURL\" command"
+ },
+ {
+  "cve": "CVE-2025-4091",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-4092",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-4084",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Potential local code execution in \"copy as cURL\" command"
+ },
+ {
+  "cve": "CVE-2025-4093",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-3859",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "title: Firefox Focus elide URL allows address bar spoofing"
+ },
+ {
+  "cve": "CVE-2025-3875",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "spoofing; From header"
+ },
+ {
+  "cve": "CVE-2025-3909",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "附件 content-type 混淆 → file:// JS 执行(邮件渲染面)[ambig]"
+ },
+ {
+  "cve": "CVE-2025-4918",
+  "sev": "critical",
+  "layer": "L0a",
+  "rationale": "out-of-bounds; out-of-bounds read/write on JS Promise object — 引擎对象内存(无 JIT 词)"
+ },
+ {
+  "cve": "CVE-2025-4919",
+  "sev": "critical",
+  "layer": "L1a",
+  "rationale": "out-of-bounds; optimizing linear sums/confusing array index sizes — 优化/JIT 族"
+ },
+ {
+  "cve": "CVE-2025-5283",
+  "sev": "critical",
+  "layer": "L0a",
+  "rationale": "double-free; memory corruption"
+ },
+ {
+  "cve": "CVE-2025-5263",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "cross-origin leak; error handling 隔离缺陷 → cross-origin leak 攻击"
+ },
+ {
+  "cve": "CVE-2025-5264",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Potential local code execution in “Copy as cURL” command"
+ },
+ {
+  "cve": "CVE-2025-5265",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Potential local code execution in “Copy as cURL” command"
+ },
+ {
+  "cve": "CVE-2025-5266",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "XS-Leaks"
+ },
+ {
+  "cve": "CVE-2025-5268",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-5272",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-5269",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-49709",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "memory corruption; memory corruption in canvas surfaces — canvas 图形数据面"
+ },
+ {
+  "cve": "CVE-2025-49710",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "integer overflow"
+ },
+ {
+  "cve": "CVE-2025-5687",
+  "sev": "high",
+  "layer": "L2e",
+  "rationale": "privilege escalation; VPN"
+ },
+ {
+  "cve": "CVE-2025-5986",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "mailbox:/// 链接自动下载/凭据泄露(邮件链接处理面)[ambig]"
+ },
+ {
+  "cve": "CVE-2025-6424",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free"
+ },
+ {
+  "cve": "CVE-2025-6425",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "WebCompat 扩展持久 UUID — 内部扩展信息泄露[ambig]"
+ },
+ {
+  "cve": "CVE-2025-6426",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "title: No warning when opening executable terminal files on macOS"
+ },
+ {
+  "cve": "CVE-2025-6427",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "connect-src CSP 限制可被绕过 — CSP 安全策略逻辑(desc 含 devtools 字样, 非 DevTools 组件缺陷)"
+ },
+ {
+  "cve": "CVE-2025-6428",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Android 打开 querystring 指定 URL — Android 导航逻辑(钓鱼)"
+ },
+ {
+  "cve": "CVE-2025-6429",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "incorrectly parsed a URL(embed 域重写 youtube.com) — URL 解析数据面"
+ },
+ {
+  "cve": "CVE-2025-6430",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Content-Disposition; Content-Disposition 被 embed/object 忽略(下载/XSS 策略逻辑)"
+ },
+ {
+  "cve": "CVE-2025-6431",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Android 外部应用打开确认 prompt 绕过 — 平台层"
+ },
+ {
+  "cve": "CVE-2025-6436",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-8027",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "title: JavaScript engine only wrote partial return value to stack"
+ },
+ {
+  "cve": "CVE-2025-8028",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "title: Large branch table could lead to truncated instruction"
+ },
+ {
+  "cve": "CVE-2025-8041",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "address bar; truncated the display; Android 地址栏 URL 截断显示错误(欺骗类)"
+ },
+ {
+  "cve": "CVE-2025-8042",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "sandboxed iframe allow-downloads 未生效(引擎 sandbox 策略, GeckoView 表型)"
+ },
+ {
+  "cve": "CVE-2025-8029",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "javascript: URLs 在 object/embed 中被执行 — URL 执行策略"
+ },
+ {
+  "cve": "CVE-2025-8036",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "DNS rebinding; DNS rebinding 绕过 CORS(CORS preflight 缓存逻辑)"
+ },
+ {
+  "cve": "CVE-2025-8037",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "nameless cookie 遮蔽 Secure cookie — cookie 语义逻辑"
+ },
+ {
+  "cve": "CVE-2025-8030",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Potential user-assisted code execution in “Copy as cURL” command"
+ },
+ {
+  "cve": "CVE-2025-8043",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Focus 地址栏 URL 截断错误(欺骗类)"
+ },
+ {
+  "cve": "CVE-2025-8031",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "CSP report URL 未剥离 userinfo → Basic Auth 凭据泄露(网络逻辑)"
+ },
+ {
+  "cve": "CVE-2025-8032",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "XSLT 文档加载未传播源文档 → CSP 绕过"
+ },
+ {
+  "cve": "CVE-2025-8044",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-8034",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-8040",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-8035",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-54143",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "iOS sandboxed iframe 本地下载 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-54144",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "iOS open-text URL scheme 加载任意 URL — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-54145",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "iOS QR 扫描器 open-text scheme — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-9179",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "memory corruption"
+ },
+ {
+  "cve": "CVE-2025-9180",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2025-9181",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Uninitialized memory"
+ },
+ {
+  "cve": "CVE-2025-9187",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-9184",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-9185",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-55030",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "Content-Disposition; iOS Content-Disposition attachment 未遵守 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-55028",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "denial of service; iOS 重复 JS alert DoS — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-55031",
+  "sev": "moderate",
+  "layer": "L2f",
+  "rationale": "Bluetooth range; passkey"
+ },
+ {
+  "cve": "CVE-2025-55032",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "Content-Disposition; Focus iOS Content-Disposition attachment 未遵守 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-55033",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Focus iOS drag-and-drop JS 链接执行 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-10527",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape; sandbox escape due to use-after-free in Graphics: Canvas2D — UAF 生命周期族"
+ },
+ {
+  "cve": "CVE-2025-10528",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "invalid pointer; undefined behavior; sandbox escape due to undefined behavior/invalid pointer in Canvas2D — 内存族"
+ },
+ {
+  "cve": "CVE-2025-10529",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2025-10530",
+  "sev": "moderate",
+  "layer": "L2f",
+  "rationale": "Spoofing; WebAuthn"
+ },
+ {
+  "cve": "CVE-2025-10531",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Mitigation bypass; WebCompat Tooling 组件 mitigation bypass — 内部扩展组件"
+ },
+ {
+  "cve": "CVE-2025-10532",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "boundary conditions; incorrect boundary conditions in JavaScript: GC — GC 内存族"
+ },
+ {
+  "cve": "CVE-2025-10533",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "Integer overflow; integer overflow in SVG — 图形几何数据面"
+ },
+ {
+  "cve": "CVE-2025-10537",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-10290",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "spoof; Focus iOS 上下文菜单导航后 toolbar 未刷新 → 欺骗"
+ },
+ {
+  "cve": "CVE-2025-10859",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "iOS Incognito cookie 存储分区错误 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2025-11152",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "integer overflow; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2025-11153",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2025-11708",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free; use-after-free in MediaTrackGraphImpl::GetInstance — 媒体图异步生命周期"
+ },
+ {
+  "cve": "CVE-2025-11709",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "out of bounds read"
+ },
+ {
+  "cve": "CVE-2025-11710",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "malicious IPC messages → 父进程内存泄露 — IPC 数据面"
+ },
+ {
+  "cve": "CVE-2025-11711",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "non-writable Object property 可被修改 — JS 对象模型/形状正确性"
+ },
+ {
+  "cve": "CVE-2025-11716",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "sandboxed iframe 无 allow- 打开外部应用(Android 表型, 引擎 sandbox 逻辑)"
+ },
+ {
+  "cve": "CVE-2025-11717",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Android card view 密码编辑屏可见 — Android 平台层"
+ },
+ {
+  "cve": "CVE-2025-11712",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "OBJECT type 属性覆盖 content-type 行为(XSS 前置策略逻辑)"
+ },
+ {
+  "cve": "CVE-2025-11718",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "address bar; Android 地址栏隐藏时 fake address bar(visibilitychange) — 欺骗类"
+ },
+ {
+  "cve": "CVE-2025-11713",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "copy as cURL escaping — DevTools 内部组件"
+ },
+ {
+  "cve": "CVE-2025-11719",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "use-after-free; memory corruption; native messaging web extension API UAF(Windows, 扩展面非 web 内容)[ambig]"
+ },
+ {
+  "cve": "CVE-2025-11714",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-11715",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-11721",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-12380",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; use-after-free in WebGPU internals(GPU/browser 进程, compromised child 触发) — 跨进程异步生命周期"
+ },
+ {
+  "cve": "CVE-2025-13021",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2025-13022",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2025-13012",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Race condition"
+ },
+ {
+  "cve": "CVE-2025-13023",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2025-13016",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2025-13024",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2025-13025",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2025-13026",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2025-13017",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2025-13018",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2025-13019",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2025-13013",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2025-13020",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2025-13014",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2025-13027",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-14321",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2025-14322",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2025-14323",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2025-14324",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2025-14325",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2025-14326",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2025-14327",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Spoofing"
+ },
+ {
+  "cve": "CVE-2025-14328",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2025-14329",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2025-14330",
+  "sev": "moderate",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2025-14331",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2025-14332",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-14333",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2025-14860",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2025-14861",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-0877",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-0878",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-0879",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-0880",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "integer overflow; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-0881",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Sandbox escape; Messaging System sandbox escape — taxonomy 明示归 L0d"
+ },
+ {
+  "cve": "CVE-2026-0882",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-0883",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-0884",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-0885",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-0886",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-0887",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Clickjacking"
+ },
+ {
+  "cve": "CVE-2026-0891",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-0892",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-24868",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-24869",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-0818",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "mail 解密内容经外层 CSS 泄漏(Thunderbird mail 渲染面)[ambig]"
+ },
+ {
+  "cve": "CVE-2026-2032",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "spoof; address bar; iOS 新标签页加载中断 → 域欺骗 — UI 信任指示"
+ },
+ {
+  "cve": "CVE-2026-2447",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Heap buffer overflow"
+ },
+ {
+  "cve": "CVE-2026-2634",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "spoof; address bar; iOS 脚本导航 → 域下欺骗内容 — UI 信任指示"
+ },
+ {
+  "cve": "CVE-2026-2757",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-2794",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "uninitialized memory; uninitialized memory info disclosure(引擎内存, Android 表型)"
+ },
+ {
+  "cve": "CVE-2026-2758",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2759",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-2795",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2760",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-2761",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-2762",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-2763",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2764",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "use-after-free; JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-2796",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-2797",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2765",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2766",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2767",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2768",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-2798",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2769",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2799",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2770",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2771",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Undefined behavior"
+ },
+ {
+  "cve": "CVE-2026-2772",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2773",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-2774",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-2775",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-2776",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "boundary conditions; Sandbox escape; Telemetry(External Software) sandbox escape — 内部组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-2777",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation; Messaging System privilege escalation — 同 0881 判例"
+ },
+ {
+  "cve": "CVE-2026-2778",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-2779",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-2800",
+  "sev": "moderate",
+  "layer": "L2f",
+  "rationale": "Spoofing; WebAuthn"
+ },
+ {
+  "cve": "CVE-2026-2780",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-2781",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-2801",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-2782",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-2783",
+  "sev": "moderate",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-2802",
+  "sev": "moderate",
+  "layer": "L1b",
+  "rationale": "Race condition"
+ },
+ {
+  "cve": "CVE-2026-2803",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "mitigation bypass; Settings UI mitigation bypass/info — 内部 UI 组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-2784",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-2785",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Invalid pointer"
+ },
+ {
+  "cve": "CVE-2026-2804",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2786",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2805",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Invalid pointer"
+ },
+ {
+  "cve": "CVE-2026-2787",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2788",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-2789",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-2807",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-2792",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-2793",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-2919",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "spoof; Focus iOS 停滞导航+iframe 重定向 → 域下欺骗 — UI 信任指示"
+ },
+ {
+  "cve": "CVE-2026-3845",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Heap buffer overflow"
+ },
+ {
+  "cve": "CVE-2026-3846",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-3847",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-4684",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Race condition"
+ },
+ {
+  "cve": "CVE-2026-4685",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4686",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4687",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "boundary conditions; Sandbox escape; Telemetry sandbox escape(boundary) — 内部组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-4688",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-4689",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "integer overflow; boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4690",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "integer overflow; boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4691",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-4692",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "Sandbox escape; Responsive Design Mode sandbox escape — DevTools 组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-4693",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4694",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "integer overflow; boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4695",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4696",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-4697",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4698",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-4699",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4700",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-4701",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-4722",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-4702",
+  "sev": "moderate",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-4723",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-4724",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Undefined behavior"
+ },
+ {
+  "cve": "CVE-2026-4704",
+  "sev": "moderate",
+  "layer": "L0e",
+  "rationale": "Denial-of-service"
+ },
+ {
+  "cve": "CVE-2026-4705",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Undefined behavior"
+ },
+ {
+  "cve": "CVE-2026-4706",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4707",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4708",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4709",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4710",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4711",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-4725",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-4712",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-4713",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4714",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-4715",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "Uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-4716",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions; uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-4717",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-4720",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-4729",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-4721",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-4371",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "IMAP parsing OOB read(邮件网络解析面, 非 web 输入)[ambig]"
+ },
+ {
+  "cve": "CVE-2026-5732",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "integer overflow; boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-5733",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-5731",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-5734",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-5735",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-6746",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-6747",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-6748",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-6749",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-6750",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-6751",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-6752",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-6753",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-6754",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-6755",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-6756",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Mitigation bypass; Mitigation bypass in Firefox for Android — Android 平台层"
+ },
+ {
+  "cve": "CVE-2026-6757",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Invalid pointer"
+ },
+ {
+  "cve": "CVE-2026-6758",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-6759",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-6760",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-6761",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-6762",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Spoofing"
+ },
+ {
+  "cve": "CVE-2026-6763",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Mitigation bypass; File Handling mitigation bypass — OS 集成组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-6764",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-6765",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Information disclosure in the Form Autofill component"
+ },
+ {
+  "cve": "CVE-2026-6766",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-6767",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-6768",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-6769",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-6770",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-6771",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-6772",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-7321",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-8091",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-6784",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-6785",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-6786",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-7320",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-7322",
+  "sev": "critical",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-7323",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-7324",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8090",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-8092",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8093",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8094",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8388",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-8389",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-8390",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-8391",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8401",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "Sandbox escape; Profile Backup sandbox escape — 内部组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-8945",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-8946",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-8947",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-8948",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-8949",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Integer overflow; integer overflow in Widget: Win32 — widget/窗口生命周期内存族"
+ },
+ {
+  "cve": "CVE-2026-8950",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-8951",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Spoofing"
+ },
+ {
+  "cve": "CVE-2026-8952",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-8953",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-8954",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "integer overflow; boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-8955",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-8956",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-8957",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-8958",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-8959",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-8973",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8974",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8975",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-8706",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "iOS Reader mode 本地服务器 cookies 泄露 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2026-9308",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "iOS Reader View HTML 替换顺序 → JS 执行 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2026-9309",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "iOS Reader View JSON-LD 注入 → 内部页 JS 执行 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2026-10701",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-10702",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-11799",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "Focus/Klar iOS WebKit 导航 UXSS — iOS(WKWebView)平台层"
+ },
+ {
+  "cve": "CVE-2026-53899",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "iOS PDF 链接 partial domain cookie 匹配 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2026-53900",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "iOS PDF redirect cookie 注入 — iOS 平台层"
+ },
+ {
+  "cve": "CVE-2026-12289",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-12290",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12291",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-12292",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-12293",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-12294",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-12295",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-12296",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-12297",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "boundary conditions; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-12298",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12299",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-12300",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12301",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12302",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-12303",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-12304",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-12305",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12306",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12307",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12308",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12309",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12310",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12311",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-12312",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12313",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-12314",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12315",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-12316",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-12326",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12327",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12328",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12329",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-12330",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-14241",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-57962",
+  "sev": "medium",
+  "layer": "L2d",
+  "rationale": "memory exhaustion; LDAP 服务器数据 → 内存耗尽 DoS(Thunderbird mail 面)[ambig]"
+ },
+ {
+  "cve": "CVE-2026-57963",
+  "sev": "high",
+  "layer": "L2b",
+  "rationale": "XMPP/Matrix HTML 聊天注入操纵 chat UI — 欺骗类(Thunderbird)"
+ },
+ {
+  "cve": "CVE-2026-13356",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "address bar; iOS 同步 JS dialog 中断导航 → 地址栏 origin 欺骗"
+ },
+ {
+  "cve": "CVE-2026-15718",
+  "sev": "critical",
+  "layer": "L0b",
+  "rationale": "invalid pointer in JS:WebAssembly(critical, 公开 exploit) — wasm 运行时内存族"
+ },
+ {
+  "cve": "CVE-2026-15719",
+  "sev": "critical",
+  "layer": "L0d",
+  "rationale": "title: Site isolation in the DOM: Navigation component"
+ },
+ {
+  "cve": "CVE-2026-16349",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-16350",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16362",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-16351",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-16352",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-16363",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-16364",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16365",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16366",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16353",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Invalid pointer"
+ },
+ {
+  "cve": "CVE-2026-16354",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16367",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "invalid pointer; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-16368",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16369",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-16355",
+  "sev": "high",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-16356",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-16357",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16370",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16371",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16372",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16373",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Android Privacy 组件 info disclosure — 平台层"
+ },
+ {
+  "cve": "CVE-2026-16374",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "DevTools Framework 信息泄露 — 内部组件"
+ },
+ {
+  "cve": "CVE-2026-16375",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-16376",
+  "sev": "moderate",
+  "layer": "L0e",
+  "rationale": "Denial-of-service"
+ },
+ {
+  "cve": "CVE-2026-16377",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16378",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16379",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16358",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-16380",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16381",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-16382",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16383",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16384",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-16385",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-16386",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "uninitialized memory"
+ },
+ {
+  "cve": "CVE-2026-16387",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-16388",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-16389",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "integer overflow; boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16390",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16391",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16392",
+  "sev": "moderate",
+  "layer": "L1a",
+  "rationale": "JIT miscompilation"
+ },
+ {
+  "cve": "CVE-2026-16393",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16359",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-16394",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-16395",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-16396",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16397",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Clickjacking"
+ },
+ {
+  "cve": "CVE-2026-16398",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-16399",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-16400",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16401",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-16402",
+  "sev": "moderate",
+  "layer": "L0a",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-16411",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16412",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16360",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-16361",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-14899",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "MIME header parser off-by-one OOB read(Thunderbird 转发显示)[ambig]"
+ },
+ {
+  "cve": "CVE-2026-18809",
+  "sev": "high",
+  "layer": "L2c",
+  "rationale": "Android(Firefox/Focus) 信息泄露 — 平台层"
+ },
+ {
+  "cve": "CVE-2026-75874",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "Sandbox escape; Remote Settings Client sandbox escape — 内部组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-74934",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-74935",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74936",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-74937",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-74938",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-74939",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74940",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-74941",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74942",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "Privilege escalation; Remote Settings Client privilege escalation — 内部组件[ambig]"
+ },
+ {
+  "cve": "CVE-2026-74943",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-74944",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-74945",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74946",
+  "sev": "high",
+  "layer": "L0c",
+  "rationale": "boundary conditions; Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74947",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "invalid pointer; Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74948",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74950",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation; Downloads API privilege escalation — WebExtensions 内部 API"
+ },
+ {
+  "cve": "CVE-2026-74951",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "Clickjacking"
+ },
+ {
+  "cve": "CVE-2026-74952",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74953",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74954",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74955",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74956",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-74957",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-74958",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74959",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Mitigation bypass"
+ },
+ {
+  "cve": "CVE-2026-74960",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Site isolation; Site isolation issue in WebExtensions — 扩展组件(非内容代码面)[ambig]"
+ },
+ {
+  "cve": "CVE-2026-74961",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74962",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-74963",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-74964",
+  "sev": "moderate",
+  "layer": "L0c",
+  "rationale": "Integer overflow"
+ },
+ {
+  "cve": "CVE-2026-74965",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74966",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "title: Information disclosure in the Form Autofill component"
+ },
+ {
+  "cve": "CVE-2026-74967",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-74968",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-74969",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-74970",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-74971",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74972",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74949",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-74973",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "use-after-free; Race condition"
+ },
+ {
+  "cve": "CVE-2026-74974",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Same-origin policy bypass"
+ },
+ {
+  "cve": "CVE-2026-74987",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74988",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74989",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-74990",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-81267",
+  "sev": "moderate",
+  "layer": "L2b",
+  "rationale": "address bar; iOS popup 停滞导航 → 地址栏 origin 欺骗"
+ },
+ {
+  "cve": "CVE-2026-84117",
+  "sev": "high",
+  "layer": "L0d",
+  "rationale": "Privilege escalation; Privilege escalation in Firefox for Android(GeckoView 引擎层)"
+ },
+ {
+  "cve": "CVE-2026-84118",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-84119",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-84120",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-84121",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Sandbox escape"
+ },
+ {
+  "cve": "CVE-2026-84122",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-84123",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "use-after-free; Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-84124",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-84125",
+  "sev": "high",
+  "layer": "L0b",
+  "rationale": "Use-after-free"
+ },
+ {
+  "cve": "CVE-2026-84126",
+  "sev": "high",
+  "layer": "L0a",
+  "rationale": "boundary conditions"
+ },
+ {
+  "cve": "CVE-2026-84127",
+  "sev": "moderate",
+  "layer": "L2c",
+  "rationale": "Android WebExtensions 信息泄露 — 平台层"
+ },
+ {
+  "cve": "CVE-2026-84128",
+  "sev": "moderate",
+  "layer": "L2d",
+  "rationale": "Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-84129",
+  "sev": "moderate",
+  "layer": "L0d",
+  "rationale": "Site isolation"
+ },
+ {
+  "cve": "CVE-2026-84130",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-84131",
+  "sev": "moderate",
+  "layer": "L0b",
+  "rationale": "invalid pointer; Privilege escalation"
+ },
+ {
+  "cve": "CVE-2026-84132",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-84142",
+  "sev": "moderate",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-84143",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-84144",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-84145",
+  "sev": "high",
+  "layer": "L2a",
+  "rationale": "rollup: 无机制描述"
+ },
+ {
+  "cve": "CVE-2026-84639",
+  "sev": "high",
+  "layer": "L2d",
+  "rationale": "uninitialized memory; MIME parsing uninitialized memory(Thunderbird mail 解析面)[ambig]"
+ },
+ {
+  "cve": "CVE-2026-84640",
+  "sev": "medium",
+  "layer": "L2d",
+  "rationale": "mail header 解析 one-byte OOB read(Thunderbird mail 解析面)[ambig]"
+ }
+]
