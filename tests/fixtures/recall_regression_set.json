@@ -1,0 +1,17 @@
+{
+  "description": "召回率回归集 (v3.23, SWR-V3.23-005) — 已知真实缺陷语料。fixture 仅测试/评估引用, 不进运行时。阶段 0 复盘评估与阶段 6 验收判据以此为发现力对照输入; 条目 case_source 为追溯字段 (允许项目名)。",
+  "entries": [
+    {
+      "id": "RECALL-001",
+      "defect_class": "JIT compiler type-tracking inconsistency (array map transition)",
+      "family": "MEMORY-SAFETY",
+      "cwe": ["CWE-843"],
+      "profile_signals": {
+        "surface_model": "semantic",
+        "generation_layers": ["jit"]
+      },
+      "expected_hypothesis": "compiler reduction/inlining alters elements-kind assumptions -> type confusion",
+      "case_source": "CVE-2026-85046; v8 audit 召回复盘 1 (v8/.audit_results/lessons.md 追记 2026-09-06)"
+    }
+  ]
+}

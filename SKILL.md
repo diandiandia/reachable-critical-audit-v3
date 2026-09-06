@@ -167,6 +167,12 @@ python3 <skill_dir>/language_issue_matrix.py cells <surface.lang>
   3. `python3 signature_matcher.py gen <hits.json>` → 佐证 hints（**不是**最终候选）
 - R0 `signature_lib.py selfcheck` 不受影响（回归锚点 + 去项目化扫描是第一原则守卫，仍强制）。
 
+**differential 发现通道（v3.23, SWR-V3.23-004，提示级）**：surface_model=semantic/hybrid
+且 generation_layers 含 jit 的目标，R2 可（可选）对语义轴关键操作跑 `differential`
+探针（`templates/harness/differential_probe.py`：解释器 vs JIT / 多 JIT 层 / 元素类型
+变体等运行配置比对）——比对分歧即假设（类型混淆/去优化错误类缺陷的发现通道，
+静态假设生成对该层天然弱覆盖）。实证模板复用，无新义务、无新门禁。
+
 **LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。其中『防御已到位』类裁决必须核查默认权限上下文（文件/目录/umask/监听 socket 权限、环境变量默认值、启动命令注入点）并引用源码证据行（v3.6 实录：默认 token 随机 + state 0644/socket 0777 使防御失效，R4 实证推翻 R2 误 drop）。筛选理由中的 focus sink（file:line）是后续簇化依据。
 
 > **keep=0 抽样复核条款（v3.4.6, SWR-V3.4.6-004）**：筛选结果 keep=0（或
@@ -265,6 +271,15 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 标准键 `harness`/`method`/`input`/`result`/`verdict`/`backfilled_by`（自建 harness 回填用）；
 渲染器容错读双形态（保留键优先，缺失回退标准键）。
 
+**fidelity 保真度判定（v3.10.2, SWR-V3.10.2-001~004；v3.23, SWR-V3.23-001
+所有权模型核实）**：`empirical.fidelity` 枚举 `real_target | equivalent |
+mechanism`（缺省 real_target，旧队列零行为变化）。`equivalent` 档必须做**所有权
+模型核实**——harness 须列出目标对象在真实代码中的引用持有图（谁 AddRef/谁释放/
+释放时机）并证明 harness 的破坏/交错时序映射到该持有图的真实释放路径；无法映射
+的时序不得作为缺陷前提（实录：家族强引用层使「后台期间释放」不可达，harness
+人为交错致误报——门禁与复核均无法拦截该形态，核实义务落在 harness 编写侧）。
+`mechanism` 档不得升 `empirically_confirmed`；申报材料按档位标注，不混级申报。
+
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
 3. 实测确认 → `empirical` 字段 + grade=empirically_confirmed；证伪 → correction_record 降级并回溯 verifier 错误（REQ-V3-051）。
@@ -322,7 +337,11 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
   否则「（主代理补充）」）；R4 条目：来源（R4 假说确认，无 R3.5 独立复核）、
   CWE/claim_type、要点、证据、实证结果 empirical_result、追踪 surface、修复建议
 - **三、修复建议与结论（主代理补充）**：仅此段 + 头部审计基线由主代理补写；
-  **补充后不得重跑 `--stage report`**（机械渲染会覆盖本段）
+  **补充后不得重跑 `--stage report`**（机械渲染会覆盖本段）。
+  **发现包络边界声明（v3.23, SWR-V3.23-002，提示级）**：该段须附「发现包络
+  边界声明」——本审计覆盖输入处理缺陷（输入面→语义轴→sink）；**不覆盖**
+  （a）JIT/编译器优化正确性层（类型追踪/去优化正确性——需差分/模糊测试通道），
+  （b）闭源依赖内部实现，（c）非目标平台变体。缺失 = warn 注记不阻断。
 - **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：成因双分
   （`保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法
   取证）；未注明交主代理确认）+ correction_record 理由 + NEEDS_REVIEW ↔
@@ -340,7 +359,7 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
 机械值 + 告警行）：
 | 级别 | 账本族（CWE） |
 |---|---|
-| 严重 | 注入/反序列化（78/94/77/502）+ MEMORY-SAFETY（787/125/416/415/476/190/129）+ NUMERIC 整数下溢（191，与 190 对称） |
+| 严重 | 注入/反序列化（78/94/77/502）+ MEMORY-SAFETY（787/125/416/415/476/190/129/843）+ NUMERIC 整数下溢（191，与 190 对称） |
 | 高 | SQLi/路径/SSRF（89/74/22/918）+ 鉴权主体（862/863/639/306）+ RESOURCE-DOS（400/770/789/409/833/834）+ RACE（362/366/367）+ STATE 状态机序对/协议类（841/696）+ NUMERIC 除零（369）+ ERROR-HANDLING 未初始化（457）+ WEB 请求走私（444）+ RESOURCE-DOS ReDoS（1333） |
 | 中 | XSS/弱鉴权（79/601/352/285/287/926）+ CRYPTO/DATA-INTEGRITY（327/326/338/347/330/310/311/295/345/351/829）+ STATE 状态机控制流（670）+ NUMERIC 截断/不一致比较（681/697）+ ERROR-HANDLING 初始化不完整（665）+ WEB 双解析器前提（436） |
 
@@ -1546,6 +1565,33 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
 collect 结果不污染队列文件 + install 双副本同步。
 
+
+## 🆕 v3.23 增量（2026-09-06，real-target 验证轮 + CVE-2026-85046 召回复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_23.md` + `SWR_V3_23.md` +
+> `SYSTEM_DESIGN_V3_23.md` + `SOFTWARE_DESIGN_V3_23.md` + `BIAS_EVAL_V3_23.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：firefox lessons §三.1（H3-F1 所有权保真反证, real-target 探针
+> 1033+752 次派发零中途释放实录）+ v8 lessons 召回复盘 1（CVE-2026-85046）+
+> WebKit lessons 二.1（R4/R2 并行冲突实录）；取证裁除 3 项（v3.19-003/005/006
+> 已存在机制）。
+
+1. **fidelity 所有权模型核实（SWR-V3.23-001, D-1）**：`equivalent` 档须列出目标
+   对象真实引用持有图（AddRef/释放/时机）并证明 harness 交错时序映射真实释放
+   路径——无法映射的时序不得作为缺陷前提（R5 段）。
+2. **发现包络边界声明（SWR-V3.23-002, D-2）**：报告「修复建议与结论」段须附
+   包络声明——不覆盖 JIT/编译器优化正确性层、闭源依赖内部、非目标平台变体；
+   缺失 = warn 注记不阻断。
+3. **JIT 正确性假设族（SWR-V3.23-003, D-3）**：严重度表 MEMORY-SAFETY 补 843；
+   语义轴测绘模板补「JIT 优化正确性层轴」（generation_layers 含 jit 时注入）；
+   target_profile 补 jit 目录信号（S2j，仅建议主代理签收）。
+4. **differential 发现通道（SWR-V3.23-004, D-4）**：R2 提示——semantic/jit 目标
+   可选跑 differential 探针比对运行配置分歧，分歧即假设（提示级无新义务）。
+5. **召回率回归集（SWR-V3.23-005, D-5）**：tests/fixtures/recall_regression_set.json
+   建语料（首样本 CVE-2026-85046 形态）；仅 fixture/评估引用，不建运行时度量
+   工具（过设计防线）。
+6. **R4 注入 R2 进行中结论（SWR-V3.23-006, D-6）**：biz_hypothesis.md 补注入条款
+   ——并行时 R4 任务书须附带相关 surface 的 R2 进行中结论（提示级）。
 
 ## 🆕 v3.22 增量（2026-09-04，Firefox 验收审计复盘缺陷修复）
 

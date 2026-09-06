@@ -73,6 +73,22 @@ surface，entry_points 仍附 file:line 证据）：
 - 轴锚点证据义务：anchor_files 逐行可 grep 核实；禁止只写"全库可达"类无锚点声明；
 - 轴是 R2 假设生成的采样单元（一轴一族假设义务）与门禁⑦覆盖计数的面单元。
 
+## JIT 优化正确性层轴测绘段（v3.23, SWR-V3.23-003 —— 仅 generation_layers 含 jit 时注入）
+
+运行时/JIT 目标（generation_layers 含 jit）在语言语义层之外还有一层发现包络内
+易漏的攻击面：编译器优化正确性。本节要求额外测绘**JIT 优化正确性轴**（提示级，
+主代理派发时注入；一轴一条 surface，entry_points 仍附 file:line 证据）：
+
+- 轴 = JIT 优化正确性命名空间族：map/类型追踪（elements-kind 迁移、hidden class
+  迁移）、去优化帧正确性（deopt 状态物化）、归约/内联的表示假设（speculation
+  回退不变量）、GC 屏障/写屏障正确性（按目标形态选取，枚举为主代理派发时给定）；
+- 轴 surface 必填 `semantic_axis` 字段（同语义轴契约：namespace/anchor_files/
+  cardinality）；
+- 一轴一族假设义务：如「归约/内联改变 elements-kind 假设 → 类型混淆 CWE-843」；
+- 轴锚点证据义务：anchor_files 逐行可 grep 核实；禁止只写"编译器全局可达"类
+  无锚点声明；
+- 该轴生成的候选按既有 R3 流程验证（CWE-843 已入严重度映射表）。
+
 ## 组件约束段（v3.17, SWR-V3.17-002 —— 仅 super-large 两阶段测绘注入）
 
 本目标为 super-large 档（源文件 >2000），R1 采用两阶段测绘。你负责的

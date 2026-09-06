@@ -54,6 +54,18 @@ def _scan_files(root):
     return counts
 
 
+def _find_files(root, pat):
+    """按路径片段匹配文件/目录 (JIT 信号等目录结构探测)。"""
+    hits = []
+    for dirpath, dirs, files in os.walk(root):
+        if pat in dirpath:
+            hits.append(dirpath)
+        for f in files:
+            if pat in f:
+                hits.append(os.path.join(dirpath, f))
+    return hits
+
+
 def _scan_build_manifests(root):
     """构建清单 hits (通用构建工具, 只查顶层两级)。"""
     hits = []
@@ -127,6 +139,21 @@ def recommend(root):
         signals.append({"id": "S2u", "signal": "unlisted_ext",
                         "evidence": f"{ext} 命中 {n} 文件 (非默认扩展名)",
                         "recommends": "主代理裁决: 项目专属 DSL 补录 generation_layers"})
+
+    # S2j JIT 编译器目录信号 → generation_layers+jit 建议 (v3.23, SWR-V3.23-003;
+    # 仅建议, 主代理签收; JIT 优化正确性层轴测绘的门控信号)
+    for pat in ("src/compiler/maglev", "src/compiler/turbofan", "src/jit",
+                "jit_compiler", "src/backend"):
+        hits = _find_files(root, pat)
+        if hits:
+            layers.append({"ext": "jit", "role": "runtime_layer",
+                           "lang_family": "runtime",
+                           "generates": ["machine_code"],
+                           "provenance": "jit_dir_signal"})
+            signals.append({"id": "S2j", "signal": "jit_dir",
+                            "evidence": f"JIT 编译器目录信号: {pat} ({len(hits)} 命中)",
+                            "recommends": "generation_layers+jit"})
+            break
 
     # S3 构建清单 hits → 两阶段测绘信号 (super-large 载体)
     manifests = _scan_build_manifests(root)
