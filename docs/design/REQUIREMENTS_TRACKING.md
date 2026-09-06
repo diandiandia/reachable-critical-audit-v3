@@ -957,3 +957,39 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.22-009 | 导出 taskFile 薄封装默认化（refutation/resurrect） | 已完成 | workflow_export.py + tests/test_v322.py |
 | REQ-V3.22-010 | R2 面覆盖前置核对条款 | 已完成 | SKILL.md + tests/test_v322.py |
 | REQ-V3.22-011 | R6 蒸馏失败模式清单条款 | 已完成 | SKILL.md + tests/test_v322.py |
+
+## 系统需求（REQ-V3.23）（共 6 条 + 裁除 3）
+
+> 手工追加段（2026-09-06 补记——v3.23 commit 声称已加但文件缺失，本轮回溯补全）。
+> 规范: REQ_V3_23.md / SWR_V3_23.md / SYSTEM_DESIGN_V3_23.md /
+> SOFTWARE_DESIGN_V3_23.md。评估: BIAS_EVAL_V3_23.md。
+> 案例支撑: firefox lessons §三.1（H3-F1 所有权保真反证）+ v8 lessons 召回复盘 1
+> （CVE-2026-85046）。DDL 消化: 取证裁除 3 项（v3.19-003/005/006 已存在机制）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.23-001 | fidelity=equivalent 所有权模型核实条款（引用持有图逐层核对） | 已完成 | SKILL.md R5 段 + tests/test_v323.py |
+| REQ-V3.23-002 | 发现包络边界声明（JIT/闭源/非目标平台三族, warn 不阻断） | 已完成 | SKILL.md 报告段 + tests/test_v323.py |
+| REQ-V3.23-003 | JIT 优化正确性假设族 + CWE-843 入严重度表 + target_profile jit 信号 | 已完成 | surface_map_domain.md + SKILL.md + tools/target_profile.py + tests/test_v323.py |
+| REQ-V3.23-004 | differential 探针发现化（R2 提示级通道） | 已完成 | SKILL.md R2 + templates/harness/differential_probe.py + tests/test_v323.py |
+| REQ-V3.23-005 | 召回率回归集 fixture（首样本 85046 形态） | 已完成 | tests/fixtures/recall_regression_set.json + tests/test_v323.py |
+| REQ-V3.23-006 | R4 任务书注入 R2 进行中结论 | 已完成 | task_templates/biz_hypothesis.md + tests/test_v323.py |
+| 裁除 | v8 追记 1/3/4 → v3.19-003/005/006 已存在机制 | 裁除 | SWR_V3_23.md |
+
+## 系统需求（REQ-V3.24）（共 5 条 + 裁除 4）
+
+> 手工追加段（2026-09-06）。规范: REQ_V3_24.md / SWR_V3_24.md /
+> SYSTEM_DESIGN_V3_24.md / SOFTWARE_DESIGN_V3_24.md。评估: BIAS_EVAL_V3_24.md。
+> 案例支撑: 三引擎 2886 CVE 全景分类（docs/design/recall_eval_2025_2026/,
+> 包络内 80.2%, critical 57% L0b, L2b+c+f 9.0%）+ firefox lessons §三.2。
+> DDL 消化: V8/WebKit 全条目→v3.18-3.21 已闭环; firefox §一/§一补→v3.22,
+> §三.1→v3.23 D-1, §三.2→本轮 REQ-V3.24-005; 裁除 4 项（C-1..C-4）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.24-001 | H4 site-isolation/资源归因检查点（提示级） | 已完成 | task_templates/biz_hypothesis.md + tests/test_v324.py |
+| REQ-V3.24-002 | JIT 根因归属条款（归属未知标 [ambig], 不默认归编译器） | 已完成 | task_templates/surface_map_domain.md + tests/test_v324.py |
+| REQ-V3.24-003 | 边界声明补 UI 信任指示层/移动端平台集成层 | 已完成 | SKILL.md 报告段 + tests/test_v324.py |
+| REQ-V3.24-004 | 召回率回归集扩 L0b/L0d/L0c（RECALL-002..004） | 已完成 | tests/fixtures/recall_regression_set.json + tests/test_v324.py |
+| REQ-V3.24-005 | equivalent 档 real-target 抽验提示（提示级） | 已完成 | SKILL.md R5 段 + tests/test_v324.py |
+| 裁除 C-1..C-4 | H3 义务化 / L2a 度量 / 内部组件专项 / 移动平台分支 | 裁除 | SWR_V3_24.md |

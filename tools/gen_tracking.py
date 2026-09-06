@@ -31,6 +31,8 @@ VERSIONS = [
     # v3.23 登记 (2026-09-06, REQ_V3_23/SWR_V3_23 标题形态零提取——登记仅未来-proof;
     # REQUIREMENTS_TRACKING.md 的 V3.23 段为手工追加, 禁止运行本脚本再生成)
     ("V3.23",  "docs/design/REQ_V3_23.md",  "docs/design/SWR_V3_23.md"),
+    # v3.24 登记 (同 v3.23 语义: 手工段维护, 禁止再生成)
+    ("V3.24",  "docs/design/REQ_V3_24.md",  "docs/design/SWR_V3_24.md"),
     # v3.17 登记 (同 v3.16 语义: 手工段维护, 禁止再生成)
     ("V3.17",  "docs/design/REQ_V3_17.md",  "docs/design/SWR_V3_17.md"),
     # v3.18 登记 (同 v3.17 语义)
