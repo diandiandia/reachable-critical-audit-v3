@@ -12,6 +12,42 @@
       },
       "expected_hypothesis": "compiler reduction/inlining alters elements-kind assumptions -> type confusion",
       "case_source": "CVE-2026-85046; v8 audit 召回复盘 1 (v8/.audit_results/lessons.md 追记 2026-09-06)"
+    },
+    {
+      "id": "RECALL-002",
+      "defect_class": "async object lifecycle race (callback-held reference freed across task/process boundary)",
+      "family": "MEMORY-SAFETY",
+      "cwe": ["CWE-416"],
+      "profile_signals": {
+        "surface_model": "hybrid",
+        "generation_layers": []
+      },
+      "expected_hypothesis": "H3 异步对象生命周期竞态 -> 回调持引用跨任务释放",
+      "case_source": "Chrome 2025-2026 critical L0b 族 (188 critical 中 107 条=57%; recall_eval 2.3)"
+    },
+    {
+      "id": "RECALL-003",
+      "defect_class": "cross-process resource origin misattribution (texture/cache/download/navigation target bound to wrong origin)",
+      "family": "TRUST-BOUNDARY",
+      "cwe": ["CWE-863"],
+      "profile_signals": {
+        "surface_model": "entry",
+        "generation_layers": []
+      },
+      "expected_hypothesis": "H4 跨进程信任边界 -> 资源归因错误 origin",
+      "case_source": "三引擎 L0d 412 条 (firefox Graphics site-isolation 族/Chrome Site Isolation 组件族; recall_eval 2.2)"
+    },
+    {
+      "id": "RECALL-004",
+      "defect_class": "graphics pipeline boundary condition (GPU command buffer/shader validation integer overflow leading to OOB write)",
+      "family": "MEMORY-SAFETY",
+      "cwe": ["CWE-787", "CWE-190"],
+      "profile_signals": {
+        "surface_model": "hybrid",
+        "generation_layers": []
+      },
+      "expected_hypothesis": "H2 远端控制解引用长度 + H4 跨进程信任边界 -> GPU 命令缓冲越界",
+      "case_source": "Chrome ANGLE/Skia/GPU 族 + Firefox WebGPU 族 (recall_eval L0c 63 条)"
     }
   ]
 }

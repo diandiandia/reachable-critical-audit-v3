@@ -279,6 +279,7 @@ mechanism`（缺省 real_target，旧队列零行为变化）。`equivalent` 档
 的时序不得作为缺陷前提（实录：家族强引用层使「后台期间释放」不可达，harness
 人为交错致误报——门禁与复核均无法拦截该形态，核实义务落在 harness 编写侧）。
 `mechanism` 档不得升 `empirically_confirmed`；申报材料按档位标注，不混级申报。
+equivalent 档结论强度低于 real_target——真实目标环境可及时，对 equivalent 实证候选做抽验（建模失真曾致等价实证结论被真实目标推翻的实录）；提示级，不强制不阻断。
 
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
@@ -341,7 +342,7 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
   **发现包络边界声明（v3.23, SWR-V3.23-002，提示级）**：该段须附「发现包络
   边界声明」——本审计覆盖输入处理缺陷（输入面→语义轴→sink）；**不覆盖**
   （a）JIT/编译器优化正确性层（类型追踪/去优化正确性——需差分/模糊测试通道），
-  （b）闭源依赖内部实现，（c）非目标平台变体。缺失 = warn 注记不阻断。
+  （b）闭源依赖内部实现，（c）非目标平台变体，（d）UI 信任指示层（地址栏/界面欺骗类——UI 信任逻辑非代码缺陷），（e）移动端平台集成层。缺失 = warn 注记不阻断。
 - **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：成因双分
   （`保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法
   取证）；未注明交主代理确认）+ correction_record 理由 + NEEDS_REVIEW ↔
@@ -1565,6 +1566,33 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
 collect 结果不污染队列文件 + install 双副本同步。
 
+
+## 🆕 v3.24 增量（2026-09-06，三引擎全景召回评估驱动）
+
+> 设计文档: `docs/design/REQ_V3_24.md` + `SWR_V3_24.md` +
+> `SYSTEM_DESIGN_V3_24.md` + `SOFTWARE_DESIGN_V3_24.md` + `BIAS_EVAL_V3_24.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：三引擎 2886 CVE 全景分类（docs/design/recall_eval_2025_2026/，
+> 包络内 80.2%、critical 57% L0b、L2b+c+f 9.0%）+ firefox lessons §三.2
+> （equivalent 实证 1/4 被真实目标推翻）；取证裁除 4 项（C-1..C-4）。
+
+1. **H4 site-isolation/资源归因检查点（SWR-V3.24-001, D-1）**：H4 补提示级
+   子条——跨进程资源（纹理/缓存/下载/导航目标/worker）绑定错误 origin 即
+   信任边界破坏，检查资源创建与归因的 origin 上下文一致性（biz_hypothesis.md）。
+2. **JIT 根因归属条款（SWR-V3.24-002, D-2）**：JIT 轴段补提示级条款——
+   根因 runtime/编译器无法归属时标归属未知并保持 [ambig]，不得默认归编译器
+   正确性；CWE-843 映射仅适用于归属成立候选（surface_map_domain.md）。
+3. **边界声明补两族（SWR-V3.24-003, D-3）**：报告段「发现包络边界声明」
+   不覆盖项补（d）UI 信任指示层、（e）移动端平台集成层；warn 不阻断保持。
+4. **召回率回归集扩三类（SWR-V3.24-004, D-4）**：fixture 追加 RECALL-002
+   （L0b CWE-416）/RECALL-003（L0d CWE-863）/RECALL-004（L0c CWE-787+190）；
+   仅测试/评估引用，不进运行时。
+5. **equivalent 档 real-target 抽验提示（SWR-V3.24-005, D-5）**：R5 保真段
+   提示级——equivalent 档结论强度低于 real_target，真实目标环境可及时对
+   equivalent 实证候选做抽验；不强制不阻断。
+
+验收判据：test_v324 8 用例 + 全量回归绿 + 旧队列复跑零新增告警 +
+test_v323 九用例（RECALL-001 未动）全绿。
 
 ## 🆕 v3.23 增量（2026-09-06，real-target 验证轮 + CVE-2026-85046 召回复盘缺陷修复）
 
