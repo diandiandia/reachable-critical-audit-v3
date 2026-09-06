@@ -280,6 +280,7 @@ mechanism`（缺省 real_target，旧队列零行为变化）。`equivalent` 档
 人为交错致误报——门禁与复核均无法拦截该形态，核实义务落在 harness 编写侧）。
 `mechanism` 档不得升 `empirically_confirmed`；申报材料按档位标注，不混级申报。
 equivalent 档结论强度低于 real_target——真实目标环境可及时，对 equivalent 实证候选做抽验（建模失真曾致等价实证结论被真实目标推翻的实录）；提示级，不强制不阻断。
+补测前先核取 verifier/证伪者证据中已有实测数字——backfill 规范（v3.4.3-061）以证据文本实测为依据，同事实重复实证是执行层浪费（提示级）。
 
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
@@ -1566,6 +1567,34 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
 collect 结果不污染队列文件 + install 双副本同步。
 
+
+## 🆕 v3.25 增量（2026-09-06，MaintainWise 验收审计复盘）
+
+> 设计文档: `docs/design/REQ_V3_25.md` + `SWR_V3_25.md` +
+> `SYSTEM_DESIGN_V3_25.md` + `SOFTWARE_DESIGN_V3_25.md` + `BIAS_EVAL_V3_25.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：v3.24 验收审计 lessons（workflow 基础设施故障触发 A' 降级全程
+> 实战 + 111KB payload 超限 + 编码矩阵误判双重推翻 + severity 传递两处手工
+> override + 预置库首启接管）；用户"重复功能裁剪"追问四候选取证裁除 3/降级 1。
+
+1. **verify 导出薄封装默认化（SWR-V3.25-001, D-1）**：verify payload 默认
+   taskFile 化 + `verify_payload_slim.json` 落盘（与 refutation/resurrect
+   同契约, v3.22-009 扩展）；args 从 slim 文件整读整传。
+2. **r35-collect A' 文件目录输入（SWR-V3.25-002, D-2）**：journal.jsonl
+   缺失时 glob `_refute_*.json`（A' 降级形态）按同一多数决路径落盘；
+   CLI 增 `--from-refute-files <dir>`。
+3. **verifier 路径穿越编码矩阵条款（SWR-V3.25-003, D-3）**：步骤 5.2——
+   裸 ../、%2e%2e、%2F、混合编码、%252e 双编码逐形态实测或注明未测；
+   单形态样本不得外推。
+4. **r4-collect severity 传递 warn（SWR-V3.25-004, D-4）**：同事实去重后
+   载体候选机械严重度低于 R4 申报时输出 severity_transfer_advisory
+   （提示主代理裁决 severity_override，不自动改写）。
+5. **storage 预置数据文件面指引（SWR-V3.25-005, D-5）**：surface 测绘模板
+   增条件段——shipped 数据文件（预置库/种子/示例配置）的状态即攻击面。
+6. **R5 核取提示句（SWR-V3.25-006, D-6）**：补测前先核取 verifier/证伪者
+   证据中已有实测数字，避免同事实重复实证（提示级）。
+
+验收判据：test_v325 8 用例 + 全量回归绿 + 旧队列复跑零新增告警。
 
 ## 🆕 v3.24 增量（2026-09-06，三引擎全景召回评估驱动）
 

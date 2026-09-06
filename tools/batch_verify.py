@@ -1304,7 +1304,38 @@ def stage_r4_collect(project_root, findings_file):
                 save_queue(project_root, queue)
         except ValueError as e:
             unknown.append({"error": f"input_surface.json 校验失败: {e}"})
+    # v3.25 (SWR-V3.25-004): 同事实去重后 R4 severity 传递 warn——载体候选
+    # 机械严重度低于 R4 申报时不自动改写, 提示主代理裁决 (两处手工 override 实录)
+    _sev_rank = {"critical": 3, "high": 2, "medium": 1, "low": 0}
+    severity_advisories = []
+    for h in items:
+        for it in (h.get("findings") or []):
+            r3 = it.get("r3_link")
+            cand_id = None
+            if isinstance(r3, dict):
+                cand_id = r3.get("candidate")
+            elif isinstance(r3, str) and r3.strip().startswith("CAND-"):
+                cand_id = r3.strip().split(" ")[0]
+            if not cand_id:
+                continue
+            fsev = str(it.get("severity") or "").lower()
+            if _sev_rank.get(fsev, 0) < 2:
+                continue
+            tc = next((x for x in queue.get("candidates", []) if x.get("id") == cand_id), None)
+            if not tc:
+                continue
+            msev = str(severity_for(tc) or "").lower()
+            if _sev_rank.get(msev, 0) < _sev_rank[fsev]:
+                severity_advisories.append({
+                    "kind": "severity_transfer_advisory",
+                    "finding": (it.get("title") or "")[:60],
+                    "r4_severity": fsev.capitalize(),
+                    "candidate_mechanical": msev,
+                    "hint": ("同事实去重后载体候选机械严重度低于 R4 申报——"
+                             "主代理裁决 severity_override (不自动改写)")})
     result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
+    if severity_advisories:
+        result["severity_advisories"] = severity_advisories
     # v3.14 (SWR-V3.14-004): R4 finding 终态表述与 r3_link 候选终态一致性检查——
     # finding 带 r3_link 且 title/evidence 含终态关键词时与候选当前 verdict 比对,
     # 矛盾输出 warn (字段级, 非新门禁)。案例: H4-F5「维持 R3 UNREACHABLE」vs
@@ -1433,22 +1464,36 @@ def stage_r35_collect(project_root, transcript_dir):
                                   "失效致 agent 自由发挥; 核实后决定是否采信"},
                          ensure_ascii=False), file=sys.stderr)
     files = _glob.glob(os.path.join(transcript_dir, "journal.jsonl"))
-    if not files:
-        print("Error: journal.jsonl 不存在", file=sys.stderr)
-        return 1
-    decisions = []
-    for line in open(files[0]):
-        try:
-            rec = json.loads(line)
-        except ValueError:
-            continue
-        if rec.get("type") != "result":
-            continue
-        r = rec.get("result") or rec.get("value")
-        if isinstance(r, dict) and r.get("id") and ("refuted" in r):
-            decisions.append(r)
+    if files:
+        decisions = []
+        for line in open(files[0]):
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("type") != "result":
+                continue
+            r = rec.get("result") or rec.get("value")
+            if isinstance(r, dict) and r.get("id") and ("refuted" in r):
+                decisions.append(r)
+    else:
+        # v3.25 (SWR-V3.25-002): A' 降级形态——证伪者直写 _refute_*.json 的
+        # 目录 (journal 合成为手工簿记步骤, 契约缺口实录)
+        refute_files = sorted(_glob.glob(os.path.join(transcript_dir, "_refute_*.json")))
+        if not refute_files:
+            print("Error: journal.jsonl 与 _refute_*.json 均不存在 (workflow transcript 目录或 A' refute 文件目录)",
+                  file=sys.stderr)
+            return 1
+        decisions = []
+        for fp in refute_files:
+            try:
+                d = json.load(open(fp))
+            except (ValueError, OSError):
+                continue
+            if isinstance(d, dict) and d.get("id") and "refuted" in d:
+                decisions.append(d)
     if not decisions:
-        print("Error: journal 无 refutation schema 结果 (id+refuted)", file=sys.stderr)
+        print("Error: 无 refutation schema 结果 (id+refuted)", file=sys.stderr)
         return 1
     by_id = {}
     for d in decisions:
@@ -2966,6 +3011,13 @@ premises_verified 字段（每项 premise/file:line/status）——只写结论�
 - 列出所有到达该 Sink 点的调用路径
 - 多条路径中只要有一条无阻断 → 该点 REACHABLE
 """
+    if "CWE-22" in (cand.get("sink_type") or "") or any(
+            "22" == str(x).split("-")[-1] for x in (cand.get("cwe") or [])):
+        prompt += """### 步骤 5.2（v3.25, SWR-V3.25-003）: 路径穿越编码矩阵
+路径穿越/路径拼接类候选的编码矩阵固定维度: 裸 ../、%2e%2e 段、%2F 分隔符、
+混合编码（..%2f）、%252e 双编码——逐形态实测或注明未测; 单形态样本不得外推
+（框架/网关/应用三层解码行为分叉实录）。
+"""
 
     if _is_write_read_family(cand):
         prompt += """### 步骤 5.5（v3.2.1，write→read 注入族强制，W6 §25.3）: 消费端中间层枚举
@@ -3045,6 +3097,7 @@ def main():
     batch_size = None
     findings_file = None
     from_journal = None
+    from_refute_files = None
     verdicts = {}
     sinks_file = None
     sinks_inline = None
@@ -3064,6 +3117,10 @@ def main():
             from_journal = arg.split("=", 1)[1]
         elif arg == "--from-journal" and i + 1 < len(args):
             from_journal = args[i + 1]
+        elif arg.startswith("--from-refute-files="):
+            from_refute_files = arg.split("=", 1)[1]
+        elif arg == "--from-refute-files" and i + 1 < len(args):
+            from_refute_files = args[i + 1]
         elif arg.startswith("--expect="):
             expect_ids = arg.split("=", 1)[1].split(",")
         elif arg == "--expect" and i + 1 < len(args):
@@ -3218,11 +3275,12 @@ def main():
     elif stage == "coverage-ledger":
         sys.exit(stage_coverage_ledger(project_root, write="--write" in args))
     elif stage == "r35-collect":
-        if not from_journal:
-            print("Error: r35-collect requires --from-journal <transcript_dir>",
+        src = from_journal or from_refute_files
+        if not src:
+            print("Error: r35-collect requires --from-journal <transcript_dir> 或 --from-refute-files <dir>",
                   file=sys.stderr)
             sys.exit(1)
-        sys.exit(stage_r35_collect(project_root, from_journal))
+        sys.exit(stage_r35_collect(project_root, src))
     elif stage == "r35n-collect":
         if not from_journal:
             print("Error: r35n-collect requires --from-journal <transcript_dir>",

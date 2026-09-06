@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.24"
+TOOLING_VERSION = "3.25"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 import batch_verify as bv
@@ -799,6 +799,21 @@ def export_script(project_root, mode="verify", batch_size=4):
                         "attempt": c.get("attempt", 0),
                         "prompt": prompt})
 
+    if mode == "verify":
+        # v3.25 (SWR-V3.25-001): 薄封装默认化扩展——v3.22 D-9 覆盖
+        # refutation/resurrect, verify 漏网 (111KB payload 超 args 上限实录)
+        _tasks_dir = os.path.join(project_root, ".audit_results", "_tasks")
+        os.makedirs(_tasks_dir, exist_ok=True)
+        for c in payload:
+            tf = os.path.join(_tasks_dir, f"verify_{c['id']}.md")
+            with open(tf, "w") as f:
+                f.write(c["prompt"])
+            c["taskFile"] = f".audit_results/_tasks/verify_{c['id']}.md"
+        slim = [{"id": c["id"], "taskFile": c["taskFile"]} for c in payload]
+        with open(os.path.join(project_root, ".audit_results",
+                               "verify_payload_slim.json"), "w") as f:
+            json.dump(slim, f, ensure_ascii=False, indent=1)
+
     schema = VERDICT_SCHEMA if mode == "verify" else REFUTATION_SCHEMA
     template = VERIFY_SCRIPT if mode == "verify" else REFUTATION_SCRIPT
     js = _inject_project_marker(
@@ -855,6 +870,8 @@ def export_script(project_root, mode="verify", batch_size=4):
         "next_step": (
             f"Workflow 工具运行: scriptPath={script_path}, "
             f"args={{\"candidates\": <payload>}};\n"
+            f"薄封装 (v3.22-009/v3.25-001): args 从 .audit_results/{mode}_payload_slim.json "
+            f"整读整传 ({mode}_payload.json 保留内嵌回退, 勿整传);\n"
             f"v3.1 规范条款 (W6 §10.3/§10.4/§5):\n"
             f"  - args 必须从落盘 payload 文件整读整传, 禁止复制预览截断;\n"
             f"  - resume 必须携带与首跑一致的 args;\n"
