@@ -993,3 +993,22 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.24-004 | 召回率回归集扩 L0b/L0d/L0c（RECALL-002..004） | 已完成 | tests/fixtures/recall_regression_set.json + tests/test_v324.py |
 | REQ-V3.24-005 | equivalent 档 real-target 抽验提示（提示级） | 已完成 | SKILL.md R5 段 + tests/test_v324.py |
 | 裁除 C-1..C-4 | H3 义务化 / L2a 度量 / 内部组件专项 / 移动平台分支 | 裁除 | SWR_V3_24.md |
+
+## 系统需求（REQ-V3.25）（共 6 条 + 裁除 3）
+
+> 手工追加段（2026-09-06）。规范: REQ_V3_25.md / SWR_V3_25.md /
+> SYSTEM_DESIGN_V3_25.md / SOFTWARE_DESIGN_V3_25.md。评估: BIAS_EVAL_V3_25.md。
+> 案例支撑: v3.24 验收审计（MaintainWise）lessons 5 条 + 用户"重复功能裁剪"
+> 追问四候选（取证裁除 CK 合并 / legacy 清理 / signature 降级,
+> 实证自动传递降级为 D-6 提示句）。
+> DDL 消化: MaintainWise lessons §一.1-5 全部入库, §一.6/§二 保持。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.25-001 | verify 导出默认 taskFile 化 + slim payload 落盘 | 已完成 | workflow_export.py + tests/test_v325.py |
+| REQ-V3.25-002 | r35-collect A' 文件目录输入 + --from-refute-files | 已完成 | tools/batch_verify.py + tests/test_v325.py |
+| REQ-V3.25-003 | verifier 路径穿越编码矩阵条款（步骤 5.2） | 已完成 | tools/batch_verify.py _build_prompt + tests/test_v325.py |
+| REQ-V3.25-004 | r4-collect severity_transfer_advisory（warn 不自动改写） | 已完成 | tools/batch_verify.py + tests/test_v325.py |
+| REQ-V3.25-005 | storage 预置数据文件面指引（surface 模板条件段） | 已完成 | task_templates/surface_map_domain.md + tests/test_v325.py |
+| REQ-V3.25-006 | R5 核取提示句（提示级） | 已完成 | SKILL.md R5 段 + tests/test_v325.py |
+| 裁除 | 实证自动传递机制化（已有 backfill 规范）/ CK 合并 / legacy 清理 / signature 降级 | 裁除 | REQ_V3_25.md 裁决记录表 |
