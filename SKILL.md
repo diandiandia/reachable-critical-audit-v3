@@ -977,7 +977,7 @@ selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级
   兜底"的形态误判为缺陷）
 - **文档漂移**（REQ-V3.9-011）：SKILL.md repair 裁除注记；
   workflow_export.TOOLING_VERSION 3.7→3.9（版本守卫数据本身漂移两版）
-- **cve-ghsa-draft**（REQ-V3.9-012）：新 `tools/check_no_cjk.py` 零中文检查脚本
+- **cve-ghsa-draft**（REQ-V3.9-012）：新 `tools/check_no_cjk.py` 零中文检查脚本（交付至 cve-ghsa-draft skill 目录）
 
 ### 撤销记录（防义务棘轮）
 - 原 P1-6（assert_ledger 逐门输出）：代码复查确认现有 `(ok, violations)` 契约

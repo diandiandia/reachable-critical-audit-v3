@@ -150,3 +150,42 @@ def test_sk_resource_rate_probe_listed():
     for tok in ("ktor", "actix", "awstats", "sinatra", "django", "phpseclib",
                 "/root/"):
         assert tok not in blob, tok
+
+
+# ---------------- v3.26 (SWR-V3.26-002/003) 散文引用与版本一致性 ----------------
+
+def test_tools_file_references_resolve():
+    """SWR-V3.26-002: SKILL.md 散文 tools/ 引用必须本地存在, 或同行标注
+    「交付至 <skill>」且兄弟 skill 目录中该文件真实存在。
+    根因: SKILL.md:980 check_no_cjk.py 引用歧义漏网 (466 测试全绿未拦截)。"""
+    text = open(SKILL_MD).read()
+    refs = re.findall(r"tools/([A-Za-z0-9_]+\.py)", text)
+    assert refs, "SKILL.md 无 tools/ 引用"
+    home = os.path.expanduser("~")
+    for fname in sorted(set(refs)):
+        local = os.path.join(WORKSPACE, "tools", fname)
+        if os.path.exists(local):
+            continue
+        # 跨 skill 交付必须同行标注: 交付至 <skill-name>
+        lines = [ln for ln in text.splitlines() if fname in ln]
+        for ln in lines:
+            m = re.search(r"交付至 ([a-z0-9-]+)", ln)
+            assert m, f"tools/{fname} 不存在且行内无「交付至 <skill>」标注: {ln[:80]}"
+            sibling = os.path.join(home, ".claude", "skills",
+                                   m.group(1), "tools", fname)
+            assert os.path.exists(sibling), \
+                f"tools/{fname} 标注目标不存在: {sibling}"
+
+
+def test_tooling_version_consistent_with_skmd():
+    """SWR-V3.26-003: SKILL.md 声明的 TOOLING 版本与 workflow_export 一致。
+    根因: 3.7→3.9 漂移两版才被发现 (SKILL.md:979); 现查证同形态缺口仍在。"""
+    sys.path.insert(0, WORKSPACE)
+    import workflow_export as we
+    text = open(SKILL_MD).read()
+    assert f"TOOLING {we.TOOLING_VERSION}" in text, \
+        f"SKILL.md 缺 TOOLING {we.TOOLING_VERSION} 声明 (版本链漂移)"
+    segs = re.findall(r"^## 🆕 v([\d.]+) 增量", text, re.M)
+    assert segs, "SKILL.md 无增量段"
+    assert segs[-1] == we.TOOLING_VERSION, \
+        f"最新增量段 v{segs[-1]} ≠ TOOLING {we.TOOLING_VERSION}"
