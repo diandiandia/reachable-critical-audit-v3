@@ -445,7 +445,8 @@
     "CWE-770"
    ],
    "patterns": [
-    "远端控制分配大小无上限: 攻击者控制长度进入分配"
+    "远端控制分配大小无上限: 攻击者控制长度进入分配",
+    "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一枚举——限额类缺陷的旁路族"
    ],
    "sinks": [
     "malloc 家族",
@@ -454,11 +455,13 @@
    ],
    "pitfalls": [
     "分配请求 ≠ 资源耗尽: 提交内存受输入限制时判 Low (PREC-ALLOC-VIRTUAL-001)",
-    "累积型 (逐块预留) 与一次性分配的量级判定不同"
+    "累积型 (逐块预留) 与一次性分配的量级判定不同",
+    "子执行上下文 (worker/线程/子 rt) 的资源参数继承矩阵逐项核对; 哨兵值 (0/-1/非法) 语义 fail-open 还是 fail-closed"
    ],
    "source_lessons": [
     "SIG-C-ALLOC-001 (签名库 L2 词族)",
-    "PREC-ALLOC-VIRTUAL-001"
+    "PREC-ALLOC-VIRTUAL-001",
+    "quickjs lessons 2026-09-07"
    ],
    "status": "seeded"
   },
@@ -479,11 +482,13 @@
    ],
    "pitfalls": [
     "长度字段极值 + 截断矩阵实证是声称类强制 (parser_fuzz 模板)",
-    "有符号下溢语义保留/边界指针语义在 stub 复刻时必须逐字保留"
+    "有符号下溢语义保留/边界指针语义在 stub 复刻时必须逐字保留",
+    "序列化/反序列化读取器的尺寸计算必须 size_t 且逐项溢出检查; 计数 ≤ 剩余输入/单元素最小占用——int 算术回绕 = 小分配大写入"
    ],
    "source_lessons": [
     "parser_fuzz 模板实战形态 (asn1_get_len ASan 2M+ 输入实录)",
-    "libarchive/freetype 解析器审计形态 (2026-08)"
+    "libarchive/freetype 解析器审计形态 (2026-08)",
+    "quickjs lessons 2026-09-07"
    ],
    "status": "seeded"
   },

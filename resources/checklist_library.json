@@ -1462,6 +1462,42 @@
     ],
     "note": "SWR-V3.17-006: 多词短语门控"
    }
+  },
+  {
+   "id": "CK-LIMIT-BYPASS-ENUM",
+   "name": "限额/配额旁路枚举",
+   "family": "resource-dos",
+   "binding": {
+    "cwe": [
+     "CWE-770",
+     "CWE-789"
+    ],
+    "keywords": [
+     "限额",
+     "memory limit",
+     "配额",
+     "quota",
+     "malloc_limit",
+     "memory_limit",
+     "计数分配",
+     "unaccounted"
+    ],
+    "note": "结构化绑定规则 (v3.1): cwe 并集匹配 或 keywords 任一命中候选文本"
+   },
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "目标资源的门禁/限额机制（内存/线程/连接）的强制点在哪里——是否经统一计数包装层？",
+    "全树裸分配站点逐一枚举（malloc/calloc/realloc/mmap/第三方分配器）——每个站点是否记账、是否查限？",
+    "子执行上下文（worker/线程/子进程/子 runtime）的资源参数是否继承父上下文限额？",
+    "限额的哨兵值语义（0/-1/非法值）是 fail-open 还是 fail-closed？",
+    "累积型资源（队列/缓存）的入队点是否有总量检查——检查点与累积点的先后？"
+   ],
+   "source_lessons": [
+    "quickjs lessons 2026-09-07 (worker 子 rt/SAB backing/消息队列三站点 + 哨兵 fail-open 实录)"
+   ]
   }
  ],
  "platform_trust_models": [

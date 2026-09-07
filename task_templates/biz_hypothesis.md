@@ -131,6 +131,13 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
 "code_point":"...","source_control":"...","risk_dimensions":"仅风险行填五维",
 "disposition":"保留/修改/文档对齐"}]}
 
+## 正向确认条目惯例（v3.27, SWR-V3.27-005）
+防御核实类/检测点复核 clean 类条目按此书写：**severity 一律 low**、
+**claim_type 仅枚举值**（crash|panic|oom|unbounded|xss|protocol_dos|rce|
+leak|other|null——缺枚举值置 null，禁止自造 default_reachability 类形态）、
+evidence 注明"核实结论：<防御机制 file:line>"。该类条目由主代理标
+positive_confirmation 后不进问题清单（v3.7 正向确认自动排除）。
+
 ## 义务入库三问（v3.3.2, REQ-V3.3.2-022）
 本任务书每项义务（字段/段/表）都经三问校准：①触发条件（何时执行）
 ②消费者（谁读它）③案例支撑（无案例的防御性义务已降为 checklist 提示）。
