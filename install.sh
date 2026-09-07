@@ -4,7 +4,24 @@
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
+ALLOW_DIRTY=0
+if [ "${1:-}" = "--allow-dirty" ]; then ALLOW_DIRTY=1; shift; fi
 DST="${1:-/root/.claude/skills/reachable-critical-audit}"
+
+# v3.26 (SWR-V3.26-001): dev 仓库未提交改动静默上运行时是漂移温床
+# (前周期欠账实录: 未提交矩阵文件已装至运行时; warn 级防线 v3.16→v3.22
+# 复发史证明不足)。拒绝安装, --allow-dirty 显式豁免; 非 git 仓库跳过。
+check_git_clean() {
+  git -C "$SRC" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  if [ "$ALLOW_DIRTY" = 1 ]; then return 0; fi
+  local dirty
+  dirty="$(git -C "$SRC" status --porcelain)"
+  if [ -z "$dirty" ]; then return 0; fi
+  echo "拒绝安装: dev 仓库工作树有未提交改动 (提交后重装, 或 --allow-dirty 显式豁免):" >&2
+  echo "$dirty" >&2
+  exit 1
+}
+check_git_clean
 
 echo "安装 v3 skill: $SRC -> $DST"
 

@@ -977,7 +977,7 @@ selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级
   兜底"的形态误判为缺陷）
 - **文档漂移**（REQ-V3.9-011）：SKILL.md repair 裁除注记；
   workflow_export.TOOLING_VERSION 3.7→3.9（版本守卫数据本身漂移两版）
-- **cve-ghsa-draft**（REQ-V3.9-012）：新 `tools/check_no_cjk.py` 零中文检查脚本
+- **cve-ghsa-draft**（REQ-V3.9-012）：新 `tools/check_no_cjk.py` 零中文检查脚本（交付至 cve-ghsa-draft skill 目录）
 
 ### 撤销记录（防义务棘轮）
 - 原 P1-6（assert_ledger 逐门输出）：代码复查确认现有 `(ok, violations)` 契约
@@ -1713,3 +1713,36 @@ test_v323 九用例（RECALL-001 未动）全绿。
 零新增告警 + recorder 渲染无悬空待回填 + 新条款段零项目名（grep 断言）+
 install 双副本同步。
 
+
+## 🆕 v3.26 增量（2026-09-07，三轮评估 P0 交付链与防漂移修复）
+
+> 设计文档: `docs/design/REQ_V3_26.md` + `SWR_V3_26.md` +
+> `SYSTEM_DESIGN_V3_26.md` + `SOFTWARE_DESIGN_V3_26.md` + `BIAS_EVAL_V3_26.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体；
+> 运行时模块业务逻辑零改动。TOOLING 3.26。
+> 案例支撑：三轮评估（钱学森系统工程视角）取证实录——未提交覆盖账本已装至
+> 运行时、SKILL.md check_no_cjk 引用歧义漏网（466 测试全绿未拦截）、
+> "TOOLING 3.25" 在 SKILL.md 全文缺失（漂移两版旧案同形态复发）、
+> 根目录 REQUIREMENTS_TRACKING.md 孤儿副本脱节两版。
+
+1. **install.sh git 前置守卫（SWR-V3.26-001, D-1）**：dev 仓库工作树脏
+   （`git status --porcelain` 非空）→ 拒绝安装并输出脏文件清单；
+   `--allow-dirty` 显式豁免；非 git 仓库跳过。拒绝级依据：v3.16 warn →
+   v3.22 复发史证明 warn 级不足。不自动改写（不自动 commit）。
+2. **doc-lint 散文引用网补孔（SWR-V3.26-002, D-2）**：SKILL.md 全部
+   `tools/<f>.py` 引用必须本地存在，或同行标注「交付至 <skill>」且兄弟
+   skill 目录核实文件真实存在（防装饰性标注）。check_no_cjk 引用已标注
+   交付至 cve-ghsa-draft skill 目录。
+3. **SKILL.md↔TOOLING 一致性断言（SWR-V3.26-003, D-3）**：双断言——
+   ①`"TOOLING <版本>"` 必须出现在 SKILL.md ②最新 🆕 增量段头版本号 ==
+   TOOLING_VERSION。未来版本链只动代码不动文档即红。
+4. **实例清理（SWR-V3.26-004/005, D-4/D-5）**：覆盖账本欠账数据提交入库
+   （python 8→37、shell +1、other 12→13 等）；根目录 REQUIREMENTS_TRACKING.md
+   孤儿副本删除（权威唯一化至 docs/design/）。
+
+### 验收判据（Phase 3.26）
+
+全量回归全绿（466 基线 + test_v326 新增）+ 旧队列复跑（v8/firefox/WebKit/
+MaintainWise）assert_ledger 零新增告警 + install 双副本同步 + 脏树安装被拒/
+`--allow-dirty` 放行双分支实测。阶段 6 验收审计：用户提供未审计新项目后
+执行，再判定合并主分支。

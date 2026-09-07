@@ -1012,3 +1012,22 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.25-005 | storage 预置数据文件面指引（surface 模板条件段） | 已完成 | task_templates/surface_map_domain.md + tests/test_v325.py |
 | REQ-V3.25-006 | R5 核取提示句（提示级） | 已完成 | SKILL.md R5 段 + tests/test_v325.py |
 | 裁除 | 实证自动传递机制化（已有 backfill 规范）/ CK 合并 / legacy 清理 / signature 降级 | 裁除 | REQ_V3_25.md 裁决记录表 |
+
+## 系统需求（REQ-V3.26）（共 5 条）
+
+> 手工追加段（2026-09-07）。规范: REQ_V3_26.md / SWR_V3_26.md /
+> SYSTEM_DESIGN_V3_26.md / SOFTWARE_DESIGN_V3_26.md。评估: BIAS_EVAL_V3_26.md。
+> 案例支撑: 三轮评估（钱学森系统工程视角）取证实录——未提交覆盖账本已装至
+> 运行时 / SKILL.md:980 check_no_cjk 引用歧义漏网 / "TOOLING 3.25" 全文缺失
+> 现查证 / 根 tracking 孤儿脱节两版。
+> DDL 消化: 四份 lessons.md 全部既往周期闭环, 本周期零新增（核验表见 REQ_V3_26.md）。
+> 召回率回归集: 本周期缺陷属交付链/文档一致性类, 与发现力条目零重叠——
+> 阶段 6 验收审计作为对照输入。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.26-001 | install.sh git 前置守卫（脏树拒绝 + --allow-dirty 豁免, 非 git 仓库跳过） | 已完成 | install.sh + tests/test_v326.py |
+| REQ-V3.26-002 | doc-lint 散文 tools/ 引用解析（本地存在或交付至标注+兄弟 skill 核实） | 已完成 | tests/test_doc_lint.py + SKILL.md:980 标注 |
+| REQ-V3.26-003 | SKILL.md↔TOOLING_VERSION 一致性双断言 | 已完成 | tests/test_doc_lint.py + SKILL.md v3.26 增量段 |
+| REQ-V3.26-004 | 覆盖账本欠账数据提交入库 | 已完成 | resources/issue_coverage_matrix.json（P1 commit） |
+| REQ-V3.26-005 | 根 REQUIREMENTS_TRACKING.md 孤儿副本删除（权威唯一化 docs/design/） | 已完成 | git rm（P1 commit） |
