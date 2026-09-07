@@ -143,7 +143,7 @@
       "langs": {
         "java": 19,
         "kotlin": 7,
-        "c": 16,
+        "c": 22,
         "perl": 7,
         "cpp": 8,
         "php": 9,
@@ -194,7 +194,7 @@
       "langs": {
         "java": 15,
         "kotlin": 1,
-        "c": 5,
+        "c": 6,
         "shell": 6,
         "cpp": 8,
         "php": 1,
@@ -210,7 +210,7 @@
       "family": "MEMORY-SAFETY",
       "langs": {
         "java": 2,
-        "c": 58,
+        "c": 67,
         "perl": 1,
         "cpp": 90,
         "php": 3,
@@ -235,7 +235,7 @@
         "java": 34,
         "kotlin": 15,
         "objc": 1,
-        "c": 61,
+        "c": 73,
         "perl": 17,
         "shell": 4,
         "cpp": 14,
@@ -279,7 +279,7 @@
         "rust": 26,
         "other": 9,
         "scala": 5,
-        "c": 63,
+        "c": 70,
         "python": 38,
         "java": 26,
         "kotlin": 12,
@@ -302,7 +302,7 @@
       "langs": {
         "java": 7,
         "kotlin": 2,
-        "c": 4,
+        "c": 5,
         "perl": 8,
         "cpp": 7,
         "php": 10,
@@ -399,7 +399,8 @@
     "ffadf01bf071fee7",
     "ffdd8e9a5eba6c1a",
     "276053b83fbe3470",
-    "eb5c6def2be56ee0"
+    "eb5c6def2be56ee0",
+    "85b14f5b32624230"
   ],
-  "updated_at": "2026-09-06"
+  "updated_at": "2026-09-07"
 }
