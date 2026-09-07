@@ -9,7 +9,15 @@ import subprocess
 import sys
 import tempfile
 
+import pytest
+
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# install.sh 为 workspace-only 资产 (install.sh 不安装自身, 同 test_v33
+# docs/design 惯例)——安装副本上下文中守卫测试跳过 (守卫本身即 dev 侧交付链)
+_INSTALL_SH = os.path.join(WORKSPACE, "install.sh")
+SKIP_NO_INSTALL = pytest.mark.skipif(not os.path.exists(_INSTALL_SH),
+                                     reason="install.sh 仅存在于开发仓库")
 
 # install.sh 复制清单所需的最小 skill 布局（模块占位即可, 冒烟段
 # pytest 无测试收集 → 尾部 || 分支 → exit 0, 既有行为）
@@ -49,6 +57,7 @@ def _run_install(tmp, dst, allow_dirty=False):
     return subprocess.run(cmd, capture_output=True, text=True)
 
 
+@SKIP_NO_INSTALL
 def test_install_refuses_dirty_tree():
     """脏树拒绝: 未提交改动存在时 install.sh exit≠0 且 stderr 含脏清单。"""
     tmp = _make_fixture_repo()
@@ -65,6 +74,7 @@ def test_install_refuses_dirty_tree():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+@SKIP_NO_INSTALL
 def test_install_allow_dirty_flag_bypasses():
     """--allow-dirty 显式豁免: 同脏树下放行且文件落盘 (反面分支)。"""
     tmp = _make_fixture_repo()
@@ -78,6 +88,7 @@ def test_install_allow_dirty_flag_bypasses():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+@SKIP_NO_INSTALL
 def test_install_clean_tree_passes():
     """干净树放行: 无未提交改动时 install.sh 正常完成 (零误伤基线)。"""
     tmp = _make_fixture_repo()
