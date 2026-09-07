@@ -37,6 +37,8 @@ VERSIONS = [
     ("V3.25",  "docs/design/REQ_V3_25.md",  "docs/design/SWR_V3_25.md"),
     # v3.26 登记 (同 v3.25 语义)
     ("V3.26",  "docs/design/REQ_V3_26.md",  "docs/design/SWR_V3_26.md"),
+    # v3.27 登记 (同 v3.26 语义)
+    ("V3.27",  "docs/design/REQ_V3_27.md",  "docs/design/SWR_V3_27.md"),
     # v3.17 登记 (同 v3.16 语义: 手工段维护, 禁止再生成)
     ("V3.17",  "docs/design/REQ_V3_17.md",  "docs/design/SWR_V3_17.md"),
     # v3.18 登记 (同 v3.17 语义)

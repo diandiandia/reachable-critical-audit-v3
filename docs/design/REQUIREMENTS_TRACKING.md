@@ -1031,3 +1031,20 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.26-003 | SKILL.md↔TOOLING_VERSION 一致性双断言 | 已完成 | tests/test_doc_lint.py + SKILL.md v3.26 增量段 |
 | REQ-V3.26-004 | 覆盖账本欠账数据提交入库 | 已完成 | resources/issue_coverage_matrix.json（P1 commit） |
 | REQ-V3.26-005 | 根 REQUIREMENTS_TRACKING.md 孤儿副本删除（权威唯一化 docs/design/） | 已完成 | git rm（P1 commit） |
+
+## 系统需求（REQ-V3.27）（共 5 条 + 裁除 1）
+
+> 手工追加段（2026-09-08）。规范: REQ_V3_27.md / SWR_V3_27.md /
+> SYSTEM_DESIGN_V3_27.md / SOFTWARE_DESIGN_V3_27.md。评估: BIAS_EVAL_V3_27.md。
+> 案例支撑: quickjs lessons 2026-09-07 §一（未计数裸分配三站点/子上下文
+> 继承/反序列化计数回绕/同事实三连/证伪者 sibling 升级）。
+> DDL 消化: §一 5 条全映射（4 修复 + 2 保持 + 1 取证裁除）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.27-001 | 矩阵 C×RESOURCE-DOS patterns 资源门禁旁路条目 | 已完成 | language_issue_matrix.json + tests/test_v327.py |
+| REQ-V3.27-002 | 矩阵 C×RESOURCE-DOS pitfalls 子上下文继承条目 | 已完成 | 同上 |
+| REQ-V3.27-003 | 矩阵 C×MEMORY-SAFETY pitfalls 反序列化计数回绕条目 | 已完成 | 同上 |
+| REQ-V3.27-004 | 清单 CK-LIMIT-BYPASS-ENUM（44→45） | 已完成 | checklist_library.json + tests/test_v327.py |
+| REQ-V3.27-005 | R4 任务书正向确认条目惯例 | 已完成 | task_templates/biz_hypothesis.md + tests/test_v327.py |
+| 裁除 | R4 时序机制化（无消费者增益，义务三问②） | 裁除 | REQ_V3_27.md 裁决记录表 |

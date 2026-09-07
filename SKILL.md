@@ -403,7 +403,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`resources/checklist_library.json`：44 条检查清单（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
+- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`resources/checklist_library.json`：45 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
 - `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：6 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential）；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
 - `tests/`：300+ 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
@@ -1746,3 +1746,34 @@ install 双副本同步。
 MaintainWise）assert_ledger 零新增告警 + install 双副本同步 + 脏树安装被拒/
 `--allow-dirty` 放行双分支实测。阶段 6 验收审计：用户提供未审计新项目后
 执行，再判定合并主分支。
+
+## 🆕 v3.27 增量（2026-09-08，QuickJS 验收审计复盘·知识基座补种）
+
+> 设计文档: `docs/design/REQ_V3_27.md` + `SWR_V3_27.md` +
+> `SYSTEM_DESIGN_V3_27.md` + `SOFTWARE_DESIGN_V3_27.md` + `BIAS_EVAL_V3_27.md`。
+> 内容型增量：零新机制（无新门禁/无新阶段/无新强制义务/binder 零改动）；
+> 运行时模块业务逻辑零改动。TOOLING 3.27。
+> 案例支撑：v3.26 阶段 6 验收审计（QuickJS）lessons §一 2/3 条——"未计数裸
+> 分配"三站点同族旁路（worker 子 rt/SAB backing/消息队列拷贝）、子上下文
+> 资源参数不继承 + 哨兵 fail-open、反序列化计数 int 回绕（4KB 载荷确定性
+> SIGSEGV）；§一 4/5 条为正向确认保持；§一 1 条取证裁除（R4 时序与发现无关）。
+
+1. **矩阵 C×RESOURCE-DOS 补种（SWR-V3.27-001/002, D-1/D-2）**：patterns 追加
+   "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一
+   枚举"；pitfalls 追加"子执行上下文（worker/线程/子 rt）的资源参数继承
+   矩阵逐项核对; 哨兵值语义 fail-open 还是 fail-closed"。
+2. **矩阵 C×MEMORY-SAFETY 补种（SWR-V3.27-003, D-3）**：pitfalls 追加
+   "序列化/反序列化读取器的尺寸计算必须 size_t 且逐项溢出检查; 计数 ≤
+   剩余输入/单元素最小占用——int 算术回绕 = 小分配大写入"。
+3. **清单 CK-LIMIT-BYPASS-ENUM（SWR-V3.27-004, D-4）**：清单 44→45——
+   binding cwe 770/789 + 多词短语 keywords（禁裸词）；5 steps 枚举
+   （强制点/裸分配站点/子上下文继承/哨兵语义/检查点先后）；
+   applies_to verifier/refuter。
+4. **R4 任务书正向确认惯例（SWR-V3.27-005, D-5）**：防御核实类条目
+   severity 一律 low、claim_type 仅枚举值（缺枚举值置 null，禁止自造
+   default_reachability 类形态）、evidence 注明核实结论 file:line。
+
+### 验收判据（Phase 3.27）
+
+test_v327 新用例全绿 + 全量回归全绿（472 基线 + 新增）+ 去项目化扫描
+0 命中（新矩阵/清单条目）+ install 双副本同步 + 资产计数 45 同步。

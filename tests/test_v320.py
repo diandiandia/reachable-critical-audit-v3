@@ -240,4 +240,4 @@ def test_verdict_schema_optional_fields():
 
 
 def test_tooling_version_320():
-    assert we.TOOLING_VERSION == "3.26"
+    assert we.TOOLING_VERSION == "3.27"

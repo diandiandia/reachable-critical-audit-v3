@@ -119,4 +119,4 @@ def test_r4_taskbook_r2_injection():
 # ---- 版本链 ----
 
 def test_tooling_version_323():
-    assert we.TOOLING_VERSION == "3.26"
+    assert we.TOOLING_VERSION == "3.27"
