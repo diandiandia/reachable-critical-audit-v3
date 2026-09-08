@@ -232,4 +232,4 @@ def test_skillmd_guidance_texts():
 def test_tooling_version_v314():
     assert we.TOOLING_VERSION == "3.34"  # v3.15 版本链前进
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
-    assert "## 🆕 v3.14 增量" in skill
+    assert "| v3.14 |" in skill

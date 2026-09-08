@@ -121,7 +121,7 @@ def test_skillmd_v319_clauses():
     assert "实质机制优先实证提示" in skill  # D-3
     assert "实证降级簿记" in skill          # D-4
     assert "correction_record[] 双形态" in skill or "双形态注记" in skill
-    assert "v3.19 增量" in skill
+    assert "| v3.19 |" in skill
 
 
 # ---- 版本链 ----

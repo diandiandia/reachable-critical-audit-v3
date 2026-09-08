@@ -111,7 +111,7 @@ def test_skillmd_clauses():
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "language_issue_matrix.py hints" in skill  # R2 提示条款 (v3.31 SWR-V3.31-002: cells→hints 单命令)
     assert "语言问题矩阵" in skill and "回填" in skill  # 增量段/回填纪律
-    assert "v3.18 增量" in skill
+    assert "| v3.18 |" in skill
 
 
 # ---- 版本链 ----

@@ -276,7 +276,7 @@ def test_tooling_version_v310():
     import workflow_export as we
     assert we.TOOLING_VERSION == "3.34"
     sk = open(os.path.join(ROOT, "SKILL.md")).read()
-    assert "## 🆕 v3.10 增量" in sk
+    assert "| v3.10 |" in sk
 
 
 if __name__ == "__main__":

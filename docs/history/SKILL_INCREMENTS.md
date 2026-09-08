@@ -1,0 +1,1520 @@
+# SKILL 历史增量段（v3.1 → v3.34 全文档案）
+
+> 2026-09-08 自 SKILL.md 迁出（SKILL.md 重构为纯设计文档 + 版本历史索引表）。
+> 规范正文以 SKILL.md 各 R 段为准；本文为版本演进追溯档案，零内容删减。
+
+## 🆕 v3.1 增量（2026-08-17，15 语言战役 lessons W6 §1-24 的制度化）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_1.md`。v3.1 不改变阶段骨架，只把战役中主代理
+> 手工补救的动作机械化。开发已完成（SWR-V3.1 43/43，73 测试全绿），Phase 3.1.3 验收通过后随 install 生效。
+
+### R0 新增: maturity 判定
+- `surface_mapper.py context` 输出 `project_kind ∈ {framework, library, infra, app}`
+  与独立 `maturity` 信号（W6 §23.6/§24.6: 成熟框架 R4 产率三连超 R3）
+- **v3.3 触发条件（REQ-V3.3-007 + v3.31 SWR-V3.31-004）**: `maturity==mature` **或 `target_kind ∈ {library, hybrid}`** → R4 与 R3 并行启动，
+  H1/H7 深度上调；project_kind==framework 不再单独触发；maturity 由 git 版本标签
+  语义判定（≥1.0 稳定标签=mature），主代理复核后可手动覆盖
+
+### R1 新增: validate v3.1 + 预算档位
+- `surface_mapper.py repair` 行号漂移自动修复器（首行键全文件匹配 ±80 语义 +
+  `suggested_line` + `paraphrased` 标记；幂等: 已修复 entry 不重标，W6 §18.7/§22.1/§9.5）
+  **（v3.5.2 已裁除，行号漂移裁决为 R1.3 主代理手工职责——见 SKILL.md R1 铁律 3；v3.9 补注）**
+- `surface_mapper.py tier` 规模档位: <100 文件 2 agents / 100-500 4 agents 无限时 /
+  >500 4 agents + 45min 硬时限 + 10min 中间产物落盘（W6 §17.1/§18.6/§20.5/§24.7）
+
+### R2 变更: LLM 主路径 + schema 强制
+- **LLM 假设生成是正式主路径**（主代理或限时 agent 基于 surface 图生成）；签名命中
+  降为佐证器（L1 通用危险词不再生成假设，W6 §14.1/§17.3 退役先例制度化）
+- 假设 schema 强制 `surface_ids: []` 数组 + 锚点行 Read 验证 + keep/drop 全量落盘
+  （W6 §9.6/§16.7/§23.7）
+- 复审计: R2 上下文自动注入旧审计**终稿**摘要（W6 §22.2）
+
+### R3 变更: verifier v3.1（步骤 0 + 清单 + 自证伪）
+- **步骤 0 承重前提验证**（W6 §17.10）——前提断裂立即终止
+- `checklist_binder.py` 按 cwe/关键词自动绑定家族检查清单（checklist_library.json
+  44 条 CK-*（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族），16 语言证伪者攻击面固化）；未执行清单的 REACHABLE 会被 R3.5 同款证伪
+- 自证伪提示: 候选附先例库匹配的最可能证伪论据，verifier 自查（目标: R3.5 拦截率
+  从 ~50% 收敛到 <30%）
+- 轻量实证白名单 + `empirical` 字段结构化 + 范围分级
+  `mechanism|function_body|full_chain|e2e`（机制级只能支撑 edge_proven，W6 §17.7）
+
+### R3.5 变更: 工具箱 + 裁决先例库
+- 证伪者实证工具箱按声称类别注入（区间类=参照模型+百万对拍 §21.1 / 解析类=真实
+  构件+畸形矩阵 §19.4 / 代理分歧类=标准部署实测 §16.10）
+- `precedent_library.json`（18 条先例）裁决匹配 + `evidence_ledger.py consistency`
+  同族一致性断言（W6 §18.3 从证伪者武器升级为系统断言）
+- refutation 结果 schema 新增 strengthened/attribution_correction/note（W6 §13.6/§12.5）
+
+### R5 变更: 语言手册 + 环境陷阱自检 + 对照矩阵
+- `assets/harness_manuals/<lang>.md` × 15（工具链探测/版本义务/陷阱清单/阳性模式/网络依赖）
+- 环境陷阱自检（stale 进程清理 + diag 路由 / daemon 线程 / env 传播验证 / PATH 检查）
+- **环境能力探针（v3.3.2, SWR-V3.3.2-060）**：实证前按声称机制跑
+  `assets/harness_manuals/ENVIRONMENT_PROBES.md` 探针清单（syscall/依赖物化/工具替代/
+  shell 陷阱）——探针失败记录 blocker 并触发 R5 可选路径裁决，不实证不申报
+- **探针→可行性路由前移（v3.21, SWR-V3.21-001）**：R0 探针落盘后、R3 派发前，
+  主代理输出 empirical_feasibility 表（每候选三轨：real-target /
+  equivalent-harness / static-only），R3 任务书按轨注入实证路径预期；
+  R5 的 harness 目标清单在 R3 定，不在 R5 现找。探针含 no-\* 关键运行面
+  缺失项时，R3 派发前向用户报预期 NEEDS_REVIEW 占比并给三选一决策点
+  （补装运行库 / 借运行面 / 接受上限）——决策权在用户，主代理不得代选。
+  static-only 轨候选的证伪票价值=机制静态确证（非浪费），派发时明示。
+  该表为笔记级产物（不落 schema、不进队列）；落盘形态须含
+  `decision {by, date, choice}`——用户三选一决策必须签入工件（主代理
+  不得代选），未签入即审计问责链不完整（v3.22, SWR-V3.22-007）
+- 对照矩阵模式（默认拒绝 + 弱化接受，W6 §24.4）；源事实级降级规则（哨兵值/算术类，
+  网络阻断记录 blocker，W6 §21.4）
+
+### 门禁变更
+- gate ③ 扩展至 R4 confirmed findings（W6 §18.9）
+- 报告模板: NEEDS_REVIEW ↔ R4 finding 同事实映射表 + 前提逐条列出（W6 §24.9/§6）
+
+### workflow 规范条款（强制）
+- 顶层 const 模板字面量禁 `${}` 插值（`lint_script` 静态检查，W6 §17.2）
+- resume 必须携带与首跑一致 args（脚本内 `args ?? {}` 防御，W6 §5）
+- args 从落盘文件整读整传，禁止复制预览截断（W6 §10.3）
+- **薄封装默认派发（v3.22, SWR-V3.22-009）**：Mode W 三模式（verify/
+  refutation/resurrect）导出均落盘任务书文件 + slim payload（taskFile/
+  taskFiles 引用）——任务书内联进 args 为回退形态；主代理派发使用
+  `<mode>_payload_slim.json`（payload 104KB→8KB 实录）
+- journal 提取兼容 result/value 双字段；半程输出作废，只采信 schema-validated 最终返回
+- collect 全家族 lenient load + 单遍转义修复（`evidence_ledger.load_lenient`，W6 §3.1-3.3）
+
+### 验收判据（Phase 3.1.3）
+akka-http / etcd / actix-web 三项目复跑对照:
+① R3.5 拦截率下降（R3 质量上升） ② 原 REACHABLE 结论零丢失 ③ 六门禁全 PASS。
+三条件同时满足才合并 main + install 到 skill 目录。
+
+---
+
+## 🆕 v3.2 增量（2026-08-17，混合语言项目能力 + 防漏放，已验收发布）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_2.md`。v3.2 不改变阶段骨架，把语言从
+> 项目级属性降为候选级属性，并新增 R3.5-N 复活攻击。
+
+### R0/R1: 语言清单 + boundary 第五域
+- `surface_mapper.py context` 输出 `language_inventory`（每语言文件数/组件角色）
+- R1 测绘 4 域 → **4+1 域**（boundary: 跨语言 FFI 边界调用表——extern/ctypes/cffi/
+  cgo/N-API/JNI/embed/C-API 胶水，boundary surface 必填 boundary_kind + lang_pair）
+- surface/entry_point/候选均带 lang 字段；任务书背景按语言分片
+- `size_tier`: 2 语言项目 domains 含 boundary；3+ 语言保底 large 档（5 agents）
+
+### R2/R3: 语言维度
+- L2 词族按 surface.lang 过滤（C 词族不打 Rust surface）
+- verifier 上下文语言按候选.lang 取；分级机械复核条款（v3.5.2 起 collect 内联
+  重算为默认路径，`batch_verify.py <project> --stage grade-recheck` 降为可选
+  维修工具——批量重算历史队列，差异写 grade_recomputed_by）
+- CK-FFI-BOUNDARY（第 21 条清单）绑定 ffi/ctypes/extern 类候选
+
+### R3.5-N（新）: UNREACHABLE 复活攻击
+- 声称类（crash/panic/oom/unbounded/xss/protocol_dos）UNREACHABLE 全量 + 其他 20%
+  抽样（最少 2，上限 8）做 N=1 尽力复活复核；抽样决策落盘 `_resurrect_sample.json`
+  （selected/unselected/rule）——未入池候选无复活复核义务
+- **实质机制优先实证提示（v3.19, SWR-V3.19-003）**：抽样与实证裁决时，
+  claim=other 但携带"机制静态确证"信号（证伪 0 票 + 证伪者补强
+  strengthened 非空 / 双证伪者确认机制属实）的候选优先纳入实证池——
+  claim=other 的实证豁免不遮蔽已静态确证的实质机制（V8 审计 CAND-013/049
+  实证升格 empirically_confirmed 实录）
+- `workflow_export.export_script_resurrect` 导出；revived=true 回 R3 重验（附 gap），
+  不直接改 verdict；全部候选落盘 resurrection_review（六门禁新增检查）
+- **落盘契约（v3.2.2 文档化，REQ-V3.2.2-015）**：`resurrection_review` 必须写为
+  **候选级 dict** `{"revived": bool, "outcome": "<理由>"}`——队列级 list 形态只作
+  汇总记录，lessons_recorder 只读候选级字段（lenient 加载兜底，str 自动包装）。
+
+### 裁决
+- 同族一致性断言按 lang 分组（PREC-MULTI-LANG-001）；同 lang 组保持 v3.1 断言
+- 报告新增语言覆盖表 + FFI 边界表
+
+### 验收（Phase 3.2.3）
+混合项目试审（≥3 语言 + FFI 边界）+ akka-http 单语言零回退回归。
+
+## 🆕 v3.2.1 增量（2026-08-17，验收暴露四缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_2_1.md`。补丁版：不新增阶段、不改门禁语义。
+
+### R0: target_kind 判定（REQ-V3.2.1-001~005）
+见 R0 步骤 4：`tools/target_kind.py` 六类信号 → 推荐值 + 主代理签收 →
+`verify_queue.target_kind`；门禁⑧ 未签收不放行。存在性规则按型装载（M2-3）：
+application=三层检查含 shipped 实际值+运行时注册核实；library=公共 API 即边界
+（仓内调用者缺失非阻断，死代码豁免不适用）；hybrid 按组件。
+
+### R1: shipped-config 盘点（REQ-V3.2.1-030/031）
+4+1 域合并后、R2 之前，对含 config 目录的组件跑 `workflow_export.export_script_shipped_config`
+→ 每组件 1 agent 提取 tls/auth/监听/密码类键的**提交值 vs 代码零值** →
+落盘 `.audit_results/shipped_config.json`。R2 gate 声称"默认可达"的假设强制引用
+（r2_guard 提示）。动机: Lersosa CAND-001/008 的 `tls_enable` 代码零值误判 (W6 §25.4)。
+
+### R3: verifier 任务书三段扩展（REQ-V3.2.1-010~012）
+- 步骤 0.5 **模块可导入性预检**：顶层包解析 + DI 扫描器吞错路径审查 + broken_edge
+  → NEEDS_REVIEW（模块存在≠被导入，Lersosa CAND-004/009 404 先例）
+- 步骤 5.5 **消费端中间层枚举**（write→read 注入族）：缓存/门闩/降级层逐层列出
+  + 三查（错误分支方向/写读形状/缓存键写路径，Lersosa CAND-007 Redis 门闩先例）
+- target_kind 存在性规则段（由 verify_queue.target_kind 选择装载）
+- 新清单 CK-IMPORT-REGISTRATION / CK-CACHE-GATE-LAYER（第 22/23 条）；
+  新先例 PREC-TARGET-KIND-001 / PREC-IMPORT-BREAK-001
+
+### 验收（Phase 3.2.1.3）
+fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退 + 六门禁⑧ PASS + install。
+
+## 🆕 v3.3 增量（2026-08-19，偏见审查 5 大类裁决 + Lua 审计教训的制度化）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_3.md`（问题域 P-A~P-F）。
+> 需求: `docs/design/REQ_V3_3.md`（14 条系统需求）/ `docs/design/SWR_V3_3.md`
+> （35 条软件需求）。上游: 用户偏见审查（语言/CWE/形态/黑名单/保守倾向 5 大类,
+> 主代理取证裁决 2 完全属实 + 3 部分属实）+ Lua 审计 SKILL_LESSONS_lua.md。
+
+### 签名资产: 去 Web 化/系统语言扩充（P-A）
+- L2 词族新增 **c/go/rust/java** 4 族（malloc 无上限家族/流式累积/unsafe-FFI/
+  反序列化）；L3 新增 **SIG-STATE-RACE**（CWE-362/367）与 **SIG-CRYPTO-WEAK**
+  （CWE-327/330）；既有 L3 补系统形态 grep hints——签名库 20 条
+- integrity_selfcheck 新增 L2 词族 ↔ harness_manuals 覆盖对齐检查
+  （cs↔csharp 命名不一致存量缺陷已修）
+
+### 项目形态判定: 四值 + 信号加权（P-B）
+- `project_kind` 四值 {framework, library, infra, app}——构建文件降为弱信号
+  （权重 1），可执行入口（main/监听, 权重 3）与公共 API 主导（权重 2）为强信号；
+  小写构建文件变体（makefile）检出修复
+- `maturity` 独立信号（git 版本标签语义），R4 并行触发条件为 maturity==mature 或 target_kind∈{library,hybrid}（v3.31, QuickJS developing 目标 R4 产出 7/9 条确认问题实录——触发轴补 target_kind 感知）
+
+### 信任边界: host_api（P-C）
+- trust_boundary.type 枚举补 **host_api**（宿主对公共 API 的调用进入；library
+  组件默认）；R1 任务书增补「非网络/离线项目」映射指引（宿主 API 输入 →
+  data_input + host_api，不得过度归 local/environment）
+- verifier 任务书步骤 3 明示：跨库边界 ≠ 跨主体边界（R3.5 惯例假设拦截制度化）
+
+### 保守倾向明示化（P-D）
+- 「不实证不申报」（NEEDS_REVIEW 合法终态）为明示条款；报告 NEEDS_REVIEW 双成因
+  （保守裁决 / 证据不足）；claim_type 枚举含 rce/other（v3.2.3 已入）
+
+### 先例库（P-E）
+- +PREC-ALLOC-VIRTUAL-001（分配请求≠资源耗尽：提交内存受输入限制→Low）、
+  +PREC-ENV-SAME-PRINCIPAL-001（env→代码加载同主体边界几何→DIRECT+Low）
+
+### 契约同步（P-F）
+- tools/gen_tracking.py 扫描泛化至全部版本段；REQUIREMENTS_TRACKING.md 含
+  v3~v3.3 全部需求；验收判据强制每版本一个新项目且须覆盖非 Web 形态
+
+## 🆕 v3.4.3 增量（2026-08-20，P0/P1/P2 验收缺陷闭环）
+
+> 设计文档：`docs/design/SYSTEM_DESIGN_V3_4_3.md`（12 REQ）+ `SW_DESIGN_V3_4_3.md` + `SWR_V3_4_3.md`。
+> 缺陷修复版：不新增阶段、不改六门禁①-⑧判据语义。17 项缺陷（12 代码 + 5 制度）制度化，
+> 教训回填 lessons/W6 §32/§33。
+
+### 收集链（P-A 修复）
+- **r4-collect 自适应**（REQ-V3.4.3-001）：hypotheses 对象形态 / findings 顶层数组 /
+  evidence 数组 / r3_link dict 四类漂移自动归一（v3.5 起不落 schema_normalized_by
+  标记字段）；0 提取告警含形态诊断。canonical 输入零变化
+- **surface id 前缀归一化**（REQ-V3.4.3-002）：surface_mapper merge 统一域前缀
+  （SURF-DAT-*→SURF-DATA-* 等，写 normalized_ids）；r4-collect tracked_surfaces
+  前缀模糊映射（写 mapped_surface_ids）；R4 任务书注入实际 id 清单 `{surface_id_list}`
+  + canonical 输出示例
+- **截断标记协议统一**（REQ-V3.4.3-003）：resurrect/refute 共用 `_truncate_evidence`——
+  承重前提/实证/阻断/结论关键段必保留，次要段截断必带标记；消灭 1200 字符静默截断
+- **grade 口径对齐**（REQ-V3.4.3-004）：collect 机械重算 `grade_verdict` 为唯一权威，
+  verifier 自报值存 `grade_self_reported` 仅追溯；回填规范（backfilled_by + 实测数字）明示条款
+
+### 门禁判定链（P-B 修复）
+- **gate ③b 结构判定优先**（REQ-V3.4.3-005）：empirical_result 非空 + 实证特征
+  （数字/输出/exit code）判定有实证，关键词表补「实测/measured」仅作 fallback
+- **claim_type 加 "leak"**（REQ-V3.4.3-006）：信息泄露/env 反射类结构化表达
+- **resurrect CLI**（REQ-V3.4.3-007）：`--stage workflow-script --mode resurrect` 导出 +
+  `--stage r35n-collect --from-journal` 落盘候选级 resurrection_review（幂等）
+- **boundary_kind 加 "capi"**（REQ-V3.4.3-008）
+
+### 提示资产链（P-C 修复）
+- **清单/PREC 适用性门控**（REQ-V3.4.3-009）：applicability_signals
+  （text/requires_lang/requires_claim）作用于 checklist_binder 与先例自证伪提示；
+  资源族信号不匹配 → 绑 CK-GENERIC-RESOURCE 兜底
+- **H7 默认值全表预算 800→1200 字**（REQ-V3.4.3-010）
+- **export lang 优先候选 lang 字段**（REQ-V3.4.3-011，_build_context 修复）
+
+### 制度项（P-D）
+- R4 同事实去重流程（SWR-V3.4.3-060）；实证回填规范（SWR-V3.4.3-061）；
+  go/c 手册环境陷阱（SWR-V3.4.3-070/071）；先例 PREC-FAMILY-CONSISTENCY-001
+  （跨项目同族判据：放大比是否常数因子 × 物化责任归属）
+
+### 验收判据（Phase 3.4.3）
+三锚点复跑零回退 + 17 缺陷各自可测闭环 + 一个未审新项目全流程（选题优先
+coverage-ledger 缺口格），三条件满足才合并 main + install。
+
+## 🆕 v3.4.4 增量（2026-08-21，v3.4.3 验收项目实测暴露缺陷修复）
+
+> 设计文档: `docs/design/SWR_V3_4_4.md`（10 SWR）。修复批：不改变阶段骨架与门禁语义。
+
+### R3/R3.5: 导出与收集契约修补
+- **信号关键词词边界匹配**（SWR-V3.4.4-001）：checklist/precedent 的
+  applicability_signals.text 与 requires_lang——ASCII 关键词按词边界
+  （`(?<![a-z0-9])kw(?![a-z0-9])`），CJK 关键词保持子串语义
+  （"ws" 不再误配 "jws"；"c" 不再误配 "scala"）
+- **refutation 导出截断告警**（SWR-V3.4.4-003）：结果附 `qualified_total`
+  与截断时 `truncated/exported/advice`——batch_size 静默截断曾致主代理
+  误判资格全集
+- **collect 报错指引**（SWR-V3.4.4-004）：对 refutation journal 误跑 collect
+  时指引 `--stage r35-collect`
+- **tooling 版本守卫**（SWR-V3.4.4-008）：导出脚本内嵌 TOOLING_VERSION，
+  collect/r35-collect/r35n-collect 比对本地版本，漂移输出 warn
+  （导出/收集两端代码版本不一致的机械防线）
+- workflow_export.py CLI 支持 `--mode resurrect`（SWR-V3.4.4-010）
+
+### R3.5: 任务书防误报条款
+- verifier 任务书新增：**计数类观测不做可复现证据**（SWR-V3.4.4-007）——
+  几何随机变量（素性试除次数等）单次观测方向可翻转，只标"数量级参考"
+
+### R4: 收集语义与任务书修补
+- **r4-collect 保留主代理裁决字段**（SWR-V3.4.4-002）：按 finding title 匹配，
+  已裁决 finding（claim_nulled_by/empirical_verified_by/correction_record）
+  的裁决字段强制保留、empirical_result 的 CONFIRMED/REFUTED 标记强制保留、
+  evidence 裁决尾追加——重复 collect 不再抹掉主代理裁决
+- R4 任务书新增**部署布局义务**（SWR-V3.4.4-005）：实证必须在部署布局
+  （npm main/bundle/官方构建产物）执行，vm 全量加载 src 不构成部署布局实证；
+  模块不在任何发布产物 → 不构成可达声称（claim_type 置空，源码卫生缺陷）
+- R4 任务书 **empirical_result 前缀契约**（SWR-V3.4.4-006）：
+  `CONFIRMED:`/`REFUTED:`/`SOURCE_FACT:` 前缀——gate ③b 结构判定只识别该前缀，
+  消除真实实证缺标记被误拦截整类问题
+
+### R6: lessons_recorder 项目名绝对化（SWR-V3.4.4-009）
+相对路径 "." 不再产出空/异常文件名。
+
+### 验收判据（Phase 3.4.4）
+test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶段复跑零回退，
+三条件满足才合并 main + install。
+
+---
+
+## 🆕 v3.5 增量（2026-08-23，三项体检修复：偏见 / 过设计 / 项目残留）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_5.md` + `docs/design/SWR_V3_5.md`（15 SWR）。
+> 评估报告: `docs/history/HEALTHCHECK_EVAL_V3_5.md`（含 B 裁决 10 项，本轮不修，只记入报告）。
+> 范围: 高优先级发现（残留 3 + 偏见 5）+ 过设计 A 清单死资产 + 文档漂移。
+> 修复后三项体检逐条机器守卫（tests/test_deproject_assets.py 等），防回退。
+
+### 去项目化（三禁止机器化）
+- **先例库形状抽象**（SWR-V3.5-001）：precedent_library 五字段
+  （name/criterion/counterexample/applicability_scope/applications）零项目 token——
+  self_refutation_hints() 注入 verifier 任务书的内容全部为机制形态描述，
+  项目名只留 source_lessons 追溯字段
+- **xss_path_sim 去项目化**（SWR-V3.5-002）：AWStats 专属复刻整文件移入
+  `tests/fixtures/xss_path_sim_awstats_anchor.pl`（fixture 豁免区）；
+  assets/templates/harness/xss_path_sim.pl 重写为参数化通用骨架（argv 读 JSON 链描述）；
+  模板名不变，全部接线保持
+- **手册抽象**（SWR-V3.5-003）：harness_manuals 项目名 → 机制形态 + W6 § 引用；
+  6 处 /root/ 绝对路径 → $HOME/环境变量占位
+- **运行时资产残留扫描**（SWR-V3.5-015）：signature_lib `_scan_runtime_assets()`
+  遍历 templates/ + assets/harness_manuals/（黑名单 token 大小写不敏感 + /root/ 路径），
+  挂入 R0 selfcheck 完整性分支——模板/手册残留回退被机器拦截
+
+### 偏见修复
+- **harness 端口参数化**（SWR-V3.5-004）：ws_frame_alloc/accum 的 ktor/actix
+  历史端口 18083/18084 → `python3 ws_frame_*.py <host> <port>` 必传参数
+- **step 0.5 static_short 按语言家族分派**（SWR-V3.5-005）：c/cpp 措辞保留；
+  go/rust/jvm（sourceSet）/dotnet（.csproj）/swift（Package.swift）/script 族
+  （require/include/use/source 加载闭包核对）各得语义——不再对库型候选派发
+  纯 C 系词汇（CMake/GOPATH/cargo/Makefile）
+- **R0 形态分类语言门补全**（SWR-V3.5-006/007）：target_kind 扩展名白名单补
+  .swift/.kt/.cs/.pl/.pm/.ps1/.sh，包清单解析补 pom.xml/composer.json/
+  Gemfile/gemspec；surface_mapper _SRC_EXTS 补 6 扩展名、main 模式补
+  Kotlin `fun main(`/C# `static void Main`/Swift `@main`（MULTILINE 移入
+  compile）、listen 模式补 HttpListener/TCPServer/stream_socket_server/
+  IO::Socket::INET；Go/Java 独享无-main 特判 → LANG_NO_MAIN_LIBRARY 泛化
+  11 语言（排除 shell/c/cpp 保持保守，go/java 行为不变）
+- **签名 fixture 全覆盖**（SWR-V3.5-008）：20/20 签名 confirmed 锚点
+  （tests/fixtures/known_instances.json，L3 系补 7、L2 词族 6 个 line=1 假占位
+  换真实项目锚点、4 条漂移锚点重定位）；smoke_test 多实例回退；存量正则缺陷
+  `[ScriptBlock]::Create` 转义修复
+- **覆盖账本格压力提示**（SWR-V3.5-009）：pressure_cells（count≥15 标
+  saturated）+ family_skew（top_share 降序）+ 选题提示「优先补零格；
+  saturated 格不建议再选题」——无新门禁/无新持久字段/无新强制义务
+
+### 过设计 A 清单死资产删除
+- 死 stage（next-cluster/cluster-collect/coverage + r15 分支 + 4 CLI 参数）
+  / 死函数（bind_all/h7_template_bind/record_application/add_precedent/
+  emit_filter_tasks）/ 死字段 13（含 coverage_bridge）/ 死模板 4/7 /
+  multipart_align 悬空注册 / repair_stats 死读（SWR-V3.5-010~013）
+- **门禁⑦ 语义保留**（SWR-V3.5-012）：coverage_bridge 载体删除但覆盖率簿记
+  保留——门禁代码块改传 `tracked_ids` + `mirror_pairs`（此前文档路径只传计数
+  导致镜像传播被静默跳过）；relay 中继面直接并入 tracked_ids，覆盖依据写入
+  R4 finding evidence 文本
+
+### 文档与测试
+- 资产地图/README 计数更新为磁盘实况：20 签名（9 L3 + 11 L2）、25 先例、
+  29 清单、4 实证模板、3 任务书、18 手册、190 测试（SWR-V3.5-014）；
+  TOOLING_VERSION → "3.5"
+- 新增 tests/test_deproject_assets.py 5 用例 + 各模块防回退断言
+  （SWR-V3.5-015）——文档计数、家族措辞、语言门、ledger 压力、fixture 全
+  覆盖全部有测试守
+
+### 验收判据（Phase 3.5）
+190 测试全绿（172 + 18 新增/改写）+ `signature_lib.py selfcheck` 对 18 个
+锚点项目 `hit_rate=100% testable=20` + 自身仓库完整性零违规 + phpseclib
+新项目验收（六门禁全 PASS + coverage-ledger --write 回填 php×CRYPTO 零格）
+三条件满足才 install + 提交。
+
+---
+
+## 🆕 v3.5.2 增量（2026-08-23，残留中项清零 + 过设计 B 裁决执行 + 偏见机械修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_5_2.md` + `docs/design/SWR_V3_5_2.md`。
+> 范围（用户确认）：①残留中项全部 ②过设计 B 裁决 10 项（按评估倾向执行）
+> ③偏见中「机械可修」项。内容补全类（L2 词族 5 语言 / env 陷阱 9 语言 /
+> L3 语义族脚本 token）留 v3.6 已处理（见下节 v3.6 增量）；8 语言 harness
+> 模板 v3.6 按用户裁决改为裁减 + 提炼 1 个通用协议级模板；锚点 swift 已由
+> v3.5 覆盖（SWR-V3.5-011）。
+
+### 残留中项清零（去项目化）
+- checklist_library steps 4 处 → 机制形态（框架 CAND-001 对照 etcd CAND-004 双实测量级对照法 /
+  脚本语言过滤回调类 / 哈希缓存键未注册先例）；binding keywords "netty" 删；
+  uwebsockets/hikaricp 在 source_lessons = 合法来源列保留
+- task_templates / parser_fuzz_c.py docstring / target_kind.py 启动链正则
+  （删 BeanContainerManager/ActixSystem::new，补 SpringApplication.run）→ 机制形态
+- SKILL.md 主文例证 → 机制形态；`_scan_runtime_assets` 扫描扩 task_templates（注入违规测试闭环）
+
+### 过设计 B 裁决执行（10 项）
+| # | 裁决 | 执行 |
+|---|---|---|
+| B1 | **全裁 ast_scanner 三联体**（与评估倾向差异见下） | 裁 ast_scanner.py + anchor_registry.json + security_profiles.json；REQ-V3-002 tracking → 已裁除 |
+| B2 | 裁 r05_diff_archaeology.py | 裁文件 + 2 测试；R0.5 现役 = surface_mapper scope_diff |
+| B3 | grade-recheck 降可选维修工具 | collect 内联重算为默认；stage 处理器 + CLI 保留 |
+| B4 | 裁 repair_surfaces | 裁函数 + CLI（零调用零测试） |
+| B5 | 裁 signature_tier/empirical_harness 字段 | 裁 20 签名字段 + REQUIRED_FIELDS + matcher 输出；**needs_harness 保留偏差见下** |
+| B6 | 裁 harness_coverage_matrix.json | 裁文件（零读者） |
+| B7 | parser_fuzz 保留 | SKILL.md R5 枚举补 parser_fuzz + 防回退测试 |
+| B8 | 裁 9/25 条永不可达先例 | 25→16；`test_precedents_all_matchable` 双向断言（match() 可达集 == 库 id 集） |
+| B9 | CK-EMPIRICAL-SCOPE 真实绑定 | 删 binder matched=[] 特判 → R5 语义空间（empirical dict / claim_type ∈ R5 强制集）触发绑定 |
+| B10 | 文档漂移 | v3.5 已修，无动作 |
+
+### 偏见机械修复
+- 语言词汇归一：账本 16 规范名（cs↔csharp、ts/typescript/js↔javascript）；签名标签
+  保留 superset 内部名；L2 过滤双侧归一化等值比较；跨模块 alias 一致性测试
+- harness_runner manual/traps 缺 lang 参数报 usage exit=2（删默认 rust）；
+  lang_pair 白名单 {c,py,rust,js,ts} 删除（任意语言小写接受）
+- boundary_kind +cgo（描述文补 cgo/capi）；步骤 5.5 Go 习语中立化；
+  双轨词汇文档（project_kind 上下文信号 vs target_kind 门禁判据两轴注）
+
+### 与评估倾向的差异（批准本方案即同意）
+- **B1**：评估倾向「保留 ast_scanner、裁 security_profiles」。探查证据推翻——
+  security_profiles.json 唯一读取方是 ast_scanner 自身（:928/:1186），ast_scanner
+  零生产调用方（v3.1→v3.5「按需使用」零触发）；保扫描器裁其唯一功能输入 = 保空壳。
+  **实际执行：三联体全裁**。
+- **B5**：评估「确认 needs_harness 后裁决」。探查发现 needs_harness 并非零调用方——
+  tests/test_integration.py:82 将其用作 R5 触发判定（步骤 6）。**实际执行：保留
+  needs_harness + 其 3 个单元测试 + 集成测试；仅裁 `check` CLI 入口**。
+
+### 验收（回归）
+193 测试全绿 + `signature_lib.py selfcheck /root/phpseclib` exit 0 + install 后 DST
+pytest 全绿（phpseclib R0 复跑回归，不新增完整项目验收——用户确认）。
+
+---
+
+## 🆕 v3.6 增量（2026-08-23，评估驱动机制修复 + 内容补全，无设计膨胀）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_6.md` + `docs/design/SWR_V3_6.md`。
+> 范围（用户三约束）：**保持通用性 / 不携带审计历史信息 / 不出现无用设计**——
+> 所有机制改动以 puma 实战验收（AUDIT_EVAL_V3_5_2.md）暴露缺口为准绳。
+
+### 机制修复（P1，评估驱动）
+- **B9 清单注入时点修复**（`workflow_export.py` refutation 分支）：旧实现
+  `_in_r5_semantic_space` 在 verify 导出时恒空（PENDING 无 cwe/claim_type）且
+  refutation 分支不注入 → 家族检查清单零到达。v3.6 起 refutation 时点复用
+  `_checklist_section`（此时 cwe/claim_type 已由 collect 落盘），CK-EMPIRICAL-SCOPE
+  以 r5-semantic 绑定注入两个证伪者 prompt。resurrect 分支与 Mode A' 不加代码
+  （语境/成本裁决，见 SWR_V3_6）。
+- **R2「防御已到位」核查义务**（`assets/task_templates/hypothesis_filter.md`）：bc/防御
+  已到位类 drop 前必须核查**默认权限上下文**（文件/目录/umask/监听 socket 权限、
+  环境变量默认值、启动命令注入点）并引用源码证据行（file:line）——只看 gate
+  存在性不算核查（puma HYP-005/006 误 drop 实录：默认 token 随机 + 权限上下文
+  使防御失效）。不做 r2_guard 机械 warn（误报>收益裁决）。
+- **EMPIRICAL_CLAIMS 8 类对称**（`harness_runner.py`/`evidence_ledger.py`）：
+  旧 6 类集缺 rce/leak → 对齐 binder R5_CLAIM_TYPES 8 类。rce/leak 声称现在
+  强制实证（此前能绑清单却不触发 harness——对称缺口）。
+- **账本回填机械前置**（`tools/batch_verify.py` coverage-ledger `--write`）：
+  幂等检查后两道前置——r4_findings 全 VERIFIED（缺即 `LEDGER_WRITE_BLOCKED_R4`）
+  + r4_feedback 无未决冲突（`LEDGER_WRITE_BLOCKED_FEEDBACK`），不满足 exit 1
+  **不烧 sources key**（puma 实录：先回填后补标 cwe 使缺口不可回写）。
+  幂等分支附打印 `would_be_new_counts`。**回填时序强制**：cwe 修正（含
+  r4_feedback 裁决）→ r4-assert PASS → 六门禁 → `--write`。
+
+### 内容补全（P2，v3.5.2 遗留 + 用户裁决）
+- **L2 词族 5 语言**：signature_library 20→25（SIG-RB-EVAL-001 / SIG-PHP-EVAL-001 /
+  SIG-PERL-EXEC-001 / SIG-SCALA-UNSAFE-001 / SIG-SWIFT-UNSAFE-001）。新签名无
+  确认锚点 → fixtures 以 `confirmed:false` 占位诚实簿记（不伪造 confirmed）。
+- **env 陷阱 9 语言**：`PER_LANG_ENV_TRAPS` 7→16 语言（对齐 assets/harness_manuals/）。
+- **L3 语义族脚本 token**：5 个 L3 签名 grep 补 PHP/JS/ruby/shell/python 形态
+  （佐证器粗粒度 hint 设计，非判定器）。
+- **8 语言 harness 模板 → 裁减 + 提炼 1 个通用协议级模板**（用户裁决）：
+  `assets/templates/harness/resource_rate_probe.py`（langs:["any"]）——并发连接灌注 +
+  逐秒 VmRSS + 拒绝计数 + delivery-rate 确认 + 停止后回落验证 + 单调性判定，
+  完全去项目化（argv 必传 host/port）。
+
+### 验收判据（Phase 3.6）
+204 测试全绿（193 基线 + 11 新增）+ `signature_lib.py selfcheck /root/phpseclib`
+exit 0 + install 后 DST pytest 全绿 + 分阶段 commit（P1→P2→P3→P4）。新在线
+项目实战验收（覆盖账本缺口格）另行启动。
+
+## 🆕 v3.7 增量（2026-08-23，报告格式重构：问题清单按严重程度排序 + 机械生成 + 附录化）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_7.md`。用户要求重新设计
+> `reachable_vulnerabilities_report.md`：简单明了说明有哪些代码问题、按严重程度
+> 排序、提供相关细节。三项决策：① 严重程度 = 机械映射（cwe/claim_type）+ 主代理
+> 可覆盖；② 生成方式 = 扩展 `--stage report` 机械生成完整报告（队列派生，
+> REQ-V3.3.2-007）；③ 审计过程信息移入附录。
+
+- **严重程度机械映射**（`tools/batch_verify.py` 模块级）：`SEVERITY_BY_CWE` 按
+  账本族分组（严重=注入/反序列化 + MEMORY-SAFETY；高=SQLi/路径/SSRF + 鉴权主体 +
+  RESOURCE-DOS + RACE；中=XSS/弱鉴权 + CRYPTO/DATA-INTEGRITY）；cwe 列表 +
+  sink_type 全量 `CWE-(\d+)` 提取取 max → claim_type 回退（rce/leak→严重，
+  crash/panic/oom/unbounded/protocol_dos→高，xss→中）→ medium 默认。
+  `severity_override`（合法值 {critical,high,medium} + reason）优先，非法值回退
+  机械值 + 告警行。问题摘要改用 claim_type + evidence 首 120 字（summary 字段
+  collect 不落盘）。
+- **机械渲染 render_report_md**（SWR-V3.7-002）：`--stage report` 末尾写
+  `.audit_results/reachable_vulnerabilities_report.md`（写入状态走 stderr，
+  stdout 保持纯 JSON 契约）。结构：一、问题清单（REACHABLE only，严重/高/中
+  三节表）；二、问题详情（每条一节：调用链/前提/复核/实证/修复建议）；三、
+  修复建议与结论（主代理补充，补充后不得重跑 report 覆盖）；附录 A =
+  NEEDS_REVIEW 成因双分 + 同事实映射；附录 B = 规模对照/语言覆盖表（角色现场
+  重算）/FFI 边界/R4 verdict/六门禁断言（机械调用 assert_ledger）/覆盖账本。
+  **铁律：所有可选输入缺失时降级渲染占位，绝不抛异常**（test_end_to_end
+  最小队列形态）。
+- **stage_collect 透传**：severity_override/severity_override_reason 白名单
+  落盘（队列 JSON 仍是唯一事实源，可直接编辑）。
+- **R4 confirmed 并入问题清单（SWR-V3.7-009/010）**：确认问题全集 = R3
+  REACHABLE 候选 ∪ R4 confirmed findings（High/Medium，申报值归一化；
+  Low 留附录 B——含「正向确认」非漏洞条目自动排除；r3_link 指向候选的同事实
+  条目不重复列，清单尾注去重说明）。puma 实录: no_token 控制端点零鉴权
+  （H-5-F1）与跨用户停服（H-6-F1）从附录表升入「高」节。
+
+### 验收判据（Phase 3.7）
+218 测试全绿（204 基线 + 14 新增 tests/test_v37_report.py）+ `signature_lib.py
+selfcheck /root/phpseclib` exit 0 + puma 真实队列临时副本冒烟（分级/排序/附录
+真实性人工检查，不覆盖既有报告）+ install 后 DST pytest 全绿 + 分阶段 commit
+（渲染+测试 → 文档+版本链 → R4 并入增强）。
+
+## 🆕 v3.9 增量（2026-08-28，Pillow 审计复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_9.md` + `REQ_V3_9.md` + `SWR_V3_9.md`。
+> 缺陷修复版：不改变阶段骨架、不改变门禁①-⑧判据语义（③ 新增子判据 ③d）。
+
+### 收集与渲染（P0）
+- **r4-collect 前置守卫**（REQ-V3.9-001/002）：`_adapt_r4_finding` 归一化扩展
+  （cwe 字符串/call_chain 字符串/location 别名/surfaces 别名，写 flags）；
+  tracked_surfaces 缺失且不可恢复 → `R4_TRACKED_MISSING` 硬失败、该 hypothesis
+  不合并（原子性）——静默缺簿记导致门禁⑦ 假失败反向制造手工补救（Pillow H7 实录）
+- **报告渲染三修**（REQ-V3.9-003/004/005）：附录 A 改双语义过滤
+  （status=VERIFIED 且 verdict=NEEDS_REVIEW——collect 终态语义）；
+  B.2 双侧 lang 经 `_norm_lang` 归一后 join（surface 规范名 vs inventory 扩展名
+  词汇不匹配致计数恒 0）；R4 行位置列取 `call_chain[0]`/location（`_r4_location`）
+- **tracked-ids 机械化**（REQ-V3.9-006）：新 `--stage tracked-ids`——优先
+  r2_filter_result.json 三组 surface_ids（SWR-V3.4.6-002 保真契约）∪ R4 ∪
+  coverage_bridge，落盘 `_tracked_ids.json`，覆盖率 <100% exit 1
+- **export 落盘 payload**（REQ-V3.9-007）：`<mode>_payload.json` 落盘，
+  next_step 引用该路径（"整读整传"条款此前无文件可读）
+
+### 门禁与提示资产（P1/P2）
+- **门禁 ③d**（REQ-V3.9-010）：R4 confirmed finding（High/Medium/Critical 且
+  empirical_result 前缀 CONFIRMED）须有 `independent_review {by,method,artifacts}`
+  或非空 r3_link——放行方向对抗复核（REQ-V3.2-021 精神）在 R4 通道补位；
+  `require_r4_independent=False` 豁免旧队列复跑（warn 注记，同 ⑧/③c 先例）；
+  B.5 增行、问题详情渲染该字段
+- **R1 任务书双向核实条款**（REQ-V3.9-008）：命中共享 helper/allocator/工厂时，
+  边界声称须沿调用链双向核实（两次误报同模式：漏看调用者前置守卫/漏看被调者
+  前置检查）
+- **新清单 CK-POSTOP-INVARIANT**（REQ-V3.9-009，库 29→30）：后置检查+循环
+  不变量论证——判缺陷前须证明不变量破坏（两次将"检查在操作后但靠对齐不变量
+  兜底"的形态误判为缺陷）
+- **文档漂移**（REQ-V3.9-011）：SKILL.md repair 裁除注记；
+  workflow_export.TOOLING_VERSION 3.7→3.9（版本守卫数据本身漂移两版）
+- **cve-ghsa-draft**（REQ-V3.9-012）：新 `tools/check_no_cjk.py` 零中文检查脚本（交付至 cve-ghsa-draft skill 目录）
+
+### 撤销记录（防义务棘轮）
+- 原 P1-6（assert_ledger 逐门输出）：代码复查确认现有 `(ok, violations)` 契约
+  已枚举全部 blocking 违规，无失误案例支撑，不做修改。
+
+### 验收判据（Phase 3.9）
+243 基线全绿 + 新增 test_v39 ≥12 用例 + `signature_lib.py selfcheck /root/Pillow`
+exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d 全 PASS、报告三处
+渲染缺陷消失且主代理零手工编辑）。
+
+## 🆕 v3.10 增量（2026-08-28，kernel 级项目首例审计复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_10.md` + `REQ_V3_10.md` + `SWR_V3_10.md`。
+> 缺陷修复版：不改变阶段骨架、不改变六门禁①-⑧判据语义、不改变队列数据模型主体。
+> 复盘来源：2026-08-28 首次 kernel 级项目全流程审计（五波、109 假设、10 候选、
+> 六门禁全 PASS）。13 项复盘发现 → 修复 12 项、撤销 2 项（含 1 项复盘误报）。
+
+### 覆盖率簿记（P-A）
+- **tracked 提取源扩展**（REQ-V3.10-001）：①`r2_filter_result*.json` 全波次文件
+  glob 合并三组 surface_ids（多波批次形态，主文件与分波文件同权）②
+  `logic_hypotheses[].surface_ids` 恒并入（与门禁⑦语义对齐："R2 假设 surface_ids"
+  含 logic 组——防御裁决面的覆盖簿记）③兜底路径不变
+- **R4 假说级 tracked_surfaces**（REQ-V3.10-002/003）：reviewed_clean/not_applicable
+  （或 confirmed 但 findings 空）假说的审查触及面结构化落盘——条件触发（有 finding
+  载体不重复），r4-collect 幂等合并为 `hypothesis_tracked_surfaces`，防"审查触达与
+  覆盖率簿记脱节"（reviewed_clean 假说审大量面却零簿记, 覆盖率假失败实录）
+- **r2_guard fidelity 波次回退**（REQ-V3.10-004）：主 hypotheses.json 缺失时
+  glob `_r2_hypotheses_*.json` 合并反查，全部缺失才 WARN
+
+### 实证回填契约（P-B）
+- **empirical dict 键名规范化**（REQ-V3.10-005）：canonical 键集（保留键
+  outcome/evidence_numbers/report + 标准键 harness/method/input/result/verdict/
+  backfilled_by）；渲染器容错读双形态（缺失回退，绝不抛异常）——修复报告渲染
+  把实测数据全部渲染为 None 的契约缺口
+
+### 边证据检测（P-C）
+- **edge_gap 显式信号**（REQ-V3.10-006）：collect 时 grade 重算 static_only 且
+  自报更高 → 输出 `edge_gap`（边数 vs 跳数-1 + "疑似合并边"补拆指引）——
+  修复"禁止合并多跳"条款无机械检查点、违反只能静默降级事后暴露的问题
+
+### 任务书与门禁一致性（P-E）
+- **R4 empirical_result 指引与 gate 豁免一致**（REQ-V3.10-007）：Low+声称类
+  必须填机制级描述文本（含"静态/机制级/源码级"措辞）——填 null 会触发
+  empirical_required_r4 违规；High/Medium/Critical 声称类沿用不实证不申报
+
+### 任务书资产中立化（P-F，去项目化）
+- **部署布局义务生态中立化**（REQ-V3.10-008）：发布面三查按构建系统分派
+  （包清单 files/构建产物/发布面入口）+ 编译开关面查询（Kconfig 提交值/Cargo
+  features/CMake 选项/Gradle buildTypes 等作分派例）——"不在发布产物/编译面 →
+  不构成可达声称"语义不变，措辞不再单吊一种生态
+- **shipped-config 编译开关键通用形态**（REQ-V3.10-009）：config/features/开关类
+  键的"提交值 vs 代码默认值"（含显式关闭为提交值）与服务端框架键清单并列按
+  形态分派
+- **focus_sink 纯格式契约**（REQ-V3.10-010）：`path:line` 纯格式（相对项目根），
+  说明入 note——修复带后缀格式致簇化入队失败
+- **verifier/refuter 任务书补两步**（REQ-V3.10-011）：路径格式统一条款 +
+  upstream 修复搜索步骤（git log -S / CVE 补丁核对 / "快照落于修复前/后窗口"
+  写进证据——上游补丁存在性是候选可信度最强旁证）。**首发归属增补**（同日
+  增补，2026-08-28 发现链核查实录）：命中"公开补丁未合并"或"已有 CVE"时
+  标注发现链（发现者/补丁作者/时间）与补丁状态，evidence 写明"非首发发现"
+  ——主代理收尾按"推补丁合并 + 佐证材料"路径，申报不得以首发口径
+
+### 提示资产（P-G）
+- **parser_fuzz 有状态 stub 指引**（REQ-V3.10-012）：无符号下溢语义保留/边界
+  指针语义/分配布局模拟/逐字提取纪律/消费侧复刻——模板 docstring + c 手册第 7 节
+
+### 版本链（收尾）
+- TOOLING_VERSION → "3.10"；tests/test_v310.py 覆盖全部可测需求
+
+### 撤销记录（防义务棘轮）
+- P-D 撤销（复盘误报）：shipped-config workflow 返回契约本就正确（`{mode,
+  inventories, missing}` 包装），误报根源是主代理收集时读了 per-agent journal
+  行——形态差异补入 collect 指引文档，不改代码
+- P-H 撤销：batch-size 截断已有 advice 显式提示（两次均依提示重导出，无失误
+  案例）；payload_hash 辅助无失误案例支撑——均不建
+
+### 验收判据（Phase 3.10）
+全量回归测试全绿（243 基线 + test_v310 新增）+ kernel 受影响阶段复跑零回退
+（tracked-ids 152/152 无手工补丁、collect 输出 edge_gap 信号、报告渲染实证数据
+完整）+ `_scan_runtime_assets` 去项目化扫描绿 + 三锚点 fixture 复跑零回退
+（新项目全流程验收随下一在线项目进行）。
+
+## 🆕 v3.10.2 增量（2026-08-29，多媒体系列 7 项目批次复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_10_2.md` + REQ/SOFTWARE_DESIGN/SWR_V3_10_2。
+> 背景审计: 2026-08-29 多媒体系列批次（7 项目、双并行 × 4 波、六门禁 7/7 全 PASS）。
+> 复盘发现 13 项问题（Q-A~Q-M）→ 本版修复 13 项、维持撤销 2 项。
+> 不改变阶段骨架、六门禁判据语义、队列数据模型主体。
+
+### 机制新增（机械层）
+
+1. **实证保真度三档（SWR-V3.10.2-001~004）**：`empirical.fidelity` 枚举
+   `real_target | equivalent | mechanism`（缺省 real_target，旧队列零行为变化）。
+   `equivalent`（等价语义复现）满足 gate ③ 但报告行首渲染 `等价复现:` 前缀、
+   gate 输出 `fidelity_hint` 分列；`mechanism` 不得升 `empirically_confirmed`。
+   申报材料必须按档位标注（真实构建物与复刻证据分列，不混级申报）。
+2. **workflow args fail-fast（SWR-V3.10.2-005）**：导出脚本（verify/refutation/
+   resurrect）在 agent 任务内首步校验输入键（`c.prompt`/`c.taskFile` 至少其一
+   非空），缺失时不派发 agent、返回结构化错误——「undefined prompt 幻觉
+   verdict」事故的制度化拦截；collect 后验 `journal_anomaly` 告警（同 id 多
+   result 内容各异）。
+3. **R4 簿记容错（SWR-V3.10.2-007/008）**：r4-collect 兼容 finding 级
+   `surfaces` 别名（canonical hypotheses-list 形态此前不经别名映射）；空
+   findings 假说须声明假说级全量扫掠 tracked（完全无 tracked 仍拦截）。
+4. **报告防覆盖（SWR-V3.10.2-009）**：`--stage report` 检测主代理段落已存在
+   时拒绝重跑（exit 1），`--force` 显式重生成并告警。
+5. **NEEDS_REVIEW 重开（SWR-V3.10.2-012）**：`--stage reopen --id <id>` +
+   `REOPEN_REASON` 环境变量——环境 blocker 解除后回 PENDING（保留全部历史
+   字段与 correction_record）。
+6. **裁决核验与补强签收 warn（SWR-V3.10.2-014/015）**：主代理采纳证伪者
+   结论 demote 时须对证伪者承重前提主张逐条回源码核实并落盘
+   `adjudication_verification`；证伪者/复活者补强（strengthened/
+   attribution_correction）进报告/申报前须主代理逐条签收——签收字段为候选级
+   `refutation` dict 内的 `strengthened_verified_by` /
+   `attribution_correction_verified_by`（与 `strengthened[]` 平级，**非 entry
+   内部**，v3.14 SWR-V3.14-008 文案补全）——两者均为 warn 级不阻断，旧队列复跑以
+   `require_adjudication_verify=False` / `require_strengthen_verify=False` 豁免。
+7. **NEEDS_REVIEW 成因三分（SWR-V3.10.2-013）**：`保守裁决 | 证据不足 |
+   环境受限`（环境受限=无目标平台运行面）；环境受限 + 上游公开佐证 →
+   附录 A 渲染「佐证注记」列（申报走佐证材料路径，终态不变）。
+8. **渲染四标记（SWR-V3.10.2-002/010/011）**：实证行 fidelity 前缀、harness
+   路径非 `.audit_results/` 前缀 → `[产物目录违规 warn]`、补强未签收 →
+   `（未复核）` 标记。
+
+### 机制新增（知识/契约层）
+
+9. **平台信任模型清单（SWR-V3.10.2-016）**：checklist_library 新增
+   `platform_trust_models` 清单族（按平台分派：mobile/desktop/web/
+   embedded_kernel，平台机制级条目零项目 API 名）——「同主体」判定前必须
+   对照平台清单（同设备其他应用经导出组件/意图参数注入是异主体；平台鉴权
+   中介存在时「未认证通道」判据不成立）。R1 surface 信号驱动
+   `detect_platforms` → verifier/refuter prompt 注入；零平台信号零注入。
+10. **依赖 CVE 对账可选步（SWR-V3.10.2-017）**：R1 context 含 pinned 依赖
+    清单时，verifier 步骤 1.5 可选对账关键依赖（解码器/解析器执行主体）的
+    已知 CVE 状态 → `dependency_cve_notes` 注记（不改变 verdict，报告附录 B
+    与申报语境引用）。
+11. **物化增量面重审（SWR-V3.10.2-018）**：scope_changed 时输出受影响面
+    重开建议（物化目录 × R1 面路径交叉）；主代理裁决后
+    `write_scope_review` 落盘 `scope_review.jsonl`。
+12. **实证防误伤样板（SWR-V3.10.2-019）**：parser_fuzz 模板与 c 手册 §8
+    资源防护样板（ulimit/setrlimit 双形态）——GB/TB 级分配 harness 无防护
+    环境复跑会 OOM-kill 整机。
+
+### 维持撤销（义务棘轮防护）
+
+- batch-size 默认截断提示、payload_hash 辅助命令：v3.10 撤销后本批次复评
+  无失误案例再现——维持撤销。
+- severity override 逐条复核义务：现有 override+reason 可问责，无失误案例
+  ——不建。
+
+### 验收判据（Phase 3.10.2）
+
+全量回归全绿（273 基线 + test_v3102 15 新增）+ 去项目化扫描 0 命中（平台
+清单族）+ 旧队列复跑零新增 blocking（新增 warn 以豁免参数关闭）+ 未审计过
+的新项目验收随下一在线项目进行。
+
+## 🆕 v3.11 增量（2026-08-29，Android 系审计设计缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_11.md` + REQ/SOFTWARE_DESIGN/SWR_V3_11。
+> 背景审计: 移动平台组件面（跨语言三明治结构目标）+ 内核系目标审计实战。
+> 复盘发现 7 项设计缺陷（R-A~R-G）→ 本版修复 7 项；全部过义务入库三问。
+
+### 机制新增
+
+1. **攻击者主体层级（SWR-V3.11-001~003）**：candidate 新增 `attacker_tier`
+   枚举 `same_process | same_device_cross_app | system_broker | remote`——把
+   「同设备其他应用经导出组件/意图参数注入」与「远程网络内容」从 ACROSS_BOUNDARY
+   混档中区分开（两者在 CVSS 基线/申报口径/构建类型限定上完全不同）。R3 步骤 3
+   判定时 verifier 注明，collect 缺省推导（DIRECT→same_process；ACROSS_BOUNDARY
+   按平台组件注入/网络内容信号推导；无法判定交主代理不机械兜底）；报告问题清单
+   行尾 tier 标注。
+2. **平台 API 行为契约库（SWR-V3.11-004~006）**：checklist_library 新增
+   `platform_api_contracts` 清单族——平台 API 对恶意输入的固有处理语义（归档
+   条目查找封顶/系统绑定中介/版本级前置限制/直缓冲约定），条目 **source 必填**
+   （无来源拒收，防幻觉契约入库）；三层对抗复核 prompt 注入（与 v3.10.2 PTM
+   同管线对称）。首版 4 条全部带批次追溯。
+3. **模板产物面（SWR-V3.11-007/008）**：R1 测绘「生成器/模板产物面」指引——
+   模板文件是输入面的实例化载体（「源码树零导出组件」≠「部署物零导出组件」）；
+   entry_points 标 `instantiated_artifact`；R3 步骤 0.5 存在性按「模板 →
+   实例化产物」链判定。
+4. **运行时版本条件检查项（SWR-V3.11-011）**：verifier 步骤 4 阻断检测新增
+   「运行时版本条件」项——版本 API 级判断与构建变体差异影响攻击面维度，阻断
+   论证必须按受影响版本区间陈述（提示级，无自动检测）。
+5. **H4 初始化时序子项（SWR-V3.11-012）**：H4 检测要点新增「初始化时序注入面」
+   ——启动参数/初始化前到达的输入在安全配置生效前被消费。
+6. **逻辑镜像提示（SWR-V3.11-013/014）**：R1 merge 输出 `mirror_candidates`
+   提示——跨语言语义相似面组（同逻辑面多语言实现候选，语义域约束防同名异义
+   误配，按域均衡截断，仅提示不自动组族）；R2 假设生成须覆盖族内全部语言实现。
+7. **审计树差异声明（SWR-V3.11-009/010）**：scope snapshot 新增「构建差异声明」
+   段（构建清单声明的依赖 vs 树内物化状态）；报告附录 B.7 渲染「审计树与部署物
+   差异」——「树外不可验证」类 drop 理由的可靠性声明载体。
+
+### 明确不做（义务棘轮防护）
+
+- 不改 reachability_type 枚举（attacker_tier 为独立字段，二分语义保留）。
+- 逻辑镜像不做自动组族（语义相似度判定不可靠，提示级交主代理裁决）。
+- 运行时版本不做自动检测（语言习语过杂，提示级 + 主代理确认）。
+- 不加新门禁（六门禁①-⑧判据语义不变）；契约库唯一「拒收」级校验仅约束新清单族。
+
+### 验收判据（Phase 3.11）
+
+全量回归全绿（288 基线 + test_v311 新增）+ 去项目化扫描 0 命中（契约族按平台
+机制书写）+ 契约族条目 source 必填校验 + 旧队列复跑零新增告警（attacker_tier
+缺省推导）+ 未审计过的新项目验收随下一在线项目自然触发。
+
+---
+
+## 🆕 v3.12 增量（2026-08-29，状态机分析能力补强）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_12.md` + REQ/SWR/SOFTWARE_DESIGN_V3_12
+> + `BIAS_EVAL_V3_12.md`（四项缺陷评估）。能力增量版：不改变阶段骨架、六门禁
+> ①-⑧判据语义、队列数据模型。
+> 背景：状态机/序对类逻辑缺陷此前无家族级机械支持——账本无 STATE 族（841/696/670
+> 落 OTHER）、严重度表无对应 CWE（走 claim_type 回退）、仅 CK-BIZ-LOGIC 单条覆盖、
+> 先例库零条目。评估结论：复杂文件解析/协议分析为成熟主场，状态机分析为灰色地带
+> ——本版补齐家族级支持，全部走数据驱动与既有管线（零 binder/零注入代码改动）。
+
+### 机制新增
+
+1. **覆盖账本 STATE 族（REQ-V3.12-001）**：issue_coverage_matrix families 新增
+   STATE（CWE-841/696/670）+ rows 空行——fam_map 数据驱动自动生效（零代码改动），
+   缺口扫描现列出 STATE×16 语言缺口格。
+2. **严重程度映射（REQ-V3.12-002）**：841/696→高（状态机序对/协议类，与 RACE
+   同档）、670→中（恒错控制流逻辑缺陷默认档）。override 优先级与 claim_type
+   回退链语义不变。
+3. **状态机族检查清单 4 条（REQ-V3.12-003）**：CK-STATE-TRANSITION（非法转移
+   显式拒绝 vs 静默通过，CWE-841 唯一锚定条目）、CK-STATE-CONFUSION（重入/复用/
+   双解释，无 CWE 锚定关键词绑定——避免与 TRANSITION 双锚机械共绑）、
+   CK-MULTISTEP-INVARIANT（跳步/重放/乱序/序对依赖，CWE-696 锚定）、
+   CK-FRAME-GATE-REENTRY（逐帧/逐块/逐条状态机 vs 一次性门禁对账，关键词+
+   词边界信号门控——Pillow DCX/MPO 机制化）；与 CK-BIZ-LOGIC 共绑合法（跨族强化）。
+   绑定纪律：keywords 只放 CJK 与多词 ASCII 短语（禁裸 state/frame——子串误配
+   statement/framework），词边界敏感词全部走 applicability_signals.text。
+4. **裁决先例（REQ-V3.12-004）**：PREC-STATE-GATE-REENTRY（一次性门禁检查 vs
+   状态机重入；CWE 元组 + 状态机/state machine 关键词双路径触达）。
+
+### 明确不做（义务棘轮防护）
+
+- 不建 H8 状态机假说（gate ④ H1-H7 语义不变）、不加通用状态序列 fuzz harness
+  模板（v3.6 B 裁决先例：通用语言模板已裁除——状态机为项目专属形态，遵循
+  「无匹配模板时现场构造」条款）。
+- 不加新门禁、不加新绑定维度、不注入 R4 biz_hypothesis 与 Mode A' 任务书。
+- 不动 CK-BIZ-LOGIC 存量关键词（共绑定=跨族强化）；不收 CWE-799（交互频率
+  语义属 RESOURCE-DOS 侧）。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.12 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成（V3.4.4-V3.7 为手工维护段且不在 VERSIONS，
+  再生成会删除，实测核验）。
+
+### 验收判据（Phase 3.12）
+
+全量回归全绿（301 基线 + test_v312 新增 14 用例）+ 去项目化扫描 0 命中（新
+清单/新先例机制形态）+ 覆盖账本 dry-run 列出 STATE 缺口格 + 旧队列复跑零新增
+告警 + 未审计过的新项目验收随下一在线项目自然触发（状态机清单绑定、STATE 格
+回填、先例提示至少各真实命中一次）。
+
+---
+
+## 🆕 v3.13 增量（2026-08-29，错误路径处理族 + 数值语义族 + 账本锚点一致性修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_13.md` + REQ/SWR/SOFTWARE_DESIGN_V3_13
+> + `BIAS_EVAL_V3_13.md`（四项缺陷评估）。能力增量版：不改变阶段骨架、六门禁
+> ①-⑧判据语义、队列数据模型。
+> 背景：用户盘点「除复杂文件解析/协议分析/状态机分析之外还该关注什么」——
+> 两族有实证支撑的空白维度（数值语义/错误路径处理）+ 一个账本漂移修复
+> （436/444/1333 清单/先例层已锚、账本层未锚）。全部案例支撑经实证队列核验。
+
+### 机制新增
+
+1. **覆盖账本 NUMERIC + ERROR-HANDLING 族（REQ-V3.13-001）**：NUMERIC
+   {191 整数下溢/369 除零/681 转换截断/697 不一致比较}、ERROR-HANDLING
+   {457 未初始化/665 初始化不完整} + 空行（缺口扫描可见）。**锚定修正**：
+   WEB cwe += 436/444、RESOURCE-DOS cwe += 1333——收口清单层（CK-DUAL-PARSER/
+   CK-HOST-AUTH-CONSISTENCY/CK-RUNTIME-RE）与先例层已锚而账本未锚的漂移。
+   190/129 不重归（MEMORY-SAFETY 既有锁）。fam_map 数据驱动零代码改动。
+2. **严重程度映射 9 码（REQ-V3.13-002）**：191→严重（与 190 对称）、
+   369/457/444/1333→高（除零 crash 类/未初始化 SIGABRT 实证档/请求走私/
+   RESOURCE-DOS 全族 high 先例）、681/697/665/436→中（转换截断/不一致比较/
+   初始化不完整/双解析器前提=逻辑缺陷默认档）。override 优先级与 claim_type
+   回退链语义不变。
+3. **数值语义族检查清单 2 条（REQ-V3.13-003）**：CK-NUMERIC-TRUNCATION
+   （191/681 锚定：截断先于检查=检查死代码/回绕过检/哨兵算术）、
+   CK-NUMERIC-SEMANTICS（369/697 锚定：除零路径/比较不一致/取模边界）。
+4. **错误路径处理族检查清单 2 条（REQ-V3.13-004）**：CK-ERROR-BRANCH（无 CWE
+   锚定关键词绑定：错误分支条件反转/静默阻断/吞没转正常路径——W6 §25.3 列项
+   制度化）、CK-ERROR-CLEANUP（457/665 锚定：未初始化残留/清理完整性/宿主复用
+   残留）。关键词纪律延续 v3.12：禁裸 异常/error/cleanup（子串/下划线误配），
+   用 异常路径/error path/failure path 多词短语。
+5. **版本链（REQ-V3.13-005）**：TOOLING_VERSION → "3.13"；资产地图 38 清单；
+   无新 PREC（436/444/1333 既有 CWE_FAMILY_MAP 已可达）。
+
+### 明确不做（义务棘轮防护）
+
+- 不建 H8/H9 假说（错误路径保持清单级——v3.12「不建 H8」先例，gate ④ 语义不变）。
+- 不重归 190/129（MEMORY-SAFETY 既有锁）；不动 CK-SENTINEL-SEMANTICS 与
+  CK-SIBLING-LISTENERS 存量（共绑合法）。
+- 无新 PREC、无新 harness 模板、无新门禁、无新绑定维度、不注入 R4/Mode A'。
+- 时间/Unicode/侧信道维度无漏报支撑暂缓（下一批对应形态目标自然触发后再议）。
+- 不修复 README.md 清单计数存量漂移（v3.12 口径一致性，见 BIAS_EVAL D-4）。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.13 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成（V3.4.4-V3.7 手工段不在 VERSIONS）。
+
+### 验收判据（Phase 3.13）
+
+全量回归全绿（315 基线 + test_v313 新增 14 用例）+ 去项目化扫描 0 命中（新
+4 条清单机制形态）+ 覆盖账本 dry-run 列出 NUMERIC/ERROR-HANDLING 缺口格 +
+436/444/1333 归族 + 旧队列复跑零新增告警 + 未审计过的新项目验收随下一在线
+项目自然触发（数值/错误路径清单绑定、新族格回填至少各真实命中一次）。
+
+---
+
+## 🆕 v3.14 增量（2026-08-30，protobuf 复审计复盘缺陷修复）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_14.md` + REQ/SWR/SOFTWARE_DESIGN_V3_14
+> + `BIAS_EVAL_V3_14.md`（四项缺陷评估）。缺陷修复版：不改变阶段骨架、六门禁
+> ①-⑧判据语义、队列数据模型主体。
+> 背景：protobuf 复审计（v3.13 验收审计，52 面/29 假设/12 候选/3 验证波 +
+> 2 证伪波 + 2 复活波，六门禁 PASS）实战暴露 8 项缺陷，全部经代码取证核实。
+
+### 机制修复
+
+1. **journal 异常检测按 mode 区分（D-1, REQ-V3.14-001）**：`_detect_journal_anomaly`
+   加 `max_distinct_per_id` 参数（默认 1）；r35-collect（N=2 证伪者同 id 多 result
+   是设计形态）传 2——仅 >2 才判 anomaly。此前 refutation 模式恒误报。
+2. **unknown_surface_ids 建议映射（D-4, REQ-V3.14-002）**：r4-collect 告警处从
+   归一化 known 集生成 `suggested_corrections`（后缀匹配，覆盖 S-<域>-NNN ↔
+   SURF-<域>-NNN 跨前缀形态）——仅提示不自动改写。
+3. **r3_link 值域校验（D-5, REQ-V3.14-003）**：非空且非 CAND-* 的 r3_link 写
+   `r3_link_invalid` flag + warn（假设 id 误填静默落盘实录）。
+4. **R4 finding 终态一致性 warn（D-6, REQ-V3.14-004）**：finding 带 r3_link 且含
+   终态关键词时与候选当前 verdict 比对，矛盾输出 `r4_verdict_link_conflict`
+   （字段级 warn，非新门禁）。
+5. **复审计幂等分支增量指引（D-2, REQ-V3.14-005）**：LEDGER_IDEMPOTENT_SKIP
+   且 would_be 增量非空时输出 `manual_merge_guidance`（增量清单 + 合并协议）——
+   不做自动 re-credit（第二个复审计案例再评）。
+6. **复活抽样单真相（D-3, REQ-V3.14-006）**：`export_script_resurrect` 先读
+   `_resurrect_sample.json`（存在且与当前候选集合一致→文件池为准；缺失/漂移→
+   内部抽样并写文件）。文件保持可选，零新增强制义务。
+7. **R1 派发写盘能力指引（D-7, REQ-V3.14-007）**：优先派发具备写盘能力的子
+   智能体；只读代理按 UNWRITTEN 契约恢复（一行指引）。
+8. **strengthen 签收文案（D-8, REQ-V3.14-008）**：note 补字段名与层级
+   （候选级 refutation dict 内 `strengthened_verified_by`/
+   `attribution_correction_verified_by`，与 strengthened[] 平级）。
+
+### 明确不做（义务棘轮防护 + 四缺陷评估裁决）
+
+- 不做自动 re-credit、不自动改写 tracked_surfaces、不加新门禁、不改 revive/demote
+  裁决语义；D-7 不升 SWR；`_resurrect_sample.json` 保持可选。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.14 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成。
+
+### 验收判据（Phase 3.14）
+
+全量回归全绿（329 基线 + test_v314 新增）+ 旧队列复跑零新增告警 + protobuf
+受影响阶段复跑零回退（journal 重放无 anomaly 误报、账本幂等分支输出增量指引、
+复活导出读 sample 文件）+ 审计工件修正完成（H4-F5 与 CAND-009 终态一致）。
+
+## 🆕 v3.15 增量（2026-08-30，五项目批次收官缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_15.md` + `SWR_V3_15.md` +
+> `SYSTEM_DESIGN_V3_15.md` + `SOFTWARE_DESIGN_V3_15.md` + `BIAS_EVAL_V3_15.md`。
+> v3.15 不改变阶段骨架、六门禁判据语义、队列数据模型主体；14 项修复全落在
+> 判定函数一致化、模板/清单条款、告警结构化、消费契约四类。
+> 案例支撑全部为五项目批次会话内实录（gpac/s2n-tls/nghttp2/libarchive/
+> freetype lessons），四缺陷评估（过设计/设计偏见/死代码/盲目带入）零违规。
+
+- **claim 判定单真相（SWR-V3.15-002）**：`evidence_ledger.is_claim_like`
+  （claim_type 字段优先 + 同字段集文本扫描降级）是「声称类」判定的唯一实现——
+  复活池选样与门禁③c 同调此函数（旧双实现字段集不一致致三次漏选：s2n
+  CAND-009/nghttp2 CAND-011/gpac CAND-011；旧本地副本还缺 rce/leak 两声称类）。
+- **报告防覆盖守卫双形态（SWR-V3.15-001）**：「（主代理补充）」与
+  「本段由主代理补充」双形态识别，机械模板占位补标记——四次 REFUSED 根因消除。
+- **截断永不切净（SWR-V3.15-005）**：`_TRUNC_KEY_HEAD` 扩展方括号段头
+  （`[G\d+]/[PREC-*]/[CK-*]`）+ 平文 `VERDICT:`/「复活 gap 逐条核实」头；
+  全 minor 多段首尾拼接兜底——证伪者/复活者永不收 0 字证据
+  （gpac CAND-001/freetype CAND-002 双实录）。
+- **tracked_surfaces 契约（SWR-V3.15-006/008）**：canonical=字符串 id 列表；
+  富形态写 `sweep_records`；`_tracked_ids` 假说级双字段并读 + dict 条目容忍
+  （报告渲染 unhashable 崩溃实录消除）；任务书明示 canonical 字段名。
+- **scope_diff 消费契约（SWR-V3.15-007）**：消费者优先 `affected_dirs` 机器
+  通道，changes 字符串解析降级 fallback。
+- **R4 枚举建议映射（SWR-V3.15-003）**：非法 verdict/severity 告警附结构化
+  建议（不自动改写）。
+- **post-resurrect advisory（SWR-V3.15-004）**：带 re_verify_gap 的 REACHABLE
+  候选含陈旧 refutation 字段时导出结果显式提示归档（静默空转消除）。
+- **任务书义务（SWR-V3.15-009~012）**：CK-EMPIRICAL-SCOPE 增基线对照条目
+  （资源类实证双测, gpac CAND-001 基线伪影实录）；PREC-GUARD-SUBSET-001
+  （守卫封顶阻断必须枚举通过子集, gpac CAND-007/001 实录）；CK-VENDORED-
+  CONTRACT（绑定依赖库契约检查入阻断维度, nghttp2 llhttp/s2n 绑定层实录）；
+  verifier 显式列未测平台清单（复活波定向补测, freetype CAND-002 实录）；
+  复活维度清单扩至 8 条（含绑定契约/守卫子集/补测义务）。
+- **R1 条款（D-13/D-14）**：多行 snippet 块匹配以首行键为锚；域空签收路径
+  （`{"surfaces":[]}` + `empty_domain_reason`）。
+- 资产计数：先例 17→18、检查清单 38→39。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.15 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成。
+
+### 验收判据（Phase 3.15）
+
+全量回归全绿（356 = 337 基线 + test_v315 19 用例）+ 旧队列复跑零新增告警
+（gpac/freetype/protobuf 六门禁）+ install 双副本同步。
+
+## 🆕 v3.16 增量（2026-08-30，v3.15 验收审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_16.md` + `SWR_V3_16.md` +
+> `SYSTEM_DESIGN_V3_16.md` + `SOFTWARE_DESIGN_V3_16.md` + `BIAS_EVAL_V3_16.md`。
+> v3.16 不改变阶段骨架、六门禁判据语义、队列数据模型主体；5 项修复全部
+> 建议级/warn 级/提示级（无新强制义务）。案例支撑全部为 av 验收批次会话内
+> 实录；四缺陷评估零违规（原拟第 6 项取证确认 SWR-V3.10-006 已在位，裁除）。
+
+- **audit_constraint 批量裁决建议（SWR-V3.16-001）**：候选携带
+  `audit_constraint`（no-build/no-device/tree-incomplete）时，gate ③ 对
+  约束下未实证的实证类 REACHABLE 附 warn 级 `batch_demote` 建议（统一理由
+  模板），主代理逐条确认落盘——不自动改写（av 批 11 条同构手工降级实录）。
+- **R4 verdict 枚举强化（SWR-V3.16-002）**：biz_hypothesis 模板三值枚举
+  加粗 + 反面示例（REACHABLE/UNREACHABLE/NEEDS_REVIEW 是 R3 候选 verdict，
+  写入会被 R4_ENUM_WARNING 报）——av 批四文件全逃逸实录。
+- **构造器链急切分配量级条目（SWR-V3.16-003）**：CK-CHECKPOINT-AFTER-ACCUM
+  增条目——无界计数类候选量级以对象图内部急切分配为准（per-Stream 192KB
+  急切缓冲实录，顶层对象尺寸低估 3-4 个数量级）。
+- **树外层清单条款（SWR-V3.16-004）**：verifier 任务书无条件注入——多树/
+  框架树目标必须显式列树外层（绑定库/框架语言层/系统策略层），阻断论证
+  引用树外门禁须写层名与契约（av CAND-013 Java fd 重定向契约实录）。
+- **账本双副本漂移 warn（SWR-V3.16-005）**：coverage-ledger --write 后
+  检查 dev/installed 双活副本账本 sources 一致性，不一致输出
+  LEDGER_COPY_DRIFT warn（附并集修复指引），不自动改写；sibling 定位
+  相对形态推导（第一原则：运行时禁硬编码机器路径）。
+- ⚠️ REQUIREMENTS_TRACKING.md 的 V3.16 段为手工追加——禁止运行
+  `tools/gen_tracking.py` 再生成。
+
+### 验收判据（Phase 3.16）
+
+全量回归全绿（365 = 356 基线 + test_v316 9 用例）+ 旧队列复跑零新增告警
+（gpac/freetype/av 六门禁）+ install 双副本同步。
+
+## 🆕 v3.17 增量（2026-09-01，运行时/引擎形态能力补全）
+
+> 设计文档: `docs/design/REQ_V3_17.md` + `SWR_V3_17.md` +
+> `SYSTEM_DESIGN_V3_17.md` + `SOFTWARE_DESIGN_V3_17.md` + `BIAS_EVAL_V3_17.md`。
+> 能力增量版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：2026-09-01 会话 Chrome V8 审计可行性评估（六缺陷 + 取证行号）
+> + 仓内先例（W6 §17.1、v3.8 扩展名单事实源、v3.11 attacker_tier 管线、
+> v3.12/v3.13 纯数据族先例）。全部新字段缺省 = 现状（旧队列复跑零新增告警）。
+
+### 生成层注册表（SWR-V3.17-001）
+- 新 `assets/resources/generation_registry.json`（默认扩展名视图与 CODE_EXTENSIONS
+  逐位一致 + 通用 DSL 族：proto/yacc/lex/fbs/ragel/asn1/idl，每条 role/generates/
+  lang_family）；新 `generation_registry.py` 模块（merged_view / lang_family_for /
+  provenance_for / load_target_profile）
+- 三消费端接线：surface_mapper（采样/语言清单/规模档位）、signature_matcher
+  （索引）、batch_verify（候选语言推断）——DSL 与生成物文件计入源码普查并带
+  provenance
+- 项目专属 DSL（引擎自研代码生成语言）**不入运行时资产**：经
+  target_profile.generation_layers 审计期局部署名（两段式，第一原则三禁止①）
+
+### 形态画像签收工件（SWR-V3.17-008/002/005）
+- 新 `tools/target_profile.py`（mirror target_kind.py 先例）：五轴推荐
+  {surface_model, generation_layers, scale_class, containment_default,
+  empirical_modes} + 逐信号证据 + --write；主代理签收后生效，未签收 = 全默认
+- `size_tier` 新增 super-large 档（>2000 源文件）：组件清单 + 两阶段测绘
+  （组件清单 → 组件×域派发），45min 硬时限按组件给
+- `surface_model=semantic` 时 R1 增派语义轴测绘（轴 = 语言语义命名空间族，
+  面附 semantic_axis）；R2 沿轴采样；门禁⑦ tracked 轴即面（_tracked_ids 机械并入）
+
+### 防护边界维度（SWR-V3.17-003）
+- 候选 `containment ∈ {none, language, process_sandbox, hardware_isolated}`
+  （缺省 none）：严重度机械映射后按 containment 降档（language 仅 critical→high；
+  process_sandbox 逐档；hardware_isolated 两档；medium 封底），override 绝对优先；
+  verifier 任务书提问（profile 签收 containment_default ≠ none 才注入）；
+  collect 缺省推导；报告行尾渲染 [语言防护]/[沙箱收敛]/[硬件隔离]
+
+### 差分执行实证模式（SWR-V3.17-004）
+- 新 `assets/templates/harness/differential_probe.py`（langs:["any"]，argv 驱动：
+  N 组运行配置 × 共享语料 × 比较器规格）——配置轴类声称（JIT 层级/优化旗标/
+  特性开关/GC 模式）的实证首选；`mixed_build.md` 补「生成物重超大型构建」章节
+  （gn/ninja/bazel/meson/depot_tools 类通用流程）
+
+### 佐证器 cap 缩放 + 运行时内存模型清单族（SWR-V3.17-006/007）
+- `signature_matcher.scaled_caps`：索引文件 >2000 → 窗口/层 cap ×2，
+  >8000 → ×3（上限常数化）；缺省路径零变化
+- 清单 39→44：`runtime-memory-model` 族 4 条（CK-GC-WRITE-BARRIER /
+  CK-GC-ROOT-SCAN / CK-TIER-TRANSITION / CK-ALLOC-ESCAPE）+
+  `generated-code` 族 CK-GENERATED-CODE——纯数据零 binder 改动，多词短语
+  门控（禁裸词 gc/barrier/collector）
+
+### 验收判据（Phase 3.17）
+全量回归全绿（368 基线 + test_v317 24 用例）+ 去项目化扫描 0 命中（新注册表/
+模板/清单族机制形态）+ `signature_lib.py selfcheck <非 fixture 项目>` exit 0 +
+install 双副本同步 + 旧队列复跑零新增告警（本环境无历史队列，兼容性由
+test_v317 缺省路径用例与全量回归承载）。未审计新项目验收：待用户指令后对
+/root/v8 执行（首个运行时/引擎形态验收项目）。
+
+## 🆕 v3.18 增量（2026-09-01，语言问题矩阵：per-language 知识基座）
+
+> 设计文档: `docs/design/REQ_V3_18.md` + `SWR_V3_18.md` +
+> `SYSTEM_DESIGN_V3_18.md` + `SOFTWARE_DESIGN_V3_18.md` + `BIAS_EVAL_V3_18.md`。
+> 内容型增量：零新机制（无新门禁/无新阶段/无新强制义务/binder 零改动）。
+> 案例支撑：2026-09-01 会话战略评估（原目标"Top15 语言 × 每语言 Top10
+> 安全问题"的知识资产维度 0% 建成、账本 111/192、ERROR-HANDLING/NUMERIC
+> 空壳族）——用户裁定方案 C：流程机器不动，补数据驱动的内容基座。
+
+### 语言问题矩阵（SWR-V3.18-001~003）
+- 新 `assets/resources/language_issue_matrix.json`：16 语言 × 12 族 = 192 格
+  （langs/families 与 issue_coverage_matrix.json 逐位一致，测试守卫双向
+  断言）；每条种格 {lang, family, status:seeded, cwes[], patterns[],
+  sinks[], pitfalls[], source_lessons[]}；首版种 32 格（每格 source_lessons
+  指向仓内证据：L2 签名语义/清单与先例/机制形态实录），其余 160 格
+  pending（零注入零提示，stats 可见——v3.6 confirmed:false 诚实占位先例）
+- 新 `language_issue_matrix.py` 加载器：`cells <lang> [family]` / `stats`
+  CLI + lang 别名归一（cs↔csharp、ts↔javascript，与 _LANG_ALIAS 同规则）
+- R2 条款：主代理生成假设前读该语言已种格作为假设空间提示（提示级）
+- **回填纪律（SWR-V3.18-003）**：每版本验收审计收官时把验收项目覆盖的
+  语言×族格两段式回填进矩阵（去项目化提炼 + source_lessons 含日期）——
+  账本记覆盖计数，矩阵供知识，两者互补；无新门禁，回填是验收判据条款
+- 种格诚实纪律：无仓内证据的格一律 pending，禁止凭通用知识臆造种格
+  （矩阵的问责性来自每格可追溯）
+
+### 验收判据（Phase 3.18）
+全量回归全绿（392 基线 + test_v318 新增）+ 去项目化扫描 0 命中（矩阵种格
+正文 DEPROJECT_BLACKLIST 断言）+ install 双副本同步 + 账本双副本稳定复验。
+未审计新项目验收随 V8 审计启动后执行（首个验收即回填 V8 覆盖的语言×族格）。
+
+## 🆕 v3.19 增量（2026-09-02，V8 审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_19.md` + `SWR_V3_19.md` +
+> `SYSTEM_DESIGN_V3_19.md` + `SOFTWARE_DESIGN_V3_19.md` + `BIAS_EVAL_V3_19.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：/root/v8/.audit_results/lessons.md 六条目（V8 首个运行时/引擎
+> 形态验收项目 + 实证复活波，2026-09-01/02 会话实录）。
+
+### 六项修复（全部提示级/内容级/容错级, 零新机制）
+1. **correction_record 双形态 lenient**（SWR-V3.19-001）：assert_ledger 的
+   adjudication_verification 检查对 str 条目跳过（注记形态），dict 条目检查
+   保留（demote 裁决形态）——主代理自然写法不再使门禁检查崩溃；数据模型
+   速查补双形态注记
+2. **verifier 步骤 0 缺陷可达性区分**（SWR-V3.19-002）：库型目标下
+   "sink 可达 ≠ 缺陷可达"——claim 声明前必须给具体缺陷机制静态证据，否则
+   claim_type=other（V8 24/30 证伪分歧票集中于此类的制度化）
+3. **实质机制优先实证提示**（SWR-V3.19-003）：claim=other 但机制静态确证
+   （0 票证伪+补强）的候选优先纳入复活波实证池（V8 CAND-013/049 升格实录）
+4. **实证降级簿记契约明示**（SWR-V3.19-004）：实证降级 UNREACHABLE 必须同步
+   写候选级 resurrection_review {revived:false, outcome}（机制已存在，明示
+   裁决动作与簿记字段的对应关系）
+5. **ENVIRONMENT_PROBES sanitizer-dcheck 条目**（SWR-V3.19-005）：ASan 实证
+   需 dcheck 关闭变体；DEBUG 层不变量是畸形输入的前置拦截器；三组对照义务
+6. **复活第 9 维：构建配置矩阵**（SWR-V3.19-006）：指针压缩/sandbox/特性
+   开关/GC 模式逐项枚举——默认构建可能把内存破坏路径变成 OOM/拒绝路径
+
+### 验收判据（Phase 3.19）
+全量回归全绿（400 基线 + test_v319 新增）+ V8 真实队列复跑 assert_ledger
+零崩溃零新增 warn（str+dict 混形态 correction_record 为验收对象）+
+去项目化扫描 0 命中 + install 双副本同步。
+
+## 🆕 v3.20 增量（2026-09-03，WebKit 审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_20.md` + `SWR_V3_20.md` +
+> `SYSTEM_DESIGN_V3_20.md` + `SOFTWARE_DESIGN_V3_20.md` + `BIAS_EVAL_V3_20.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、evidence_grade 机械重算
+> 规则（evidence_ledger 零改动）。案例支撑：/root/WebKit/.audit_results/
+> lessons.md §一补第 5/6 条（首个 super-large 浏览器引擎验收项目，
+> 2026-09-02 会话实录 + 2026-09-03 取证核实）。
+
+### 六项修复（全部提示级/warn 级/optional schema, 零改写零新门禁）
+1. **verifier 自报分级三值枚举 + 机械口径注记**（SWR-V3.20-001）：输出格式节
+   evidence_grade 补 empirically_confirmed；明示"自报仅追溯、collect 机械
+   重算为唯一权威"，evidence 文本中的 grep 命中必须结构化进 edge_evidence
+   （WebKit 15/20 漂移：6 例实证升档结构性不可自报 + 9 例边证据重工）
+2. **collect drift_summary**（SWR-V3.20-002）：落盘结果附自报分级漂移汇总
+   （方向对计数 stored→mechanical，无根因臆测）——收波时即见，不必等报告期
+3. **lessons_recorder 方向对**（SWR-V3.20-003）：grade_recomputed 条目 detail
+   附方向对——同名裸条目成噪声致蒸馏整体丢弃的修正
+4. **守卫通过子集枚举义务 + guard_pass_subsets 字段**（SWR-V3.20-004）：
+   步骤 4 增义务条文（守卫封顶类阻断必须枚举守卫通过子集）；条件触发输出
+   字段（阻断引用守卫/封顶时必填）；collect 条件校验 warn（UNREACHABLE 且
+   非死代码豁免而无该字段 → warn，不阻断）
+5. **premises_verified 字段**（SWR-V3.20-005）：前提断裂终止回溯时逐条记录
+   承重前提——resurrect 派发可机械评估前提核验覆盖（同 D-4 形态）
+6. **canonical 保留键推断**（SWR-V3.20-006）：SKILL.md R5 回填规范的
+   canonical 键集与 grade_verdict 判级条件互斥（按规范回填的 empirical dict
+   永无法机械评到 empirically_confirmed）——grade_verdict 三保留键齐全时
+   lenient 推断 + 回填提示；canonical 键集补 `status:"confirmed"`
+
+### 验收判据（Phase 3.20）
+全量回归全绿（408 + test_v319 8 用例基线 + test_v320 新增 15 用例）+
+旧队列复跑 assert_ledger 零新增告警 + WebKit 真实队列只读复算对账
+（16 例重算漂移中 15 例存储分级可复算；6 例实证候选经 SWR-V3.20-006
+全部可复算；残余 1 例为闭卷后手工回写所致存储不一致 + 2 例陈旧标记
+如实标注——均为队列编辑事实非机制缺陷）+ 去项目化扫描 0 命中 +
+collect 结果不污染队列文件 + install 双副本同步。
+
+
+## 🆕 v3.25 增量（2026-09-06，MaintainWise 验收审计复盘）
+
+> 设计文档: `docs/design/REQ_V3_25.md` + `SWR_V3_25.md` +
+> `SYSTEM_DESIGN_V3_25.md` + `SOFTWARE_DESIGN_V3_25.md` + `BIAS_EVAL_V3_25.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：v3.24 验收审计 lessons（workflow 基础设施故障触发 A' 降级全程
+> 实战 + 111KB payload 超限 + 编码矩阵误判双重推翻 + severity 传递两处手工
+> override + 预置库首启接管）；用户"重复功能裁剪"追问四候选取证裁除 3/降级 1。
+
+1. **verify 导出薄封装默认化（SWR-V3.25-001, D-1）**：verify payload 默认
+   taskFile 化 + `verify_payload_slim.json` 落盘（与 refutation/resurrect
+   同契约, v3.22-009 扩展）；args 从 slim 文件整读整传。
+2. **r35-collect A' 文件目录输入（SWR-V3.25-002, D-2）**：journal.jsonl
+   缺失时 glob `_refute_*.json`（A' 降级形态）按同一多数决路径落盘；
+   CLI 增 `--from-refute-files <dir>`。
+3. **verifier 路径穿越编码矩阵条款（SWR-V3.25-003, D-3）**：步骤 5.2——
+   裸 ../、%2e%2e、%2F、混合编码、%252e 双编码逐形态实测或注明未测；
+   单形态样本不得外推。
+4. **r4-collect severity 传递 warn（SWR-V3.25-004, D-4）**：同事实去重后
+   载体候选机械严重度低于 R4 申报时输出 severity_transfer_advisory
+   （提示主代理裁决 severity_override，不自动改写）。
+5. **storage 预置数据文件面指引（SWR-V3.25-005, D-5）**：surface 测绘模板
+   增条件段——shipped 数据文件（预置库/种子/示例配置）的状态即攻击面。
+6. **R5 核取提示句（SWR-V3.25-006, D-6）**：补测前先核取 verifier/证伪者
+   证据中已有实测数字，避免同事实重复实证（提示级）。
+
+验收判据：test_v325 8 用例 + 全量回归绿 + 旧队列复跑零新增告警。
+
+## 🆕 v3.24 增量（2026-09-06，三引擎全景召回评估驱动）
+
+> 设计文档: `docs/design/REQ_V3_24.md` + `SWR_V3_24.md` +
+> `SYSTEM_DESIGN_V3_24.md` + `SOFTWARE_DESIGN_V3_24.md` + `BIAS_EVAL_V3_24.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：三引擎 2886 CVE 全景分类（docs/design/recall_eval_2025_2026/，
+> 包络内 80.2%、critical 57% L0b、L2b+c+f 9.0%）+ firefox lessons §三.2
+> （equivalent 实证 1/4 被真实目标推翻）；取证裁除 4 项（C-1..C-4）。
+
+1. **H4 site-isolation/资源归因检查点（SWR-V3.24-001, D-1）**：H4 补提示级
+   子条——跨进程资源（纹理/缓存/下载/导航目标/worker）绑定错误 origin 即
+   信任边界破坏，检查资源创建与归因的 origin 上下文一致性（biz_hypothesis.md）。
+2. **JIT 根因归属条款（SWR-V3.24-002, D-2）**：JIT 轴段补提示级条款——
+   根因 runtime/编译器无法归属时标归属未知并保持 [ambig]，不得默认归编译器
+   正确性；CWE-843 映射仅适用于归属成立候选（surface_map_domain.md）。
+3. **边界声明补两族（SWR-V3.24-003, D-3）**：报告段「发现包络边界声明」
+   不覆盖项补（d）UI 信任指示层、（e）移动端平台集成层；warn 不阻断保持。
+4. **召回率回归集扩三类（SWR-V3.24-004, D-4）**：fixture 追加 RECALL-002
+   （L0b CWE-416）/RECALL-003（L0d CWE-863）/RECALL-004（L0c CWE-787+190）；
+   仅测试/评估引用，不进运行时。
+5. **equivalent 档 real-target 抽验提示（SWR-V3.24-005, D-5）**：R5 保真段
+   提示级——equivalent 档结论强度低于 real_target，真实目标环境可及时对
+   equivalent 实证候选做抽验；不强制不阻断。
+
+验收判据：test_v324 8 用例 + 全量回归绿 + 旧队列复跑零新增告警 +
+test_v323 九用例（RECALL-001 未动）全绿。
+
+## 🆕 v3.23 增量（2026-09-06，real-target 验证轮 + CVE-2026-85046 召回复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_23.md` + `SWR_V3_23.md` +
+> `SYSTEM_DESIGN_V3_23.md` + `SOFTWARE_DESIGN_V3_23.md` + `BIAS_EVAL_V3_23.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：firefox lessons §三.1（H3-F1 所有权保真反证, real-target 探针
+> 1033+752 次派发零中途释放实录）+ v8 lessons 召回复盘 1（CVE-2026-85046）+
+> WebKit lessons 二.1（R4/R2 并行冲突实录）；取证裁除 3 项（v3.19-003/005/006
+> 已存在机制）。
+
+1. **fidelity 所有权模型核实（SWR-V3.23-001, D-1）**：`equivalent` 档须列出目标
+   对象真实引用持有图（AddRef/释放/时机）并证明 harness 交错时序映射真实释放
+   路径——无法映射的时序不得作为缺陷前提（R5 段）。
+2. **发现包络边界声明（SWR-V3.23-002, D-2）**：报告「修复建议与结论」段须附
+   包络声明——不覆盖 JIT/编译器优化正确性层、闭源依赖内部、非目标平台变体；
+   缺失 = warn 注记不阻断。
+3. **JIT 正确性假设族（SWR-V3.23-003, D-3）**：严重度表 MEMORY-SAFETY 补 843；
+   语义轴测绘模板补「JIT 优化正确性层轴」（generation_layers 含 jit 时注入）；
+   target_profile 补 jit 目录信号（S2j，仅建议主代理签收）。
+4. **differential 发现通道（SWR-V3.23-004, D-4）**：R2 提示——semantic/jit 目标
+   可选跑 differential 探针比对运行配置分歧，分歧即假设（提示级无新义务）。
+5. **召回率回归集（SWR-V3.23-005, D-5）**：tests/fixtures/recall_regression_set.json
+   建语料（首样本 CVE-2026-85046 形态）；仅 fixture/评估引用，不建运行时度量
+   工具（过设计防线）。
+6. **R4 注入 R2 进行中结论（SWR-V3.23-006, D-6）**：biz_hypothesis.md 补注入条款
+   ——并行时 R4 任务书须附带相关 surface 的 R2 进行中结论（提示级）。
+
+## 🆕 v3.22 增量（2026-09-04，Firefox 验收审计复盘缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_22.md` + `SWR_V3_22.md` +
+> `SYSTEM_DESIGN_V3_22.md` + `SOFTWARE_DESIGN_V3_22.md` + `BIAS_EVAL_V3_22.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体。
+> 案例支撑：/root/firefox/.audit_results/lessons.md §一.1/4/6 + §一补.7-13
+> （v3.19-v3.21 联合验收项目, 2026-09-03/04 会话实录; DDL 消化: V8/WebKit
+> 全部条目已消化或显式裁除）。
+
+### 十项修复（5 P1 机械 + 1 P2 结构 + 3 P3 内容 + 1 P4 条款, 2 项取证裁除）
+1. **size_tier 分支调序**（SWR-V3.22-001）：super-large 判断前置于多语言
+   保底——3+ 语言大仓不再被遮蔽（20 万文件手工绕行实录）
+2. **claim=other 严重度封顶**（SWR-V3.22-002）：结构性可达条目按 CWE 映射
+   虚高至严重/高的机械修正（34 例批量 override 实录）; override 通道不变
+3. **复活未选中自动簿记**（SWR-V3.22-004）：r35n-collect 自动补写
+   resurrection_review（幂等, selected 集内无记录不写）
+4. **refutation 预算与链阈值**（SWR-V3.22-005）：evidence budget 800→3000,
+   chain 阈值 8→12（3 例截断自愈实录）
+5. **导出 taskFile 薄封装默认化**（SWR-V3.22-009）：refutation/resurrect
+   导出对齐 verify 形态, slim payload 落盘（104KB→8KB 实录）
+6. **R4 落盘契约**（SWR-V3.22-006）：biz_hypothesis 落盘 _r4_hN.json +
+   UNWRITTEN 契约 + default_value_table 全量保留
+7. **决策签入工件**（SWR-V3.22-007）：feasibility 表 decision {by,date,choice}
+8. **R2 面覆盖前置核对**（SWR-V3.22-010）：假设生成后机械核对 surface_ids
+   覆盖全集（门禁⑦前置化）
+9. **R6 蒸馏失败模式清单**（SWR-V3.22-011）：收官蒸馏逐项过已知失败模式
+   checklist（截断自愈/契约漂移/簿记缺位/签收错名/落盘契约/决策记录/
+   严重度映射/派发简写偏差）
+10. **数据模型速查键名注记**（SWR-V3.22-003 裁除注记）：refutation 签收
+    字段存储键为单数
+
+### 验收判据（Phase 3.22）
+全量回归全绿（431 基线 + test_v322 新增 13 用例）+ 旧队列复跑零新增告警
+（WebKit/v8/Firefox 三队列 assert_ledger）+ Firefox 真实队列复跑 claim=other
+渲染降为 medium 与既有 override 一致 + 去项目化扫描 0 命中 + install
+双副本同步。
+
+## 🆕 v3.21 增量（2026-09-03，WebKit 审计复盘缺陷修复·第二批次）
+
+> 设计文档: `docs/design/REQ_V3_21.md` + `SWR_V3_21.md` +
+> `SYSTEM_DESIGN_V3_21.md` + `SOFTWARE_DESIGN_V3_21.md` + `BIAS_EVAL_V3_21.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型。
+> 案例支撑：/root/WebKit/.audit_results/lessons.md §一补第 7/8/9 条
+> （本版消化完毕 WebKit 批次全部报漏条目，v3.21 为 WebKit 批次收官版）。
+
+### 三项修复（全部条款级，零新工具/零新阶段/零新门禁）
+1. **探针→可行性路由前移**（SWR-V3.21-001）：R0 探针落盘后、R3 派发前输出
+   empirical_feasibility 表（三轨）；R5 harness 目标清单在 R3 定；探针含
+   no-* 运行面缺失时向用户报预期 NEEDS_REVIEW 占比 + 三选一决策点
+   （决策权在用户）；static-only 轨证伪票价值明示
+2. **R1 谓词矛盾扫描**（SWR-V3.21-002）：报告定稿前对每个 REACHABLE finding
+   检查其是否否定 R1 surface 阻断谓词——命中生成 contradiction record 并
+   反向测绘该面；固定 grep 清单辅助，语义判定主代理裁决
+3. **lessons 回填断链三连修**（SWR-V3.21-003）：recorder 渲染移除悬空
+   "待回填"指向（W6_MORE_LANGS_FINDINGS 为 v3.16.1 冻结档案）；蒸馏与收官
+   同周期绑定；skill-optimizer 阶段 0 增 DDL 消化条款（每份 lessons.md 条目
+   必须在本次启动缺陷清单中出现或显式裁除，不得静默跳过）
+
+### 验收判据（Phase 3.21）
+全量回归全绿（423 基线 + test_v3210 新增 7 用例）+ 旧队列复跑 assert_ledger
+零新增告警 + recorder 渲染无悬空待回填 + 新条款段零项目名（grep 断言）+
+install 双副本同步。
+
+
+## 🆕 v3.26 增量（2026-09-07，三轮评估 P0 交付链与防漂移修复）
+
+> 设计文档: `docs/design/REQ_V3_26.md` + `SWR_V3_26.md` +
+> `SYSTEM_DESIGN_V3_26.md` + `SOFTWARE_DESIGN_V3_26.md` + `BIAS_EVAL_V3_26.md`。
+> 缺陷修复版：不改变阶段骨架、六门禁①-⑧判据语义、队列数据模型主体；
+> 运行时模块业务逻辑零改动。TOOLING 3.26。
+> 案例支撑：三轮评估（钱学森系统工程视角）取证实录——未提交覆盖账本已装至
+> 运行时、SKILL.md check_no_cjk 引用歧义漏网（466 测试全绿未拦截）、
+> "TOOLING 3.25" 在 SKILL.md 全文缺失（漂移两版旧案同形态复发）、
+> 根目录 REQUIREMENTS_TRACKING.md 孤儿副本脱节两版。
+
+1. **install.sh git 前置守卫（SWR-V3.26-001, D-1）**：dev 仓库工作树脏
+   （`git status --porcelain` 非空）→ 拒绝安装并输出脏文件清单；
+   `--allow-dirty` 显式豁免；非 git 仓库跳过。拒绝级依据：v3.16 warn →
+   v3.22 复发史证明 warn 级不足。不自动改写（不自动 commit）。
+2. **doc-lint 散文引用网补孔（SWR-V3.26-002, D-2）**：SKILL.md 全部
+   `tools/<f>.py` 引用必须本地存在，或同行标注「交付至 <skill>」且兄弟
+   skill 目录核实文件真实存在（防装饰性标注）。check_no_cjk 引用已标注
+   交付至 cve-ghsa-draft skill 目录。
+3. **SKILL.md↔TOOLING 一致性断言（SWR-V3.26-003, D-3）**：双断言——
+   ①`"TOOLING <版本>"` 必须出现在 SKILL.md ②最新 🆕 增量段头版本号 ==
+   TOOLING_VERSION。未来版本链只动代码不动文档即红。
+4. **实例清理（SWR-V3.26-004/005, D-4/D-5）**：覆盖账本欠账数据提交入库
+   （python 8→37、shell +1、other 12→13 等）；根目录 REQUIREMENTS_TRACKING.md
+   孤儿副本删除（权威唯一化至 docs/design/）。
+
+### 验收判据（Phase 3.26）
+
+全量回归全绿（466 基线 + test_v326 新增）+ 旧队列复跑（v8/firefox/WebKit/
+MaintainWise）assert_ledger 零新增告警 + install 双副本同步 + 脏树安装被拒/
+`--allow-dirty` 放行双分支实测。阶段 6 验收审计：用户提供未审计新项目后
+执行，再判定合并主分支。
+
+## 🆕 v3.27 增量（2026-09-08，QuickJS 验收审计复盘·知识基座补种）
+
+> 设计文档: `docs/design/REQ_V3_27.md` + `SWR_V3_27.md` +
+> `SYSTEM_DESIGN_V3_27.md` + `SOFTWARE_DESIGN_V3_27.md` + `BIAS_EVAL_V3_27.md`。
+> 内容型增量：零新机制（无新门禁/无新阶段/无新强制义务/binder 零改动）；
+> 运行时模块业务逻辑零改动。TOOLING 3.27。
+> 案例支撑：v3.26 阶段 6 验收审计（QuickJS）lessons §一 2/3 条——"未计数裸
+> 分配"三站点同族旁路（worker 子 rt/SAB backing/消息队列拷贝）、子上下文
+> 资源参数不继承 + 哨兵 fail-open、反序列化计数 int 回绕（4KB 载荷确定性
+> SIGSEGV）；§一 4/5 条为正向确认保持；§一 1 条取证裁除（R4 时序与发现无关）。
+
+1. **矩阵 C×RESOURCE-DOS 补种（SWR-V3.27-001/002, D-1/D-2）**：patterns 追加
+   "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一
+   枚举"；pitfalls 追加"子执行上下文（worker/线程/子 rt）的资源参数继承
+   矩阵逐项核对; 哨兵值语义 fail-open 还是 fail-closed"。
+2. **矩阵 C×MEMORY-SAFETY 补种（SWR-V3.27-003, D-3）**：pitfalls 追加
+   "序列化/反序列化读取器的尺寸计算必须 size_t 且逐项溢出检查; 计数 ≤
+   剩余输入/单元素最小占用——int 算术回绕 = 小分配大写入"。
+3. **清单 CK-LIMIT-BYPASS-ENUM（SWR-V3.27-004, D-4）**：清单 44→45——
+   binding cwe 770/789 + 多词短语 keywords（禁裸词）；5 steps 枚举
+   （强制点/裸分配站点/子上下文继承/哨兵语义/检查点先后）；
+   applies_to verifier/refuter。
+4. **R4 任务书正向确认惯例（SWR-V3.27-005, D-5）**：防御核实类条目
+   severity 一律 low、claim_type 仅枚举值（缺枚举值置 null，禁止自造
+   default_reachability 类形态）、evidence 注明核实结论 file:line。
+
+### 验收判据（Phase 3.27）
+
+test_v327 新用例全绿 + 全量回归全绿（472 基线 + 新增）+ 去项目化扫描
+0 命中（新矩阵/清单条目）+ install 双副本同步 + 资产计数 45 同步。
+
+## 🆕 v3.28 增量（2026-09-08，Top15×Top10 目标物化）
+
+> 设计文档: `docs/design/REQ_V3_28.md` + `SWR_V3_28.md` +
+> `SYSTEM_DESIGN_V3_28.md` + `SOFTWARE_DESIGN_V3_28.md` + `BIAS_EVAL_V3_28.md`。
+> 内容+加载器增量：零流水线改动、零门禁改动、裁决层零改动。TOOLING 3.28。
+> 案例支撑：用户澄清设计目标（Top15 语言 × 每语言 Top10 信息安全问题的审计
+> 与验证）+ 三轮评估诊断（目标计量单位错配/知识输入单通道/目标开环/验证不可
+> 条目级追溯——实测：34/192 格种、无一语言达 10、两轮战役 +2 格）。
+
+1. **问题粒度层 inventory（SWR-V3.28-001/002）**：
+   `assets/resources/language_issue_inventory.json`——每语言排序问题条目（pattern
+   粒度派生自已种格，36 条目真实溯源）；`language_issue_matrix.py inventory
+   <lang>` 按 (族严重度档, cwe 最大严重度, id) 机械排序，rank 不落盘
+   （排序是视图不是数据）。
+2. **seed 双通道（SWR-V3.28-004）**：`seed <json-file>` 外部权威源种格——
+   强制 source.tier/origin/date 出处、lang 枚举校验、cwe 格式校验、去项目化
+   扫描、幂等拒绝（lang+title 重复）。external_seeded 档是提示层资产，
+   **不得进入裁决层**（先例/清单/签名/harness 维持只收战役证据）。
+3. **goal 达成度视图（SWR-V3.28-003）**：`goal` 命令——每语言条目数/距
+   Top10 缺口/档位分布 + 里程碑 K1（骨架：每语言 ≥10 条带来源条目）/
+   K2（战役验证：每语言 ≥10 条 battle_confirmed）进度。
+4. **回填升档条款（SWR-V3.28-005，提示级）**：验收收官时，确认问题的 cwe
+   命中 inventory 条目 → 该条目 verify 升档 battle_confirmed（battles/
+   candidates/date 落盘）。不建自动升档机制（误匹配风险>收益）。
+
+### 验收判据（Phase 3.28）
+
+test_v328 14 用例全绿 + 全量回归全绿 + install 双副本同步。K1/K2 里程碑
+达成不属本周期验收判据（资产建设里程碑，由 goal 视图持续追踪）。
+
+## 🆕 v3.29 增量（2026-09-08，闭环接线:控制器/执行器/反馈信号）
+
+> 设计文档: `docs/design/REQ_V3_29.md` + `SWR_V3_29.md` +
+> `SYSTEM_DESIGN_V3_29.md` + `SOFTWARE_DESIGN_V3_29.md` + `BIAS_EVAL_V3_29.md`。
+> 加载器增量+数据周期:零流水线改动、零门禁改动、裁决层零改动。TOOLING 3.29。
+> 案例支撑：用户两连追问（v3.28 未提高发现能力——确认属实且语言覆盖率也未
+> 增加；工程控制论视角 v3.28 只建了变送器与设定值）——本周期补控制器
+> （gap 优先级）、执行器（CWE Top 25 2025 真实源试点种格）、输出反馈
+> （hitrate 命中率）、R2 接通、seed 双写一致性。
+
+1. **控制器（SWR-V3.29-001）**：`goal` 输出增 priority 段——误差信号优先
+   K2 battle_gap（K1 达标后自动切换），种格与选题优先补误差最大语言
+   （提示级）。
+2. **输出反馈（SWR-V3.29-002）**：`hitrate <lang> <cwe,...>` 计算审计确认
+   问题 cwe 集命中该语言 inventory 条目数——资产→发现能力的传导度量
+   （只读）。
+3. **执行器（SWR-V3.29-004）**：2025 CWE Top 25（cwe.mitre.org）真实源
+   试点种格 156 条目（16 语言 × 保守适用性映射，origin 逐条带 URL+rank），
+   经自家 seed 命令入库——inventory 36→192，K1 16/16，K2 0/16（诚实）。
+4. **seed 双写（SWR-V3.29-003）**：seed 入库 inventory 同时更新矩阵 cells
+   （缺格建格/补 pattern/并 cwe/补溯源）——双传感器一致性，测试断言。
+5. **R2 接通条款（SWR-V3.29-005，提示级，SWR-V3.18-002 语义扩展）**：
+   生成假设前执行 `cells <lang>` 与 `inventory <lang>`——cells 为已种格
+   提示，inventory 为排序问题条目（含 external_seeded 档）；external_seeded
+   条目只作假设空间提示，裁决必须以源码证据为准。
+6. **R6 命中率条款（SWR-V3.29-005，提示级）**：收官时执行
+   `hitrate <lang> <本次确认问题 cwe 列表>` 并把命中率记入 lessons 过程
+   观察段——资产→发现能力的传导度量。
+
+### 验收判据（Phase 3.29）
+
+test_v329 新增用例全绿 + 全量回归全绿 + install 双副本同步 + K1 16/16 +
+seed 双写一致性断言 + 去项目化扫描零命中。
+
+## 🆕 v3.30 增量（2026-09-08，paired_control_probe 双测对照探针）
+
+> 设计文档: `docs/design/REQ_V3_30.md` + `SWR_V3_30.md` 等。
+> 模板增量:零流水线/门禁/裁决层改动。TOOLING 3.30。
+> 案例支撑:QuickJS 验收审计 5 次现场构造同形态(对照+攻击双测, VmHWM 差分;
+> "RSS 平=测法伪影"采样坑实录)。
+
+1. **paired_control_probe（SWR-V3.30-001）**：通用双测对照探针——对照 vs 攻击
+   命令同入口/同旗标,进程树 VmHWM 峰值差分,三态判定(PAIRED_CONFIRMED /
+   NO_SIGNIFICANT_DIFF / CONTROL_FAILED)。langs:["any"],argv 必传双命令,
+   采样进程树(shell+后代——子进程漏采样修正)。
+
+### 验收判据（Phase 3.30）
+
+test_v330 8 用例全绿 + 全量回归全绿 + install 双副本同步。
+
+## 🆕 v3.31 增量（2026-09-08，人因闭环点机械化）
+
+> 设计文档: `docs/design/REQ_V3_31.md` + `SWR_V3_31.md` 等。
+> 机制修复版：不改变阶段骨架；门禁新增条件子检查 ①b（同 ③c/③d 先例）。
+> TOOLING 3.31。
+> 案例支撑：工程控制论诊断六修正（用户裁定"直接修正不重设"）——QuickJS
+> keep=0/bc=87.5% 实录、R4 产出 7/9 触发轴错配、lessons 遗留双写实录、
+> H3-F1 所有权核实反证、v3.29 接通靠人。
+
+1. **门禁 ①b（SWR-V3.31-001, D-1）**：keep=0 且 bc≥80% 时 spot_checked≥3
+   强制（assert_ledger 新参数 r2_filter 提供才检查；None→skip_note 旧队列
+   零影响）——"通道失效"与"目标干净"的机械区分。
+2. **hints 单命令（SWR-V3.31-002, D-2）**：`hints <lang>` 合并 cells+
+   inventory——R2 假设生成的唯一装载入口（单命令可查，替代双命令条款）。
+3. **lessons 单落盘（SWR-V3.31-003, D-3）**：write_lesson 落项目本地
+   .audit_results/lessons.md；仓库写入路径删除（v3.16.1 裁定执行）。
+4. **R4 触发轴扩展（SWR-V3.31-004, D-4）**：`maturity==mature 或
+   target_kind∈{library,hybrid}` → R4 并行（developing 库型目标 7/9 实录）。
+5. **equivalent ownership warn（SWR-V3.31-005, D-5）**：collect 条件校验
+   fidelity=equivalent 且缺 ownership_model → warn（不阻断不自动改写）。
+6. **四轴职责表 + R2/R4 通道边界条款（SWR-V3.31-006, D-6）**：形态判定
+   四轴各司其职；通道重叠是设计内形态（R2 广度/R4 深度，claim_nulled_by
+   主申报方承载消化）。
+
+### 验收判据（Phase 3.31）
+
+test_v331 11 用例全绿 + 全量回归全绿 + install 双副本同步 + QuickJS 队列
+复跑零新增 blocking（①b 参数 None skip）。
+
+## 🆕 v3.32 增量（2026-09-08，发现力四杠杆）
+
+> 设计文档: `docs/design/REQ_V3_32.md` + `SWR_V3_32.md` 等。
+> 提示级/数据级增量:零流水线/门禁/裁决层改动。TOOLING 3.32。
+> 案例支撑：用户问"如何依赖模型能力增强发现力"——四提议经通用性检验与
+> 因果链论证（每条对应战役观察+可证伪判据），用户裁定开做。
+
+1. **对抗枚举条款（SWR-V3.32-001, D-1, 提示级）**：hints 装载后按族 Top
+   条目做缺陷形态展开——"该缺陷形态在本目标可能藏在哪些 sink 形态"
+   （R4 族深挖 7/9 与 R2 面图 0/9 的对照实录；库型/引擎目标强制建议）。
+2. **修复驱动假设（SWR-V3.32-002, D-2, 提示级）**：`tools/fixminer.py
+   <project> [--since N]`——安全修复 commit 挖掘+账本族分类（关键词分级
+   纪律同 §1.4.5）；每族生成"同款缺陷在树内其他位置可能残留"假设；
+   只挖不判，假设由主代理生成。
+3. **证伪者 sibling 回显（SWR-V3.32-003, D-3）**：r35-collect 结果增
+   strengthened_notes + sibling_advisory（机制静态确证者主代理裁决立候选，
+   SWR-V3.19-003；不自动立候选）。
+4. **hints 加权与检索（SWR-V3.32-004, D-4）**：`hints <lang> [--kind
+   <target_kind>]`——库型/引擎目标重排内存管理族，应用目标重排注入/Web 族
+   （视图不改数据）；输出附 lessons_refs 轻量检索。
+
+### 可证伪判据（下一场战役逐条验）
+
+D-1 库型目标 R2 keep 率显著高于 0 / D-2 修复通道独立假设命中率高于面图
+通道 / D-3 含补强波次 sibling 提示稳定出现 / D-4 hints 含该语言 lessons
+引用且加权生效。任一判据证伪 → 裁除该杠杆。
+
+### 验收判据（Phase 3.32）
+
+test_v332 8 用例全绿 + 全量回归全绿 + install 双副本同步。
+
+## 🆕 v3.33 增量（2026-09-08，Servo 验收复盘十一缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_33.md` + `SWR_V3_33.md` 等。
+> 修复级增量:标注/warn/提示级——零新门禁名、零新强制义务（义务三问逐项过）。
+> TOOLING 3.33。
+> 案例支撑：servo 验收审计复盘（23 候选 16R/6U/1NR 六门禁 PASS 后判型：
+> 实现偏差 1 条 + 设计缺口 4 条 + 实现增强 2 条 + 条款 3 条 + 非缺陷 3 条——
+> "修正而非重新设计"口径延续）。
+
+1. **merge 同 id 碰撞标注（SWR-V3.33-001, D-1, 标注级）**：跨文件同 id
+   collisions 落 conflicts（kept-first-same-id）；面总数对账入 R1 收口条款。
+2. **域覆盖收口 warn（SWR-V3.33-002, D-2, 提示级）**：merge 对未测绘且无
+   空域签收的域输出 domain_unmapped——process/storage 零派发形态机械可见。
+3. **filter 产出机械校验（SWR-V3.33-003/004, D-3/D-4）**：r2_guard fidelity
+   增 focus_sink 路径存在性 + surface_ids 原样一致性（重写拒收）。
+4. **reviewed_clean 归位裁决（SWR-V3.33-005, D-5, warn 级）**：Medium+
+   findings 在 reviewed_clean 假说下输出归位提示（三选一裁决，不自动改写）。
+5. **报告去重承载终态（SWR-V3.33-006, D-6, 渲染修正）**：r3_link 承载候选
+   非 REACHABLE 时 finding 自列承载 severity。
+6. **hints 种格通道（SWR-V3.33-007, D-7, 数据级）**：lessons_refs 增种格
+   source_lessons 条目（D-4 判据 rust=0 证伪后的修复）。
+7. **fixminer 路径信号（SWR-V3.33-008, D-8, 数据级）**：文件路径信号低权重
+   加分（召回上限修复；净分>0 门槛与精度护栏不变；单次 log --stat 无性能回退）。
+8. **三条款（SWR-V3.33-009/010/011, D-9/D-10/D-11, 提示级）**：包络声明增
+   生成码类；漂移裁决依据固定 snippet 首行锚点；harness 依赖钉死/lib 名/git 面。
+
+### 验收判据（Phase 3.33）
+
+test_v333 新用例全绿 + 全量回归全绿 + 旧队列复跑 blocking=0 +
+install 双副本同步 + 阶段 6 新项目验收（等用户提供）。
+
+## 🆕 v3.34 增量（2026-09-08，文件分层重构）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_34.md` + `FILE_LAYOUT_V3_34.md` 等。
+> 结构级增量:纯移动+派生修复——零机制/门禁/义务变化 (550 用例全绿为等价证明)。
+> TOOLING 3.34。案例支撑：用户裁定——20+ 版本周期后平铺结构职责不可读，
+> 按逻辑分层重组并刷新设计文档写清上下层关系。
+
+1. **五层结构（SWR-V3.34-001）**：L0 契约 (SKILL/README/install) → L1
+   运行时 `src/` (12+1 模块) → L2 编排 `tools/` (5 CLI) → L3 资产 `assets/`
+   (resources/task_templates/templates/harness_manuals/lessons) → L4 验证
+   `tests/` → L5 文档 `docs/`。分层权威参考: `docs/design/FILE_LAYOUT_V3_34.md`。
+2. **依赖方向铁律（SWR-V3.34-002）**：L2→L1 单向 import；L1/L2 只读 L3；
+   L4 不改运行时；唯一例外 workflow_export→batch_verify（论证与注销条件见
+   SYSTEM_DESIGN_V3_34）。
+3. **路径派生单一事实源（SWR-V3.34-003）**：`src/_paths.py` 提供
+   ASSETS_DIR/RESOURCES_DIR/SKILL_ROOT——运行时资源路径一律经此派生，
+   零硬编码层位（第一原则三禁止③合规）。
+4. **层位变更四文件同步义务（SWR-V3.34-005）**：FILE_LAYOUT / _paths /
+   SKILL.md 路径引用 / install.sh 拷贝清单必须同一提交内同步。
+
+### 验收判据（Phase 3.34）
+
+550 用例全绿 + servo 旧队列复跑 blocking=0 + install 双副本同步 +
+installed 副本五层结构在位。

@@ -190,7 +190,11 @@ def test_tooling_version_consistent_with_skmd():
     text = open(SKILL_MD).read()
     assert f"TOOLING {we.TOOLING_VERSION}" in text, \
         f"SKILL.md 缺 TOOLING {we.TOOLING_VERSION} 声明 (版本链漂移)"
-    segs = re.findall(r"^## 🆕 v([\d.]+) 增量", text, re.M)
-    assert segs, "SKILL.md 无增量段"
+    # v3.35 重构: 增量段迁 docs/history/SKILL_INCREMENTS.md, 版本链漂移守卫
+    # 锚点换为 SKILL.md 版本历史表 (最新行版本 == TOOLING, 语义不变)
+    segs = re.findall(r"^\| v([\d.]+) \|", text, re.M)
+    assert segs, "SKILL.md 无版本历史表"
     assert segs[-1] == we.TOOLING_VERSION, \
-        f"最新增量段 v{segs[-1]} ≠ TOOLING {we.TOOLING_VERSION}"
+        f"版本历史表最新行 v{segs[-1]} ≠ TOOLING {we.TOOLING_VERSION}"
+    assert "docs/history/SKILL_INCREMENTS.md" in text, \
+        "SKILL.md 缺增量段档案指针 (docs/history/SKILL_INCREMENTS.md)"

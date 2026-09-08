@@ -266,7 +266,9 @@ def test_tooling_version_and_skillmd():
     spec.loader.exec_module(we)
     assert we.TOOLING_VERSION == "3.34"  # v3.13 版本链前进 (SWR-V3.13-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
-    assert "v3.9" in skill and "v3.10" in skill and "已裁除" in skill
+    assert "| v3.9 |" in skill and "| v3.10 |" in skill  # 版本历史表行
+    hist = open(os.path.join(ROOT, "docs/history/SKILL_INCREMENTS.md")).read()
+    assert "已裁除" in hist, "裁除记录须在增量段档案中可追溯"
     assert "45 条检查清单" in skill
 
 
