@@ -151,10 +151,19 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 **面覆盖前置核对（v3.22, SWR-V3.22-010）**：假设生成完成后机械核对
 `hypotheses[].surface_ids` 集合 ⊇ input_surface 全集——缺面即补生成假设
 （门禁⑦ 前置化；111/111 零缺口闭合轮 vs 缺口闭合三连重派的对照实录）。
-**语言问题矩阵提示（v3.18, SWR-V3.18-002）**：生成假设前执行
+**语言问题矩阵提示（v3.18, SWR-V3.18-002 + v3.31/32）**：生成假设前执行
 ```bash
-python3 <skill_dir>/language_issue_matrix.py hints <surface.lang>  # v3.31 (SWR-V3.31-002): cells+inventory 合并单命令——R2 假设生成的唯一装载入口
+python3 <skill_dir>/language_issue_matrix.py hints <surface.lang> [--kind <target_kind>]
 ```
+**对抗枚举条款（v3.32, SWR-V3.32-001, 提示级）**：hints 装载后，对该语言
+inventory 的各族 Top 条目逐一做缺陷形态展开——"该缺陷形态在本目标中可能
+藏在哪些 sink 形态"（对抗枚举 = 以缺陷形态为输入维度的假设生成；库型/
+引擎目标该步为强制建议——R4 族深挖 7/9 与 R2 面图 0/9 的对照实录）。
+**修复驱动假设条款（v3.32, SWR-V3.32-002, 提示级）**：目标为 git 仓库且有
+近期安全修复史时，执行 `python3 <skill_dir>/tools/fixminer.py <project>
+[--since N]`——按族分类的修复 commit 是该代码库缺陷形态的 ground truth，
+每族生成"同款缺陷在树内其他位置可能残留"的假设（修复变体复核先例，
+SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
 ——返回该语言已种格的族条目（典型漏洞形态/关键 sink/判定要点），作为
 假设空间提示（提示级，无强制义务；未种格 pending 零注入零提示）。
 矩阵回填纪律（SWR-V3.18-003）：每版本验收审计收官时把验收项目覆盖的
@@ -1903,3 +1912,34 @@ test_v330 8 用例全绿 + 全量回归全绿 + install 双副本同步。
 
 test_v331 11 用例全绿 + 全量回归全绿 + install 双副本同步 + QuickJS 队列
 复跑零新增 blocking（①b 参数 None skip）。
+
+## 🆕 v3.32 增量（2026-09-08，发现力四杠杆）
+
+> 设计文档: `docs/design/REQ_V3_32.md` + `SWR_V3_32.md` 等。
+> 提示级/数据级增量:零流水线/门禁/裁决层改动。TOOLING 3.32。
+> 案例支撑：用户问"如何依赖模型能力增强发现力"——四提议经通用性检验与
+> 因果链论证（每条对应战役观察+可证伪判据），用户裁定开做。
+
+1. **对抗枚举条款（SWR-V3.32-001, D-1, 提示级）**：hints 装载后按族 Top
+   条目做缺陷形态展开——"该缺陷形态在本目标可能藏在哪些 sink 形态"
+   （R4 族深挖 7/9 与 R2 面图 0/9 的对照实录；库型/引擎目标强制建议）。
+2. **修复驱动假设（SWR-V3.32-002, D-2, 提示级）**：`tools/fixminer.py
+   <project> [--since N]`——安全修复 commit 挖掘+账本族分类（关键词分级
+   纪律同 §1.4.5）；每族生成"同款缺陷在树内其他位置可能残留"假设；
+   只挖不判，假设由主代理生成。
+3. **证伪者 sibling 回显（SWR-V3.32-003, D-3）**：r35-collect 结果增
+   strengthened_notes + sibling_advisory（机制静态确证者主代理裁决立候选，
+   SWR-V3.19-003；不自动立候选）。
+4. **hints 加权与检索（SWR-V3.32-004, D-4）**：`hints <lang> [--kind
+   <target_kind>]`——库型/引擎目标重排内存管理族，应用目标重排注入/Web 族
+   （视图不改数据）；输出附 lessons_refs 轻量检索。
+
+### 可证伪判据（下一场战役逐条验）
+
+D-1 库型目标 R2 keep 率显著高于 0 / D-2 修复通道独立假设命中率高于面图
+通道 / D-3 含补强波次 sibling 提示稳定出现 / D-4 hints 含该语言 lessons
+引用且加权生效。任一判据证伪 → 裁除该杠杆。
+
+### 验收判据（Phase 3.32）
+
+test_v332 8 用例全绿 + 全量回归全绿 + install 双副本同步。

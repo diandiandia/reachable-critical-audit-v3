@@ -1542,8 +1542,22 @@ def stage_r35_collect(project_root, transcript_dir):
     tw = _tooling_version_warning(project_root)
     if tw:
         print(f"Warning (SWR-V3.4.4-008): {tw}", file=sys.stderr)
-    print(json.dumps({"status": "R35_COLLECTED", "candidates": sorted(by_id)},
-                     ensure_ascii=False))
+    # v3.32 (SWR-V3.32-003): strengthened 回显 + sibling 裁决提示——证伪者补强
+    # 三次产出高价值发现 (CAND-003 即证伪者产出), 收集时可见化防漏接
+    notes = {}
+    for cid in sorted(by_id):
+        st = queue["candidates"] and next(
+            (c.get("refutation", {}).get("strengthened", [])
+             for c in queue["candidates"] if c.get("id") == cid), [])
+        if st:
+            notes[cid] = st
+    result = {"status": "R35_COLLECTED", "candidates": sorted(by_id)}
+    if notes:
+        result["strengthened_notes"] = notes
+        result["sibling_advisory"] = (
+            "补强中含机制静态确证的 sibling 向量时, 主代理裁决立候选或并报告 "
+            "(SWR-V3.19-003 实质机制优先; 不自动立候选)")
+    print(json.dumps(result, ensure_ascii=False))
     return 0
 
 

@@ -63,7 +63,7 @@ def test_gate_1b_not_triggered_when_keep_nonempty():
 
 def test_hints_merged_output():
     h = lim.hints("c")
-    assert set(h.keys()) == {"lang", "cells", "inventory"}
+    assert set(h.keys()) == {"lang", "kind", "cells", "inventory", "lessons_refs"}  # v3.32 增 kind/lessons_refs
     assert h["lang"] == "c"
     assert h["cells"]  # 已种格非空
     assert len(h["inventory"]) >= 10  # K1 达标语言
@@ -128,4 +128,4 @@ def test_skmd_axis_table_and_channel_boundary():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.31"
+    assert we.TOOLING_VERSION == "3.32"

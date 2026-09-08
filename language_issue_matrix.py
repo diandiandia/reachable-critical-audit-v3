@@ -174,12 +174,46 @@ def goal_progress():
     }
 
 
-def hints(lang):
-    """v3.31 (SWR-V3.31-002): cells+inventory 合并单命令——R2 假设生成的唯一
-    装载入口 (单命令降低执行摩擦, 输出落 transcript 可查)。"""
-    return {"lang": _norm_lang(lang),
-            "cells": cells_for(lang),
-            "inventory": inventory_for(lang)}
+# v3.32 (SWR-V3.32-004): 形态加权档——hints 按 target_kind 重排 (视图不改数据)
+_KIND_BOOST = {
+    "library": ("MEMORY-SAFETY", "RESOURCE-DOS", "STATE", "RACE", "NUMERIC"),
+    "hybrid": ("MEMORY-SAFETY", "RESOURCE-DOS", "STATE", "RACE", "NUMERIC"),
+    "application": ("INJECTION", "WEB", "AUTHN", "DATA-INTEGRITY"),
+}
+
+
+def hints(lang, kind=None):
+    """v3.31 (SWR-V3.31-002) + v3.32 (SWR-V3.32-004): cells+inventory 合并
+    单命令——R2 假设生成的唯一装载入口。--kind 给定时按形态加权重排
+    inventory 序 (库型/引擎目标重内存管理族, 应用目标重注入/Web 族);
+    输出附 lessons_refs 轻量检索 (lessons 文件名含语言或族头命中)。"""
+    lg = _norm_lang(lang)
+    inv = inventory_for(lg)
+    kind = (kind or "").lower()
+    if kind in _KIND_BOOST:
+        boost = _KIND_BOOST[kind]
+        inv = sorted(inv, key=lambda e: (0 if e.get("family") in boost else 1,
+                                         _SEV_TIER.get(e.get("family", "OTHER"), 4),
+                                         _cwe_max_sev(e.get("cwe")), e.get("id", "")))
+    here = os.path.dirname(os.path.abspath(__file__))
+    lessons_dir = os.path.join(here, "lessons")
+    refs = []
+    try:
+        for fn in sorted(os.listdir(lessons_dir)):
+            if not fn.endswith(".md"):
+                continue
+            fp = os.path.join(lessons_dir, fn)
+            head = open(fp, encoding="utf-8", errors="replace").read(2000)
+            if (lg in fn.lower()
+                    or any(c.get("family") and c["family"] in head
+                           for c in cells_for(lg)[:3])):
+                refs.append("lessons/" + fn)
+    except OSError:
+        pass
+    return {"lang": lg, "kind": kind or None,
+            "cells": cells_for(lg),
+            "inventory": inv,
+            "lessons_refs": refs}
 
 
 def hitrate(lang, cwe_list):
@@ -343,7 +377,10 @@ def main(argv):
     if argv[1] == "cells":
         out = cells_for(argv[2], argv[3] if len(argv) > 3 else None)
     elif argv[1] == "hints":
-        out = hints(argv[2])
+        kind = None
+        if len(argv) > 4 and argv[3] == "--kind":
+            kind = argv[4]
+        out = hints(argv[2], kind)
     elif argv[1] == "inventory":
         out = inventory_for(argv[2])
     elif argv[1] == "seed":

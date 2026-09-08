@@ -1098,3 +1098,14 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.31-004 | R4 触发轴扩展 target_kind 感知 | 已完成 | SKILL.md + tests/test_v331.py |
 | REQ-V3.31-005 | equivalent ownership_model 条件 warn | 已完成 | tools/batch_verify.py + tests/test_v331.py |
 | REQ-V3.31-006 | 四轴职责表 + R2/R4 通道边界条款 | 已完成 | SKILL.md + tests/test_v331.py |
+
+## 系统需求（REQ-V3.32）（共 4 条）
+
+> 手工追加段（2026-09-08）。案例支撑：QuickJS R2 弱点对照实验 + 证伪者三连发现 + lessons 零装载实录。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.32-001 | R2 对抗枚举条款（提示级） | 已完成 | SKILL.md + tests/test_v332.py |
+| REQ-V3.32-002 | tools/fixminer.py 修复驱动挖掘 | 已完成 | tools/fixminer.py + tests/test_v332.py |
+| REQ-V3.32-003 | r35-collect strengthened 回显 + sibling 提示 | 已完成 | tools/batch_verify.py |
+| REQ-V3.32-004 | hints --kind 加权 + lessons_refs 检索 | 已完成 | language_issue_matrix.py + tests/test_v332.py |
