@@ -25,13 +25,14 @@ check_git_clean
 
 echo "安装 v3 skill: $SRC -> $DST"
 
-mkdir -p "$DST/src" "$DST/tools" "$DST/assets" "$DST/tests" "$DST/docs/legacy"
+mkdir -p "$DST/src" "$DST/tools" "$DST/assets" "$DST/tests" "$DST/docs/legacy" "$DST/docs/history"
 
 # v3.34 分层: L1 src/ 运行时核心, L2 tools/ 阶段 CLI, L3 assets/ 知识资产
 # (安装目录与开发仓库保持一致; .venv 不随安装管理)
 cp "$SRC"/SKILL.md "$DST/"
 cp "$SRC"/README.md "$DST/"
 cp "$SRC"/docs/legacy/SKILL_V2.1.md "$DST/docs/legacy/"
+cp -r "$SRC"/docs/history/. "$DST/docs/history/"
 cp -r "$SRC"/src/. "$DST/src/"
 cp -r "$SRC"/tools/. "$DST/tools/"
 cp -r "$SRC"/assets/. "$DST/assets/"
