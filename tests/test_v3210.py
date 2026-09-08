@@ -111,4 +111,4 @@ def test_new_clauses_deprojected():
 
 
 def test_tooling_version_321():
-    assert we.TOOLING_VERSION == "3.28"
+    assert we.TOOLING_VERSION == "3.29"

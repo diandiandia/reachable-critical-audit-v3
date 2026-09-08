@@ -1063,3 +1063,17 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.28-003 | goal 达成度视图 + K1/K2 里程碑 | 已完成 | language_issue_matrix.py + tests/test_v328.py |
 | REQ-V3.28-004 | seed 外部种格通道（出处/去项目化/幂等四校验） | 已完成 | language_issue_matrix.py + tests/test_v328.py |
 | REQ-V3.28-005 | 回填升档条款（提示级） | 已完成 | SKILL.md v3.28 增量段 |
+
+## 系统需求（REQ-V3.29）（共 5 条）
+
+> 手工追加段（2026-09-08）。规范: REQ_V3_29.md / SWR_V3_29.md /
+> SYSTEM_DESIGN_V3_29.md / SOFTWARE_DESIGN_V3_29.md。评估: BIAS_EVAL_V3_29.md。
+> 案例支撑：用户两连追问（发现能力未提高/控制论回路缺位）。DDL：无新 lessons。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.29-001 | goal priority 控制器输出（K2 误差信号优先） | 已完成 | language_issue_matrix.py + tests/test_v329.py |
+| REQ-V3.29-002 | hitrate 命中率度量命令 | 已完成 | language_issue_matrix.py + tests/test_v329.py |
+| REQ-V3.29-003 | seed 双写矩阵一致性 | 已完成 | language_issue_matrix.py + tests/test_v329.py |
+| REQ-V3.29-004 | CWE Top 25 2025 试点种格（156 条目, K1 16/16） | 已完成 | resources/language_issue_inventory.json（经 seed 命令） |
+| REQ-V3.29-005 | R2 接通 + R6 命中率条款（提示级） | 已完成 | SKILL.md v3.29 增量段 |
