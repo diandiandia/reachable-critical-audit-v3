@@ -12,6 +12,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -75,7 +76,7 @@ def test_gate3_constraint_no_auto_rewrite():
 # ---------------- D-2: R4 verdict 模板反面示例 ----------------
 
 def test_template_verdict_counterexample():
-    t = open(os.path.join(ROOT, "task_templates", "biz_hypothesis.md")).read()
+    t = open(os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")).read()
     assert "反面示例" in t and "REACHABLE / UNREACHABLE / NEEDS_REVIEW 是" in t
     assert "confirmed / reviewed_clean / not_applicable" in t
 
@@ -83,7 +84,7 @@ def test_template_verdict_counterexample():
 # ---------------- D-3: 构造器链量级清单条目 ----------------
 
 def test_checklist_constructor_chain_item():
-    d = json.load(open(os.path.join(ROOT, "resources", "checklist_library.json")))
+    d = json.load(open(os.path.join(ROOT, "assets", "resources", "checklist_library.json")))
     c = [x for x in d["checklists"] if x["id"] == "CK-CHECKPOINT-AFTER-ACCUM"][0]
     assert any("构造器链" in s and "急切分配" in s for s in c["steps"])
 
@@ -107,7 +108,7 @@ def test_sibling_ledger_detection_dev_shape():
     other = bv._sibling_skill_ledger(os.path.join(ROOT, "x"))
     # 任意子路径: 函数推导 installed 副本路径; 断言返回 None 或合法路径形态
     assert other is None or other.endswith(
-        os.path.join("resources", "issue_coverage_matrix.json"))
+        os.path.join("assets", "resources", "issue_coverage_matrix.json"))
 
 
 def test_sibling_ledger_detection_unknown_dir():
@@ -117,4 +118,4 @@ def test_sibling_ledger_detection_unknown_dir():
 # ---------------- 版本链 ----------------
 
 def test_tooling_version_316():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

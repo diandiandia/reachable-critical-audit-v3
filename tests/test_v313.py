@@ -11,6 +11,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -49,7 +50,7 @@ def _cand(cid, summary="", cwe=None, claim="other"):
 # ---- SWR-V3.13-001: 账本族与锚定修正 ----
 
 def test_ledger_new_families_and_rows():
-    ledger = json.load(open(os.path.join(ROOT, "resources",
+    ledger = json.load(open(os.path.join(ROOT, "assets", "resources",
                                          "issue_coverage_matrix.json")))
     assert ledger["families"]["NUMERIC"]["cwe"] == [191, 369, 681, 697]
     assert ledger["families"]["ERROR-HANDLING"]["cwe"] == [457, 665]
@@ -174,7 +175,7 @@ def test_no_bare_word_false_binds():
 # ---- SWR-V3.13-005: 去项目化 ----
 
 def test_new_checklists_deproject():
-    d = json.load(open(os.path.join(ROOT, "resources", "checklist_library.json")))
+    d = json.load(open(os.path.join(ROOT, "assets", "resources", "checklist_library.json")))
     items = [c for c in d["checklists"] if c["id"] in _V313_CKS]
     assert len(items) == 4
     for it in items:
@@ -188,7 +189,7 @@ def test_new_checklists_deproject():
 # ---- SWR-V3.13-006: 版本链 ----
 
 def test_tooling_version_and_skillmd_counts():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.13 增量" in skill
     assert "45 条检查清单" in skill and "18 条裁决先例" in skill

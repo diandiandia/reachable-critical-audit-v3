@@ -13,6 +13,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -217,7 +218,7 @@ def test_scope_consumer_prefers_affected_dirs():
 # ---------------- D-9/D-10/D-11: 清单与先例新条目 ----------------
 
 def test_checklist_new_entries_present():
-    d = json.load(open(os.path.join(ROOT, "resources", "checklist_library.json")))
+    d = json.load(open(os.path.join(ROOT, "assets", "resources", "checklist_library.json")))
     by_id = {c["id"]: c for c in d["checklists"]}
     assert "CK-VENDORED-CONTRACT" in by_id
     assert any("对照组" in s for s in by_id["CK-EMPIRICAL-SCOPE"]["steps"])
@@ -225,7 +226,7 @@ def test_checklist_new_entries_present():
 
 def test_precedent_guard_subset_present_and_matches():
     import precedent_library as pl
-    d = json.load(open(os.path.join(ROOT, "resources", "precedent_library.json")))
+    d = json.load(open(os.path.join(ROOT, "assets", "resources", "precedent_library.json")))
     assert any(p["id"] == "PREC-GUARD-SUBSET-001" for p in d["precedents"])
     hits = pl.match({"summary": "守卫封顶 上限已封 有界放大"})
     assert any(p["id"] == "PREC-GUARD-SUBSET-001" for p in hits)
@@ -234,8 +235,8 @@ def test_precedent_guard_subset_present_and_matches():
 # ---------------- D-8/D-12/D-14: 模板与注入文案 ----------------
 
 def test_template_clauses_present():
-    bh = open(os.path.join(ROOT, "task_templates", "biz_hypothesis.md")).read()
-    sm = open(os.path.join(ROOT, "task_templates", "surface_map_domain.md")).read()
+    bh = open(os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")).read()
+    sm = open(os.path.join(ROOT, "assets", "task_templates", "surface_map_domain.md")).read()
     assert "canonical 字段形态" in bh and "sweep_records" in bh
     assert "域空条款" in sm and "empty_domain_reason" in sm
 
@@ -250,4 +251,4 @@ def test_resurrect_prompt_dimensions_present():
 # ---------------- 版本链 ----------------
 
 def test_tooling_version_315():
-    assert we.TOOLING_VERSION == "3.33"  # v3.16 版本链前进
+    assert we.TOOLING_VERSION == "3.34"  # v3.16 版本链前进

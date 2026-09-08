@@ -28,21 +28,21 @@ TEMPLATES = {
         "attack": "发送仅含帧头的 ws 帧（声明大长度、零 payload），观测服务端 RSS 跳变",
         "metrics": ["VmRSS_before", "VmRSS_after", "server_alive"],
         "judgement": "RSS 增量 ≈ 声明长度 → 预分配确认",
-        "script": "templates/harness/ws_frame_alloc.py",
+        "script": "assets/templates/harness/ws_frame_alloc.py",
     },
     "ws_frame_accum": {
         "langs": ["rust", "kotlin", "scala"],
         "attack": "声明大帧长 + 慢速流式喂数据，逐秒采样 RSS",
         "metrics": ["VmRSS_timeline", "delivery_rate", "server_alive"],
         "judgement": "RSS 随接收字节线性增长 → 累积确认",
-        "script": "templates/harness/ws_frame_accum.py",
+        "script": "assets/templates/harness/ws_frame_accum.py",
     },
     "xss_path_sim": {
         "langs": ["perl", "php", "python"],
         "attack": "复刻精确代码路径（解码/清洗/输出）验证载荷存活",
         "metrics": ["payload_survives", "rendered_output"],
         "judgement": "载荷完整存活于输出属性 → XSS 确认",
-        "script": "templates/harness/xss_path_sim.pl",
+        "script": "assets/templates/harness/xss_path_sim.pl",
     },
     # v3.2.2 (REQ-V3.2.2-008): parser-fuzz——C/C++ 解析器 crash 声称类。
     # mbedtls 审计实战模板化 (asn1_get_len ASan harness 2M+ 输入零越界)
@@ -52,7 +52,7 @@ TEMPLATES = {
                   "随机缓冲 + 长度字段极值前缀 + 截断矩阵轰炸",
         "metrics": ["asan_findings", "ubsan_findings", "rounds", "exit"],
         "judgement": "任一 ASan/UBSan 报告 → OOB 确认；零报告 + 拒绝语义正确 → 防御确认",
-        "script": "templates/harness/parser_fuzz_c.py",
+        "script": "assets/templates/harness/parser_fuzz_c.py",
     },
     # v3.6 (P2-⑧): resource_rate_probe——通用协议级速率灌注探针。
     # 8 语言专属模板裁减后提炼的 1 个协议级通用模板 (langs:["any"] 无机械消费者,
@@ -67,7 +67,7 @@ TEMPLATES = {
         "metrics": ["control_peak_hwm_kb", "attack_peak_hwm_kb", "ratio", "verdict"],
         "judgement": "attack_peak >= control_peak * threshold → PAIRED_CONFIRMED; "
                      "对照组退出码非 0 → CONTROL_FAILED (不可比)",
-        "script": "templates/harness/paired_control_probe.py",
+        "script": "assets/templates/harness/paired_control_probe.py",
     },
     "resource_rate_probe": {
         "langs": ["any"],
@@ -76,7 +76,7 @@ TEMPLATES = {
         "metrics": ["rss_timeline", "rejected", "delivery_rate", "monotonic", "recovers"],
         "judgement": "RSS 单调上涨无平台期 / 停止后不回落 → 无界累积确认; "
                      "拒绝计数上升 → 资源边界信号 (verdict 供主代理裁决)",
-        "script": "templates/harness/resource_rate_probe.py",
+        "script": "assets/templates/harness/resource_rate_probe.py",
     },
     # v3.17 (SWR-V3.17-004): differential——通用差分执行探针。
     # 同一语料 × N 组运行配置 (优化层级/编译旗标/特性开关/GC 模式) 比对分歧;
@@ -90,7 +90,7 @@ TEMPLATES = {
         "metrics": ["divergent", "consistent", "per_config", "diff"],
         "judgement": "任一输入在配置间结果分歧 → 分歧确认 (供 verifier 定级, "
                      "分歧 ≠ 漏洞成立); 零分歧 → 该配置轴下一致性确认",
-        "script": "templates/harness/differential_probe.py",
+        "script": "assets/templates/harness/differential_probe.py",
     },
 }
 
@@ -193,7 +193,8 @@ def apply_result(candidate, result):
 # ---------------- v3.1 增量 (SWR-V3.1-060~064) ----------------
 
 EMPIRICAL_SCOPES = ("mechanism", "function_body", "full_chain", "e2e")
-MANUAL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "harness_manuals")
+from _paths import ASSETS_DIR, RESOURCES_DIR, SKILL_ROOT
+MANUAL_DIR = os.path.join(ASSETS_DIR, "harness_manuals")
 _SENTINEL_MARKERS = ("max_value", "-1", "哨兵", "sentinel", "usize::max", "long.max",
                      "int64.max", "uint32.max")
 

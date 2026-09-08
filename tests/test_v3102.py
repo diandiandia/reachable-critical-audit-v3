@@ -11,6 +11,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -282,10 +283,10 @@ def test_platform_detection_signals():
 # ---- SWR-V3.10.2-019: 实证防误伤样板 ----
 
 def test_parser_fuzz_safety_note():
-    tpl = open(os.path.join(ROOT, "templates", "harness",
+    tpl = open(os.path.join(ROOT, "assets", "templates", "harness",
                             "parser_fuzz_c.py")).read()
     assert "复现安全性" in tpl and "ulimit -v" in tpl
-    manual = open(os.path.join(ROOT, "harness_manuals", "c.md")).read()
+    manual = open(os.path.join(ROOT, "assets", "harness_manuals", "c.md")).read()
     assert "资源防护样板" in manual and "RLIMIT_AS" in manual
 
 

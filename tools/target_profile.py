@@ -42,6 +42,7 @@ def _scan_files(root):
     parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if parent not in sys.path:
         sys.path.insert(0, parent)
+        sys.path.insert(0, os.path.join(parent, "src"))
     import generation_registry as gr
     exts = gr.merged_view(root)
     counts = {}
@@ -116,6 +117,7 @@ def recommend(root):
     parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if parent not in sys.path:
         sys.path.insert(0, parent)
+        sys.path.insert(0, os.path.join(parent, "src"))
     import generation_registry as gr
     reg = gr.load()
     known = {e["ext"]: e for e in reg.get("dsl_entries", [])}

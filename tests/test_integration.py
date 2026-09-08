@@ -4,6 +4,7 @@
 import json, os, sys, tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import surface_mapper, signature_matcher, signature_lib, evidence_ledger, harness_runner
 import batch_verify as bv

@@ -13,6 +13,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -70,7 +71,7 @@ def test_ledger_idempotent_merge_guidance(tmp_path, capsys):
     # 全量测试时每次烧一个新 tmp_path hash 到账本 sources (双副本同步验收
     # 实测抓出; test_batch_verify_v3 同款防污染先例)
     import os as _os
-    _ledger_path = _os.path.join(ROOT, "resources", "issue_coverage_matrix.json")
+    _ledger_path = _os.path.join(ROOT, "assets", "resources", "issue_coverage_matrix.json")
     _snapshot = open(_ledger_path).read()
     try:
         _run_ledger_guidance(tmp_path, capsys)
@@ -229,6 +230,6 @@ def test_skillmd_guidance_texts():
 # ---- SWR-V3.14-009: 版本链 ----
 
 def test_tooling_version_v314():
-    assert we.TOOLING_VERSION == "3.33"  # v3.15 版本链前进
+    assert we.TOOLING_VERSION == "3.34"  # v3.15 版本链前进
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.14 增量" in skill

@@ -23,6 +23,8 @@ import os
 import re
 import sys
 
+from _paths import ASSETS_DIR, RESOURCES_DIR
+
 _DATA = None
 _INV = None
 
@@ -45,9 +47,8 @@ _DEPROJECT_TOKENS = ("quickjs", "qjs", "bjson", "sinatra", "lighttpd", "mbedtls"
 # v3.29 (SWR-V3.29-003): cwe→family 映射——从覆盖账本 JSON 派生 (单一事实源,
 # 与 tools/batch_verify fam_map 同源, 零重复维护)
 def _build_cwe_family():
-    here = os.path.dirname(os.path.abspath(__file__))
     try:
-        with open(os.path.join(here, "resources", "issue_coverage_matrix.json"),
+        with open(os.path.join(RESOURCES_DIR, "issue_coverage_matrix.json"),
                   encoding="utf-8") as f:
             led = json.load(f)
         m = {}
@@ -75,8 +76,7 @@ def load():
     global _DATA
     if _DATA is not None:
         return _DATA
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "resources", "language_issue_matrix.json")
+    path = os.path.join(RESOURCES_DIR, "language_issue_matrix.json")
     try:
         with open(path, encoding="utf-8") as f:
             _DATA = json.load(f)
@@ -90,8 +90,7 @@ def load_inventory():
     global _INV
     if _INV is not None:
         return _INV
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "resources", "language_issue_inventory.json")
+    path = os.path.join(RESOURCES_DIR, "language_issue_inventory.json")
     try:
         with open(path, encoding="utf-8") as f:
             _INV = json.load(f)
@@ -195,8 +194,7 @@ def hints(lang, kind=None):
         inv = sorted(inv, key=lambda e: (0 if e.get("family") in boost else 1,
                                          _SEV_TIER.get(e.get("family", "OTHER"), 4),
                                          _cwe_max_sev(e.get("cwe")), e.get("id", "")))
-    here = os.path.dirname(os.path.abspath(__file__))
-    lessons_dir = os.path.join(here, "lessons")
+    lessons_dir = os.path.join(ASSETS_DIR, "lessons")
     refs = []
     try:
         for fn in sorted(os.listdir(lessons_dir)):
@@ -291,8 +289,7 @@ def seed_entries(path):
         existing.add((e.get("lang"), e.get("title")))
         added.append(e.get("id"))
     if added:
-        here = os.path.dirname(os.path.abspath(__file__))
-        out = os.path.join(here, "resources", "language_issue_inventory.json")
+        out = os.path.join(RESOURCES_DIR, "language_issue_inventory.json")
         with open(out, "w", encoding="utf-8") as f:
             json.dump(inv, f, ensure_ascii=False, indent=1)
         # v3.29 (SWR-V3.29-003): 双写矩阵 cells (传感器一致性)
@@ -321,7 +318,7 @@ def seed_entries(path):
             origin = f"{src.get('origin')} (external_seeded {src.get('date')})"
             if origin not in cell.setdefault("source_lessons", []):
                 cell["source_lessons"].append(origin)
-        mout = os.path.join(here, "resources", "language_issue_matrix.json")
+        mout = os.path.join(RESOURCES_DIR, "language_issue_matrix.json")
         with open(mout, "w", encoding="utf-8") as f:
             json.dump(matrix, f, ensure_ascii=False, indent=1)
     return {"added": added, "rejected": rejected}

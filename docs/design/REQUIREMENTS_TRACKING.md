@@ -1127,3 +1127,17 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.33-009 | 包络边界声明增生成码类（提示级） | 已完成 | SKILL.md + tests/test_v333.py |
 | REQ-V3.33-010 | 漂移裁决依据固定 snippet 首行锚点（提示级） | 已完成 | SKILL.md + tests/test_v333.py |
 | REQ-V3.33-011 | harness 依赖钉死/lib 名/git 面条款（提示级） | 已完成 | SKILL.md + tests/test_v333.py |
+
+## 系统需求（REQ-V3.34）（共 6 条）
+
+> 手工追加段（2026-09-08）。案例支撑：用户裁定——平铺结构 20+ 版本周期后
+> 职责不可读, 按逻辑分层重组 (L0-L5) 并刷新设计文档写清上下层关系。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.34-001 | 五层结构 (L0 契约/L1 运行时/L2 编排/L3 资产/L4 验证/L5 文档) | 已完成 | git mv + FILE_LAYOUT_V3_34.md |
+| REQ-V3.34-002 | 依赖方向铁律 L2→L1 单向 + 唯一例外论证 | 已完成 | src/_paths.py + SYSTEM_DESIGN_V3_34.md |
+| REQ-V3.34-003 | 路径派生单一事实源 src/_paths.py | 已完成 | 7 模块改经 _paths 派生 |
+| REQ-V3.34-004 | 纯移动零语义变化 (550 全绿 + 旧队列 blocking=0) | 已完成 | pytest 550 passed |
+| REQ-V3.34-005 | 层位变更四文件同步义务 | 已完成 | v3.34 提交含四处同步 |
+| REQ-V3.34-006 | 设计文档刷新 (分层权威参考 + 分层架构) | 已完成 | FILE_LAYOUT/SYSTEM_DESIGN_V3_34 |

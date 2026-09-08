@@ -12,6 +12,7 @@ import contextlib
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
+sys.path.insert(0, os.path.join(WORKSPACE, "src"))
 sys.path.insert(0, os.path.join(WORKSPACE, "tools"))
 
 import batch_verify as bv
@@ -176,7 +177,7 @@ def test_validate_code_line_anchor_off_by_one_still_ok():
 # ---- SWR-V3.8-009/010: 任务书契约固化 ----
 
 def test_surface_map_domain_template_contracts():
-    tpl = open(os.path.join(WORKSPACE, "task_templates",
+    tpl = open(os.path.join(WORKSPACE, "assets", "task_templates",
                             "surface_map_domain.md")).read()
     assert "五域一律输出下方 canonical 包裹形态" in tpl
     assert '"type":"boundary"' in tpl
@@ -186,7 +187,7 @@ def test_surface_map_domain_template_contracts():
 
 
 def test_biz_hypothesis_template_contracts():
-    tpl = open(os.path.join(WORKSPACE, "task_templates",
+    tpl = open(os.path.join(WORKSPACE, "assets", "task_templates",
                             "biz_hypothesis.md")).read()
     assert "禁止自创" in tpl and "PARTIAL" in tpl
     assert "[refuted]" in tpl
@@ -342,6 +343,6 @@ def test_validate_suggested_line_nearest_first():
 
 def test_surface_map_domain_has_panama():
     """SWR-V3.8-034: 任务书 boundary 示例含 panama 枚举。"""
-    tpl = open(os.path.join(WORKSPACE, "task_templates",
+    tpl = open(os.path.join(WORKSPACE, "assets", "task_templates",
                             "surface_map_domain.md")).read()
     assert "panama" in tpl

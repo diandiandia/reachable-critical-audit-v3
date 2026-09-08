@@ -12,8 +12,8 @@ import os
 import re
 import sys
 
-DEFAULT_LIB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "resources", "checklist_library.json")
+from _paths import ASSETS_DIR, RESOURCES_DIR, SKILL_ROOT
+DEFAULT_LIB = os.path.join(RESOURCES_DIR, "checklist_library.json")
 
 
 def load_library(path=None):

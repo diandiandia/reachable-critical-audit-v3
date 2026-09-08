@@ -9,6 +9,7 @@ import sys
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
+sys.path.insert(0, os.path.join(WORKSPACE, "src"))
 
 
 def _matrix_c_cells():
@@ -42,7 +43,7 @@ def test_matrix_seeded_reader_overflow_pitfall():
 
 def test_ck_limit_bypass_enum_structure():
     """SWR-V3.27-004: CK-LIMIT-BYPASS-ENUM 结构完整 + id 唯一 + 绑定规则合规。"""
-    d = json.load(open(os.path.join(WORKSPACE, "resources", "checklist_library.json")))
+    d = json.load(open(os.path.join(WORKSPACE, "assets", "resources", "checklist_library.json")))
     cks = d['checklists']
     ids = [c['id'] for c in cks]
     assert len(ids) == len(set(ids)), "清单 id 重复"
@@ -60,7 +61,7 @@ def test_ck_limit_bypass_enum_structure():
 
 def test_asset_count_45_synced():
     """SWR-V3.27-004 计数联动: 清单库 45 + SKILL.md 正文节计数同步。"""
-    d = json.load(open(os.path.join(WORKSPACE, "resources", "checklist_library.json")))
+    d = json.load(open(os.path.join(WORKSPACE, "assets", "resources", "checklist_library.json")))
     assert len(d['checklists']) == 45
     sk = open(os.path.join(WORKSPACE, "SKILL.md")).read()
     assert "45 条检查清单" in sk, "SKILL.md 清单计数未同步 45"
@@ -68,7 +69,7 @@ def test_asset_count_45_synced():
 
 def test_biz_template_convention():
     """SWR-V3.27-005: R4 任务书含正向确认条目惯例段 (severity=low + 枚举提醒)。"""
-    t = open(os.path.join(WORKSPACE, "task_templates", "biz_hypothesis.md")).read()
+    t = open(os.path.join(WORKSPACE, "assets", "task_templates", "biz_hypothesis.md")).read()
     assert "正向确认条目惯例" in t
     assert "severity 一律 low" in t
     assert "禁止自造" in t and "default_reachability" in t
@@ -77,4 +78,4 @@ def test_biz_template_convention():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

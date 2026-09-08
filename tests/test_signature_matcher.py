@@ -1,5 +1,6 @@
 import json, os, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 import signature_matcher as sm
 import signature_lib
 
@@ -214,6 +215,7 @@ def test_lang_alias_consistency():
     tools = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools")
     if tools not in sys.path:
         sys.path.insert(0, tools)
+        sys.path.insert(0, os.path.join(tools, "src"))
     import batch_verify
     shared = set(sm.EXT_LANG_ALIAS) & set(batch_verify._LANG_ALIAS)
     for k in shared:
@@ -221,7 +223,7 @@ def test_lang_alias_consistency():
             f"alias 冲突: {k} {sm.EXT_LANG_ALIAS[k]} vs {batch_verify._LANG_ALIAS[k]}"
     ledger = json.load(open(os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "resources", "issue_coverage_matrix.json")))
+        "assets", "resources", "issue_coverage_matrix.json")))
     for lang in ledger["langs"]:
         assert sm.norm_lang(lang) == batch_verify._norm_lang(lang) == lang, lang
     # L2 过滤双侧归一化: surface 'cs'/'csharp' 均命中 cs 签名标签, 'ts'/'typescript' 命中 ts 标签

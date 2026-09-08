@@ -11,6 +11,7 @@ import tempfile
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
+sys.path.insert(0, os.path.join(WORKSPACE, "src"))
 sys.path.insert(0, os.path.join(WORKSPACE, "tools"))
 
 import surface_mapper as sm
@@ -305,4 +306,4 @@ def test_skmd_v333_clauses():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

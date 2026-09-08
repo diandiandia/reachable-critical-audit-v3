@@ -13,6 +13,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "..", "tools"))
 
@@ -220,7 +221,7 @@ def test_collect_edge_gap_signal(tmp_path):
 # ---------------------------------------------------------------- SWR-007/008/010
 
 def test_biz_hypothesis_v310_texts():
-    p = os.path.join(ROOT, "task_templates", "biz_hypothesis.md")
+    p = os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")
     t = open(p).read()
     assert "tracked_surfaces" in t and "SWR-V3.10-002" in t
     assert "verdict 非 confirmed 或 findings 为空" in t
@@ -229,7 +230,7 @@ def test_biz_hypothesis_v310_texts():
 
 
 def test_hypothesis_filter_focus_sink_contract():
-    p = os.path.join(ROOT, "task_templates", "hypothesis_filter.md")
+    p = os.path.join(ROOT, "assets", "task_templates", "hypothesis_filter.md")
     t = open(p).read()
     assert "纯 `path:line`" in t and "SWR-V3.10-010" in t
 
@@ -261,11 +262,11 @@ def test_shipped_config_prompt_build_switch():
 
 
 def test_parser_fuzz_stub_doc():
-    p = os.path.join(ROOT, "templates", "harness", "parser_fuzz_c.py")
+    p = os.path.join(ROOT, "assets", "templates", "harness", "parser_fuzz_c.py")
     t = open(p).read()
     assert "有状态 sink 的最小 stub 复刻法" in t
     assert "无符号下溢语义保留" in t
-    p2 = os.path.join(ROOT, "harness_manuals", "c.md")
+    p2 = os.path.join(ROOT, "assets", "harness_manuals", "c.md")
     t2 = open(p2).read()
     assert "有状态 sink 的最小 stub 复刻法" in t2
 
@@ -273,7 +274,7 @@ def test_parser_fuzz_stub_doc():
 def test_tooling_version_v310():
     # v3.13: TOOLING_VERSION 版本链前进 (SWR-V3.13-006)
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"
     sk = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.10 增量" in sk
 

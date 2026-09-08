@@ -23,7 +23,7 @@ description: >-
 
 **禁止项**（违反即视为缺陷，必须修复）：
 1. 禁止为已审计的具体项目做专门优化：项目名、项目目录结构、项目专属 API 名不得进入运行时资产（签名 grep 列表、任务书例证、harness 模板、先例/清单正文）
-2. 禁止让运行时机制依赖单一语言特征：语言相关内容必须按 `lang` 字段分派，或写入语言手册（harness_manuals/）
+2. 禁止让运行时机制依赖单一语言特征：语言相关内容必须按 `lang` 字段分派，或写入语言手册（assets/harness_manuals/）
 3. 禁止用历史项目目录做运行时锚定：known_instances 等回归锚点只允许存在于测试 fixture（tests/），不得影响 R0 自检等运行时路径
 
 **提炼经验的正确方式（两段式）**：具体审计发现 → **去项目化提炼**（抽象到 CWE 类 / 语言无关模式 / 通用检查步骤）→ 入库。项目名只允许出现在追溯字段（lessons / 来源列）。
@@ -66,7 +66,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 1. **目录守卫**：`mkdir -p <project>/.audit_results/`；所有产物必须以 `.audit_results/` 为前缀。
 1.5 **scope 快照**（v3.2.2, REQ-V3.2.2-018）：
    ```bash
-   python3 <skill_dir>/surface_mapper.py scope snapshot <project>
+   python3 <skill_dir>/src/surface_mapper.py scope snapshot <project>
    ```
    落盘 `.audit_results/scope_snapshot.json`（子模块状态 + 关键目录存在性）。
    scope 是各阶段判定的隐含前提——子模块中途物化/依赖目录出现会使
@@ -80,7 +80,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    pom 实为 5.5.4-SNAPSHOT）。
 2. **签名库自检**（REQ-V3-010, v3.2.2 起单一事实源：只引用 selfcheck 命令）：
    ```bash
-   python3 <skill_dir>/signature_lib.py selfcheck <project>
+   python3 <skill_dir>/src/signature_lib.py selfcheck <project>
    ```
    exit 0 = 放行。两种语义：fixture 仓库（回归锚点可定位）→ anchor recall
    `hit_rate ≥ required_hit_rate`；非 fixture 仓库 → **签名库完整性自检**
@@ -110,7 +110,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 **目标**：产出 `input_surface.json`（surface 列表）。每个 surface = 一个外部数据入口，附 entry_points 源码证据。
 
 1. **架构上下文**：`python3 surface_mapper.py context <project>` → 语言/构建文件/README 摘要。
-2. **4 域并行测绘**（network/data/process/storage）：拉起 4 个子智能体，任务书模板 `task_templates/surface_map_domain.md`。
+2. **4 域并行测绘**（network/data/process/storage）：拉起 4 个子智能体，任务书模板 `assets/task_templates/surface_map_domain.md`。
    > **派发能力指引（v3.14, SWR-V3.14-007）**：优先派发具备写盘能力的子智能体
    > （允许写 `.audit_results/_r1_<域>.json`）；只读代理（如 Explore）会按落盘
    > 拦截契约以 UNWRITTEN 形态返回完整 JSON，由主代理恢复（写 recovered_by）——
@@ -163,7 +163,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 （门禁⑦ 前置化；111/111 零缺口闭合轮 vs 缺口闭合三连重派的对照实录）。
 **语言问题矩阵提示（v3.18, SWR-V3.18-002 + v3.31/32）**：生成假设前执行
 ```bash
-python3 <skill_dir>/language_issue_matrix.py hints <surface.lang> [--kind <target_kind>]
+python3 <skill_dir>/src/language_issue_matrix.py hints <surface.lang> [--kind <target_kind>]
 ```
 **对抗枚举条款（v3.32, SWR-V3.32-001, 提示级）**：hints 装载后，对该语言
 inventory 的各族 Top 条目逐一做缺陷形态展开——"该缺陷形态在本目标中可能
@@ -188,11 +188,11 @@ SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
 
 **differential 发现通道（v3.23, SWR-V3.23-004，提示级）**：surface_model=semantic/hybrid
 且 generation_layers 含 jit 的目标，R2 可（可选）对语义轴关键操作跑 `differential`
-探针（`templates/harness/differential_probe.py`：解释器 vs JIT / 多 JIT 层 / 元素类型
+探针（`assets/templates/harness/differential_probe.py`：解释器 vs JIT / 多 JIT 层 / 元素类型
 变体等运行配置比对）——比对分歧即假设（类型混淆/去优化错误类缺陷的发现通道，
 静态假设生成对该层天然弱覆盖）。实证模板复用，无新义务、无新门禁。
 
-**LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。其中『防御已到位』类裁决必须核查默认权限上下文（文件/目录/umask/监听 socket 权限、环境变量默认值、启动命令注入点）并引用源码证据行（v3.6 实录：默认 token 随机 + state 0644/socket 0777 使防御失效，R4 实证推翻 R2 误 drop）。筛选理由中的 focus sink（file:line）是后续簇化依据。
+**LLM 筛选**（REQ-V3-037）：拉起 hypothesis-filter 子智能体（模板 `assets/task_templates/hypothesis_filter.md`），按排除规则（常量参数/死代码/测试代码/语义不匹配/防御已到位）判定 keep/drop；**必须 Read/Grep 抽查 hit 真实代码，禁止只看 line_text**。其中『防御已到位』类裁决必须核查默认权限上下文（文件/目录/umask/监听 socket 权限、环境变量默认值、启动命令注入点）并引用源码证据行（v3.6 实录：默认 token 随机 + state 0644/socket 0777 使防御失效，R4 实证推翻 R2 误 drop）。筛选理由中的 focus sink（file:line）是后续簇化依据。
 
 > **keep=0 抽样复核条款（v3.4.6, SWR-V3.4.6-004）**：筛选结果 keep=0（或
 > boundary_confirmations ≥ 全量 80%）时, 主代理**必须**抽样复核 ≥3 条
@@ -202,14 +202,14 @@ SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
 > "证据裁决"铁律在空队形态下的必要延伸; R4 深度验证与 R2 交叉核对构成
 > 双保险（成熟网络库 28 条全防御、主代理抽样 HYP-L1/L12/L27 复核属实实录）。
 > 落盘保真: 筛选结果落盘为 `r2_filter_result.json` 后跑
-> `python3 <skill_dir>/r2_guard.py fidelity .audit_results/r2_filter_result.json`
+> `python3 <skill_dir>/src/r2_guard.py fidelity .audit_results/r2_filter_result.json`
 > （SWR-V3.4.6-002: bc/drop 缺 surface_ids 自动从 hypotheses.json 反查补齐）。
 
 ## 🔄 R3：候选验证（Mode W 默认）
 
 **批次选题规则（v3.4, REQ-V3.4-006）**：多项目批次开题时，先跑
 `batch_verify.py <任一项目> --stage coverage-ledger` 读覆盖账本缺口格
-（CWE 族 × 语言，`resources/issue_coverage_matrix.json`），**优先选未覆盖
+（CWE 族 × 语言，`assets/resources/issue_coverage_matrix.json`），**优先选未覆盖
 （语言 × CWE 族）格的项目**；可实证性降为可行性约束而非第一判据。
 审计闭合（R6）时执行 `--stage coverage-ledger --write` 回填账本
 （前置与时序见 R6 条款，v3.6 起强制）。
@@ -267,7 +267,7 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 | H6 | 多租户 owner 比对缺失（CWE-639/285：锁/会话/缓存归属） |
 | H7 | **信任边界专项（v3 新增）**：① 同 UID/IPC 高危操作 ② 路径语义（.. 上溯/symlink/空路径回退）越界 ③ 鉴权谓词弱化（前缀/子串/hash 替代全名） |
 
-任务书模板 `task_templates/biz_hypothesis.md`（v3.4.3 起注入实际 surface id 清单
+任务书模板 `assets/task_templates/biz_hypothesis.md`（v3.4.3 起注入实际 surface id 清单
 `{surface_id_list}` + canonical 输出示例；H7 默认值全表预算 ≤1200 字）。
 锚点 = R1 测绘的相关 surface（file:line 可直接 grep）。
 收集：`python3 tools/batch_verify.py <project> --stage r4-collect --file <合并 findings json>`；
@@ -309,7 +309,7 @@ mechanism`（缺省 real_target，旧队列零行为变化）。`equivalent` 档
 equivalent 档结论强度低于 real_target——真实目标环境可及时，对 equivalent 实证候选做抽验（建模失真曾致等价实证结论被真实目标推翻的实录）；提示级，不强制不阻断。
 补测前先核取 verifier/证伪者证据中已有实测数字——backfill 规范（v3.4.3-061）以证据文本实测为依据，同事实重复实证是执行层浪费（提示级）。
 
-1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）/ paired_control_probe（v3.30 通用双测对照探针——对照 vs 攻击命令 VmHWM 峰值差分, langs:["any"]，资源类声称配对测量）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
+1. harness 模板（`assets/templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）/ paired_control_probe（v3.30 通用双测对照探针——对照 vs 攻击命令 VmHWM 峰值差分, langs:["any"]，资源类声称配对测量）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
    **harness 依赖条款（v3.33, SWR-V3.33-011，提示级）**：(a) 独立 harness crate
    的依赖解析不与目标仓 workspace Cargo.lock 共享——版本敏感依赖必须对照目标仓
@@ -450,12 +450,12 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 ## 📚 附录：资产地图
 
-- 核心模块（skill 根）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
+- 核心模块（L1 src/）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`resources/checklist_library.json`：45 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
-- `task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
-- `tests/`：300+ 个单测/集成测试（改模块后必须全绿）；`lessons/`：全部历史教训 + W5 回归发现
+- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：45 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
+- `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
+- `tests/`：300+ 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---
@@ -503,10 +503,10 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - refutation 结果 schema 新增 strengthened/attribution_correction/note（W6 §13.6/§12.5）
 
 ### R5 变更: 语言手册 + 环境陷阱自检 + 对照矩阵
-- `harness_manuals/<lang>.md` × 15（工具链探测/版本义务/陷阱清单/阳性模式/网络依赖）
+- `assets/harness_manuals/<lang>.md` × 15（工具链探测/版本义务/陷阱清单/阳性模式/网络依赖）
 - 环境陷阱自检（stale 进程清理 + diag 路由 / daemon 线程 / env 传播验证 / PATH 检查）
 - **环境能力探针（v3.3.2, SWR-V3.3.2-060）**：实证前按声称机制跑
-  `harness_manuals/ENVIRONMENT_PROBES.md` 探针清单（syscall/依赖物化/工具替代/
+  `assets/harness_manuals/ENVIRONMENT_PROBES.md` 探针清单（syscall/依赖物化/工具替代/
   shell 陷阱）——探针失败记录 blocker 并触发 R5 可选路径裁决，不实证不申报
 - **探针→可行性路由前移（v3.21, SWR-V3.21-001）**：R0 探针落盘后、R3 派发前，
   主代理输出 empirical_feasibility 表（每候选三轨：real-target /
@@ -663,7 +663,7 @@ REACHABLE finding，检查其是否否定任一 R1 surface 条目的阻断谓词
 sink 文件与调用链文件，逐对复核——语义判定由主代理裁决，不做自动改写。
 
 ```bash
-python3 lessons_recorder.py <project> --write
+python3 <skill_dir>/src/lessons_recorder.py <project> --write
 # 机械提取: 裁决纠正/降级/复活/分级重算/paraphrased 标记/验收记录——
 # 全部来自 .audit_results/ 产物证据
 ```
@@ -671,8 +671,8 @@ python3 lessons_recorder.py <project> --write
 **lessons 统一落盘位置（v3.16.1，用户裁定）**：`<project>/.audit_results/lessons.md`
 （项目本地）——审计收官时主代理在此写「对 skill 的教训」+「审计自身教训」两段；
 **skill-optimizer 从各项目 `.audit_results/lessons.md` 读取**（唯一读入口）。
-仓库 `lessons/` 目录为战役期历史档案（不再写入）；`lessons_recorder.py` 的
-仓库 lessons/ 写入路径为遗留机制，保留兼容但不再作为惯例。
+仓库 `assets/lessons/` 目录为战役期历史档案（不再写入）；`lessons_recorder.py` 的
+仓库 lessons 写入路径为遗留机制，保留兼容但不再作为惯例。
 
 1. 主代理必须**人工补充过程观察段**（agent 行为/工具链陷阱/workflow 缺陷——
    非结构化数据无法机械提取），用 `write_lesson(project, process_notes=[...])`。
@@ -799,12 +799,12 @@ test_v344.py 10 项全绿 + 全量回归零失败 + jsrsasign 队列受影响阶
   项目名只留 source_lessons 追溯字段
 - **xss_path_sim 去项目化**（SWR-V3.5-002）：AWStats 专属复刻整文件移入
   `tests/fixtures/xss_path_sim_awstats_anchor.pl`（fixture 豁免区）；
-  templates/harness/xss_path_sim.pl 重写为参数化通用骨架（argv 读 JSON 链描述）；
+  assets/templates/harness/xss_path_sim.pl 重写为参数化通用骨架（argv 读 JSON 链描述）；
   模板名不变，全部接线保持
 - **手册抽象**（SWR-V3.5-003）：harness_manuals 项目名 → 机制形态 + W6 § 引用；
   6 处 /root/ 绝对路径 → $HOME/环境变量占位
 - **运行时资产残留扫描**（SWR-V3.5-015）：signature_lib `_scan_runtime_assets()`
-  遍历 templates/ + harness_manuals/（黑名单 token 大小写不敏感 + /root/ 路径），
+  遍历 templates/ + assets/harness_manuals/（黑名单 token 大小写不敏感 + /root/ 路径），
   挂入 R0 selfcheck 完整性分支——模板/手册残留回退被机器拦截
 
 ### 偏见修复
@@ -922,7 +922,7 @@ pytest 全绿（phpseclib R0 复跑回归，不新增完整项目验收——用
   `_checklist_section`（此时 cwe/claim_type 已由 collect 落盘），CK-EMPIRICAL-SCOPE
   以 r5-semantic 绑定注入两个证伪者 prompt。resurrect 分支与 Mode A' 不加代码
   （语境/成本裁决，见 SWR_V3_6）。
-- **R2「防御已到位」核查义务**（`task_templates/hypothesis_filter.md`）：bc/防御
+- **R2「防御已到位」核查义务**（`assets/task_templates/hypothesis_filter.md`）：bc/防御
   已到位类 drop 前必须核查**默认权限上下文**（文件/目录/umask/监听 socket 权限、
   环境变量默认值、启动命令注入点）并引用源码证据行（file:line）——只看 gate
   存在性不算核查（puma HYP-005/006 误 drop 实录：默认 token 随机 + 权限上下文
@@ -941,11 +941,11 @@ pytest 全绿（phpseclib R0 复跑回归，不新增完整项目验收——用
 - **L2 词族 5 语言**：signature_library 20→25（SIG-RB-EVAL-001 / SIG-PHP-EVAL-001 /
   SIG-PERL-EXEC-001 / SIG-SCALA-UNSAFE-001 / SIG-SWIFT-UNSAFE-001）。新签名无
   确认锚点 → fixtures 以 `confirmed:false` 占位诚实簿记（不伪造 confirmed）。
-- **env 陷阱 9 语言**：`PER_LANG_ENV_TRAPS` 7→16 语言（对齐 harness_manuals/）。
+- **env 陷阱 9 语言**：`PER_LANG_ENV_TRAPS` 7→16 语言（对齐 assets/harness_manuals/）。
 - **L3 语义族脚本 token**：5 个 L3 签名 grep 补 PHP/JS/ruby/shell/python 形态
   （佐证器粗粒度 hint 设计，非判定器）。
 - **8 语言 harness 模板 → 裁减 + 提炼 1 个通用协议级模板**（用户裁决）：
-  `templates/harness/resource_rate_probe.py`（langs:["any"]）——并发连接灌注 +
+  `assets/templates/harness/resource_rate_probe.py`（langs:["any"]）——并发连接灌注 +
   逐秒 VmRSS + 拒绝计数 + delivery-rate 确认 + 停止后回落验证 + 单调性判定，
   完全去项目化（argv 必传 host/port）。
 
@@ -1472,7 +1472,7 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
 > v3.12/v3.13 纯数据族先例）。全部新字段缺省 = 现状（旧队列复跑零新增告警）。
 
 ### 生成层注册表（SWR-V3.17-001）
-- 新 `resources/generation_registry.json`（默认扩展名视图与 CODE_EXTENSIONS
+- 新 `assets/resources/generation_registry.json`（默认扩展名视图与 CODE_EXTENSIONS
   逐位一致 + 通用 DSL 族：proto/yacc/lex/fbs/ragel/asn1/idl，每条 role/generates/
   lang_family）；新 `generation_registry.py` 模块（merged_view / lang_family_for /
   provenance_for / load_target_profile）
@@ -1499,7 +1499,7 @@ exit 0（去项目化扫描绿）+ Pillow 真实队列复跑（六门禁含 ③d
   collect 缺省推导；报告行尾渲染 [语言防护]/[沙箱收敛]/[硬件隔离]
 
 ### 差分执行实证模式（SWR-V3.17-004）
-- 新 `templates/harness/differential_probe.py`（langs:["any"]，argv 驱动：
+- 新 `assets/templates/harness/differential_probe.py`（langs:["any"]，argv 驱动：
   N 组运行配置 × 共享语料 × 比较器规格）——配置轴类声称（JIT 层级/优化旗标/
   特性开关/GC 模式）的实证首选；`mixed_build.md` 补「生成物重超大型构建」章节
   （gn/ninja/bazel/meson/depot_tools 类通用流程）
@@ -1529,7 +1529,7 @@ test_v317 缺省路径用例与全量回归承载）。未审计新项目验收�
 > 空壳族）——用户裁定方案 C：流程机器不动，补数据驱动的内容基座。
 
 ### 语言问题矩阵（SWR-V3.18-001~003）
-- 新 `resources/language_issue_matrix.json`：16 语言 × 12 族 = 192 格
+- 新 `assets/resources/language_issue_matrix.json`：16 语言 × 12 族 = 192 格
   （langs/families 与 issue_coverage_matrix.json 逐位一致，测试守卫双向
   断言）；每条种格 {lang, family, status:seeded, cwes[], patterns[],
   sinks[], pitfalls[], source_lessons[]}；首版种 32 格（每格 source_lessons
@@ -1838,7 +1838,7 @@ test_v327 新用例全绿 + 全量回归全绿（472 基线 + 新增）+ 去项�
 > 条目级追溯——实测：34/192 格种、无一语言达 10、两轮战役 +2 格）。
 
 1. **问题粒度层 inventory（SWR-V3.28-001/002）**：
-   `resources/language_issue_inventory.json`——每语言排序问题条目（pattern
+   `assets/resources/language_issue_inventory.json`——每语言排序问题条目（pattern
    粒度派生自已种格，36 条目真实溯源）；`language_issue_matrix.py inventory
    <lang>` 按 (族严重度档, cwe 最大严重度, id) 机械排序，rank 不落盘
    （排序是视图不是数据）。
@@ -1998,3 +1998,28 @@ test_v332 8 用例全绿 + 全量回归全绿 + install 双副本同步。
 
 test_v333 新用例全绿 + 全量回归全绿 + 旧队列复跑 blocking=0 +
 install 双副本同步 + 阶段 6 新项目验收（等用户提供）。
+
+## 🆕 v3.34 增量（2026-09-08，文件分层重构）
+
+> 设计文档: `docs/design/SYSTEM_DESIGN_V3_34.md` + `FILE_LAYOUT_V3_34.md` 等。
+> 结构级增量:纯移动+派生修复——零机制/门禁/义务变化 (550 用例全绿为等价证明)。
+> TOOLING 3.34。案例支撑：用户裁定——20+ 版本周期后平铺结构职责不可读，
+> 按逻辑分层重组并刷新设计文档写清上下层关系。
+
+1. **五层结构（SWR-V3.34-001）**：L0 契约 (SKILL/README/install) → L1
+   运行时 `src/` (12+1 模块) → L2 编排 `tools/` (5 CLI) → L3 资产 `assets/`
+   (resources/task_templates/templates/harness_manuals/lessons) → L4 验证
+   `tests/` → L5 文档 `docs/`。分层权威参考: `docs/design/FILE_LAYOUT_V3_34.md`。
+2. **依赖方向铁律（SWR-V3.34-002）**：L2→L1 单向 import；L1/L2 只读 L3；
+   L4 不改运行时；唯一例外 workflow_export→batch_verify（论证与注销条件见
+   SYSTEM_DESIGN_V3_34）。
+3. **路径派生单一事实源（SWR-V3.34-003）**：`src/_paths.py` 提供
+   ASSETS_DIR/RESOURCES_DIR/SKILL_ROOT——运行时资源路径一律经此派生，
+   零硬编码层位（第一原则三禁止③合规）。
+4. **层位变更四文件同步义务（SWR-V3.34-005）**：FILE_LAYOUT / _paths /
+   SKILL.md 路径引用 / install.sh 拷贝清单必须同一提交内同步。
+
+### 验收判据（Phase 3.34）
+
+550 用例全绿 + servo 旧队列复跑 blocking=0 + install 双副本同步 +
+installed 副本五层结构在位。

@@ -533,6 +533,7 @@ def stage_collect(project_root, batch_id, verdicts):
             _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             if _parent not in sys.path:
                 sys.path.insert(0, _parent)
+                sys.path.insert(0, os.path.join(_parent, "src"))
             import evidence_ledger as _el
             _g, _gerrs = _el.grade_verdict(entry)
             entry["evidence_grade"] = _g
@@ -823,7 +824,7 @@ def _tooling_version_warning(project_root):
         import importlib.util
         parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         spec = importlib.util.spec_from_file_location(
-            "workflow_export", os.path.join(parent, "workflow_export.py"))
+            "workflow_export", os.path.join(parent, "src", "workflow_export.py"))
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         local = getattr(mod, "TOOLING_VERSION", None)
@@ -1176,6 +1177,7 @@ def stage_r4_collect(project_root, findings_file):
     _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if _parent not in sys.path:
         sys.path.insert(0, _parent)
+        sys.path.insert(0, os.path.join(_parent, "src"))
     queue = load_queue(project_root)
     findings = json.load(open(findings_file))
     items, norm_flags = _normalize_r4_payload(findings)
@@ -1444,6 +1446,7 @@ def stage_grade_recheck(project_root):
     _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if _parent not in sys.path:
         sys.path.insert(0, _parent)
+        sys.path.insert(0, os.path.join(_parent, "src"))
     import evidence_ledger as el
     queue = load_queue(project_root)
     changed = []
@@ -1475,6 +1478,7 @@ def stage_r35_collect(project_root, transcript_dir):
     _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if _parent not in sys.path:
         sys.path.insert(0, _parent)
+        sys.path.insert(0, os.path.join(_parent, "src"))
     import evidence_ledger as el
     import glob as _glob
     queue = load_queue(project_root)
@@ -1617,7 +1621,7 @@ def _aggregate_counts(queue, project_root):
     近似计入)——从 stage_coverage_ledger 提取, 行为零变化; 供 --write 与
     IDEMPOTENT_SKIP 的 would_be_new_counts 共用 (只算不写)。"""
     _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ledger = json.load(open(os.path.join(_parent, "resources",
+    ledger = json.load(open(os.path.join(_parent, "assets", "resources",
                                          "issue_coverage_matrix.json")))
     fam_map = {}
     for fam, spec in (ledger.get("families") or {}).items():
@@ -1686,7 +1690,8 @@ def stage_coverage_ledger(project_root, write=False):
     _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if _parent not in sys.path:
         sys.path.insert(0, _parent)
-    ledger_path = os.path.join(_parent, "resources", "issue_coverage_matrix.json")
+        sys.path.insert(0, os.path.join(_parent, "src"))
+    ledger_path = os.path.join(_parent, "assets", "resources", "issue_coverage_matrix.json")
     if not os.path.exists(ledger_path):
         print("Error: resources/issue_coverage_matrix.json 缺失", file=sys.stderr)
         return 1
@@ -1812,7 +1817,7 @@ def _sibling_skill_ledger(skill_dir):
             "reachable-critical-audit-v3")
     else:
         return None
-    other = os.path.join(sibling, "resources", "issue_coverage_matrix.json")
+    other = os.path.join(sibling, "assets", "resources", "issue_coverage_matrix.json")
     return other if os.path.exists(other) else None
 
 
@@ -1969,7 +1974,7 @@ def stage_report(project_root, force=False):
     coverage_ledger = None
     try:
         _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        _lp = os.path.join(_parent, "resources", "issue_coverage_matrix.json")
+        _lp = os.path.join(_parent, "assets", "resources", "issue_coverage_matrix.json")
         if os.path.exists(_lp):
             ledger = json.load(open(_lp))
             langs = ledger.get("langs") or []
@@ -2705,7 +2710,7 @@ def stage_workflow_script(project_root, mode="verify", batch_size=4):
     v3.4.3 (SWR-V3.4.3-003): mode=resurrect 转调 export_script_resurrect
     (此前无 CLI 入口, 需 workflow_export 直调 + 主代理手工落盘)。"""
     export_py = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                             "workflow_export.py")
+                             "src", "workflow_export.py")
     if not os.path.exists(export_py):
         print(json.dumps({"status": "ERROR", "msg": f"workflow_export.py 缺失: {export_py}"}))
         return 1

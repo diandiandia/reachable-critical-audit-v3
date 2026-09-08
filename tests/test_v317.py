@@ -14,6 +14,7 @@ import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -86,7 +87,7 @@ def test_expand_window_default_caps_unchanged(tmp_path):
 
 
 def test_checklist_family_added():
-    lib = json.load(open(os.path.join(ROOT, "resources",
+    lib = json.load(open(os.path.join(ROOT, "assets", "resources",
                                       "checklist_library.json")))
     ids = [c["id"] for c in lib["checklists"]]
     assert len(ids) == 45
@@ -99,7 +100,7 @@ def test_checklist_family_added():
 
 def test_checklist_family_no_bare_signal_words():
     """applicability_signals.text 禁裸词 (词边界纪律: 裸 gc/barrier 子串误配)。"""
-    lib = json.load(open(os.path.join(ROOT, "resources",
+    lib = json.load(open(os.path.join(ROOT, "assets", "resources",
                                       "checklist_library.json")))
     for c in lib["checklists"]:
         if c.get("family") not in ("runtime-memory-model", "generated-code"):
@@ -113,7 +114,7 @@ def test_checklist_family_no_bare_signal_words():
 
 def test_checklist_family_deprojected():
     from signature_lib import DEPROJECT_BLACKLIST
-    lib = json.load(open(os.path.join(ROOT, "resources",
+    lib = json.load(open(os.path.join(ROOT, "assets", "resources",
                                       "checklist_library.json")))
     for c in lib["checklists"]:
         if c.get("family") not in ("runtime-memory-model", "generated-code"):
@@ -283,7 +284,7 @@ def test_tracked_ids_semantic_axis_merged(tmp_path):
 # ---- SWR-V3.17-004: 差分实证模板 ----
 
 
-PROBE = os.path.join(ROOT, "templates", "harness", "differential_probe.py")
+PROBE = os.path.join(ROOT, "assets", "templates", "harness", "differential_probe.py")
 
 
 def test_differential_probe_usage():
@@ -322,14 +323,14 @@ def test_differential_template_registered():
 
 
 def test_semantic_axis_template_section():
-    t = open(os.path.join(ROOT, "task_templates",
+    t = open(os.path.join(ROOT, "assets", "task_templates",
                           "surface_map_domain.md")).read()
     assert "语义轴测绘段" in t and "semantic_axis" in t
     assert "组件约束段" in t and "{component_scope}" in t
 
 
 def test_mixed_build_chapter():
-    t = open(os.path.join(ROOT, "harness_manuals", "mixed_build.md")).read()
+    t = open(os.path.join(ROOT, "assets", "harness_manuals", "mixed_build.md")).read()
     assert "生成物重超大型构建" in t and "differential_probe.py" in t
 
 
@@ -339,9 +340,9 @@ def test_mixed_build_chapter():
 def test_tooling_version_and_skillmd():
     import importlib.util
     spec = importlib.util.spec_from_file_location(
-        "workflow_export", os.path.join(ROOT, "workflow_export.py"))
+        "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "v3.17 增量" in skill and "45 条检查清单" in skill

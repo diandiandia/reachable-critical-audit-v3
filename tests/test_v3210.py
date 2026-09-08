@@ -14,6 +14,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 
 import lessons_recorder as lr
 import workflow_export as we
@@ -111,4 +112,4 @@ def test_new_clauses_deprojected():
 
 
 def test_tooling_version_321():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

@@ -1,5 +1,6 @@
 import json, os, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 import surface_mapper as sm
 
 def _mk_surface(repo, snippet="if (! empty($_REQUEST['target']))"):

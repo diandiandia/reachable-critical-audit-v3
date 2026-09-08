@@ -13,6 +13,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -239,7 +240,7 @@ def test_gate_3d_row_in_report(tmp_path):
 # --- 提示资产 ---
 
 def test_surface_map_template_bidirectional_clause():
-    p = os.path.join(ROOT, "task_templates", "surface_map_domain.md")
+    p = os.path.join(ROOT, "assets", "task_templates", "surface_map_domain.md")
     txt = open(p).read()
     assert "双向核实" in txt and "SWR-V3.9-010" in txt
     for tok in signature_lib.DEPROJECT_BLACKLIST:
@@ -247,7 +248,7 @@ def test_surface_map_template_bidirectional_clause():
 
 
 def test_checklist_postop_invariant():
-    p = os.path.join(ROOT, "resources", "checklist_library.json")
+    p = os.path.join(ROOT, "assets", "resources", "checklist_library.json")
     d = json.load(open(p))
     ids = [c["id"] for c in d["checklists"]]
     assert len(ids) == 45  # v3.15 增补 1 条 vendored 契约 (SWR-V3.15-011); v3.17 增补 5 条 (SWR-V3.17-006)
@@ -260,10 +261,10 @@ def test_checklist_postop_invariant():
 def test_tooling_version_and_skillmd():
     import importlib.util
     spec = importlib.util.spec_from_file_location(
-        "workflow_export", os.path.join(ROOT, "workflow_export.py"))
+        "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.33"  # v3.13 版本链前进 (SWR-V3.13-006)
+    assert we.TOOLING_VERSION == "3.34"  # v3.13 版本链前进 (SWR-V3.13-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "v3.9" in skill and "v3.10" in skill and "已裁除" in skill
     assert "45 条检查清单" in skill

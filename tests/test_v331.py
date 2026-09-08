@@ -10,6 +10,7 @@ import tempfile
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
+sys.path.insert(0, os.path.join(WORKSPACE, "src"))
 sys.path.insert(0, os.path.join(WORKSPACE, "tools"))
 
 import evidence_ledger as el
@@ -86,13 +87,13 @@ def test_write_lesson_targets_project_local():
 
 def test_write_lesson_no_repo_lessons_write():
     import glob
-    before = set(glob.glob(os.path.join(WORKSPACE, "lessons", "SKILL_LESSONS_*.md")))
+    before = set(glob.glob(os.path.join(WORKSPACE, "assets", "lessons", "SKILL_LESSONS_*.md")))
     with tempfile.TemporaryDirectory() as tmp:
         os.makedirs(os.path.join(tmp, ".audit_results"))
         json.dump({"candidates": [], "r4_findings": []},
                   open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
         lr.write_lesson(tmp)
-    after = set(glob.glob(os.path.join(WORKSPACE, "lessons", "SKILL_LESSONS_*.md")))
+    after = set(glob.glob(os.path.join(WORKSPACE, "assets", "lessons", "SKILL_LESSONS_*.md")))
     assert after == before, "仓库 lessons/ 不应新增文件"
 
 
@@ -128,4 +129,4 @@ def test_skmd_axis_table_and_channel_boundary():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

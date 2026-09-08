@@ -1,5 +1,6 @@
 import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 import harness_runner as hr
 
 def test_needs_harness_oom_trigger():
@@ -56,7 +57,7 @@ def test_env_traps_covers_16_langs():
     (旧 7 语言: cpp/cs/typescript/kotlin/scala/perl/php/powershell/shell 缺条目)。"""
     import os
     base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                        "harness_manuals")
+                        "assets", "harness_manuals")
     manuals = {f[:-3] for f in os.listdir(base)
                if f.endswith(".md")
                and f not in ("mixed_build.md", "ENVIRONMENT_PROBES.md")}
@@ -83,7 +84,7 @@ def test_cli_manual_traps_require_lang():
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for sub in ("manual", "traps"):
         p = subprocess.run(
-            [sys.executable, os.path.join(here, "harness_runner.py"), sub],
+            [sys.executable, os.path.join(here, "src", "harness_runner.py"), sub],
             capture_output=True, text=True)
         assert p.returncode == 2, (sub, p.returncode)
         assert "usage" in p.stderr, (sub, p.stderr)

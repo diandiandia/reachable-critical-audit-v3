@@ -11,8 +11,8 @@ import os
 import re
 import sys
 
-DEFAULT_LIB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "resources", "precedent_library.json")
+from _paths import ASSETS_DIR, RESOURCES_DIR, SKILL_ROOT
+DEFAULT_LIB = os.path.join(RESOURCES_DIR, "precedent_library.json")
 
 # cwe 家族 → 先例 id 硬映射（Host 采信族/absolute-form 族等跨语言家族）
 CWE_FAMILY_MAP = {

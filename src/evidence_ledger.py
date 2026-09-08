@@ -38,8 +38,8 @@ HYPOTHESES_IDS = [f"H-{i}" for i in range(1, 8)]
 EMPIRICAL_MARKERS = ("实测", "实证", "empirically", "harness", "rack-test",
                      "cargo test", "curl", "e2e", "端到端", "probe", "pytest")
 CONFIRMED_EMPIRICAL_STATUSES = ("confirmed", "empirically_confirmed", "passed")
-DEFAULT_LIB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "resources", "precedent_library.json")
+from _paths import ASSETS_DIR, RESOURCES_DIR, SKILL_ROOT
+DEFAULT_LIB = os.path.join(RESOURCES_DIR, "precedent_library.json")
 
 
 def load_lenient(path):

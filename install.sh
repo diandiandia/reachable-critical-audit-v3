@@ -25,34 +25,24 @@ check_git_clean
 
 echo "安装 v3 skill: $SRC -> $DST"
 
-mkdir -p "$DST/tools" "$DST/resources" "$DST/task_templates" "$DST/templates" "$DST/tests" "$DST/lessons" "$DST/harness_manuals" "$DST/docs/legacy"
+mkdir -p "$DST/src" "$DST/tools" "$DST/assets" "$DST/tests" "$DST/docs/legacy"
 
-# 运行时 + 规范 (安装目录与开发仓库保持一致; .venv 不随安装管理)
+# v3.34 分层: L1 src/ 运行时核心, L2 tools/ 阶段 CLI, L3 assets/ 知识资产
+# (安装目录与开发仓库保持一致; .venv 不随安装管理)
 cp "$SRC"/SKILL.md "$DST/"
 cp "$SRC"/README.md "$DST/"
 cp "$SRC"/docs/legacy/SKILL_V2.1.md "$DST/docs/legacy/"
-cp "$SRC"/surface_mapper.py "$SRC"/signature_lib.py "$SRC"/signature_matcher.py \
-   "$SRC"/generation_registry.py "$SRC"/language_issue_matrix.py \
-   "$SRC"/evidence_ledger.py "$SRC"/harness_runner.py "$SRC"/workflow_export.py \
-   "$SRC"/checklist_binder.py "$SRC"/precedent_library.py "$SRC"/r2_guard.py \
-   "$SRC"/lessons_recorder.py "$DST/"
+cp -r "$SRC"/src/. "$DST/src/"
 cp -r "$SRC"/tools/. "$DST/tools/"
-cp -r "$SRC"/resources/. "$DST/resources/"
-cp -r "$SRC"/task_templates/. "$DST/task_templates/"
-cp -r "$SRC"/templates/. "$DST/templates/"
+cp -r "$SRC"/assets/. "$DST/assets/"
 cp -r "$SRC"/tests/. "$DST/tests/"
-cp -r "$SRC"/lessons/. "$DST/lessons/"
-cp -r "$SRC"/harness_manuals/. "$DST/harness_manuals/"
 
 # 清理安装目录中已在开发仓库删除的文件 (保持单一权威)
-for d in tools resources task_templates templates tests lessons harness_manuals docs; do
+for d in src tools assets tests docs; do
   find "$DST/$d" -type f | while read -r f; do
     rel="${f#$DST/$d/}"
     [ -e "$SRC/$d/$rel" ] || rm -f "$f"
   done
-done
-find "$DST" -maxdepth 1 -name "*.py" | while read -r f; do
-  [ -e "$SRC/$(basename "$f")" ] || rm -f "$f"
 done
 # v3.2.3: 顶层 SKILL_V2.1.md 为 v2.1 时代陈旧重复 (权威副本在 docs/legacy/)
 [ -e "$DST/SKILL_V2.1.md" ] && rm -f "$DST/SKILL_V2.1.md"

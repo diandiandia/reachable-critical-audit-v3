@@ -12,13 +12,14 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
 import workflow_export as we
 
 SKILL = open(os.path.join(ROOT, "SKILL.md")).read()
-SURFACE_TMPL = open(os.path.join(ROOT, "task_templates", "surface_map_domain.md")).read()
+SURFACE_TMPL = open(os.path.join(ROOT, "assets", "task_templates", "surface_map_domain.md")).read()
 
 PROJECT_TOKENS = ("v8", "WebKit", "firefox", "Chrome", "MaintainWise", "CAND-")
 
@@ -151,4 +152,4 @@ def test_r5_harvest_hint():
 # ---- 版本链 ----
 
 def test_tooling_version_325():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

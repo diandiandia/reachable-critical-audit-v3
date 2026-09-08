@@ -11,6 +11,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -100,7 +101,7 @@ def test_contracts_zero_injection_on_no_platform():
 
 def test_contracts_injection_three_layers():
     # verify/resurrect 脚本模板引用契约注入的代码路径 (prompt 注入在 export 时执行)
-    src = open(os.path.join(ROOT, "workflow_export.py")).read()
+    src = open(os.path.join(ROOT, "src", "workflow_export.py")).read()
     assert "platform_api_contracts" in src
     # refuter 视角 1 含契约对照条款
     assert "平台 API 行为契约" in src
@@ -109,7 +110,7 @@ def test_contracts_injection_three_layers():
 # ---- SWR-V3.11-007/008: 模板产物面 ----
 
 def test_template_artifact_clause():
-    tpl = open(os.path.join(ROOT, "task_templates",
+    tpl = open(os.path.join(ROOT, "assets", "task_templates",
                             "surface_map_domain.md")).read()
     assert "生成器/模板产物面指引" in tpl and "instantiated_artifact" in tpl
     # verifier 步骤 0.5 条款
@@ -127,7 +128,7 @@ def test_runtime_version_clause():
 # ---- SWR-V3.11-012: H4 时序子项 ----
 
 def test_h4_timing_subitem():
-    tpl = open(os.path.join(ROOT, "task_templates", "biz_hypothesis.md")).read()
+    tpl = open(os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")).read()
     assert "初始化时序注入面" in tpl
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "初始化时序注入面 v3.11" in skill

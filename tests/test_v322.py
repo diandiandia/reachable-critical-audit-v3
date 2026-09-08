@@ -11,6 +11,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -182,7 +183,7 @@ def test_resurrect_export_taskfiles(tmp_path):
 
 
 def test_biz_hypothesis_landing_contract():
-    txt = open(os.path.join(ROOT, "task_templates", "biz_hypothesis.md")).read()
+    txt = open(os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")).read()
     assert "落盘契约" in txt
     assert "_r4_hN.json" in txt
     assert "default_value_table 全量保留" in txt
@@ -202,4 +203,4 @@ def test_skillmd_v322_clauses():
 
 
 def test_tooling_version_322():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

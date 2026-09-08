@@ -36,14 +36,14 @@ DEPROJECT_BLACKLIST = [
     "configdir", "serve_from",           # AWStats 时代
 ]
 
-FIXTURE_INSTANCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                      "tests", "fixtures", "known_instances.json")
+from _paths import ASSETS_DIR, SKILL_ROOT
+
+FIXTURE_INSTANCES_PATH = os.path.join(SKILL_ROOT, "tests", "fixtures", "known_instances.json")
 
 REQUIRED_FIELDS = ["sig_id", "semantic", "cwe", "platform_profiles",
                    "detection_hints", "known_instances"]
 
-DEFAULT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "resources", "signature_library.json")
+DEFAULT_PATH = os.path.join(ASSETS_DIR, "resources", "signature_library.json")
 
 
 def load(path=DEFAULT_PATH):
@@ -152,7 +152,7 @@ def _scan_runtime_assets(base=None):
     v3.5.2: task_templates/ 加入扫描 (任务书模板同 templates/harness 义务,
     黑名单 + /root/ 全扫——模板内项目名例证曾被 P1 清零)。
     返回 [(相对路径, 命中项)]。base 参数仅供测试注入临时目录。"""
-    here = base or os.path.dirname(os.path.abspath(__file__))
+    here = base or ASSETS_DIR
     hits = []
     for rel in ("templates", "harness_manuals", "task_templates", "resources"):
         base_dir = os.path.join(here, rel)
@@ -210,7 +210,7 @@ def integrity_selfcheck(data):
 def l2_manual_alignment(data):
     """v3.3 (REQ-V3.3-004, SWR-V3.3-011): L2 词族语言 ↔ harness_manuals 覆盖对齐。
     返回缺失行列表（空=对齐）。"""
-    here = os.path.dirname(os.path.abspath(__file__))
+    here = ASSETS_DIR
     manuals = set()
     mdir = os.path.join(here, "harness_manuals")
     if os.path.isdir(mdir):

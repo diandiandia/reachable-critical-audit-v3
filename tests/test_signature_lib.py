@@ -1,5 +1,6 @@
 import json, os, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 import signature_lib
 
 def test_validate_ok():
@@ -110,6 +111,7 @@ def test_v33_l2_manual_alignment():
 def test_prec_precision_gate_host_family_not_injected_for_java_config():
     import sys, os
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
     import precedent_library as pl
     # 模拟 hikaricp CAND-001 形态: Java 配置反射候选, 无 Host 头信号, 无 lang_pair
     cand = {"id": "CAND-001", "sink_type": "CWE-470",
@@ -122,6 +124,7 @@ def test_prec_precision_gate_host_family_not_injected_for_java_config():
 def test_prec_precision_gate_host_family_injected_for_host_candidate():
     import sys, os
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
     import precedent_library as pl
     cand = {"id": "CAND-002", "sink_type": "CWE-601",
             "summary": "请求 Host 头采信拼接密码重置链接", "lang": "python"}
@@ -133,6 +136,7 @@ def test_prec_precision_gate_host_family_injected_for_host_candidate():
 def test_checklist_crypto_bind():
     import sys, os
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
     import checklist_binder as cb
     r = cb.bind({"id": "C-1", "sink_type": "CWE-327", "summary": "对称加密",
                  "language": "c"})
@@ -198,7 +202,7 @@ def test_v36_l3_script_tokens_present():
     防回退: 只断言 v3.6 新增 token, 不锁全表 (L3 grep 继续演化)。"""
     import json, os, re
     d = json.load(open(os.path.join(os.path.dirname(__file__), os.pardir,
-                                    "resources", "signature_library.json")))
+                                    "assets", "resources", "signature_library.json")))
     grep = {s["sig_id"]: s["detection_hints"]["grep"] for s in d["signatures"]}
     expect = {
         "SIG-BUFFER-ACCUM-001": ["\\.=", "push\\(", "concat\\(", "\\$[A-Za-z_]+\\[\\]", "<<", ">>"],

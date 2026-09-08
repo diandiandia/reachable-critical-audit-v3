@@ -51,6 +51,7 @@ def test_selfcheck_command_runs_on_nonfixture_project():
 def test_skill_runtime_imports_are_contract_stable():
     """R0/harness 自检依赖的入口签名与实现一致 (3 元组契约)。"""
     sys.path.insert(0, WORKSPACE)
+    sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     import signature_lib
     d = signature_lib.load()
     results, rate, testable = signature_lib.smoke_test(d, ["/nonexistent-repo"])
@@ -64,6 +65,7 @@ def test_lessons_recorder_lenient_resurrection_review():
     import tempfile
     import importlib
     sys.path.insert(0, WORKSPACE)
+    sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     lr = importlib.import_module("lessons_recorder")
     with tempfile.TemporaryDirectory() as tmp:
         os.makedirs(os.path.join(tmp, ".audit_results"))
@@ -82,7 +84,7 @@ def test_checklist_pinned_dep_entry():
     """v3.4.5 (SWR-V3.4.5-004): CK-PINNED-DEP 条目结构完整 + 去项目化
     (第一原则: 资产不得携带项目专属名, 来源只留追溯字段)。"""
     import json as _json
-    p = os.path.join(WORKSPACE, "resources", "checklist_library.json")
+    p = os.path.join(WORKSPACE, "assets", "resources", "checklist_library.json")
     d = _json.load(open(p))
     entry = next(c for c in d["checklists"] if c["id"] == "CK-PINNED-DEP")
     assert entry["family"] == "vendored-deps"
@@ -99,14 +101,14 @@ def test_asset_counts_current():
     """SKILL.md 资产地图计数 = 磁盘实况 (20/29/16/4/3/18)。
     根因: SKILL.md 长期写 13 签名/19 清单/19 先例/3 模板/15 手册 (v3.5 体检低#1)。"""
     import glob
-    sigs = len(json.load(open(os.path.join(WORKSPACE, "resources", "signature_library.json")))["signatures"])
-    cks = len(json.load(open(os.path.join(WORKSPACE, "resources", "checklist_library.json")))["checklists"])
-    precs = len(json.load(open(os.path.join(WORKSPACE, "resources", "precedent_library.json")))["precedents"])
-    tmpls = len([f for f in os.listdir(os.path.join(WORKSPACE, "templates", "harness"))
+    sigs = len(json.load(open(os.path.join(WORKSPACE, "assets", "resources", "signature_library.json")))["signatures"])
+    cks = len(json.load(open(os.path.join(WORKSPACE, "assets", "resources", "checklist_library.json")))["checklists"])
+    precs = len(json.load(open(os.path.join(WORKSPACE, "assets", "resources", "precedent_library.json")))["precedents"])
+    tmpls = len([f for f in os.listdir(os.path.join(WORKSPACE, "assets", "templates", "harness"))
                  if f.endswith((".py", ".pl"))])
-    tasks = len([f for f in os.listdir(os.path.join(WORKSPACE, "task_templates"))
+    tasks = len([f for f in os.listdir(os.path.join(WORKSPACE, "assets", "task_templates"))
                  if f.endswith(".md")])
-    manuals = len(glob.glob(os.path.join(WORKSPACE, "harness_manuals", "*.md")))
+    manuals = len(glob.glob(os.path.join(WORKSPACE, "assets", "harness_manuals", "*.md")))
     text = open(SKILL_MD).read()
     assert f"{sigs} 个签名" in text, "SKILL.md 签名计数漂移"
     assert f"{precs} 条裁决先例" in text, "SKILL.md 先例计数漂移"
@@ -126,6 +128,7 @@ def test_sk_parser_fuzz_listed():
     """v3.5.2 (P4): parser_fuzz 模板注册在 harness_runner.TEMPLATES 且
     SKILL.md R5 模板枚举含 parser_fuzz (B7 保留裁决防回退)。"""
     sys.path.insert(0, WORKSPACE)
+    sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     import harness_runner
     assert "parser_fuzz" in harness_runner.TEMPLATES
     assert "parser_fuzz" in open(SKILL_MD).read()
@@ -137,6 +140,7 @@ def test_sk_resource_rate_probe_listed():
     无参执行 usage exit≠0 (argv 必传 host/port 契约)。"""
     import subprocess, sys as _sys
     sys.path.insert(0, WORKSPACE)
+    sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     import harness_runner
     assert "resource_rate_probe" in harness_runner.TEMPLATES
     spec = harness_runner.TEMPLATES["resource_rate_probe"]
@@ -181,6 +185,7 @@ def test_tooling_version_consistent_with_skmd():
     """SWR-V3.26-003: SKILL.md 声明的 TOOLING 版本与 workflow_export 一致。
     根因: 3.7→3.9 漂移两版才被发现 (SKILL.md:979); 现查证同形态缺口仍在。"""
     sys.path.insert(0, WORKSPACE)
+    sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     import workflow_export as we
     text = open(SKILL_MD).read()
     assert f"TOOLING {we.TOOLING_VERSION}" in text, \

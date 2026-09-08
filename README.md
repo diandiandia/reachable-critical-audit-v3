@@ -48,7 +48,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 起不再需要。
 skill 本体不依赖任何语言工具链；**只有 R5 实证抽验被触发时**才需要对应语言的工具链。
 工具链缺失不阻塞审计——按 §17.7 源事实级规则降级并记录 blocker（哨兵值/算术类主张接受
 源事实级；网络阻断同理）。15 种语言的工具链探测、陷阱清单与阳性模式见
-`harness_manuals/<lang>.md`，速览：
+`assets/harness_manuals/<lang>.md`，速览：
 
 | 语言 | 工具链 | 战役验证的关键事实 |
 |---|---|---|
@@ -88,8 +88,7 @@ cd /root/reachable-critical-audit-v3
 ```
 
 install.sh 行为：
-- 复制 SKILL.md + 9 个核心模块 + tools/ + resources/ + task_templates/ + templates/ +
-  harness_manuals/ + lessons/ + tests/ + docs/legacy/SKILL_V2.1.md
+- 复制 SKILL.md + src/（12 个核心模块）+ tools/ + assets/（resources/task_templates/templates/harness_manuals/lessons）+ tests/ + docs/legacy/SKILL_V2.1.md
 - **同步删除**目标目录中已不在开发仓库的文件（单一权威：开发仓库是唯一事实源）
 - 清理目标目录 `__pycache__`
 - 冒烟验证：`python3 -m pytest <dst>/tests/ -q`（`PYTHON_BIN` 环境变量可覆盖解释器）
@@ -103,7 +102,7 @@ install.sh 行为：
 # 方式 B: 手工（只要 SKILL.md + 运行时文件）
 mkdir -p ~/.claude/skills/reachable-critical-audit
 cp SKILL.md ~/.claude/skills/reachable-critical-audit/
-# 其余文件按 install.sh 的清单复制（模块/tools/resources/task_templates/templates/harness_manuals/lessons）
+# 其余文件按 install.sh 的清单复制（src/tools/assets 三层）
 ```
 
 安装后 Claude Code 自动发现该 skill（`SKILL.md` 位于
@@ -116,8 +115,8 @@ cp SKILL.md ~/.claude/skills/reachable-critical-audit/
 python3 -c "import sys; sys.path.insert(0,'<skill_dir>'); import surface_mapper, evidence_ledger; print('ok')"
 
 # 2) 资产完整（v3.1 三资产）
-python3 -c "import json; json.load(open('<skill_dir>/resources/precedent_library.json')); json.load(open('<skill_dir>/resources/checklist_library.json')); print('ok')"
-ls <skill_dir>/harness_manuals/ | wc -l    # 期望 18
+python3 -c "import json; json.load(open('<skill_dir>/assets/resources/precedent_library.json')); json.load(open('<skill_dir>/assets/resources/checklist_library.json')); print('ok')"
+ls <skill_dir>/assets/harness_manuals/ | wc -l    # 期望 18
 
 # 3) 测试全绿
 python3 -m pytest <skill_dir>/tests/ -q

@@ -12,6 +12,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -51,7 +52,7 @@ def _cand(cid, summary="", cwe=None, claim="other"):
 # ---- SWR-V3.12-001: STATE 账本族 ----
 
 def test_ledger_state_family_and_rows(tmp_path):
-    ledger = json.load(open(os.path.join(ROOT, "resources",
+    ledger = json.load(open(os.path.join(ROOT, "assets", "resources",
                                          "issue_coverage_matrix.json")))
     assert ledger["families"]["STATE"]["cwe"] == [841, 696, 670]
     state_rows = [r for r in ledger["rows"] if r["family"] == "STATE"]
@@ -136,7 +137,7 @@ def test_no_bare_word_false_positive():
 
 
 def test_state_checklists_deproject():
-    d = json.load(open(os.path.join(ROOT, "resources", "checklist_library.json")))
+    d = json.load(open(os.path.join(ROOT, "assets", "resources", "checklist_library.json")))
     items = [c for c in d["checklists"] if c["id"] in _STATE_CKS]
     assert len(items) == 4
     for it in items:
@@ -177,7 +178,7 @@ def test_precedent_state_reachable():
 # ---- SWR-V3.12-006: 版本链 ----
 
 def test_tooling_version_and_skillmd_counts():
-    assert we.TOOLING_VERSION == "3.33"  # v3.13 版本链前进 (SWR-V3.13-006)
+    assert we.TOOLING_VERSION == "3.34"  # v3.13 版本链前进 (SWR-V3.13-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "## 🆕 v3.12 增量" in skill
     assert "45 条检查清单" in skill and "18 条裁决先例" in skill

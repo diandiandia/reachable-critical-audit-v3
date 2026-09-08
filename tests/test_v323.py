@@ -12,15 +12,16 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import target_profile as tp
 import workflow_export as we
 
 SKILL = open(os.path.join(ROOT, "SKILL.md")).read()
-SURFACE_TMPL = open(os.path.join(ROOT, "task_templates", "surface_map_domain.md")).read()
-BIZ_TMPL = open(os.path.join(ROOT, "task_templates", "biz_hypothesis.md")).read()
-DIFF_PY = open(os.path.join(ROOT, "templates", "harness", "differential_probe.py")).read()
+SURFACE_TMPL = open(os.path.join(ROOT, "assets", "task_templates", "surface_map_domain.md")).read()
+BIZ_TMPL = open(os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")).read()
+DIFF_PY = open(os.path.join(ROOT, "assets", "templates", "harness", "differential_probe.py")).read()
 
 
 # ---- SWR-V3.23-001: fidelity 所有权模型核实 ----
@@ -98,8 +99,8 @@ def test_recall_regression_fixture():
         assert k in e
     assert "CWE-843" in e["cwe"]
     # 第一原则守卫: 运行时路径不得引用该 fixture
-    for fname in ("workflow_export.py", "tools/batch_verify.py",
-                  "tools/target_profile.py", "surface_mapper.py"):
+    for fname in ("src/workflow_export.py", "tools/batch_verify.py",
+                  "tools/target_profile.py", "src/surface_mapper.py"):
         fp = os.path.join(ROOT, fname)
         if os.path.exists(fp):
             assert "recall_regression_set" not in open(fp).read(), fname
@@ -119,4 +120,4 @@ def test_r4_taskbook_r2_injection():
 # ---- 版本链 ----
 
 def test_tooling_version_323():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

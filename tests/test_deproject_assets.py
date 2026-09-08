@@ -13,6 +13,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 import signature_lib
 
 WORK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +31,7 @@ def test_runtime_assets_zero_project_tokens():
 
 def test_precedent_library_fields_generic():
     """先例库五字段零项目 token 零 /root/ (A1 形状抽象防回退)。"""
-    data = json.load(open(os.path.join(WORK, "resources", "precedent_library.json")))
+    data = json.load(open(os.path.join(WORK, "assets", "resources", "precedent_library.json")))
     bad = []
     for p in data["precedents"]:
         for f in PRECEDENT_FIELDS:
@@ -47,7 +49,7 @@ def test_fixture_anchor_compliant():
     anchor = os.path.join(WORK, "tests", "fixtures", "xss_path_sim_awstats_anchor.pl")
     assert os.path.exists(anchor), "fixture 锚点缺失"
     assert "CleanXSS" in open(anchor).read()  # fixture 豁免区可保留溯源内容
-    live = open(os.path.join(WORK, "templates", "harness", "xss_path_sim.pl")).read()
+    live = open(os.path.join(WORK, "assets", "templates", "harness", "xss_path_sim.pl")).read()
     assert "CleanXSS" not in live
     assert "awstats" not in live.lower()
     assert "AWStats" not in live
@@ -56,13 +58,13 @@ def test_fixture_anchor_compliant():
 def test_known_instances_only_in_fixtures():
     """回归锚点库只允许在 tests/fixtures (三禁止③ 防回退)。"""
     assert os.path.exists(os.path.join(WORK, "tests", "fixtures", "known_instances.json"))
-    assert not os.path.exists(os.path.join(WORK, "resources", "known_instances.json"))
+    assert not os.path.exists(os.path.join(WORK, "assets", "resources", "known_instances.json"))
 
 
 def test_harness_templates_no_hardcoded_ports():
     """B1 端口参数化防回退: 模板零历史战役专属端口字面量。"""
     for fn in ("ws_frame_alloc.py", "ws_frame_accum.py"):
-        t = open(os.path.join(WORK, "templates", "harness", fn)).read()
+        t = open(os.path.join(WORK, "assets", "templates", "harness", fn)).read()
         assert "18083" not in t and "18084" not in t, fn
         assert "<host> <port>" in t or "host, port" in t, fn  # argv 必传形态
 
@@ -71,7 +73,7 @@ def test_ledger_sources_hashed():
     """v3.5.1: 覆盖账本 sources = 项目路径 sha256 前 16 hex (幂等身份),
     零绝对路径/零项目名——第一原则三禁止③ (运行时资产不落历史项目目录)。"""
     import re as _re
-    data = json.load(open(os.path.join(WORK, "resources", "issue_coverage_matrix.json")))
+    data = json.load(open(os.path.join(WORK, "assets", "resources", "issue_coverage_matrix.json")))
     srcs = data.get("sources") or []
     assert srcs, "sources 不应为空"
     for s in srcs:
@@ -109,7 +111,7 @@ def _scan_tokens(src):
 
 def test_checklist_steps_generic():
     """清单库 steps 正文零项目名 (v3.16 验收: 盲目带入 5 处清单实录的防回退)。"""
-    data = json.load(open(os.path.join(WORK, "resources", "checklist_library.json")))
+    data = json.load(open(os.path.join(WORK, "assets", "resources", "checklist_library.json")))
     bad = []
     for c in data["checklists"]:
         for i, s in enumerate(c.get("steps", [])):
@@ -135,7 +137,7 @@ def test_task_templates_generic():
 def test_workflow_export_injected_generic():
     """workflow_export 注入 prompt 文本零项目名 (v3.16 验收: 注入文本实录的防回退)。"""
     import re as _re
-    we = open(os.path.join(WORK, "workflow_export.py")).read()
+    we = open(os.path.join(WORK, "src", "workflow_export.py")).read()
     bad = []
     for m in _re.finditer(r'prompt \+= \("([^"]*)"', we):
         for t in _scan_tokens(m.group(1)):

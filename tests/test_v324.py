@@ -11,13 +11,14 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import workflow_export as we
 
 SKILL = open(os.path.join(ROOT, "SKILL.md")).read()
-SURFACE_TMPL = open(os.path.join(ROOT, "task_templates", "surface_map_domain.md")).read()
-BIZ_TMPL = open(os.path.join(ROOT, "task_templates", "biz_hypothesis.md")).read()
+SURFACE_TMPL = open(os.path.join(ROOT, "assets", "task_templates", "surface_map_domain.md")).read()
+BIZ_TMPL = open(os.path.join(ROOT, "assets", "task_templates", "biz_hypothesis.md")).read()
 FIXTURE = os.path.join(ROOT, "tests", "fixtures", "recall_regression_set.json")
 
 PROJECT_TOKENS = ("v8", "WebKit", "firefox", "Chrome", "CAND-")
@@ -94,8 +95,8 @@ def test_recall_fixture_extended():
 
 
 def test_recall_fixture_not_referenced_by_task_templates():
-    for fname in ("task_templates/biz_hypothesis.md",
-                  "task_templates/surface_map_domain.md"):
+    for fname in ("assets/task_templates/biz_hypothesis.md",
+                  "assets/task_templates/surface_map_domain.md"):
         fp = os.path.join(ROOT, fname)
         assert "recall_regression_set" not in open(fp).read(), fname
 
@@ -116,4 +117,4 @@ def test_equivalent_spotcheck_hint():
 # ---- 版本链 ----
 
 def test_tooling_version_324():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

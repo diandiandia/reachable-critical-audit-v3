@@ -9,6 +9,7 @@ import sys
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
+sys.path.insert(0, os.path.join(WORKSPACE, "src"))
 
 import harness_runner
 
@@ -21,13 +22,13 @@ def test_registered_in_templates():
 
 def test_argv_contract_missing_commands():
     p = subprocess.run([sys.executable, os.path.join(
-                        WORKSPACE, "templates/harness/paired_control_probe.py")],
+                        WORKSPACE, "assets/templates/harness/paired_control_probe.py")],
                        capture_output=True, text=True)
     assert p.returncode == 2 and "usage" in p.stderr
 
 
 def test_deproject():
-    blob = open(os.path.join(WORKSPACE, "templates/harness",
+    blob = open(os.path.join(WORKSPACE, "assets/templates/harness",
                              "paired_control_probe.py")).read()
     for tok in ("quickjs", "ktor", "actix", "awstats", "sinatra", "django",
                 "/root/"):
@@ -36,7 +37,7 @@ def test_deproject():
 
 def test_real_paired_run_confirms():
     """真实双测: 对照组 4MB 分配 vs 攻击组 32MB 分配 → PAIRED_CONFIRMED。"""
-    script = os.path.join(WORKSPACE, "templates/harness/paired_control_probe.py")
+    script = os.path.join(WORKSPACE, "assets/templates/harness/paired_control_probe.py")
     ctrl = ("python3 -c 'import time; a=[bytearray(1024*1024) for _ in range(4)]; "
             "time.sleep(0.6)'")
     atk = ("python3 -c 'import time; a=[bytearray(1024*1024) for _ in range(32)]; "
@@ -52,7 +53,7 @@ def test_real_paired_run_confirms():
 
 def test_real_paired_run_no_diff():
     """对照组与攻击组同量级 → NO_SIGNIFICANT_DIFF。"""
-    script = os.path.join(WORKSPACE, "templates/harness/paired_control_probe.py")
+    script = os.path.join(WORKSPACE, "assets/templates/harness/paired_control_probe.py")
     ctrl = "python3 -c 'import time; a=bytearray(4*1024*1024); time.sleep(0.6)'"
     atk = "python3 -c 'import time; a=bytearray(5*1024*1024); time.sleep(0.6)'"
     p = subprocess.run([sys.executable, script, ctrl, atk,
@@ -63,7 +64,7 @@ def test_real_paired_run_no_diff():
 
 
 def test_control_failed():
-    script = os.path.join(WORKSPACE, "templates/harness/paired_control_probe.py")
+    script = os.path.join(WORKSPACE, "assets/templates/harness/paired_control_probe.py")
     p = subprocess.run([sys.executable, script, "false", "true"],
                        capture_output=True, text=True)
     d = json.loads(p.stdout)
@@ -78,4 +79,4 @@ def test_skmd_listed():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

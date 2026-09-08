@@ -9,12 +9,13 @@ import sys
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
+sys.path.insert(0, os.path.join(WORKSPACE, "src"))
 
 import language_issue_matrix as lim
 
-INV = json.load(open(os.path.join(WORKSPACE, "resources",
+INV = json.load(open(os.path.join(WORKSPACE, "assets", "resources",
                                   "language_issue_inventory.json")))
-MATRIX = json.load(open(os.path.join(WORKSPACE, "resources",
+MATRIX = json.load(open(os.path.join(WORKSPACE, "assets", "resources",
                                     "language_issue_matrix.json")))
 
 
@@ -109,4 +110,4 @@ def test_skmd_r2_and_r6_clauses():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

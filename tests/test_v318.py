@@ -11,17 +11,18 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 
 import language_issue_matrix as lim
 
 
 def _ledger():
-    return json.load(open(os.path.join(ROOT, "resources",
+    return json.load(open(os.path.join(ROOT, "assets", "resources",
                                        "issue_coverage_matrix.json")))
 
 
 def _matrix():
-    return json.load(open(os.path.join(ROOT, "resources",
+    return json.load(open(os.path.join(ROOT, "assets", "resources",
                                        "language_issue_matrix.json")))
 
 
@@ -89,16 +90,16 @@ def test_stats_shape():
 
 
 def test_cli_cells_and_stats():
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "language_issue_matrix.py"),
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "src", "language_issue_matrix.py"),
                         "stats"], capture_output=True, text=True)
     assert r.returncode == 0
     assert json.loads(r.stdout)["total_cells"] == 192
-    r2 = subprocess.run([sys.executable, os.path.join(ROOT, "language_issue_matrix.py"),
+    r2 = subprocess.run([sys.executable, os.path.join(ROOT, "src", "language_issue_matrix.py"),
                          "cells", "go", "RESOURCE-DOS"], capture_output=True, text=True)
     assert r2.returncode == 0
     cells = json.loads(r2.stdout)
     assert cells and all(c["family"] == "RESOURCE-DOS" for c in cells)
-    r3 = subprocess.run([sys.executable, os.path.join(ROOT, "language_issue_matrix.py"),
+    r3 = subprocess.run([sys.executable, os.path.join(ROOT, "src", "language_issue_matrix.py"),
                          "cells"], capture_output=True, text=True)
     assert r3.returncode == 2  # 缺 lang usage
 
@@ -119,7 +120,7 @@ def test_skillmd_clauses():
 def test_tooling_version_318():
     import importlib.util
     spec = importlib.util.spec_from_file_location(
-        "workflow_export", os.path.join(ROOT, "workflow_export.py"))
+        "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

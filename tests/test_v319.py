@@ -11,6 +11,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import batch_verify as bv
@@ -90,7 +91,7 @@ def test_verifier_prompt_defect_reachability_clause():
 
 
 def test_environment_probes_sanitizer_dcheck():
-    txt = open(os.path.join(ROOT, "harness_manuals",
+    txt = open(os.path.join(ROOT, "assets", "harness_manuals",
                             "ENVIRONMENT_PROBES.md")).read()
     assert "sanitizer 构建变体与 dcheck 交互" in txt
     assert "dcheck_always_on=false" in txt
@@ -127,4 +128,4 @@ def test_skillmd_v319_clauses():
 
 
 def test_tooling_version_319():
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

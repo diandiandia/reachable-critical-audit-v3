@@ -1,5 +1,6 @@
 import json, os, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
 
@@ -177,6 +178,7 @@ def test_journal_expect_full_set_enforced():
 def test_gap_rendered_in_verify_payload():
     import tempfile, sys, os
     sys.path.insert(0, WORK)
+    sys.path.insert(0, os.path.join(WORK, "src"))
     import workflow_export as we
     tmp = tempfile.mkdtemp()
     os.makedirs(os.path.join(tmp, ".audit_results"))
@@ -196,6 +198,7 @@ def test_gap_rendered_in_verify_payload():
 def test_resurrect_sample_dump():
     import tempfile, sys, os
     sys.path.insert(0, WORK)
+    sys.path.insert(0, os.path.join(WORK, "src"))
     import workflow_export as we
     tmp = tempfile.mkdtemp()
     os.makedirs(os.path.join(tmp, ".audit_results"))
@@ -215,8 +218,9 @@ def test_resurrect_sample_dump():
 def test_coverage_ledger_write_and_idempotent():
     import tempfile, subprocess, sys, os, json as _json, shutil
     sys.path.insert(0, WORK)
+    sys.path.insert(0, os.path.join(WORK, "src"))
     # 测试写真实账本资产 → 快照/恢复, 防污染 (账本为记录型资产)
-    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    ledger_path = os.path.join(WORK, "assets", "resources", "issue_coverage_matrix.json")
     snapshot = open(ledger_path).read()
     try:
         _run_ledger_tests()
@@ -257,6 +261,7 @@ def _run_ledger_tests():
 def test_coverage_ledger_gaps_prints_crypto_gap():
     import tempfile, subprocess, sys, os, json as _json
     sys.path.insert(0, WORK)
+    sys.path.insert(0, os.path.join(WORK, "src"))
     tmp = tempfile.mkdtemp()
     os.makedirs(os.path.join(tmp, ".audit_results"))
     _json.dump({"schema_version": "3.0", "candidates": []},
@@ -276,8 +281,9 @@ def test_coverage_ledger_empty_queue_lang_from_surface():
     *xother 格, 账本失真人工修正——回退链根修。"""
     import tempfile, subprocess, sys, os, json as _json
     sys.path.insert(0, WORK)
+    sys.path.insert(0, os.path.join(WORK, "src"))
     # 测试写真实账本资产 → 快照/恢复, 防污染 (账本为记录型资产)
-    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    ledger_path = os.path.join(WORK, "assets", "resources", "issue_coverage_matrix.json")
     snapshot = open(ledger_path).read()
     try:
         tmp = tempfile.mkdtemp()
@@ -308,7 +314,8 @@ def test_coverage_ledger_derivation_chain():
     (回退链不覆盖候选级事实——回退只服务空队形态, 防破坏既有行为)。"""
     import tempfile, subprocess, sys, os, json as _json
     sys.path.insert(0, WORK)
-    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    sys.path.insert(0, os.path.join(WORK, "src"))
+    ledger_path = os.path.join(WORK, "assets", "resources", "issue_coverage_matrix.json")
     snapshot = open(ledger_path).read()
     try:
         tmp = tempfile.mkdtemp()
@@ -367,7 +374,8 @@ def test_coverage_ledger_write_blocked_r4():
     (puma 审计实录: 先回填后补标 cwe 使 INJECTION×ruby 缺口不可回写)。"""
     import tempfile, subprocess, sys, os, json as _json
     sys.path.insert(0, WORK)
-    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    sys.path.insert(0, os.path.join(WORK, "src"))
+    ledger_path = os.path.join(WORK, "assets", "resources", "issue_coverage_matrix.json")
     snapshot = open(ledger_path).read()
     try:
         tmp = tempfile.mkdtemp()
@@ -400,7 +408,8 @@ def test_coverage_ledger_write_blocked_feedback():
     声称默认明文 (零值 false)——同 test_v321 r4_feedback 冲突先例。"""
     import tempfile, subprocess, sys, os, json as _json
     sys.path.insert(0, WORK)
-    ledger_path = os.path.join(WORK, "resources", "issue_coverage_matrix.json")
+    sys.path.insert(0, os.path.join(WORK, "src"))
+    ledger_path = os.path.join(WORK, "assets", "resources", "issue_coverage_matrix.json")
     snapshot = open(ledger_path).read()
     try:
         tmp = tempfile.mkdtemp()

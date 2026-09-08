@@ -17,6 +17,8 @@ DSL 经 target_profile.generation_layers 审计期局部署名 (两段式:
 import json
 import os
 
+from _paths import RESOURCES_DIR
+
 _DEFAULT = None
 
 
@@ -25,8 +27,7 @@ def load():
     global _DEFAULT
     if _DEFAULT is not None:
         return _DEFAULT
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "resources", "generation_registry.json")
+    path = os.path.join(RESOURCES_DIR, "generation_registry.json")
     try:
         with open(path, encoding="utf-8") as f:
             _DEFAULT = json.load(f)

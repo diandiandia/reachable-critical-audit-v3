@@ -4,6 +4,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "tools"))
 
@@ -141,7 +143,7 @@ def test_collect_error_hints_r35():
 # ---- SWR-V3.4.4-005/006: R4 任务书部署布局 + 前缀契约 ----
 def test_r4_template_deployment_and_prefix():
     tpl = open(os.path.join(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__))), "task_templates", "biz_hypothesis.md")).read()
+        os.path.abspath(__file__))), "assets", "task_templates", "biz_hypothesis.md")).read()
     assert "部署布局" in tpl and "SWR-V3.4.4-005" in tpl
     # v3.10 (SWR-V3.10-008): 措辞生态中立化——npm 系短语 (vm 全量加载 src)
     # 替换为发布面三查 + 编译开关面通用形态

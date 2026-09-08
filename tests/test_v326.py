@@ -27,8 +27,9 @@ _MODULES = [
     "harness_runner", "workflow_export", "checklist_binder",
     "precedent_library", "r2_guard", "lessons_recorder",
 ]
-_DIRS = ["tools", "resources", "task_templates", "templates", "tests",
-         "lessons", "harness_manuals", "docs/legacy"]
+_DIRS = ["src", "tools", "tests", "docs/legacy",
+         "assets/resources", "assets/task_templates", "assets/templates",
+         "assets/lessons", "assets/harness_manuals"]
 
 
 def _make_fixture_repo():
@@ -39,7 +40,7 @@ def _make_fixture_repo():
     open(os.path.join(tmp, "README.md"), "w").write("# fixture\n")
     open(os.path.join(tmp, "docs/legacy/SKILL_V2.1.md"), "w").write("# v2.1\n")
     for m in _MODULES:
-        open(os.path.join(tmp, m + ".py"), "w").write("# fixture\n")
+        open(os.path.join(tmp, "src", m + ".py"), "w").write("# fixture\n")
     shutil.copy(os.path.join(WORKSPACE, "install.sh"), tmp)
     subprocess.run(["git", "-C", tmp, "init", "-q"], check=True)
     subprocess.run(["git", "-C", tmp, "config", "user.email", "t@t"], check=True)
@@ -105,5 +106,6 @@ def test_install_clean_tree_passes():
 
 def test_tooling_version_guard():
     sys.path.insert(0, WORKSPACE)
+    sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.33"
+    assert we.TOOLING_VERSION == "3.34"

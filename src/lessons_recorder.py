@@ -15,8 +15,8 @@ import json
 import os
 import sys
 
-SKILL_ROOT = os.path.dirname(os.path.abspath(__file__))
-LESSONS_DIR = os.path.join(SKILL_ROOT, "lessons")
+from _paths import ASSETS_DIR, SKILL_ROOT
+LESSONS_DIR = os.path.join(ASSETS_DIR, "lessons")
 
 
 def collect(project_root):
