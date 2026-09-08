@@ -1085,3 +1085,16 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | 编号 | 需求 | 状态 | 证据 |
 |---|---|---|---|
 | REQ-V3.30-001 | paired_control_probe 双测对照探针模板 | 已完成 | templates/harness/paired_control_probe.py + harness_runner + tests/test_v330.py |
+
+## 系统需求（REQ-V3.31）（共 6 条）
+
+> 手工追加段（2026-09-08）。案例支撑：工程控制论诊断 + QuickJS 实录。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.31-001 | 门禁 ①b keep=0 spotcheck 强制（条件子检查） | 已完成 | evidence_ledger.py + tests/test_v331.py |
+| REQ-V3.31-002 | hints 单命令（cells+inventory 合并） | 已完成 | language_issue_matrix.py + tests/test_v331.py |
+| REQ-V3.31-003 | lessons 单落盘（仓库写路径删除） | 已完成 | lessons_recorder.py + tests/test_v331.py |
+| REQ-V3.31-004 | R4 触发轴扩展 target_kind 感知 | 已完成 | SKILL.md + tests/test_v331.py |
+| REQ-V3.31-005 | equivalent ownership_model 条件 warn | 已完成 | tools/batch_verify.py + tests/test_v331.py |
+| REQ-V3.31-006 | 四轴职责表 + R2/R4 通道边界条款 | 已完成 | SKILL.md + tests/test_v331.py |

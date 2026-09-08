@@ -582,6 +582,12 @@ def stage_collect(project_root, batch_id, verdicts):
                 warnings.append(f"{cand_id}: UNREACHABLE 阻断论证未附 guard_pass_subsets 枚举 (SWR-V3.20-004)")
             if not v.get("premises_verified"):
                 warnings.append(f"{cand_id}: UNREACHABLE 前提断裂判定未附 premises_verified (SWR-V3.20-005)")
+        # v3.31 (SWR-V3.31-005): equivalent 档所有权核实条件校验——建模失真
+        # 静默入口 (H3-F1 反证实录), warn 不阻断不自动改写
+        emp = v.get("empirical") or {}
+        if (isinstance(emp, dict) and emp.get("fidelity") == "equivalent"
+                and not emp.get("ownership_model")):
+            warnings.append(f"{cand_id}: equivalent 档实证缺 ownership_model 所有权核实 (SWR-V3.31-005)")
         updated += 1
 
     # 只要有任何合法结果就落盘（部分成功优于整批丢弃）。

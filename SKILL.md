@@ -153,7 +153,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 （门禁⑦ 前置化；111/111 零缺口闭合轮 vs 缺口闭合三连重派的对照实录）。
 **语言问题矩阵提示（v3.18, SWR-V3.18-002）**：生成假设前执行
 ```bash
-python3 <skill_dir>/language_issue_matrix.py cells <surface.lang>
+python3 <skill_dir>/language_issue_matrix.py hints <surface.lang>  # v3.31 (SWR-V3.31-002): cells+inventory 合并单命令——R2 假设生成的唯一装载入口
 ```
 ——返回该语言已种格的族条目（典型漏洞形态/关键 sink/判定要点），作为
 假设空间提示（提示级，无强制义务；未种格 pending 零注入零提示）。
@@ -302,7 +302,11 @@ tracked_ids=...  # R2 假设 surface_ids ∪ R4 findings.tracked_surfaces ∪ re
 ok,v=el.assert_ledger(q, dispatched=[c['id'] for c in q['candidates']],
                       surface_data={'total':len(surfaces['surfaces']),
                                     'tracked_ids':sorted(tracked_ids),
-                                    'mirror_pairs':surfaces.get('mirror_pairs') or []})
+                                    'mirror_pairs':surfaces.get('mirror_pairs') or []},
+                      r2_filter=_r2_filter_or_none())
+# _r2_filter_or_none(): r2_filter_result.json 存在时读
+# {'keep':len(keep),'bc':len(boundary_confirmations),'total':keep+drop+bc,
+#  'spot_checked':spot_checked}——门禁①b (v3.31) 消费; 文件缺失返回 None (skip)
 print(ok, v)"
 ```
 ① no_pending ② REACHABLE 无 static_only ③ 实证类声称 100% empirically_confirmed ④ H1-H7 全 VERIFIED
@@ -389,6 +393,19 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - **target_profile.json**：`{recommended:{surface_model:entry|semantic|hybrid,generation_layers[],scale_class,containment_default,empirical_modes[]},signals[],confidence,signed_by,overrides{}}`（v3.17 形态画像签收物；未签收 = 全默认 = 现状行为）
 - **hypotheses.json**：`{hypotheses:[{id,surface_id,signature_id,semantic_family,cwe[],hit_sites[],checklist[]}], logic_hypotheses:[]}`（v3.4.5 起佐证器 gen 输出独立文件 `hypotheses_gen.json`——文件所有权分离，LLM 主路径产物不得被覆盖，主代理合并两文件）
 - **语言词汇两轴（v3.5.2 注）**：① 签名标签 = 签名侧内部名，允许 superset（`cs`/`typescript`/`js` 等，校验白名单 VALID_LANGS）；② 账本/任务书/队列输出 = 归一化到账本 16 规范名（`cs↔csharp`、`ts`/`typescript`↔`javascript`、`ps↔powershell`）。跨模块 alias map 取值一致（有测试守卫），签名 L2 过滤双侧归一化后等值比较。
+- **形态判定四轴职责表（v3.31, SWR-V3.31-006）**：
+  | 轴 | 值域 | 判定时点 | 消费者 | 门禁承载 |
+  |---|---|---|---|---|
+  | project_kind | framework/library/infra/app | R1 context（机械） | 测绘期上下文提示 | 无 |
+  | maturity | developing/mature | R1 context（git 标签语义） | R4 并行触发之一 | 无 |
+  | target_kind | application/library/hybrid | R0 签收 | 存在性规则装载 + R4 并行触发之一 | ⑧ |
+  | target_profile | 五轴推荐 | R0 签收（未签收=全默认） | 语义轴/super-large 目标专用 | 无 |
+  四轴各司其职不互代：context 两轴是测绘期提示，R0 两轴是验证期判据（v3.5.2 注）。
+- **R2/R4 通道边界条款（v3.31, SWR-V3.31-006）**：R2 主通道=面图驱动假设
+  （surface→sink→缺陷机制）；R4 通道=族假说深挖（H1-H7 按族枚举，不依赖面图
+  粒度）。两通道发现力有重叠是设计内形态（库型目标 R2 面图粗、R4 深挖出
+  7/9 实录），同事实由 claim_nulled_by 主申报方承载消化——**重叠不重造机制，
+  边界模糊时以 R4 为准补盲**（R4 是深度通道，R2 是广度通道）。
 - **形态判定两轴（v3.5.2 注）**：`project_kind`（R1 上下文信号，4 值 {framework, library, infra, app}）与 `target_kind`（R0 门禁签收，3 值 {application, library, hybrid}）是**两个独立轴**——前者是测绘期上下文提示，后者是验证期门禁判据；不要混用（surface_mapper.py docstring 交叉引用）。
 
 ## ⚠️ 编排层四条铁律（W5 回归教训，强制执行）
@@ -418,7 +435,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 ### R0 新增: maturity 判定
 - `surface_mapper.py context` 输出 `project_kind ∈ {framework, library, infra, app}`
   与独立 `maturity` 信号（W6 §23.6/§24.6: 成熟框架 R4 产率三连超 R3）
-- **v3.3 触发条件（REQ-V3.3-007）**: `maturity==mature` → R4 与 R3 并行启动，
+- **v3.3 触发条件（REQ-V3.3-007 + v3.31 SWR-V3.31-004）**: `maturity==mature` **或 `target_kind ∈ {library, hybrid}`** → R4 与 R3 并行启动，
   H1/H7 深度上调；project_kind==framework 不再单独触发；maturity 由 git 版本标签
   语义判定（≥1.0 稳定标签=mature），主代理复核后可手动覆盖
 
@@ -580,7 +597,7 @@ fixture→library、Lersosa→application 判定准确 + Lersosa 复跑零回退
 - `project_kind` 四值 {framework, library, infra, app}——构建文件降为弱信号
   （权重 1），可执行入口（main/监听, 权重 3）与公共 API 主导（权重 2）为强信号；
   小写构建文件变体（makefile）检出修复
-- `maturity` 独立信号（git 版本标签语义），R4 并行触发条件改为 maturity==mature
+- `maturity` 独立信号（git 版本标签语义），R4 并行触发条件为 maturity==mature 或 target_kind∈{library,hybrid}（v3.31, QuickJS developing 目标 R4 产出 7/9 条确认问题实录——触发轴补 target_kind 感知）
 
 ### 信任边界: host_api（P-C）
 - trust_boundary.type 枚举补 **host_api**（宿主对公共 API 的调用进入；library
@@ -1857,3 +1874,32 @@ seed 双写一致性断言 + 去项目化扫描零命中。
 ### 验收判据（Phase 3.30）
 
 test_v330 8 用例全绿 + 全量回归全绿 + install 双副本同步。
+
+## 🆕 v3.31 增量（2026-09-08，人因闭环点机械化）
+
+> 设计文档: `docs/design/REQ_V3_31.md` + `SWR_V3_31.md` 等。
+> 机制修复版：不改变阶段骨架；门禁新增条件子检查 ①b（同 ③c/③d 先例）。
+> TOOLING 3.31。
+> 案例支撑：工程控制论诊断六修正（用户裁定"直接修正不重设"）——QuickJS
+> keep=0/bc=87.5% 实录、R4 产出 7/9 触发轴错配、lessons 遗留双写实录、
+> H3-F1 所有权核实反证、v3.29 接通靠人。
+
+1. **门禁 ①b（SWR-V3.31-001, D-1）**：keep=0 且 bc≥80% 时 spot_checked≥3
+   强制（assert_ledger 新参数 r2_filter 提供才检查；None→skip_note 旧队列
+   零影响）——"通道失效"与"目标干净"的机械区分。
+2. **hints 单命令（SWR-V3.31-002, D-2）**：`hints <lang>` 合并 cells+
+   inventory——R2 假设生成的唯一装载入口（单命令可查，替代双命令条款）。
+3. **lessons 单落盘（SWR-V3.31-003, D-3）**：write_lesson 落项目本地
+   .audit_results/lessons.md；仓库写入路径删除（v3.16.1 裁定执行）。
+4. **R4 触发轴扩展（SWR-V3.31-004, D-4）**：`maturity==mature 或
+   target_kind∈{library,hybrid}` → R4 并行（developing 库型目标 7/9 实录）。
+5. **equivalent ownership warn（SWR-V3.31-005, D-5）**：collect 条件校验
+   fidelity=equivalent 且缺 ownership_model → warn（不阻断不自动改写）。
+6. **四轴职责表 + R2/R4 通道边界条款（SWR-V3.31-006, D-6）**：形态判定
+   四轴各司其职；通道重叠是设计内形态（R2 广度/R4 深度，claim_nulled_by
+   主申报方承载消化）。
+
+### 验收判据（Phase 3.31）
+
+test_v331 11 用例全绿 + 全量回归全绿 + install 双副本同步 + QuickJS 队列
+复跑零新增 blocking（①b 参数 None skip）。

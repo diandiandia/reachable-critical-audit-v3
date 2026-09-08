@@ -108,7 +108,7 @@ def test_cli_cells_and_stats():
 
 def test_skillmd_clauses():
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
-    assert "language_issue_matrix.py cells" in skill  # R2 提示条款
+    assert "language_issue_matrix.py hints" in skill  # R2 提示条款 (v3.31 SWR-V3.31-002: cells→hints 单命令)
     assert "语言问题矩阵" in skill and "回填" in skill  # 增量段/回填纪律
     assert "v3.18 增量" in skill
 
@@ -122,4 +122,4 @@ def test_tooling_version_318():
         "workflow_export", os.path.join(ROOT, "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.30"
+    assert we.TOOLING_VERSION == "3.31"

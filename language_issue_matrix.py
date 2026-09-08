@@ -15,6 +15,8 @@ seed 外部种格第二通道 (强制出处/去项目化/幂等)。
     python3 language_issue_matrix.py inventory <lang>
     python3 language_issue_matrix.py goal
     python3 language_issue_matrix.py seed <json-file>
+    python3 language_issue_matrix.py hitrate <lang> <cwe,...>
+    python3 language_issue_matrix.py hints <lang>      # cells+inventory 合并 (v3.31)
 """
 import json
 import os
@@ -172,6 +174,14 @@ def goal_progress():
     }
 
 
+def hints(lang):
+    """v3.31 (SWR-V3.31-002): cells+inventory 合并单命令——R2 假设生成的唯一
+    装载入口 (单命令降低执行摩擦, 输出落 transcript 可查)。"""
+    return {"lang": _norm_lang(lang),
+            "cells": cells_for(lang),
+            "inventory": inventory_for(lang)}
+
+
 def hitrate(lang, cwe_list):
     """v3.29 (SWR-V3.29-002): 审计确认问题 cwe 集对该语言 inventory 条目的
     命中率——资产→发现能力的传导度量 (只读)。cwe 双形态归一 (CWE-770/770)。"""
@@ -315,10 +325,10 @@ def stats():
 
 def main(argv):
     if len(argv) < 2 or argv[1] not in ("cells", "stats", "inventory", "goal",
-                                        "seed", "hitrate"):
+                                        "seed", "hitrate", "hints"):
         print("usage: python3 language_issue_matrix.py "
               "cells <lang> [family] | stats | inventory <lang> | goal | "
-              "seed <json-file> | hitrate <lang> <cwe,...>", file=sys.stderr)
+              "seed <json-file> | hitrate <lang> <cwe,...> | hints <lang>", file=sys.stderr)
         return 2
     if argv[1] == "stats":
         print(json.dumps(stats(), ensure_ascii=False, indent=1))
@@ -332,6 +342,8 @@ def main(argv):
         return 2
     if argv[1] == "cells":
         out = cells_for(argv[2], argv[3] if len(argv) > 3 else None)
+    elif argv[1] == "hints":
+        out = hints(argv[2])
     elif argv[1] == "inventory":
         out = inventory_for(argv[2])
     elif argv[1] == "seed":

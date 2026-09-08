@@ -125,22 +125,17 @@ def render(project_root, process_notes=None):
 
 
 def write_lesson(project_root, process_notes=None):
-    """SWR-V3.2-081: 落盘 lessons 文档 + 索引更新。返回文件路径。"""
+    """SWR-V3.2-081 + SWR-V3.31-003: 落盘 lessons 文档。
+
+    v3.16.1 用户裁定统一落盘位置 = 项目本地 .audit_results/lessons.md
+    （skill-optimizer 唯一读入口）; 仓库 lessons/ 为战役期历史档案不再写入。
+    v3.31 起删除仓库写入路径（遗留双写系已证实漂移温床）。返回文件路径。"""
     body, data = render(project_root, process_notes)
-    project = data["project"]
-    os.makedirs(LESSONS_DIR, exist_ok=True)
-    out = os.path.join(LESSONS_DIR, f"SKILL_LESSONS_{project}.md")
+    audit_dir = os.path.join(project_root, ".audit_results")
+    os.makedirs(audit_dir, exist_ok=True)
+    out = os.path.join(audit_dir, "lessons.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write(body)
-    # 索引更新
-    idx_path = os.path.join(LESSONS_DIR, "README.md")
-    from datetime import date
-    row = f"| [SKILL_LESSONS_{project}.md](SKILL_LESSONS_{project}.md) | 自动 | {project} | {date.today().isoformat()} | R6 机械生成: {len(data['issues'])} 条问题证据 |"
-    if os.path.exists(idx_path):
-        content = open(idx_path, encoding="utf-8").read()
-        if f"SKILL_LESSONS_{project}.md" not in content:
-            content += row + "\n"
-            open(idx_path, "w", encoding="utf-8").write(content)
     return out
 
 

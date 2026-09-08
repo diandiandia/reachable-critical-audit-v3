@@ -233,7 +233,8 @@ TERMINAL_STATUSES = {"VERIFIED", "ESCALATED", "NEEDS_REVIEW"}
 
 def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind=True,
                   require_resurrection=True, require_r4_independent=True,
-                  require_adjudication_verify=True, require_strengthen_verify=True):
+                  require_adjudication_verify=True, require_strengthen_verify=True,
+                  r2_filter=None):
     """SWR-V3-034 + REQ-V3-093/095/096 + SWR-V3.2.1-004/040: 门禁。
     ①no_pending ②REACHABLE 无 static_only ③实证类 100% ④H1-H7 全 VERIFIED
     ⑤对账零差异 (dispatched 提供时: 每个已派发 id 必须有终态)
@@ -257,6 +258,19 @@ def assert_ledger(queue, dispatched=None, surface_data=None, require_target_kind
     pending = [c.get("id") for c in cands if c.get("status") == "PENDING"]
     if pending:
         violations.append({"gate": "no_pending", "ids": pending})
+    # ①b (v3.31, SWR-V3.31-001): keep=0 且 bc≥80% 时 spot_checked 抽样复核强制
+    # （防御性偏差反向防线——"通道失效"与"目标干净"的机械区分; 条件子检查
+    # 同 ③c/③d 先例; r2_filter=None 仅旧队列复跑, skip 不阻断）
+    if r2_filter is not None:
+        keep = r2_filter.get("keep") or []
+        bc = r2_filter.get("bc") or 0
+        total = r2_filter.get("total") or 0
+        spot = r2_filter.get("spot_checked") or []
+        if not keep and total and bc / total >= 0.8 and len(spot) < 3:
+            violations.append({"gate": "keep0_spotcheck",
+                               "spot_checked": len(spot)})
+    else:
+        skipped.append("keep0_spotcheck (r2_filter 未提供)")
     for c in cands:
         if c.get("verdict") == "REACHABLE" and c.get("evidence_grade") == "static_only":
             violations.append({"gate": "no_static_only_reachable", "id": c.get("id")})
