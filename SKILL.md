@@ -77,6 +77,9 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    - **library**：公共 API 即信任边界（库型先例）；仓内调用者缺失不是阻断；死代码豁免不适用
    - **hybrid**：按组件分别装载；无法确定归属时按 application（保守）
    未签收 → 门禁⑧ target_kind_required 不放行（旧队列复跑以 `require_target_kind=False` 豁免）。
+③d **R4 confirmed 独立复核（v3.9, REQ-V3.9-010）**：confirmed 假说中
+High/Medium/Critical 且 empirical_result 前缀 CONFIRMED 的 finding 须有
+`independent_review {by, method, artifacts}` 或非空 r3_link（放行方向对抗复核）。
 5. **target_profile 判定**（v3.17, SWR-V3.17-008）：
    ```bash
    python3 <skill_dir>/tools/target_profile.py <project> [--write]
@@ -89,6 +92,9 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 **目标**：产出 `input_surface.json`（surface 列表）。每个 surface = 一个外部数据入口，附 entry_points 源码证据。
 
 1. **架构上下文**：`python3 surface_mapper.py context <project>` → 语言/构建文件/README 摘要。
+   **测绘规模档位网格（size_tier）**：<100 文件 2 agents；100-500 档 4 agents
+   无限时；>500 档 4 agents + 45min 硬时限 + 10min 中间产物落盘；super-large
+   两阶段见下。
    context 输出另含 `project_kind ∈ {framework, library, infra, app}`（机械）与
    `maturity ∈ {developing, mature}`（git 版本标签语义: ≥1.0 稳定标签=mature）——
    project_kind 是测绘期上下文提示, maturity 是 R4 并行触发条件之一,
@@ -97,6 +103,8 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    **boundary 第五域（v3.2, 多语言目标）**：语言清单 ≥2 时加派 boundary 域测绘
    （跨语言桥接/FFI/编解码通道面, 面 type=`boundary`）——size_tier 的
    domains_split 已含该域, 正文 schema 的 type 枚举同步含 boundary。
+   boundary 面必填附加字段：`boundary_kind`（FFI 方向/桥接形态）与
+   `lang_pair`（双方语言对）。
    > **派发能力指引（v3.14, SWR-V3.14-007）**：优先派发具备写盘能力的子智能体
    > （允许写 `.audit_results/_r1_<域>.json`）；只读代理（如 Explore）会按落盘
    > 拦截契约以 UNWRITTEN 形态返回完整 JSON，由主代理恢复（写 recovered_by）——
@@ -144,6 +152,11 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 ## 🎯 R2：假设生成（LLM 主路径）→ LLM 筛选
 
 **假设生成主路径**：LLM 直接基于 surface 图生成假设（主代理或限时 agent）。
+**复审计场景（W6 §22.2）**：R2 上下文自动注入旧审计终稿摘要（同目标复审计时）。
+**shipped-config 盘点（v3.2.1, REQ-V3.2.1-030/031）**：含 config 目录的组件跑
+`export_script_shipped_config` → 提交值 vs 代码零值对照 → 落盘
+`.audit_results/shipped_config.json`——R2『默认可达』类声称必须引用 shipped
+实际值而非代码零值（W6 §25.4 第三层检查）。
 **面覆盖前置核对（v3.22, SWR-V3.22-010）**：假设生成完成后机械核对
 `hypotheses[].surface_ids` 集合 ⊇ input_surface 全集——缺面即补生成假设
 （门禁⑦ 前置化；111/111 零缺口闭合轮 vs 缺口闭合三连重派的对照实录）。
@@ -200,6 +213,11 @@ SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
 taskFile 薄封装（任务书落盘 _tasks/, payload 只带 id+taskFile 引用）——
 大任务书不进入 Workflow args, 波次 args 体积与截断面同时下降; 内嵌回退形态
 保留兼容。
+**verifier 任务书固定步骤（v3.2.1, REQ-V3.2.1-010~012）**：步骤 0.5 模块可
+导入性预检（顶层包解析 + DI 吞错路径审查, broken_edge → NEEDS_REVIEW）；
+步骤 5.5 消费端中间层枚举。
+**upstream 检索申报口径（v3.10, SWR-V3.10-011）**：命中公开补丁/已有 CVE →
+标注发现链, 不得以首发口径申报。
 
 **批次选题规则（v3.4, REQ-V3.4-006）**：多项目批次开题时，先跑
 `batch_verify.py <任一项目> --stage coverage-ledger` 读覆盖账本缺口格
@@ -233,7 +251,13 @@ collect 时 `--from-journal <dir> --expect CAND-001,CAND-002,...` 以注册表�
 - workflow 内 agent 无文件系统：**不要把心跳契约写进 Mode W 任务书**（心跳是 Mode A' 机制）；结构化输出由 schema 强校验（自动重试）。
 - `--stage collect` 落盘字段含 v3 必需项：`claim_type`、`edge_evidence`（实证门禁与分级依赖）。
 
-**补强签收层级指引（v3.14 SWR-V3.14-008 文案补全）**：证伪者/复活者补强
+**补强签收层级指引（v3.14 SWR-V3.14-008 文案补全）**：证伪者/复活者补强**R3.5-N 复活攻击抽样（REQ-V3.2-021）**：声称类 UNREACHABLE 全量 + 其他类
+20% 抽样（最少 2, 上限 8）做 N=1 复活复核；抽样决策落盘
+`.audit_results/_resurrect_sample.json`；revived → 回 R3 重验。
+**sibling 回显（v3.32, SWR-V3.32-003）**：r35-collect 输出 strengthened_notes
++ sibling_advisory——补强中含机制静态确证的 sibling 向量时主代理裁决立候选
+（SWR-V3.19-003 实质机制优先；不自动立候选）。
+
 （strengthened/attribution_correction）进报告/申报前须主代理逐条签收——
 签收字段为候选级 `refutation` dict 内的 `strengthened_verified_by` /
 `attribution_correction_verified_by`（与 `strengthened[]` 平级，**非 entry
@@ -273,7 +297,7 @@ project_kind==framework 不再单独触发；maturity 由 git 版本标签语义
 | H1 | 远端控制分配大小无上限（CWE-789：缓存/累积/预留 × sizeof） |
 | H2 | 远端控制解引用长度/索引（CWE-125/787：截断 cast/下标/切片） |
 | H3 | 异步对象生命周期竞态（CWE-416：回调持引用/池复用状态残留） |
-| H4 | 跨进程信任边界破坏（CWE-20+89/78：输入拼进 exec/路径/转发头；初始化时序注入面 v3.11——启动窄窗/冷启动注入/初始化时序竞态） |
+| H4 | 跨进程信任边界破坏（CWE-20+89/78：输入拼进 exec/路径/转发头；初始化时序注入面 v3.11——启动窄窗/冷启动注入/初始化时序竞态） |（含 site-isolation/资源归因子条 v3.24：跨进程资源（纹理/缓存/下载/导航目标/worker 等）绑定到错误 origin 即信任边界破坏——检查资源创建与归因的 origin 上下文一致性）
 | H5 | 暴露组件鉴权缺失（CWE-862/926：调试端点/状态页/目录列表） |
 | H6 | 多租户 owner 比对缺失（CWE-639/285：锁/会话/缓存归属） |
 | H7 | **信任边界专项（v3 新增）**：① 同 UID/IPC 高危操作 ② 路径语义（.. 上溯/symlink/空路径回退）越界 ③ 鉴权谓词弱化（前缀/子串/hash 替代全名） |
@@ -286,7 +310,12 @@ project_kind==framework 不再单独触发；maturity 由 git 版本标签语义
 **同事实去重（v3.4.3, SWR-V3.4.3-060）**：r4-collect 后主代理按 title 跨假说
 同事实去重——主申报方承载 severity，其余条目 `r3_link` 标「同事实共享实证」
 （java-jwt H2/H7 双 agent 各自发现同一 DateTimeException 逃逸的实战形态）。
-**reviewed_clean 归位裁决（v3.33, SWR-V3.33-005，提示级）**：r4-collect 对
+**reviewed_clean 归位裁决（v3.33, SWR-V3.33-005，提示级）**：r4-collect 对**R4 empirical_result 前缀契约（v3.4.4, SWR-V3.4.4-009）**：CONFIRMED: /
+REFUTED: / SOURCE_FACT: 三前缀——gate ③b 结构判定识别。
+**假说级 tracked_surfaces（v3.10, SWR-V3.10-002/003）**：reviewed_clean/
+not_applicable 假说的审查触及面结构化落盘 hypothesis_tracked_surfaces
+（r4-collect 幂等合并）, 防覆盖率脱节。
+
 reviewed_clean 假说下 severity≥Medium 的 findings 输出 warn（`reviewed_clean_
 medium_plus`）——实质发现被 verdict 语义留在 B.4 计数而不进问题清单的形态
 （servo 复盘：特权页点击劫持 Medium / promise 滞留 Medium）。主代理裁决归位三选一：
@@ -297,7 +326,9 @@ medium_plus`）——实质发现被 verdict 语义留在 B.4 计数而不进问
 
 ## 🧪 R5：实证抽验（声称类强制，REQ-V3-004/060）
 
-**探针→可行性路由前移（v3.21, SWR-V3.21-001）**：R0 探针落盘后、R3 派发前输出
+**探针→可行性路由前移（v3.21, SWR-V3.21-001）**：R0 探针落盘后、R3 派发前输出**部署布局义务（v3.4.4, SWR-V3.4.4-008）**：实证必须在部署布局执行（vm
+全量加载 src 不构成部署布局实证；模块不在任何发布产物 → 不构成可达声称）。
+
 empirical_feasibility 表（三轨 = real-target / equivalent-harness / static-only）；
 R5 harness 目标清单在 R3 定；探针含 no-*
 运行面缺失时向用户报预期 NEEDS_REVIEW 占比 + 三选一决策点（补装运行库 / 借运行面 /
@@ -307,6 +338,9 @@ R5 harness 目标清单在 R3 定；探针含 no-*
 static-only 轨候选的证伪票价值=机制静态确证（非浪费），派发时明示。
 
 **触发判定**：verdict=REACHABLE 且 `claim_type ∈ {crash,panic,oom,unbounded,xss,protocol_dos,rce,leak}` 且 `evidence_grade ≠ empirically_confirmed` → **强制实证，否则六门禁 ③ 不放行**（可选路径：主代理裁决降级 NEEDS_REVIEW，不实证不申报——v3.3 起此为明示条款：NEEDS_REVIEW 是合法终态而非降级耻辱，成因须注明「保守裁决」或「证据不足」）。源事实级降级规则（哨兵值/算术类，网络阻断记录 blocker，W6 §21.4）继续有效。
+**audit_constraint 批量裁决（v3.16, SWR-V3.16-001）**：候选携带 audit_constraint
+（no-build/no-device/tree-incomplete）且未实证时, gate ③ 附 warn 级 batch_demote
+建议——主代理逐条确认落盘, 不自动改写。
 
 **实质机制优先实证提示（v3.19, SWR-V3.19-003）**：claim=other 但机制静态确证
 （0 票证伪+补强）的候选优先纳入复活波实证池（V8 CAND-013/049 升格实录）。
@@ -417,7 +451,7 @@ ok,v=el.assert_ledger(q, dispatched=[c['id'] for c in q['candidates']],
 #  'spot_checked':spot_checked}——门禁①b (v3.31) 消费; 文件缺失返回 None (skip)
 print(ok, v)"
 ```
-① no_pending ② REACHABLE 无 static_only ③ 实证类声称 100% empirically_confirmed ④ H1-H7 全 VERIFIED
+① no_pending ② REACHABLE 无 static_only ③ 实证类声称 100% empirically_confirmed ④ H1-H7 全 VERIFIED（③b: R4 finding 实证判定的结构规则——empirical_result 非空 + 数字特征主判,『实测』类关键词仅 fallback）
 ⑤ 对账零差异（dispatched 全部终态）⑥ escalated=0 或主代理签收 ⑦ surface 覆盖率 100%
 （v3.5：tracked_ids = R2 假设 surface_ids ∪ R4 findings.tracked_surfaces ∪
 relay 中继面[套接字层/示例程序中转]直接并入 tracked_ids——覆盖依据写入 R4 finding
@@ -442,7 +476,7 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
   可问责，REQ-V3-006）**∪ R4 confirmed findings（severity 申报值归一化
   High/Medium 并入，行内标 R4:H-x-Fn；Low 留附录 B 表；r3_link 指向候选的
   同事实条目不重复列，清单尾注去重说明，SWR-V3.4.3-060）**。
-  每行 `ID | 问题摘要(claim_type+evidence 首 120 字) | 位置 file:line | CWE |
+  每行 `ID | 问题摘要(claim_type+evidence 首 120 字) | 位置 file:line | CWE |（行尾附 attacker_tier 标注, v3.11）
   证据等级 | 复核(证伪者结果/R4 确认（无 R3.5 复核）)`
 - **二、问题详情**：确认问题全集每条一节——R3 条目：位置/语言、CWE/claim_type、
   verdict+证据分级（grade_recomputed_by 如有）、调用链逐跳+depth+
@@ -457,9 +491,10 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
   （a）JIT/编译器优化正确性层（类型追踪/去优化正确性——需差分/模糊测试通道），
   （b）闭源依赖内部实现，（c）非目标平台变体，（d）UI 信任指示层（地址栏/界面欺骗类——UI 信任逻辑非代码缺陷），（e）移动端平台集成层，
   （f）构建期生成代码（v3.33, SWR-V3.33-009：codegen/DSL 编译产物、宏展开产物等磁盘无源物——审计生成器源码与调用契约，生成物按依赖边界处理；构建环境可行时应物化（build 后读 OUT_DIR/生成目录）纳入面图。缺失 = warn 注记不阻断。
-- **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：成因双分
-  （`保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法
-  取证）；未注明交主代理确认）+ correction_record 理由 + NEEDS_REVIEW ↔
+- **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：**重开通道（v3.10.2, SWR-V3.10.2-017）**：`--stage reopen --id <id>` +
+`REOPEN_REASON` 环境变量——环境 blocker 解除后回 PENDING 重验（历史保留）。
+成因双分
+  （**三分（v3.10.2, SWR-V3.10.2-013）**：`保守裁决`（防御证据充分但门禁压力下保守）/ `证据不足`（前提/调用边无法取证）/ `环境受限`（无目标平台运行面；环境受限+上游公开佐证 → 附录 A 佐证注记列）；未注明交主代理确认）+ correction_record 理由 + NEEDS_REVIEW ↔
   R4 hypothesis/finding 映射行
 - **附录 B：审计过程信息**：B.1 规模对照（候选/假设/surface 数、闭合率）→
   B.2 语言覆盖表（v3.2.1 `组件角色` 列：server-side/client-only/build-config，
@@ -489,7 +524,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 ## 📏 数据模型速查
 
-- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome},guard_pass_subsets[]?,premises_verified[]?}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
+- **verify_queue.json**：`{candidates:[{id,source_file,source_line,sink_type,status:PENDING|VERIFIED|ESCALATED|NEEDS_REVIEW,verdict,reachability_type,call_chain[],call_chain_depth,edge_evidence[{edge,proof}],evidence_grade:static_only|edge_proven|empirically_confirmed,grade_self_reported,blocking_point,claim_type∈{crash,panic,oom,unbounded,xss,protocol_dos,rce,leak,other},severity_override∈{critical,high,medium}?,severity_override_reason?,containment∈{none,language,process_sandbox,hardware_isolated}?,attacker_tier∈{same_process,same_device_cross_app,system_broker,remote}?,attempt,escalated_reason,correction_record[],empirical{},resurrection_review{revived,outcome},guard_pass_subsets[]?,premises_verified[]?}], r4_findings:[{hypothesis_id,verdict,findings[]}], escalated_signed_off}`
   （v3.22 注：refutation 签收字段存储键为**单数**
   `attribution_correction`/`strengthened_verified_by`/
   `attribution_correction_verified_by`——主代理签写脚本须以队列实际
