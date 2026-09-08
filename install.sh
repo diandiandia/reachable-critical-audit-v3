@@ -44,6 +44,17 @@ for d in src tools assets tests docs; do
     [ -e "$SRC/$d/$rel" ] || rm -f "$f"
   done
 done
+# v3.34 分层迁移清理: 移除 v3.33 及更早平铺形态的残留 (顶层 .py 与
+# 旧资产目录已迁入 src//assets/; 遗留文件会造成双副本漂移与 SKILL.md
+# 路径歧义——单一权威只认新层位)
+find "$DST" -maxdepth 1 -name "*.py" | while read -r f; do
+  [ -e "$SRC/src/$(basename "$f")" ] || rm -f "$f"
+done
+for legacy in harness_manuals lessons resources task_templates templates; do
+  if [ ! -e "$SRC/$legacy" ] && [ -d "$DST/$legacy" ]; then
+    rm -rf "$DST/$legacy"
+  fi
+done
 # v3.2.3: 顶层 SKILL_V2.1.md 为 v2.1 时代陈旧重复 (权威副本在 docs/legacy/)
 [ -e "$DST/SKILL_V2.1.md" ] && rm -f "$DST/SKILL_V2.1.md"
 
