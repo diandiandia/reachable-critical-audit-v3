@@ -57,6 +57,18 @@ TEMPLATES = {
     # v3.6 (P2-⑧): resource_rate_probe——通用协议级速率灌注探针。
     # 8 语言专属模板裁减后提炼的 1 个协议级通用模板 (langs:["any"] 无机械消费者,
     # 主代理按声称类选型); 零项目名零 /root/ (argv 必传 host/port)。
+    # v3.30 (SWR-V3.30-001): paired_control_probe——通用双测对照探针。
+    # 资源类声称的配对测量骨架 (对照 vs 攻击, VmHWM 峰值差分; QuickJS 验收
+    # 审计 5 次现场构造同形态后模板化); langs:["any"], argv 必传两命令。
+    "paired_control_probe": {
+        "langs": ["any"],
+        "attack": "对照命令与攻击命令同入口/同旗标只差被试点, 各跑至完成或超时, "
+                  "循环采样 VmHWM 单调峰值与 VmRSS, 输出差分与判定",
+        "metrics": ["control_peak_hwm_kb", "attack_peak_hwm_kb", "ratio", "verdict"],
+        "judgement": "attack_peak >= control_peak * threshold → PAIRED_CONFIRMED; "
+                     "对照组退出码非 0 → CONTROL_FAILED (不可比)",
+        "script": "templates/harness/paired_control_probe.py",
+    },
     "resource_rate_probe": {
         "langs": ["any"],
         "attack": "并发连接持续投递载荷 + 逐秒 VmRSS 采样 + 拒绝计数 + "
