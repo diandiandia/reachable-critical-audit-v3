@@ -78,4 +78,4 @@ def test_skmd_listed():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.32"
+    assert we.TOOLING_VERSION == "3.33"

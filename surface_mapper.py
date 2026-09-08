@@ -833,6 +833,11 @@ def merge_surfaces(files, project_root=None):
     # SWR-V3.4.3-030: 域前缀归一化映射 (只记变更项, 供下游追溯)
     normalized_ids = {}
     keymap = {}
+    # SWR-V3.33-001 (D-1): 跨文件同 id 碰撞跟踪——静默 first-wins 曾致 18 面
+    # 丢失 (servo 复盘 N-1: script 7 面 + urlimg 11 面被 netw 同 id 覆盖),
+    # 此处记录碰撞对供 conflicts 标注, 主代理收口对账有机械依据。
+    id_sources = {}
+    same_id_collisions = []
     for f in files:
         data = normalize_surfaces(json.load(open(f)), project_root) or {"surfaces": []}
         for s in data.get("surfaces", []):
@@ -857,6 +862,13 @@ def merge_surfaces(files, project_root=None):
                         continue
                 keymap[key] = {"surface": s}
             merged["surfaces"].append(s)
+            # D-1: 同 id 首次记录来源; 跨文件再次出现即碰撞
+            sid = s.get("id", "")
+            anchor = (s.get("entry_points") or [{}])[0].get("file", "?")
+            if sid not in id_sources:
+                id_sources[sid] = (f, anchor)
+            elif id_sources[sid][0] != f:
+                same_id_collisions.append((sid, id_sources[sid], (f, anchor)))
     # 去重: 同 surface id 重复合并
     seen_ids = set()
     dedup = []
@@ -879,6 +891,46 @@ def merge_surfaces(files, project_root=None):
     # SWR-V3.4.5-003: 域内 id 序列空洞告警 (非阻断)——缺号可能是 agent
     # 整段漏报的信号, 主代理复核决定是否重派 (gRPC 审计: boundary 缺 003)
     _warn_id_gaps(merged["surfaces"])
+    # SWR-V3.33-001 (D-1): 跨文件同 id 碰撞落 conflicts 标注 (去重行为不变,
+    # first-wins 保持; 标注使面总数对账与改名重 merge 有机械依据)
+    for sid, (f1, a1), (f2, a2) in same_id_collisions:
+        merged["conflicts"].append({
+            "entry": [a1, a2],
+            "surfaces": [sid, sid],
+            "resolution": "kept-first-same-id",
+            "sources": [f1, f2],
+            "note": ("跨文件同 id 静默覆盖形态 (servo 复盘 N-1): 主代理按组件前缀"
+                     "纪律改名后重 merge, 并以 Σ域文件面数 == merged 面数 对账"),
+        })
+    # SWR-V3.33-002 (D-2): 域覆盖收口 warn——process/storage 零派发零记录
+    # (servo 复盘: layout 组件零面) 时机械可见; 空域合法结论须带签收
+    # (reviewed_by + empty_domain_reason, validate 契约已有) 才豁免提示。
+    per_domain = {d: 0 for d in DOMAINS}
+    for s in merged["surfaces"]:
+        t = s.get("type")
+        if t in per_domain:
+            per_domain[t] += 1
+    signed_empty = set()
+    for f in files:
+        try:
+            d = json.load(open(f))
+        except (OSError, ValueError):
+            continue
+        if isinstance(d, dict) and d.get("reviewed_by") and d.get("empty_domain_reason"):
+            blob = (d.get("empty_domain_reason") or "") + " " + os.path.basename(f)
+            for token, dom in (("process", "process"), ("storage", "storage"),
+                               ("network", "network"), ("netw", "network"),
+                               ("data", "data")):
+                if token in blob.lower():
+                    signed_empty.add(dom)
+                    break
+    unmapped = [d for d in DOMAINS if per_domain[d] == 0 and d not in signed_empty]
+    if unmapped:
+        merged["domain_unmapped"] = unmapped
+        import sys as _sys
+        print(f"WARN (SWR-V3.33-002): 域未测绘且无空域签收: {unmapped} —— "
+              f"主代理裁决重派或补签收 (reviewed_by + empty_domain_reason)",
+              file=_sys.stderr)
     # SWR-V3.4.6-003: 同文件跨域未成对提示 (非阻断)——"同文件双面但 entry_points
     # 不重叠"形态 (quic-go: token_store.go 被 data/storage 两域测绘不同函数) 不产生
     # conflict → mirror 检测漏对 → 覆盖传播缺口且无人工核对提示。只提示不自动成对

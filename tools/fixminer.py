@@ -42,6 +42,19 @@ _FAMILY_KEYWORDS = {
     "DATA-INTEGRITY": ("validate", "validation", "sanitize"),
 }
 
+# SWR-V3.33-008 (D-8): 文件路径信号——subject 关键词净分为零但改动落在安全
+# 敏感路径的修复 commit (召回上限实录: 无安全关键词的修复漏采)。低权重加分,
+# 净分>0 入选门槛与 GENERIC_FIX_WORDS 精度护栏不变。
+_PATH_SIGNAL_PATTERNS = ("crypto", "crypt", "tls", "ssl", "auth", "permission",
+                         "parser", "decode", "deserialize", "memory", "alloc",
+                         "unsafe", "secure", "sanitize", "validate", "bounds",
+                         "token", "cookie", "certificate")
+
+
+def _path_score(files):
+    blob = " ".join(files).lower()
+    return 1 if any(p in blob for p in _PATH_SIGNAL_PATTERNS) else 0
+
 
 def _security_score(text):
     t = text.lower()
@@ -64,10 +77,13 @@ def run(project, since_days=180):
                            capture_output=True, text=True, timeout=15)
         if r.returncode != 0:
             return {"status": "NO_GIT", "project": project}
+        # D-8: --stat 与 log 单次合并——路径信号通道需要文件清单, 逐 commit
+        # git show 对 180 天窗口大仓不可行 (数千次子进程); 单次 log --stat
+        # 输出中 "\t" 行 = 提交头 (%h\t%s), " | " 行 = 文件统计。
         r = subprocess.run(
             ["git", "-C", project, "log", f"--since={since_days}.days",
-             "--pretty=format:%h\t%s"],
-            capture_output=True, text=True, timeout=60)
+             "--stat", "--pretty=format:%h\t%s"],
+            capture_output=True, text=True, timeout=120)
         if r.returncode != 0:
             return {"status": "NO_COMMITS", "project": project}
     except (OSError, subprocess.TimeoutExpired) as e:
@@ -75,23 +91,38 @@ def run(project, since_days=180):
 
     fixes = []
     fam_counts = {}
-    for line in r.stdout.splitlines():
-        if "\t" not in line:
-            continue
-        h, subject = line.split("\t", 1)
-        if _security_score(subject) <= 0:
-            continue
-        f = subprocess.run(["git", "-C", project, "show", "--stat",
-                            "--pretty=format:", h],
-                           capture_output=True, text=True, timeout=30)
-        files = [ln.strip().split()[0] for ln in f.stdout.splitlines()
-                 if "|" in ln]
-        fam = _family_of(subject, files)
+    path_signal_count = 0
+    cur = None          # (hash, subject)
+    cur_files = []
+    def _flush():
+        nonlocal cur, cur_files, path_signal_count
+        if cur is None:
+            return
+        h, subject = cur
+        ps = _path_score(cur_files)
+        # D-8: 入选判据 = subject 关键词净分 + 路径信号 (低权重加分), >0 才入选
+        if _security_score(subject) + ps <= 0:
+            cur, cur_files = None, []
+            return
+        fam = _family_of(subject, cur_files)
         fam_counts[fam] = fam_counts.get(fam, 0) + 1
+        if ps:
+            path_signal_count += 1
         fixes.append({"hash": h, "subject": subject[:120],
-                      "files": files[:8], "family": fam})
+                      "files": cur_files[:8], "family": fam,
+                      "path_signal": bool(ps)})
+        cur, cur_files = None, []
+    for line in r.stdout.splitlines():
+        if "\t" in line:
+            _flush()
+            h, subject = line.split("\t", 1)
+            cur, cur_files = (h, subject), []
+        elif "|" in line:
+            cur_files.append(line.strip().split()[0])
+    _flush()
     return {"status": "OK", "project": project, "since_days": since_days,
-            "fix_commits": fixes, "families": fam_counts}
+            "fix_commits": fixes, "families": fam_counts,
+            "path_signal_count": path_signal_count}
 
 
 def main(argv):

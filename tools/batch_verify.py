@@ -1340,6 +1340,23 @@ def stage_r4_collect(project_root, findings_file):
                     "hint": ("同事实去重后载体候选机械严重度低于 R4 申报——"
                              "主代理裁决 severity_override (不自动改写)")})
     result = {"status": "R4_COLLECTED", "hypotheses": sorted(existing.keys())}
+    # SWR-V3.33-005 (D-5): reviewed_clean 假说下 Medium+ findings 归位提示——
+    # 实质发现被 verdict 语义留在 B.4 计数 (servo 复盘: servo:config 点击劫持
+    # Medium / TrustedPromise 滞留 Medium 未进问题清单)。warn 不自动改写
+    # verdict (修法形态纪律), 主代理裁决: 升 confirmed 承载/主代理段补报/明确留档。
+    _clean_plus = []
+    for h in items:
+        if str(h.get("verdict") or "").strip().lower() != "reviewed_clean":
+            continue
+        for fi in (h.get("findings") or []):
+            if str(fi.get("severity") or "").strip().lower() in ("medium", "high", "critical"):
+                _clean_plus.append({
+                    "hypothesis": h.get("hypothesis_id"),
+                    "finding": (fi.get("title") or "")[:80],
+                    "severity": fi.get("severity"),
+                    "action": "主代理裁决归位: 升 confirmed 承载 / 主代理段补报 / 明确留档"})
+    if _clean_plus:
+        result["reviewed_clean_medium_plus"] = _clean_plus
     if severity_advisories:
         result["severity_advisories"] = severity_advisories
     # v3.14 (SWR-V3.14-004): R4 finding 终态表述与 r3_link 候选终态一致性检查——
@@ -2228,8 +2245,21 @@ def _confirmed_issues(queue, cands):
             fid = f"{hid}-F{n}"
             link = fi.get("r3_link")
             if isinstance(link, str) and link.startswith("CAND-"):
+                # SWR-V3.33-006 (D-6): 去重前查承载候选终态——承载候选非 REACHABLE
+                # (NEEDS_REVIEW/UNREACHABLE) 时去重会使 finding 整体消失
+                # (servo 复盘: H-1 四条 High/Medium finding 随候选降级消失,
+                # 主代理手工 r3_link 置空修复)。承载有效才去重, 否则 finding 自列。
+                cand_id = link.split()[0]
+                carrier = next((x for x in (queue.get("candidates", []) or [])
+                                if x.get("id") == cand_id), None)
+                if carrier and carrier.get("verdict") != "REACHABLE":
+                    issues.append({"kind": "r4", "obj": fi, "hyp": hid, "fid": fid,
+                                   "severity": sev, "source": f"r4:{hid}", "key": fid,
+                                   "note": f"同事实候选 {cand_id} 已 {carrier.get('verdict')} "
+                                           f"(见附录 A), 本条目自列承载 severity"})
+                    continue
                 # r3_link 常带裁决注释 (如 "CAND-001 (R3 裁决 VERIFIED...)"), 去重行只显示候选 id
-                dupes.append((fid, link.split()[0], sev))
+                dupes.append((fid, cand_id, sev))
                 continue
             issues.append({"kind": "r4", "obj": fi, "hyp": hid, "fid": fid,
                            "severity": sev, "source": f"r4:{hid}", "key": fid})

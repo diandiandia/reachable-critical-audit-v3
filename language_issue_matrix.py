@@ -210,6 +210,15 @@ def hints(lang, kind=None):
                 refs.append("lessons/" + fn)
     except OSError:
         pass
+    # SWR-V3.33-007 (D-7): 种格 source_lessons 通道——两段式回填的知识基座
+    # (审计收官时去项目化提炼后入库), 不读任何项目路径 (第一原则三禁止③合规)。
+    # rust 目标曾 lessons_refs=0 (v3.32 D-4 判据证伪实录), 文件名检索面覆盖不到
+    # 时由本通道补足。每格最多 5 条防膨胀, 去重保序 (lessons/ 命中在前)。
+    for cell in cells_for(lg):
+        for sl in (cell.get("source_lessons") or [])[:5]:
+            ref = "matrix/" + sl.split(" (")[0].strip()[:80]
+            if ref not in refs:
+                refs.append(ref)
     return {"lang": lg, "kind": kind or None,
             "cells": cells_for(lg),
             "inventory": inv,

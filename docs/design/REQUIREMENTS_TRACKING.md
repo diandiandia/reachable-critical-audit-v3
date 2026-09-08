@@ -1109,3 +1109,21 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.32-002 | tools/fixminer.py 修复驱动挖掘 | 已完成 | tools/fixminer.py + tests/test_v332.py |
 | REQ-V3.32-003 | r35-collect strengthened 回显 + sibling 提示 | 已完成 | tools/batch_verify.py |
 | REQ-V3.32-004 | hints --kind 加权 + lessons_refs 检索 | 已完成 | language_issue_matrix.py + tests/test_v332.py |
+
+## 系统需求（REQ-V3.33）（共 11 条）
+
+> 手工追加段（2026-09-08）。案例支撑：servo 验收审计复盘判型（实现偏差 1 + 设计缺口 4 + 实现增强 2 + 条款 3；修正而非重新设计）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.33-001 | merge 跨文件同 id 碰撞 conflicts 标注 | 已完成 | surface_mapper.py + tests/test_v333.py |
+| REQ-V3.33-002 | merge 域覆盖收口 warn（domain_unmapped） | 已完成 | surface_mapper.py + tests/test_v333.py |
+| REQ-V3.33-003 | fidelity focus_sink 路径存在性校验 | 已完成 | r2_guard.py + tests/test_v333.py |
+| REQ-V3.33-004 | fidelity surface_ids 原样一致性校验 | 已完成 | r2_guard.py + tests/test_v333.py |
+| REQ-V3.33-005 | r4-collect reviewed_clean Medium+ 归位 warn | 已完成 | tools/batch_verify.py + tests/test_v333.py |
+| REQ-V3.33-006 | 报告去重承载候选终态检查 | 已完成 | tools/batch_verify.py + tests/test_v333.py |
+| REQ-V3.33-007 | hints lessons_refs 种格 source_lessons 通道 | 已完成 | language_issue_matrix.py + tests/test_v333.py |
+| REQ-V3.33-008 | fixminer 文件路径信号通道（单次 log --stat） | 已完成 | tools/fixminer.py + tests/test_v333.py |
+| REQ-V3.33-009 | 包络边界声明增生成码类（提示级） | 已完成 | SKILL.md + tests/test_v333.py |
+| REQ-V3.33-010 | 漂移裁决依据固定 snippet 首行锚点（提示级） | 已完成 | SKILL.md + tests/test_v333.py |
+| REQ-V3.33-011 | harness 依赖钉死/lib 名/git 面条款（提示级） | 已完成 | SKILL.md + tests/test_v333.py |

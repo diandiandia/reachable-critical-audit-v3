@@ -34,7 +34,9 @@ def test_fixminer_output_shape():
     d = json.loads(r.stdout)
     assert d["status"] == "OK"
     for c in d.get("fix_commits", []):
-        assert set(c.keys()) == {"hash", "subject", "files", "family"}
+        # v3.33 (SWR-V3.33-008) 增 path_signal 键
+        assert set(c.keys()) == {"hash", "subject", "files", "family",
+                                 "path_signal"}
         assert c["family"] in ("MEMORY-SAFETY", "INJECTION", "RESOURCE-DOS",
                                "AUTHN", "RACE", "DATA-INTEGRITY", "OTHER")
 
@@ -72,7 +74,8 @@ def test_hints_kind_reorder_library():
 def test_hints_lessons_refs_nonempty_for_c():
     h = lim.hints("c")
     assert h["lessons_refs"], "c 语言应检索到历史教训引用"
-    assert all(r.startswith("lessons/") for r in h["lessons_refs"])
+    # v3.33 (SWR-V3.33-007) 增 matrix/ 种格通道; 两前缀均合法
+    assert all(r.startswith(("lessons/", "matrix/")) for r in h["lessons_refs"])
 
 
 def test_hints_no_kind_backward_compat():
@@ -85,4 +88,4 @@ def test_hints_no_kind_backward_compat():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.32"
+    assert we.TOOLING_VERSION == "3.33"

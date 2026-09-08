@@ -106,4 +106,4 @@ def test_install_clean_tree_passes():
 def test_tooling_version_guard():
     sys.path.insert(0, WORKSPACE)
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.32"
+    assert we.TOOLING_VERSION == "3.33"

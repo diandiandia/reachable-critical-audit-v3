@@ -142,8 +142,18 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    - `[suggested_line=N]`（唯一命中）→ 主代理应用修正并写 `line_corrections`；
    - `[suggested_lines=a,b,c]`（多命中）→ 主代理按定义形态启发式裁决；
    - 内容完全不匹配 → 主代理重写 snippet 为源行实际内容并标 `evidence_rewritten_by`。
+   > **漂移裁决依据条款（v3.33, SWR-V3.33-010，提示级）**：裁决依据固定为
+   > snippet 首行实际锚点（定义形态）——`suggested_line` 的语义是"距声称行最近
+   > 的全文命中"，多语句 snippet 会错锚（命中 snippet 中段/函数内他处同名调用），
+   > 13 处漂移中 3 处需定义形态裁决的实战形态（servo 复盘 N-2）。
    > ⚠️ **铁律 1（W5 教训 ①）**：agent 完成通知与文件落盘之间存在写读竞态。读任何子智能体产出文件前必须 `json.load` 重试（失败等 1-2s 重试至多 3 次）；重试后仍损坏才按"产出损坏"处理（重派或主代理修复），禁止把竞态误判为 agent 幻觉。
 4. **合并**：`python3 surface_mapper.py merge .audit_results/_r1_*.json --root <project>` → `input_surface.json`（含 conflicts 标注）。主代理复核后写 `reviewed_by`。
+   > **同 id 碰撞与域覆盖对账（v3.33, SWR-V3.33-001/002，提示级）**：merge 对
+   > 跨文件同 id 碰撞落 conflicts（resolution=`kept-first-same-id`，静默覆盖曾致
+   > 18 面丢失——碰撞时按组件前缀纪律改名后重 merge），并对未测绘且无空域签收的
+   > 域输出 `domain_unmapped` warn（process/storage 零派发形态，主代理裁决重派或
+   > 补签收 reviewed_by+empty_domain_reason）。收口必做机械对账：
+   > Σ域文件面数 == merged 面数。
 
 ## 🎯 R2：假设生成（LLM 主路径）→ LLM 筛选
 
@@ -265,6 +275,14 @@ python3 tools/batch_verify.py <project> --stage workflow-script --mode refutatio
 **同事实去重（v3.4.3, SWR-V3.4.3-060）**：r4-collect 后主代理按 title 跨假说
 同事实去重——主申报方承载 severity，其余条目 `r3_link` 标「同事实共享实证」
 （java-jwt H2/H7 双 agent 各自发现同一 DateTimeException 逃逸的实战形态）。
+**reviewed_clean 归位裁决（v3.33, SWR-V3.33-005，提示级）**：r4-collect 对
+reviewed_clean 假说下 severity≥Medium 的 findings 输出 warn（`reviewed_clean_
+medium_plus`）——实质发现被 verdict 语义留在 B.4 计数而不进问题清单的形态
+（servo 复盘：特权页点击劫持 Medium / promise 滞留 Medium）。主代理裁决归位三选一：
+升 confirmed 承载 / 主代理段补报 / 明确留档；不自动改写 verdict。
+**报告去重承载终态（v3.33, SWR-V3.33-006）**：报告同事实去重仅在 r3_link 承载
+候选 verdict=REACHABLE 时成立——承载候选降 NEEDS_REVIEW/UNREACHABLE 时 finding
+自列承载 severity（去重曾致 High finding 整体消失的形态，servo 复盘）。
 
 ## 🧪 R5：实证抽验（声称类强制，REQ-V3-004/060）
 
@@ -293,6 +311,11 @@ equivalent 档结论强度低于 real_target——真实目标环境可及时，
 
 1. harness 模板（`templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）/ paired_control_probe（v3.30 通用双测对照探针——对照 vs 攻击命令 VmHWM 峰值差分, langs:["any"]，资源类声称配对测量）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
+   **harness 依赖条款（v3.33, SWR-V3.33-011，提示级）**：(a) 独立 harness crate
+   的依赖解析不与目标仓 workspace Cargo.lock 共享——版本敏感依赖必须对照目标仓
+   Cargo.lock 钉死（`=x.y.z`，版本漂移曾致 E0004 非穷尽 match）；(b) lib 名≠包名
+   （`[lib] name` 段）是常见形态，import 按 lib 名；(c) `--offline` 可行性探测须含
+   git 依赖面（workspace 根清单的 git 源会阻断离线解析）。
 3. 实测确认 → `empirical` 字段 + grade=empirically_confirmed；证伪 → correction_record 降级并回溯 verifier 错误（REQ-V3-051）。
    **实证降级簿记（v3.19, SWR-V3.19-004）**：主代理把候选实证降级为
    UNREACHABLE 时，必须同步写候选级 `resurrection_review {revived:false,
@@ -356,7 +379,8 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
   **发现包络边界声明（v3.23, SWR-V3.23-002，提示级）**：该段须附「发现包络
   边界声明」——本审计覆盖输入处理缺陷（输入面→语义轴→sink）；**不覆盖**
   （a）JIT/编译器优化正确性层（类型追踪/去优化正确性——需差分/模糊测试通道），
-  （b）闭源依赖内部实现，（c）非目标平台变体，（d）UI 信任指示层（地址栏/界面欺骗类——UI 信任逻辑非代码缺陷），（e）移动端平台集成层。缺失 = warn 注记不阻断。
+  （b）闭源依赖内部实现，（c）非目标平台变体，（d）UI 信任指示层（地址栏/界面欺骗类——UI 信任逻辑非代码缺陷），（e）移动端平台集成层，
+  （f）构建期生成代码（v3.33, SWR-V3.33-009：codegen/DSL 编译产物、宏展开产物等磁盘无源物——审计生成器源码与调用契约，生成物按依赖边界处理；构建环境可行时应物化（build 后读 OUT_DIR/生成目录）纳入面图。缺失 = warn 注记不阻断。
 - **附录 A：NEEDS_REVIEW 清单与同事实映射**（REQ-V3.1-092）：成因双分
   （`保守裁决`（防御证据充分但门禁压力下保守）vs `证据不足`（前提/调用边无法
   取证）；未注明交主代理确认）+ correction_record 理由 + NEEDS_REVIEW ↔
@@ -1943,3 +1967,34 @@ D-1 库型目标 R2 keep 率显著高于 0 / D-2 修复通道独立假设命中�
 ### 验收判据（Phase 3.32）
 
 test_v332 8 用例全绿 + 全量回归全绿 + install 双副本同步。
+
+## 🆕 v3.33 增量（2026-09-08，Servo 验收复盘十一缺陷修复）
+
+> 设计文档: `docs/design/REQ_V3_33.md` + `SWR_V3_33.md` 等。
+> 修复级增量:标注/warn/提示级——零新门禁名、零新强制义务（义务三问逐项过）。
+> TOOLING 3.33。
+> 案例支撑：servo 验收审计复盘（23 候选 16R/6U/1NR 六门禁 PASS 后判型：
+> 实现偏差 1 条 + 设计缺口 4 条 + 实现增强 2 条 + 条款 3 条 + 非缺陷 3 条——
+> "修正而非重新设计"口径延续）。
+
+1. **merge 同 id 碰撞标注（SWR-V3.33-001, D-1, 标注级）**：跨文件同 id
+   collisions 落 conflicts（kept-first-same-id）；面总数对账入 R1 收口条款。
+2. **域覆盖收口 warn（SWR-V3.33-002, D-2, 提示级）**：merge 对未测绘且无
+   空域签收的域输出 domain_unmapped——process/storage 零派发形态机械可见。
+3. **filter 产出机械校验（SWR-V3.33-003/004, D-3/D-4）**：r2_guard fidelity
+   增 focus_sink 路径存在性 + surface_ids 原样一致性（重写拒收）。
+4. **reviewed_clean 归位裁决（SWR-V3.33-005, D-5, warn 级）**：Medium+
+   findings 在 reviewed_clean 假说下输出归位提示（三选一裁决，不自动改写）。
+5. **报告去重承载终态（SWR-V3.33-006, D-6, 渲染修正）**：r3_link 承载候选
+   非 REACHABLE 时 finding 自列承载 severity。
+6. **hints 种格通道（SWR-V3.33-007, D-7, 数据级）**：lessons_refs 增种格
+   source_lessons 条目（D-4 判据 rust=0 证伪后的修复）。
+7. **fixminer 路径信号（SWR-V3.33-008, D-8, 数据级）**：文件路径信号低权重
+   加分（召回上限修复；净分>0 门槛与精度护栏不变；单次 log --stat 无性能回退）。
+8. **三条款（SWR-V3.33-009/010/011, D-9/D-10/D-11, 提示级）**：包络声明增
+   生成码类；漂移裁决依据固定 snippet 首行锚点；harness 依赖钉死/lib 名/git 面。
+
+### 验收判据（Phase 3.33）
+
+test_v333 新用例全绿 + 全量回归全绿 + 旧队列复跑 blocking=0 +
+install 双副本同步 + 阶段 6 新项目验收（等用户提供）。

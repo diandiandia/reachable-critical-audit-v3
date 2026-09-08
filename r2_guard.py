@@ -169,6 +169,64 @@ def restore_surface_ids(data, hypotheses):
     return data, restored
 
 
+def check_surface_ids_consistency(data, hyps):
+    """SWR-V3.33-004 (D-4): filter 产出 surface_ids 一致性校验——三组条目的
+    surface_ids 必须与 hypotheses.json 原样一致 (元素级)。重写 (filter 擅自
+    改写/编造不存在 id, servo 复盘 N-4: 15 处重写 4 处编造) → error 拒收,
+    主代理按 verbatim 规则修正 filter 产出; 不自动改写 (修法形态纪律)。
+    返回 (errors, mismatches)。"""
+    hyps_map = {}
+    if isinstance(hyps, dict):
+        for h in hyps.get("hypotheses", []):
+            hid = h.get("id") or h.get("hypothesis_id")
+            if hid:
+                hyps_map[hid] = h
+    errors, mismatches = [], []
+    for group in _FILTER_GROUPS:
+        for item in data.get(group, []):
+            if not isinstance(item, dict):
+                continue
+            sids = item.get("surface_ids") or item.get("surface_id") or []
+            if isinstance(sids, str):
+                sids = [sids]
+            src = hyps_map.get(item.get("id"))
+            if not src:
+                continue
+            orig = src.get("surface_ids") or src.get("surface_id") or []
+            if isinstance(orig, str):
+                orig = [orig]
+            if not orig:
+                continue
+            if list(sids) != list(orig):
+                mismatches.append(item.get("id"))
+                errors.append(
+                    f"{item.get('id')}: surface_ids 被重写 (got={sids}, "
+                    f"expected={orig}) —— 必须原样继承 hypotheses.json "
+                    f"(filter 重写=门禁⑦计数失真, servo 复盘 N-4)")
+    return errors, mismatches
+
+
+def check_focus_sinks(data, project_root):
+    """SWR-V3.33-003 (D-3): keep 条目 focus_sink 路径存在性校验——filter 产出
+    的 path:line 须指向真实文件 (HYP-043 路径段漂移形态, servo 复盘 N-4)。
+    返回 errors。"""
+    errors = []
+    for item in data.get("keep", []):
+        if not isinstance(item, dict):
+            continue
+        fs = item.get("focus_sink")
+        if not fs or ":" not in fs:
+            continue
+        path = fs.rsplit(":", 1)[0]
+        if not path:
+            continue
+        if not os.path.isabs(path):
+            path = os.path.join(project_root, path)
+        if not os.path.exists(path):
+            errors.append(f"{item.get('id')}: focus_sink 路径不存在: {fs}")
+    return errors
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "help"
     if cmd == "validate":
@@ -232,8 +290,17 @@ def main(argv):
                     print("WARN: hypotheses.json 缺失, 跳过反查修复", file=sys.stderr)
         data, restored = restore_surface_ids(data, hyps or {})
         json.dump(data, open(argv[2], "w"), ensure_ascii=False, indent=2)
+        # SWR-V3.33-004 (D-4): 一致性校验 (restore 之后跑, 补回项不计 mismatch)
+        errs, mismatches = check_surface_ids_consistency(data, hyps or {})
+        # SWR-V3.33-003 (D-3): focus_sink 路径存在性 (项目根 = 上溯 .audit_results 的父目录)
+        proot = os.path.dirname(os.path.dirname(os.path.abspath(argv[2])))
+        errs += check_focus_sinks(data, proot)
         print(f"surface_ids_fidelity: restored={restored}")
-        return 0
+        if mismatches:
+            print(f"surface_ids_mismatch: {mismatches}")
+        for e in errs:
+            print(f"  [error] {e}")
+        return 1 if errs else 0
     print(__doc__)
     return 1
 
