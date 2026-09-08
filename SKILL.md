@@ -1777,3 +1777,33 @@ MaintainWise）assert_ledger 零新增告警 + install 双副本同步 + 脏树�
 
 test_v327 新用例全绿 + 全量回归全绿（472 基线 + 新增）+ 去项目化扫描
 0 命中（新矩阵/清单条目）+ install 双副本同步 + 资产计数 45 同步。
+
+## 🆕 v3.28 增量（2026-09-08，Top15×Top10 目标物化）
+
+> 设计文档: `docs/design/REQ_V3_28.md` + `SWR_V3_28.md` +
+> `SYSTEM_DESIGN_V3_28.md` + `SOFTWARE_DESIGN_V3_28.md` + `BIAS_EVAL_V3_28.md`。
+> 内容+加载器增量：零流水线改动、零门禁改动、裁决层零改动。TOOLING 3.28。
+> 案例支撑：用户澄清设计目标（Top15 语言 × 每语言 Top10 信息安全问题的审计
+> 与验证）+ 三轮评估诊断（目标计量单位错配/知识输入单通道/目标开环/验证不可
+> 条目级追溯——实测：34/192 格种、无一语言达 10、两轮战役 +2 格）。
+
+1. **问题粒度层 inventory（SWR-V3.28-001/002）**：
+   `resources/language_issue_inventory.json`——每语言排序问题条目（pattern
+   粒度派生自已种格，36 条目真实溯源）；`language_issue_matrix.py inventory
+   <lang>` 按 (族严重度档, cwe 最大严重度, id) 机械排序，rank 不落盘
+   （排序是视图不是数据）。
+2. **seed 双通道（SWR-V3.28-004）**：`seed <json-file>` 外部权威源种格——
+   强制 source.tier/origin/date 出处、lang 枚举校验、cwe 格式校验、去项目化
+   扫描、幂等拒绝（lang+title 重复）。external_seeded 档是提示层资产，
+   **不得进入裁决层**（先例/清单/签名/harness 维持只收战役证据）。
+3. **goal 达成度视图（SWR-V3.28-003）**：`goal` 命令——每语言条目数/距
+   Top10 缺口/档位分布 + 里程碑 K1（骨架：每语言 ≥10 条带来源条目）/
+   K2（战役验证：每语言 ≥10 条 battle_confirmed）进度。
+4. **回填升档条款（SWR-V3.28-005，提示级）**：验收收官时，确认问题的 cwe
+   命中 inventory 条目 → 该条目 verify 升档 battle_confirmed（battles/
+   candidates/date 落盘）。不建自动升档机制（误匹配风险>收益）。
+
+### 验收判据（Phase 3.28）
+
+test_v328 14 用例全绿 + 全量回归全绿 + install 双副本同步。K1/K2 里程碑
+达成不属本周期验收判据（资产建设里程碑，由 goal 视图持续追踪）。

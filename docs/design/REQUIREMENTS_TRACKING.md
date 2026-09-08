@@ -1048,3 +1048,18 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.27-004 | 清单 CK-LIMIT-BYPASS-ENUM（44→45） | 已完成 | checklist_library.json + tests/test_v327.py |
 | REQ-V3.27-005 | R4 任务书正向确认条目惯例 | 已完成 | task_templates/biz_hypothesis.md + tests/test_v327.py |
 | 裁除 | R4 时序机制化（无消费者增益，义务三问②） | 裁除 | REQ_V3_27.md 裁决记录表 |
+
+## 系统需求（REQ-V3.28）（共 5 条）
+
+> 手工追加段（2026-09-08）。规范: REQ_V3_28.md / SWR_V3_28.md /
+> SYSTEM_DESIGN_V3_28.md / SOFTWARE_DESIGN_V3_28.md。评估: BIAS_EVAL_V3_28.md。
+> 案例支撑：用户目标澄清 + 三轮评估实录（34/192 格种、无一语言达 10、
+> 两轮战役 +2 格速率鸿沟）。DDL：无新 lessons（QuickJS 已 v3.27 消化）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.28-001 | inventory 问题粒度层资产（36 条目 pattern 粒度派生） | 已完成 | resources/language_issue_inventory.json + tests/test_v328.py |
+| REQ-V3.28-002 | inventory 命令机械排序（rank 不落盘） | 已完成 | language_issue_matrix.py + tests/test_v328.py |
+| REQ-V3.28-003 | goal 达成度视图 + K1/K2 里程碑 | 已完成 | language_issue_matrix.py + tests/test_v328.py |
+| REQ-V3.28-004 | seed 外部种格通道（出处/去项目化/幂等四校验） | 已完成 | language_issue_matrix.py + tests/test_v328.py |
+| REQ-V3.28-005 | 回填升档条款（提示级） | 已完成 | SKILL.md v3.28 增量段 |
