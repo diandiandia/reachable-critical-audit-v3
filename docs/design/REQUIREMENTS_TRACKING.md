@@ -1077,3 +1077,11 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.29-003 | seed 双写矩阵一致性 | 已完成 | language_issue_matrix.py + tests/test_v329.py |
 | REQ-V3.29-004 | CWE Top 25 2025 试点种格（156 条目, K1 16/16） | 已完成 | resources/language_issue_inventory.json（经 seed 命令） |
 | REQ-V3.29-005 | R2 接通 + R6 命中率条款（提示级） | 已完成 | SKILL.md v3.29 增量段 |
+
+## 系统需求（REQ-V3.30）（共 1 条）
+
+> 手工追加段（2026-09-08）。案例支撑:QuickJS 审计 5 harness 同形态实录。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.30-001 | paired_control_probe 双测对照探针模板 | 已完成 | templates/harness/paired_control_probe.py + harness_runner + tests/test_v330.py |

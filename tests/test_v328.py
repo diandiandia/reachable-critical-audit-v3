@@ -185,4 +185,4 @@ def test_inventory_deproject():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.29"
+    assert we.TOOLING_VERSION == "3.30"

@@ -1841,3 +1841,19 @@ test_v328 14 用例全绿 + 全量回归全绿 + install 双副本同步。K1/K2
 
 test_v329 新增用例全绿 + 全量回归全绿 + install 双副本同步 + K1 16/16 +
 seed 双写一致性断言 + 去项目化扫描零命中。
+
+## 🆕 v3.30 增量（2026-09-08，paired_control_probe 双测对照探针）
+
+> 设计文档: `docs/design/REQ_V3_30.md` + `SWR_V3_30.md` 等。
+> 模板增量:零流水线/门禁/裁决层改动。TOOLING 3.30。
+> 案例支撑:QuickJS 验收审计 5 次现场构造同形态(对照+攻击双测, VmHWM 差分;
+> "RSS 平=测法伪影"采样坑实录)。
+
+1. **paired_control_probe（SWR-V3.30-001）**：通用双测对照探针——对照 vs 攻击
+   命令同入口/同旗标,进程树 VmHWM 峰值差分,三态判定(PAIRED_CONFIRMED /
+   NO_SIGNIFICANT_DIFF / CONTROL_FAILED)。langs:["any"],argv 必传双命令,
+   采样进程树(shell+后代——子进程漏采样修正)。
+
+### 验收判据（Phase 3.30）
+
+test_v330 8 用例全绿 + 全量回归全绿 + install 双副本同步。

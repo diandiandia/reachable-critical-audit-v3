@@ -116,4 +116,4 @@ def test_equivalent_spotcheck_hint():
 # ---- 版本链 ----
 
 def test_tooling_version_324():
-    assert we.TOOLING_VERSION == "3.29"
+    assert we.TOOLING_VERSION == "3.30"
