@@ -22,12 +22,7 @@ description: >-
 
 **测试与回归的边界**：回归 fixture 可以来自具体项目（三锚点基线），但 fixture 只用于验证"通用机制未回退"，不得成为运行时行为依据。
 
-> 来源：2026-08-17 mbedtls 审计复盘——签名库携带 Django/NestJS/Ktor/lighttpd/WordPress 专属 API 名（get_host/read_body/multer/maxDecodedContentLength/good_origin/CleanXSS）、verifier 任务书是 Python 思维定式（find_spec）、harness 按历史战役配置（4 模板 6/15 语言）、R0 冒烟仅对历史 fixture 有意义（非 fixture 项目恒放行）。修复方案见 v3.2.2 设计（P-A 资产去项目化问题域）。
-
-> [!IMPORTANT]
-> **v3 取代 v2.1**。v3 由三锚点回归测试（sinatra/lighttpd/actix-web 对照归档基线，2026-08-16）实战验证：候选规模下降 98~99.98%、闭合率 100%、独立复核机制三次实战拦截"代码路径可达≠攻击相关"误判、产出 2 个实证确认的 REACHABLE。v2.1 唯一遗产为 `docs/legacy/SKILL_V2.1.md`（规范备份，供对照历史）。
->
-> **架构转变**：LLM 子智能体是主分析引擎（测绘/回溯/判断）；规则库只是**提示器**（语义签名 grep hints + 检查清单），不再是判定器。审计起点是**输入面测绘**（R1），全库规则轰炸不再是默认路径。
+> **审计架构**：LLM 子智能体是主分析引擎（测绘/回溯/判断）；规则库只是**提示器**（语义签名 grep hints + 检查清单），不再是判定器。审计起点是**输入面测绘**（R1），全库规则轰炸不再是默认路径。v2.1 遗产仅 `docs/legacy/SKILL_V2.1.md`（备份）；规则案例溯源见 `docs/history/FIRST_PRINCIPLES.md`。
 
 ## 🎯 核心使命（不变）
 
