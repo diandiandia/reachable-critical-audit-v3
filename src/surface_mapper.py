@@ -538,7 +538,13 @@ def normalize_surfaces(data, project_root=None):
             # v3.2: agent 常写描述性自由文本——按关键词映射到枚举, 原文留档
             s["trust_boundary_raw"] = tb
             t = tb.lower()
-            if any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
+            # v3.36 (SWR-V3.36-001): 规范枚举串先短路透传——关键词映射器
+            # 面向自由文本, 规范值入链会被误伤 (local/trusted_channel 兜底
+            # 改 environment, environment 命中 "env" 改 local; Caddy 验收
+            # 35/70 面改写实录)。规范输入是精确值, 映射纯属误猜。
+            if t in VALID_TRUST:
+                mapped = t
+            elif any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
                 mapped = "unauthenticated_remote"
             elif any(k in t for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
                 mapped = "host_api"  # v3.3 (REQ-V3.3-008)
@@ -555,7 +561,12 @@ def normalize_surfaces(data, project_root=None):
             # v3.2: 上一轮 normalize 已把自由文本包进 dict 的产物 (遗留形态)
             s.setdefault("trust_boundary_raw", tb.get("type"))
             t = str(tb.get("type", "")).lower()
-            if any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
+            # v3.36 (SWR-V3.36-002): 大小写变体规范值同样短路透传
+            # (与 str 分支对称; {"type":"Environment"} 现状会走 "env"
+            # 关键词改写为 local, 同 SWR-V3.36-001 病根另一入口)
+            if t in VALID_TRUST:
+                mapped = t
+            elif any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
                 mapped = "unauthenticated_remote"
             elif any(k in t for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
                 mapped = "host_api"  # v3.3 (REQ-V3.3-008)
