@@ -1,0 +1,900 @@
+{
+ "description": "Top15 语言 × Top10 信息安全问题的知识资产清单 (v3.28)。条目由语言问题矩阵已种格按 pattern 粒度派生 (真实溯源); rank 由加载器按族严重度档机械计算不落盘。source.tier: battle_verified=战役溯源, source_seeded=清单/签名溯源, external_seeded=外部权威源 (经 seed 命令入库, 强制出处)。verify.battle_confirmed 仅在审计实录可证时升档。",
+ "langs": [
+  "perl",
+  "powershell",
+  "shell",
+  "csharp",
+  "python",
+  "javascript",
+  "java",
+  "kotlin",
+  "scala",
+  "go",
+  "c",
+  "cpp",
+  "rust",
+  "php",
+  "ruby",
+  "swift"
+ ],
+ "goal": {
+  "per_lang_target": 10,
+  "milestones": {
+   "K1": {
+    "name": "骨架建成",
+    "criterion": "每语言 ≥10 条带来源条目"
+   },
+   "K2": {
+    "name": "战役验证",
+    "criterion": "每语言 ≥10 条 battle_confirmed"
+   }
+  }
+ },
+ "entries": [
+  {
+   "id": "INV-c-001",
+   "lang": "c",
+   "title": "低阶点/对等端校验缺失: 协议层参数未验",
+   "family": "CRYPTO",
+   "cwe": [
+    "CWE-347",
+    "CWE-327"
+   ],
+   "pattern": "低阶点/对等端校验缺失: 协议层参数未验",
+   "sink_hint": "椭圆曲线点接收点",
+   "pitfall": "目标树内缺校验 ≠ 缺陷成立——先查绑定层契约 (加密库低阶点/对等端校验) | 阻断论证引用绑定层补全校验时必须写绑定层 file:line",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "CK-VENDORED-CONTRACT (X25519 kZeros/DH Ys=p-1 契约实录)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-c-002",
+   "lang": "c",
+   "title": "错误分支与清理完整性: 错误路径处理缺陷",
+   "family": "ERROR-HANDLING",
+   "cwe": [
+    "CWE-457",
+    "CWE-665"
+   ],
+   "pattern": "错误分支与清理完整性: 错误路径处理缺陷",
+   "sink_hint": "错误分支条件点",
+   "pitfall": "错误分支条件反转/静默阻断/吞没转正常路径三类逐查 | 宿主复用残留 (清理不完整) 是库型目标的高发形态",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "CK-ERROR-BRANCH | CK-ERROR-CLEANUP (v3.13 错误路径族盘点)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-c-003",
+   "lang": "c",
+   "title": "解析器边界计算: 长度/索引字段驱动内存访问",
+   "family": "MEMORY-SAFETY",
+   "cwe": [
+    "CWE-787",
+    "CWE-125"
+   ],
+   "pattern": "解析器边界计算: 长度/索引字段驱动内存访问",
+   "sink_hint": "长度字段驱动的 memcpy/索引",
+   "pitfall": "长度字段极值 + 截断矩阵实证是声称类强制 (parser_fuzz 模板) | 有符号下溢语义保留/边界指针语义在 stub 复刻时必须逐字保留 | 序列化/反序列化读取器的尺寸计算必须 size_t 且逐项溢出检查; 计数 ≤ 剩余输入/单元素最小占用——int 算术回绕 = 小分配大写入",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "parser_fuzz 模板实战形态 (asn1_get_len ASan 2M+ 输入实录) | libarchive/freetype 解析器审计形态 (2026-08) | quickjs lessons 2026-09-07",
+    "date": "2026-09-08"
+   },
+   "verify": {
+    "status": "battle_confirmed",
+    "battles": [
+     "quickjs"
+    ],
+    "candidates": [
+     "H-2-F1",
+     "H-2-F2"
+    ],
+    "date": "2026-09-08"
+   }
+  },
+  {
+   "id": "INV-c-004",
+   "lang": "c",
+   "title": "截断先于检查/哨兵算术: 数值语义缺陷",
+   "family": "NUMERIC",
+   "cwe": [
+    "CWE-191",
+    "CWE-681"
+   ],
+   "pattern": "截断先于检查/哨兵算术: 数值语义缺陷",
+   "sink_hint": "截断 cast 点",
+   "pitfall": "截断先于检查 = 检查死代码——核实检查与截断的先后 | 哨兵值算术 (如 -1 表示) 与无符号下溢的交互是漏报高发区",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "CK-NUMERIC-TRUNCATION | CK-NUMERIC-SEMANTICS (v3.13 数值族盘点)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-c-005",
+   "lang": "c",
+   "title": "远端控制分配大小无上限: 攻击者控制长度进入分配",
+   "family": "RESOURCE-DOS",
+   "cwe": [
+    "CWE-789",
+    "CWE-770"
+   ],
+   "pattern": "远端控制分配大小无上限: 攻击者控制长度进入分配",
+   "sink_hint": "malloc 家族",
+   "pitfall": "分配请求 ≠ 资源耗尽: 提交内存受输入限制时判 Low (PREC-ALLOC-VIRTUAL-001) | 累积型 (逐块预留) 与一次性分配的量级判定不同 | 子执行上下文 (worker/线程/子 rt) 的资源参数继承矩阵逐项核对; 哨兵值 (0/-1/非法) 语义 fail-open 还是 fail-closed",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "SIG-C-ALLOC-001 (签名库 L2 词族) | PREC-ALLOC-VIRTUAL-001 | quickjs lessons 2026-09-07",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-c-006",
+   "lang": "c",
+   "title": "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一枚举——限额类缺陷的旁路族",
+   "family": "RESOURCE-DOS",
+   "cwe": [
+    "CWE-789",
+    "CWE-770"
+   ],
+   "pattern": "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一枚举——限额类缺陷的旁路族",
+   "sink_hint": "malloc 家族",
+   "pitfall": "分配请求 ≠ 资源耗尽: 提交内存受输入限制时判 Low (PREC-ALLOC-VIRTUAL-001) | 累积型 (逐块预留) 与一次性分配的量级判定不同 | 子执行上下文 (worker/线程/子 rt) 的资源参数继承矩阵逐项核对; 哨兵值 (0/-1/非法) 语义 fail-open 还是 fail-closed",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "SIG-C-ALLOC-001 (签名库 L2 词族) | PREC-ALLOC-VIRTUAL-001 | quickjs lessons 2026-09-07",
+    "date": "2026-09-08"
+   },
+   "verify": {
+    "status": "battle_confirmed",
+    "battles": [
+     "quickjs"
+    ],
+    "candidates": [
+     "CAND-001",
+     "CAND-003",
+     "H-1-F1",
+     "H-7-F2"
+    ],
+    "date": "2026-09-08"
+   }
+  },
+  {
+   "id": "INV-c-007",
+   "lang": "c",
+   "title": "vendored 状态机: 续接分支/暂停恢复语义",
+   "family": "STATE",
+   "cwe": [
+    "CWE-696"
+   ],
+   "pattern": "vendored 状态机: 续接分支/暂停恢复语义",
+   "sink_hint": "状态机转移点",
+   "pitfall": "『死代码/不可达』类阻断对 vendored 状态机必须做状态机级复核 (逐状态转移行核实) | 续接分支被 verifier 判死代码为假的高发形态",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "CK-VENDORED-CONTRACT (llhttp pause/resume/upgrade 转移实录)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-cpp-001",
+   "lang": "cpp",
+   "title": "反序列化器尺寸字段无门: wire 字节解码的长度直接进入分配/写操作",
+   "family": "MEMORY-SAFETY",
+   "cwe": [
+    "CWE-787",
+    "CWE-125"
+   ],
+   "pattern": "反序列化器尺寸字段无门: wire 字节解码的长度直接进入分配/写操作",
+   "sink_hint": "GetUint30/varint 解码点",
+   "pitfall": "『快照/缓存为受信输入』是信任模型声明不是代码防御——防御纵深建议仍需尺寸门 (code-cache 侧 size<kHeaderSize 守卫先例) | 乘法回绕必须在分配前检查 (SignedMulOverflow), 回绕后小尺寸分配成立即越界写 | 后置 CHECK 不阻断首块写——检查点在写窗口之后属后置检查形态, 按 CK-POSTOP-INVARIANT 判缺陷",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "V8 审计 2026-09-01 (CAND-013 size_in_tagged 无门分配 / CAND-049 GetMagicNumber 越界读, R3/R3.5 双复核确认)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-cpp-002",
+   "lang": "cpp",
+   "title": "远端控制分配: new[]/容器预留受攻击者控制",
+   "family": "RESOURCE-DOS",
+   "cwe": [
+    "CWE-789",
+    "CWE-770"
+   ],
+   "pattern": "远端控制分配: new[]/容器预留受攻击者控制",
+   "sink_hint": "new[] 攻击者控制长度",
+   "pitfall": "容器自动增长的累积量级以对象图内部急切分配为准 (成员缓冲/嵌套对象) | 顶层对象尺寸低估 3-4 个数量级的形态必须按构造器链枚举",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-CPP-ALLOC-001 (签名库 L2 词族) | CK-CHECKPOINT-AFTER-ACCUM 构造器链条目",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-cpp-003",
+   "lang": "cpp",
+   "title": "异步任务对象生命周期契约: 后台线程执行体被主线程无同步销毁",
+   "family": "STATE",
+   "cwe": [
+    "CWE-696"
+   ],
+   "pattern": "异步任务对象生命周期契约: 后台线程执行体被主线程无同步销毁",
+   "sink_hint": "后台任务 Release/reset 点",
+   "pitfall": "散文契约句 (文档注释) 不构成代码级阻断——但契约成立且全部实测使用者遵守时按平台契约规则判 UNREACHABLE (SWR-V3.11-004~006) | 『缓存命中分支遗漏保护』类 gap 主张必须核实全 API 的成立前提——整体依赖同一契约时非分支级缺口",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "V8 审计 2026-09-01 (CAND-022 流式 API Run-返回契约, 复活重验改判后 2/2 证伪拦截)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-cpp-004",
+   "lang": "cpp",
+   "title": "路径穿越: 用户路径与白名单/前缀拼接",
+   "family": "WEB",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径穿越: 用户路径与白名单/前缀拼接",
+   "sink_hint": "路径拼接点",
+   "pitfall": "白名单必须逐字符核实字符集实际内容——白名单含 '.' 即 '..' 序列合法 | 防御声称不能只 grep '/' 或 '\\' 就推定穿越被阻止",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SWR-V3.8-009 路径面条款 (cpp-httplib 类形态实测)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-csharp-001",
+   "lang": "csharp",
+   "title": "安全配置默认可达性: 鉴权/防护开关键代码零值与实际提交值不一致",
+   "family": "AUTHN",
+   "cwe": [
+    "CWE-306"
+   ],
+   "pattern": "安全配置默认可达性: 鉴权/防护开关键代码零值与实际提交值不一致",
+   "sink_hint": "鉴权开关键",
+   "pitfall": "『默认可达』声称必须引用 shipped-config 盘点 (提交值 vs 代码零值) | 显式关闭也是提交值——不得把显式关闭误读为默认开启",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "shipped-config 盘点条款 (REQ-V3.2.1-030, 防护开关代码零值误判实录)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-csharp-002",
+   "lang": "csharp",
+   "title": "模块存在 ≠ 被导入: 依赖注入/动态加载路径的静默失效",
+   "family": "ERROR-HANDLING",
+   "cwe": [
+    "CWE-457"
+   ],
+   "pattern": "模块存在 ≠ 被导入: 依赖注入/动态加载路径的静默失效",
+   "sink_hint": "DI 容器注册点",
+   "pitfall": "broken_edge 类阻断必须核实导入注册链, 不得以模块存在推定 | 启动链正则与扫描器吞错路径双查",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "步骤 0.5 模块可导入性预检 (REQ-V3.2.1-010, 模块导入 404 先例) | CK-IMPORT-REGISTRATION",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-csharp-003",
+   "lang": "csharp",
+   "title": "反序列化输入面: 类型解析受攻击者控制 (多态类型开关)",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "反序列化输入面: 类型解析受攻击者控制 (多态类型开关)",
+   "sink_hint": "TypeNameHandling 类类型开关",
+   "pitfall": "默认拒绝/配置接受双侧对照: 默认关闭的开关必须按实际部署配置判定, 不得以代码零值推定 | 『仅受信通道』声称必须给出信源链证据",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-CS-DESER-001 (签名库 L2 词族) | cs 手册对照矩阵 (T2 默认拒绝 vs 配置接受实测)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-go-001",
+   "lang": "go",
+   "title": "流式拷贝/累积无上限: 读端无界累积",
+   "family": "RESOURCE-DOS",
+   "cwe": [
+    "CWE-400",
+    "CWE-770"
+   ],
+   "pattern": "流式拷贝/累积无上限: 读端无界累积",
+   "sink_hint": "io.Copy 无上限目标",
+   "pitfall": "io.Copy 对不可信源必须包 LimitReader——裸拷贝是默认缺陷形态 | 『调用方已限流』声称必须核实读取侧实际到达量 (投递量≠到达量)",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-GO-ACCUM-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-java-001",
+   "lang": "java",
+   "title": "异常逃逸: 解析/校验异常穿透正常路径成为判定依据差异",
+   "family": "ERROR-HANDLING",
+   "cwe": [
+    "CWE-457"
+   ],
+   "pattern": "异常逃逸: 解析/校验异常穿透正常路径成为判定依据差异",
+   "sink_hint": "日期时间解析",
+   "pitfall": "异常逃逸类缺陷常被多个假说同事实共享实证——去重后主申报方承载 severity | 吞错转正常路径与逃逸判定的方向不得颠倒",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "java-jwt H2/H7 同事实共享实证实录 (DateTimeException 逃逸形态)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-java-002",
+   "lang": "java",
+   "title": "反序列化输入面: 对象流反序列化受攻击者控制",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "反序列化输入面: 对象流反序列化受攻击者控制",
+   "sink_hint": "readObject/ObjectInputStream",
+   "pitfall": "反序列化过滤 (ObjectInputFilter 类) 缺省不启用——『默认防护』声称必须核实启用点 | gadget 链判定按可达类路径枚举, 不得以单类推定",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-JAVA-DESER-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-javascript-001",
+   "lang": "javascript",
+   "title": "加密库参数校验: 算法/密钥参数未白名单化",
+   "family": "CRYPTO",
+   "cwe": [
+    "CWE-327",
+    "CWE-347"
+   ],
+   "pattern": "加密库参数校验: 算法/密钥参数未白名单化",
+   "sink_hint": "签名验证入口",
+   "pitfall": "弱算法回退链 (协商降级) 是主判轴——逐降级分支核实 | 『标准用法』声称必须对照库契约 (低阶点校验形态)",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "CRYPTO 族 JS 审计形态 (jsrsasign 审计 2026-08)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-javascript-002",
+   "lang": "javascript",
+   "title": "流式累积无上限: 数据事件逐块累积到内存",
+   "family": "RESOURCE-DOS",
+   "cwe": [
+    "CWE-400",
+    "CWE-770"
+   ],
+   "pattern": "流式累积无上限: 数据事件逐块累积到内存",
+   "sink_hint": "socket/stream 'data' 事件累积",
+   "pitfall": "分片到达序不可控——按到达累积的量级必须以上限为界 | 背压缺失 (消费者不停读) 使累积无平台期",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-TS-ACCUM-001 (签名库 L2 词族, ts 组)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-kotlin-001",
+   "lang": "kotlin",
+   "title": "流式接收累积无上限: 协程通道/流逐块累积",
+   "family": "RESOURCE-DOS",
+   "cwe": [
+    "CWE-400",
+    "CWE-770"
+   ],
+   "pattern": "流式接收累积无上限: 协程通道/流逐块累积",
+   "sink_hint": "Channel.receive 循环",
+   "pitfall": "协程取消与累积交互: 取消点缺失使累积持续 | 帧上限必须对每个分片帧 (含 continuation) 强制",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-KT-RECEIVE-001 (签名库 L2 词族) | CK-WS-MATERIALIZE (ws 分片物化形态)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-perl-001",
+   "lang": "perl",
+   "title": "动态代码执行: 不可信数据进入 eval/系统命令执行路径",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-78",
+    "CWE-94"
+   ],
+   "pattern": "动态代码执行: 不可信数据进入 eval/系统命令执行路径",
+   "sink_hint": "eval",
+   "pitfall": "open 的双参数可变语义 (文件句柄 vs 管道) 是漏报高发区 | 『参数已转义』声称必须逐字符核实转义函数覆盖的字符集",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-PERL-EXEC-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-perl-002",
+   "lang": "perl",
+   "title": "输出编码缺失: 用户数据进入 HTML/属性/脚本上下文",
+   "family": "WEB",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出编码缺失: 用户数据进入 HTML/属性/脚本上下文",
+   "sink_hint": "print/CGI 输出路径",
+   "pitfall": "清洗白名单必须逐字符核实字符集实际内容 (白名单含 '.' 即 '..' 序列合法) | 上下文差异: 同一数据在属性/脚本上下文编码要求不同",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "xss_path_sim 模板实战形态 (templates/harness/xss_path_sim.pl)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-php-001",
+   "lang": "php",
+   "title": "加密库参数校验: 算法/密钥参数未白名单化",
+   "family": "CRYPTO",
+   "cwe": [
+    "CWE-327",
+    "CWE-347"
+   ],
+   "pattern": "加密库参数校验: 算法/密钥参数未白名单化",
+   "sink_hint": "签名验证入口",
+   "pitfall": "弱算法回退链 (协商降级) 是主判轴——逐降级分支核实 | 『标准用法』声称必须对照库契约 (低阶点校验形态)",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "CRYPTO×php 覆盖格回填实录 (phpseclib 验收 2026-08)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-php-002",
+   "lang": "php",
+   "title": "动态代码执行: 不可信数据进入 eval/回调形态",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-94",
+    "CWE-78"
+   ],
+   "pattern": "动态代码执行: 不可信数据进入 eval/回调形态",
+   "sink_hint": "eval",
+   "pitfall": "回调形态 (动态函数名/类名) 与 eval 同族——不得漏判 | include 动态路径兼文件包含面, 双面登记",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-PHP-EVAL-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-powershell-001",
+   "lang": "powershell",
+   "title": "动态脚本块执行: 不可信字符串进入脚本块/命令构造",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-94",
+    "CWE-78"
+   ],
+   "pattern": "动态脚本块执行: 不可信字符串进入脚本块/命令构造",
+   "sink_hint": "ScriptBlock::Create",
+   "pitfall": "双引号字符串变量插值早于转义——先插值后防护的形态必漏 | 管道对象传递 ≠ 字符串拼接 (对象形态不构成注入)",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-PS-SCRIPTBLOCK-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-python-001",
+   "lang": "python",
+   "title": "反序列化输入面: 不可信字节流反序列化为对象图",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "反序列化输入面: 不可信字节流反序列化为对象图",
+   "sink_hint": "pickle.loads",
+   "pitfall": "序列化边界 ≠ 信任边界——文件来源/消息队列来源均不可推定受信 | 『仅受信输入』声称必须给出信源链证据行",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-PY-PICKLE-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-python-002",
+   "lang": "python",
+   "title": "C 扩展边界: 共享 helper/allocator 的边界检查归属",
+   "family": "MEMORY-SAFETY",
+   "cwe": [
+    "CWE-787",
+    "CWE-125"
+   ],
+   "pattern": "C 扩展边界: 共享 helper/allocator 的边界检查归属",
+   "sink_hint": "C 扩展模块内存操作",
+   "pitfall": "边界检查必须沿调用链双向核实——被调函数内有检查 ≠ 调用者未挡, 反之亦然 | 判『缺检查/缺上界』前必须 Read 两侧源码并各引证据行",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "REQ-V3.9-008 双向核实条款 (两次误报同模式实录)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-python-003",
+   "lang": "python",
+   "title": "多帧/多块格式状态机: 逐帧门禁与一次性门禁语义混淆",
+   "family": "STATE",
+   "cwe": [
+    "CWE-841"
+   ],
+   "pattern": "多帧/多块格式状态机: 逐帧门禁与一次性门禁语义混淆",
+   "sink_hint": "逐帧解析循环",
+   "pitfall": "一次性门禁检查 ≠ 状态机重入门禁——逐状态转移行核实 (逐帧/逐块形态) | 跳步/重放/乱序序对依赖必须逐项验证",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "CK-FRAME-GATE-REENTRY | PREC-STATE-GATE-REENTRY (图像容器 DCX/MPO 机制化)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-ruby-001",
+   "lang": "ruby",
+   "title": "调试/控制端点零鉴权: 暴露组件缺鉴权门禁",
+   "family": "AUTHN",
+   "cwe": [
+    "CWE-862",
+    "CWE-306"
+   ],
+   "pattern": "调试/控制端点零鉴权: 暴露组件缺鉴权门禁",
+   "sink_hint": "控制端点/状态页路由",
+   "pitfall": "『默认受保护』声称必须核实路由挂载与守卫链 | 无 token 形态的端点常被框架默认放行——按实际路由判定",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "H5 形态实录 (no_token 控制端点零鉴权, 2026-08)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-ruby-002",
+   "lang": "ruby",
+   "title": "动态代码执行: 不可信数据进入 eval/系统调用",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-94",
+    "CWE-78"
+   ],
+   "pattern": "动态代码执行: 不可信数据进入 eval/系统调用",
+   "sink_hint": "eval",
+   "pitfall": "send/constantize 动态分发与 eval 同族——漏判高发 | 『调用者受信』声称必须给信源链证据",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-RB-EVAL-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-ruby-003",
+   "lang": "ruby",
+   "title": "跨租户状态共享: 状态机序对缺陷 (停服/恢复/会话序)",
+   "family": "STATE",
+   "cwe": [
+    "CWE-696"
+   ],
+   "pattern": "跨租户状态共享: 状态机序对缺陷 (停服/恢复/会话序)",
+   "sink_hint": "跨用户共享状态点",
+   "pitfall": "跨用户停服类序对缺陷的 owner 归属必须逐请求核实 | 状态机序对 (启动→停止→启动) 的非法转移按逐转移行判定",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "H-6-F1 跨用户停服实录 (2026-08)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-rust-001",
+   "lang": "rust",
+   "title": "unsafe 块边界: 安全不变量在 unsafe 内的自证义务",
+   "family": "MEMORY-SAFETY",
+   "cwe": [
+    "CWE-787",
+    "CWE-125",
+    "CWE-416"
+   ],
+   "pattern": "unsafe 块边界: 安全不变量在 unsafe 内的自证义务",
+   "sink_hint": "unsafe 块",
+   "pitfall": "内层安全不变量必须在 unsafe 块内自证——『外层已保证』声称必须给出作用域证据 | safe 包 unsafe 的边界检查归属双向核实 | safe Rust 解析器的递归/深度防护以解析器内建上限为机制 (嵌套块深度门), 非 unsafe 问题但仍属该格防护形态",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-RS-UNSAFE-001 (签名库 L2 词族) | Firefox 审计 2026-09-04 (stylo/webrender/neqo/encoding_rs/mp4parse/rsdparsa/qcms 21 面核查: 安全不变量承重全部在 FFI 契约双侧)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-rust-002",
+   "lang": "rust",
+   "title": "FFI 边界契约双侧核实: unsafe extern 的指针/长度契约承重在调用侧 (C++ CheckedInt/UTF-8 门) — unsafe 块自证义务的载体是跨语言调用契约而非 rust 侧单边",
+   "family": "MEMORY-SAFETY",
+   "cwe": [
+    "CWE-787",
+    "CWE-125",
+    "CWE-416"
+   ],
+   "pattern": "FFI 边界契约双侧核实: unsafe extern 的指针/长度契约承重在调用侧 (C++ CheckedInt/UTF-8 门) — unsafe 块自证义务的载体是跨语言调用契约而非 rust 侧单边",
+   "sink_hint": "unsafe 块",
+   "pitfall": "内层安全不变量必须在 unsafe 块内自证——『外层已保证』声称必须给出作用域证据 | safe 包 unsafe 的边界检查归属双向核实 | safe Rust 解析器的递归/深度防护以解析器内建上限为机制 (嵌套块深度门), 非 unsafe 问题但仍属该格防护形态",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-RS-UNSAFE-001 (签名库 L2 词族) | Firefox 审计 2026-09-04 (stylo/webrender/neqo/encoding_rs/mp4parse/rsdparsa/qcms 21 面核查: 安全不变量承重全部在 FFI 契约双侧)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-scala-001",
+   "lang": "scala",
+   "title": "进程执行注入: 不可信数据进入进程执行路径",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "进程执行注入: 不可信数据进入进程执行路径",
+   "sink_hint": "Runtime.getRuntime.exec",
+   "pitfall": "字符串形态与参数数组形态的注入面不同——按实际调用形态判定 | 『参数化已防注入』声称必须核实底层 shell 是否介入",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-SCALA-UNSAFE-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-shell-001",
+   "lang": "shell",
+   "title": "命令拼接执行: 变量进入命令字符串",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "命令拼接执行: 变量进入命令字符串",
+   "sink_hint": "eval",
+   "pitfall": "引号嵌套层级与参数展开次序是判定核心——逐层展开核实 | env 覆盖形态: 攻击者已能写框架文件时的能力支配裁决 (默认文件覆盖 env)",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-SH-EVAL-001 (签名库 L2 词族) | shell 手册裁决模式四连模板 (能力支配/用户中介/opt-in)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "id": "INV-swift-001",
+   "lang": "swift",
+   "title": "进程执行注入: 不可信数据进入进程执行路径",
+   "family": "INJECTION",
+   "cwe": [
+    "CWE-78",
+    "CWE-94"
+   ],
+   "pattern": "进程执行注入: 不可信数据进入进程执行路径",
+   "sink_hint": "Process 执行点",
+   "pitfall": "字符串形态与参数数组形态的注入面不同——按实际调用形态判定 | 『参数化已防注入』声称必须核实底层 shell 是否介入",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "SIG-SWIFT-UNSAFE-001 (签名库 L2 词族)",
+    "date": null
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  }
+ ]
+}
