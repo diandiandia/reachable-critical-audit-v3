@@ -1518,3 +1518,37 @@ install 双副本同步 + 阶段 6 新项目验收（等用户提供）。
 
 550 用例全绿 + servo 旧队列复跑 blocking=0 + install 双副本同步 +
 installed 副本五层结构在位。
+
+---
+
+## v3.35 增量段（归档注记）
+
+v3.35 周期为 SKILL.md 净化重构：38 个历史增量段（1515 行）迁入本文档
+零损失；SKILL.md 重建为纯审计设计文档（~596 行）；散落增量中的 17 条规范性
+内容归位正文（复活抽样/sibling 回显/③b 结构判定/③d 独立复核/成因三分/
+attacker_tier/部署布局/shipped-config/边界必填字段/前缀契约/重开通道等）；
+第一原则案例溯源（mbedtls 复盘/v2.1 迁移叙事）迁 docs/history/
+FIRST_PRINCIPLES.md。开发侧纪律（义务入库三问/修改自检）删除——属
+skill-optimizer 职责（用户裁定）。本周期未前进 TOOLING（结构性重构，
+版本历史表随 v3.36 一并补登记）。
+
+## v3.36 增量段（2026-09-08）
+
+**背景**：Caddy 阶段 6 验收审计（application/mature/go）R1 四域合并现场
+发现——`normalize_surfaces` 的关键词映射器（v3.2 面向自由文本设计）对已是
+VALID_TRUST 成员的规范枚举串误伤：`local`/`trusted_channel`/`unknown`/
+`authenticated_remote` 不命中关键词 → else 兜底改写为 `environment`；
+`environment` 命中 `"env"` 子串 → 改写为 `local`。70 面中 35 面 trust_boundary
+被静默改写（18× trusted_channel→environment、14× local→environment、
+3× environment→local）。既往审计（servo/firefox）未暴露——其 agent 写自由
+文本恰好命中关键词；Caddy 批按任务书 canonical schema 写规范枚举首次触发。
+规范输入是精确值，映射纯属误猜——违反"不自动改写"纪律。
+
+**修复（SWR-V3.36-001/002）**：
+1. normalize_surfaces str 分支首步 canonical 短路——小写化值 `in VALID_TRUST`
+   则透传为规范值（原文入 original 留档），自由文本关键词映射零变化；
+2. dict 遗留分支对称短路（大小写变体规范值同样透传）。
+
+**验收判据**：test_v336.py 5 用例（8 规范串透传/自由文本映射回归/混合批/
+dict 变体/遗留自由文本 dict 回归）+ 全量 555 绿 + servo 旧队列复跑零新增
+告警 + Caddy 域文件（原始串未被动）重合并 35 面边界语义无损恢复。

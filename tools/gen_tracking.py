@@ -51,6 +51,10 @@ VERSIONS = [
     ("V3.32",  "docs/design/REQ_V3_32.md",  "docs/design/SWR_V3_32.md"),
     ("V3.33",  "docs/design/REQ_V3_33.md",  "docs/design/SWR_V3_33.md"),
     ("V3.34",  "docs/design/REQ_V3_34.md",  "docs/design/SWR_V3_34.md"),
+    # v3.35 登记 (SKILL.md 净化重构, 无 REQ/SWR 件; 标题形态零提取——
+    # REQUIREMENTS_TRACKING.md 的 V3.35 段为手工追加, 禁止运行本脚本再生成)
+    ("V3.35",  "docs/design/REQ_V3_35.md",  "docs/design/SWR_V3_35.md"),
+    ("V3.36",  "docs/design/REQ_V3_36.md",  "docs/design/SWR_V3_36.md"),
     # v3.17 登记 (同 v3.16 语义: 手工段维护, 禁止再生成)
     ("V3.17",  "docs/design/REQ_V3_17.md",  "docs/design/SWR_V3_17.md"),
     # v3.18 登记 (同 v3.17 语义)
