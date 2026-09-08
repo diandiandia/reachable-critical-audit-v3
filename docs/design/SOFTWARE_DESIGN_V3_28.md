@@ -9,11 +9,11 @@ P4 版本链: TOOLING 3.28 + 守卫 ×18 + SKILL.md 增量段(含回填升档条
 
 ## P1-1:inventory JSON(一次性派生,派生脚本不落仓库)
 
-派生规则(34 矩阵格 → 34 条目):
+派生规则(34 矩阵格 × pattern 粒度 → 36 条目;问题粒度=pattern 而非格——多 pattern
+格各成条目,QuickJS 限额旁路族独立承载):
 - id = `INV-<lang>-<NNN>`(按 lang 序编号)
-- title = cell.patterns[0](该格首条 pattern 即问题描述)
-- family/cwe/pattern/sink_hint/pitfall 取自 cell(sink_hint=cell.sinks[0],
-  pitfall=cell.pitfalls[0])
+- title = pattern(每条 pattern 一条目=一个问题;pitfall 全量 join 保留格的完整指引)
+- family/cwe/sink_hint 取自 cell(sink_hint=cell.sinks[0])
 - source.tier:cell.source_lessons 含战役证据(具体战役名/W6 实录)→
   battle_verified;仅清单/签名引用 → source_seeded
 - verify:仅 QuickJS 实证条目升 battle_confirmed——
