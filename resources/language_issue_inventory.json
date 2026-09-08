@@ -895,6 +895,3594 @@
     "candidates": [],
     "date": null
    }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-787 Out-of-bounds Write",
+   "cwe": [
+    "CWE-787"
+   ],
+   "pattern": "长度/索引计算错误导致缓冲边界外写入",
+   "sink_hint": "缓冲写点: memcpy/strcpy 族/数组下标写",
+   "pitfall": "长度来源与目标容量双重核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-008",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-416 Use After Free",
+   "cwe": [
+    "CWE-416"
+   ],
+   "pattern": "释放后使用: 悬垂指针被解引用",
+   "sink_hint": "释放点与后续解引用点",
+   "pitfall": "释放后引用计数/所有权转移逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-009",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-125 Out-of-bounds Read",
+   "cwe": [
+    "CWE-125"
+   ],
+   "pattern": "边界外读取: 索引/长度越界访问",
+   "sink_hint": "缓冲读点: 索引/长度驱动读取",
+   "pitfall": "索引上界与缓冲长度同源核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-010",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-120 Classic Buffer Overflow",
+   "cwe": [
+    "CWE-120"
+   ],
+   "pattern": "缓冲拷贝未检查输入大小",
+   "sink_hint": "定长缓冲拷贝点: strcpy/gets 族",
+   "pitfall": "拷贝长度≤目标容量必须机械可证",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 11 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-011",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-476 NULL Pointer Dereference",
+   "cwe": [
+    "CWE-476"
+   ],
+   "pattern": "空指针解引用",
+   "sink_hint": "指针解引用点(缺空检查)",
+   "pitfall": "解引用前空检查或前置不变量",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 13 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-012",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-121 Stack-based Buffer Overflow",
+   "cwe": [
+    "CWE-121"
+   ],
+   "pattern": "栈缓冲溢出: 无界拷贝",
+   "sink_hint": "栈缓冲拷贝点",
+   "pitfall": "栈缓冲拷贝长度检查",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 14 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-013",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-122 Heap-based Buffer Overflow",
+   "cwe": [
+    "CWE-122"
+   ],
+   "pattern": "堆缓冲溢出: 无界拷贝",
+   "sink_hint": "堆缓冲拷贝点: 长度未检拷贝",
+   "pitfall": "堆缓冲拷贝长度检查",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 16 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-014",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "c",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-c-015",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-787 Out-of-bounds Write",
+   "cwe": [
+    "CWE-787"
+   ],
+   "pattern": "长度/索引计算错误导致缓冲边界外写入",
+   "sink_hint": "缓冲写点: memcpy/strcpy 族/数组下标写",
+   "pitfall": "长度来源与目标容量双重核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-005",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-416 Use After Free",
+   "cwe": [
+    "CWE-416"
+   ],
+   "pattern": "释放后使用: 悬垂指针被解引用",
+   "sink_hint": "释放点与后续解引用点",
+   "pitfall": "释放后引用计数/所有权转移逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-006",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-125 Out-of-bounds Read",
+   "cwe": [
+    "CWE-125"
+   ],
+   "pattern": "边界外读取: 索引/长度越界访问",
+   "sink_hint": "缓冲读点: 索引/长度驱动读取",
+   "pitfall": "索引上界与缓冲长度同源核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-007",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-120 Classic Buffer Overflow",
+   "cwe": [
+    "CWE-120"
+   ],
+   "pattern": "缓冲拷贝未检查输入大小",
+   "sink_hint": "定长缓冲拷贝点: strcpy/gets 族",
+   "pitfall": "拷贝长度≤目标容量必须机械可证",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 11 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-008",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-476 NULL Pointer Dereference",
+   "cwe": [
+    "CWE-476"
+   ],
+   "pattern": "空指针解引用",
+   "sink_hint": "指针解引用点(缺空检查)",
+   "pitfall": "解引用前空检查或前置不变量",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 13 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-009",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-121 Stack-based Buffer Overflow",
+   "cwe": [
+    "CWE-121"
+   ],
+   "pattern": "栈缓冲溢出: 无界拷贝",
+   "sink_hint": "栈缓冲拷贝点",
+   "pitfall": "栈缓冲拷贝长度检查",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 14 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-010",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-122 Heap-based Buffer Overflow",
+   "cwe": [
+    "CWE-122"
+   ],
+   "pattern": "堆缓冲溢出: 无界拷贝",
+   "sink_hint": "堆缓冲拷贝点: 长度未检拷贝",
+   "pitfall": "堆缓冲拷贝长度检查",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 16 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-011",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "cpp",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-cpp-012",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-787 Out-of-bounds Write",
+   "cwe": [
+    "CWE-787"
+   ],
+   "pattern": "长度/索引计算错误导致缓冲边界外写入",
+   "sink_hint": "缓冲写点: memcpy/strcpy 族/数组下标写",
+   "pitfall": "长度来源与目标容量双重核对; safe Rust 下多数内存安全类不可达: 审计焦点=unsafe 块/FFI 边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-003",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-416 Use After Free",
+   "cwe": [
+    "CWE-416"
+   ],
+   "pattern": "释放后使用: 悬垂指针被解引用",
+   "sink_hint": "释放点与后续解引用点",
+   "pitfall": "释放后引用计数/所有权转移逐点核对; safe Rust 下多数内存安全类不可达: 审计焦点=unsafe 块/FFI 边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-004",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-125 Out-of-bounds Read",
+   "cwe": [
+    "CWE-125"
+   ],
+   "pattern": "边界外读取: 索引/长度越界访问",
+   "sink_hint": "缓冲读点: 索引/长度驱动读取",
+   "pitfall": "索引上界与缓冲长度同源核对; safe Rust 下多数内存安全类不可达: 审计焦点=unsafe 块/FFI 边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-005",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-006",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-20 Improper Input Validation",
+   "cwe": [
+    "CWE-20"
+   ],
+   "pattern": "输入校验缺失或不足",
+   "sink_hint": "外部输入消费点",
+   "pitfall": "输入校验与消费点同层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-007",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-008",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-284 Improper Access Control",
+   "cwe": [
+    "CWE-284"
+   ],
+   "pattern": "访问控制缺失",
+   "sink_hint": "敏感资源访问入口",
+   "pitfall": "访问控制矩阵逐入口核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-009",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-863 Incorrect Authorization",
+   "cwe": [
+    "CWE-863"
+   ],
+   "pattern": "授权判定错误(对象/角色归属错配)",
+   "sink_hint": "授权判定分支",
+   "pitfall": "授权对象/角色归属逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-010",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-011",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "rust",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-rust-012",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-787 Out-of-bounds Write",
+   "cwe": [
+    "CWE-787"
+   ],
+   "pattern": "长度/索引计算错误导致缓冲边界外写入",
+   "sink_hint": "缓冲写点: memcpy/strcpy 族/数组下标写",
+   "pitfall": "长度来源与目标容量双重核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-002",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-416 Use After Free",
+   "cwe": [
+    "CWE-416"
+   ],
+   "pattern": "释放后使用: 悬垂指针被解引用",
+   "sink_hint": "释放点与后续解引用点",
+   "pitfall": "释放后引用计数/所有权转移逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-003",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-125 Out-of-bounds Read",
+   "cwe": [
+    "CWE-125"
+   ],
+   "pattern": "边界外读取: 索引/长度越界访问",
+   "sink_hint": "缓冲读点: 索引/长度驱动读取",
+   "pitfall": "索引上界与缓冲长度同源核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-004",
+   "family": "MEMORY-SAFETY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-005",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-20 Improper Input Validation",
+   "cwe": [
+    "CWE-20"
+   ],
+   "pattern": "输入校验缺失或不足",
+   "sink_hint": "外部输入消费点",
+   "pitfall": "输入校验与消费点同层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-006",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-007",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-284 Improper Access Control",
+   "cwe": [
+    "CWE-284"
+   ],
+   "pattern": "访问控制缺失",
+   "sink_hint": "敏感资源访问入口",
+   "pitfall": "访问控制矩阵逐入口核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-008",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-863 Incorrect Authorization",
+   "cwe": [
+    "CWE-863"
+   ],
+   "pattern": "授权判定错误(对象/角色归属错配)",
+   "sink_hint": "授权判定分支",
+   "pitfall": "授权对象/角色归属逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-009",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-010",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "swift",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-swift-011",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-002",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-004",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-006",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-007",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-008",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-20 Improper Input Validation",
+   "cwe": [
+    "CWE-20"
+   ],
+   "pattern": "输入校验缺失或不足",
+   "sink_hint": "外部输入消费点",
+   "pitfall": "输入校验与消费点同层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-009",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-010",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "go",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-go-011",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-004",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-007",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-008",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-009",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-010",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-434 Unrestricted File Upload",
+   "cwe": [
+    "CWE-434"
+   ],
+   "pattern": "文件上传缺类型校验",
+   "sink_hint": "文件上传处理与保存点",
+   "pitfall": "类型/内容/存储路径三重校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-011",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "java",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-java-012",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-002",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-004",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-007",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-008",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-009",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-434 Unrestricted File Upload",
+   "cwe": [
+    "CWE-434"
+   ],
+   "pattern": "文件上传缺类型校验",
+   "sink_hint": "文件上传处理与保存点",
+   "pitfall": "类型/内容/存储路径三重校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-010",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "kotlin",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-kotlin-011",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-002",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-004",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-007",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-008",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-009",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-434 Unrestricted File Upload",
+   "cwe": [
+    "CWE-434"
+   ],
+   "pattern": "文件上传缺类型校验",
+   "sink_hint": "文件上传处理与保存点",
+   "pitfall": "类型/内容/存储路径三重校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-010",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "scala",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-scala-011",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-004",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-005",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-007",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-008",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-009",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-010",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-011",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-012",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "csharp",
+   "title": "CWE-434 Unrestricted File Upload",
+   "cwe": [
+    "CWE-434"
+   ],
+   "pattern": "文件上传缺类型校验",
+   "sink_hint": "文件上传处理与保存点",
+   "pitfall": "类型/内容/存储路径三重校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-csharp-013",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-004",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-005",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-007",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-008",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-009",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-010",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-011",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-012",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "python",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-python-013",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-003",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-004",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-005",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-007",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-008",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-918 Server-Side Request Forgery",
+   "cwe": [
+    "CWE-918"
+   ],
+   "pattern": "服务端请求伪造: 外部输入驱动请求目标",
+   "sink_hint": "外部 URL 请求构造点",
+   "pitfall": "请求目标白名单/协议限制",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-009",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-010",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-011",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "javascript",
+   "title": "CWE-434 Unrestricted File Upload",
+   "cwe": [
+    "CWE-434"
+   ],
+   "pattern": "文件上传缺类型校验",
+   "sink_hint": "文件上传处理与保存点",
+   "pitfall": "类型/内容/存储路径三重校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-javascript-012",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-003",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-004",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-006",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-007",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-008",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-009",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-010",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-434 Unrestricted File Upload",
+   "cwe": [
+    "CWE-434"
+   ],
+   "pattern": "文件上传缺类型校验",
+   "sink_hint": "文件上传处理与保存点",
+   "pitfall": "类型/内容/存储路径三重校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-011",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "php",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-php-012",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-004",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-89 SQL Injection",
+   "cwe": [
+    "CWE-89"
+   ],
+   "pattern": "外部输入拼接进 SQL 命令字符串",
+   "sink_hint": "SQL 语句构造/执行点",
+   "pitfall": "参数化查询优先; 拼接时必须枚举注入原语",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-005",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-007",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-008",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-352 Cross-Site Request Forgery",
+   "cwe": [
+    "CWE-352"
+   ],
+   "pattern": "状态变更请求缺跨站请求伪造防护",
+   "sink_hint": "状态变更端点(写操作路由)",
+   "pitfall": "状态变更需同源/令牌校验",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-009",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-010",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-502 Deserialization of Untrusted Data",
+   "cwe": [
+    "CWE-502"
+   ],
+   "pattern": "不可信数据反序列化",
+   "sink_hint": "反序列化读取入口",
+   "pitfall": "反序列化输入按不可信处理",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-011",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-012",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "ruby",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-ruby-013",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-004",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-79 Cross-site Scripting",
+   "cwe": [
+    "CWE-79"
+   ],
+   "pattern": "输出未净化的外部数据: 网页生成路径缺转义",
+   "sink_hint": "HTML 输出/模板渲染点",
+   "pitfall": "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-006",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-20 Improper Input Validation",
+   "cwe": [
+    "CWE-20"
+   ],
+   "pattern": "输入校验缺失或不足",
+   "sink_hint": "外部输入消费点",
+   "pitfall": "输入校验与消费点同层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-007",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-008",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-284 Improper Access Control",
+   "cwe": [
+    "CWE-284"
+   ],
+   "pattern": "访问控制缺失",
+   "sink_hint": "敏感资源访问入口",
+   "pitfall": "访问控制矩阵逐入口核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-009",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-863 Incorrect Authorization",
+   "cwe": [
+    "CWE-863"
+   ],
+   "pattern": "授权判定错误(对象/角色归属错配)",
+   "sink_hint": "授权判定分支",
+   "pitfall": "授权对象/角色归属逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-010",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-200 Exposure of Sensitive Information",
+   "cwe": [
+    "CWE-200"
+   ],
+   "pattern": "敏感信息暴露给未授权主体",
+   "sink_hint": "日志/错误输出/响应生成点",
+   "pitfall": "敏感字段过滤在序列化层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 20 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-011",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "perl",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-perl-012",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-002",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-77 Command Injection",
+   "cwe": [
+    "CWE-77"
+   ],
+   "pattern": "外部输入进入命令执行路径(无 shell)",
+   "sink_hint": "命令执行调用点",
+   "pitfall": "命令参数白名单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 23 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-004",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-284 Improper Access Control",
+   "cwe": [
+    "CWE-284"
+   ],
+   "pattern": "访问控制缺失",
+   "sink_hint": "敏感资源访问入口",
+   "pitfall": "访问控制矩阵逐入口核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-006",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-863 Incorrect Authorization",
+   "cwe": [
+    "CWE-863"
+   ],
+   "pattern": "授权判定错误(对象/角色归属错配)",
+   "sink_hint": "授权判定分支",
+   "pitfall": "授权对象/角色归属逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-007",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-862 Missing Authorization",
+   "cwe": [
+    "CWE-862"
+   ],
+   "pattern": "敏感操作缺授权检查",
+   "sink_hint": "敏感操作处理函数入口",
+   "pitfall": "缺授权≠设计意图——核实敏感操作清单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-008",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-20 Improper Input Validation",
+   "cwe": [
+    "CWE-20"
+   ],
+   "pattern": "输入校验缺失或不足",
+   "sink_hint": "外部输入消费点",
+   "pitfall": "输入校验与消费点同层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-009",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-010",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "powershell",
+   "title": "CWE-200 Exposure of Sensitive Information",
+   "cwe": [
+    "CWE-200"
+   ],
+   "pattern": "敏感信息暴露给未授权主体",
+   "sink_hint": "日志/错误输出/响应生成点",
+   "pitfall": "敏感字段过滤在序列化层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 20 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-powershell-011",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-78 OS Command Injection",
+   "cwe": [
+    "CWE-78"
+   ],
+   "pattern": "外部输入进入 OS 命令执行路径",
+   "sink_hint": "system/popen/exec 族调用点",
+   "pitfall": "命令构造与执行分离; 参数数组优先",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-002",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-77 Command Injection",
+   "cwe": [
+    "CWE-77"
+   ],
+   "pattern": "外部输入进入命令执行路径(无 shell)",
+   "sink_hint": "命令执行调用点",
+   "pitfall": "命令参数白名单",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 23 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-003",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-94 Code Injection",
+   "cwe": [
+    "CWE-94"
+   ],
+   "pattern": "外部输入被当作代码生成/执行",
+   "sink_hint": "eval/动态代码加载点",
+   "pitfall": "动态代码入口即信任边界",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-004",
+   "family": "INJECTION",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-22 Path Traversal",
+   "cwe": [
+    "CWE-22"
+   ],
+   "pattern": "路径名未限制到受限目录: 穿越/跳目录",
+   "sink_hint": "文件路径构造与打开点",
+   "pitfall": "规范化/白名单/根约束三选一必须存在",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-005",
+   "family": "WEB",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-20 Improper Input Validation",
+   "cwe": [
+    "CWE-20"
+   ],
+   "pattern": "输入校验缺失或不足",
+   "sink_hint": "外部输入消费点",
+   "pitfall": "输入校验与消费点同层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-006",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-770 Allocation of Resources Without Limits or Throttling",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "资源分配无上限或无节流",
+   "sink_hint": "分配/队列/累积点",
+   "pitfall": "上限/节流在累积点之前",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-007",
+   "family": "RESOURCE-DOS",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-200 Exposure of Sensitive Information",
+   "cwe": [
+    "CWE-200"
+   ],
+   "pattern": "敏感信息暴露给未授权主体",
+   "sink_hint": "日志/错误输出/响应生成点",
+   "pitfall": "敏感字段过滤在序列化层",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 20 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-008",
+   "family": "DATA-INTEGRITY",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-284 Improper Access Control",
+   "cwe": [
+    "CWE-284"
+   ],
+   "pattern": "访问控制缺失",
+   "sink_hint": "敏感资源访问入口",
+   "pitfall": "访问控制矩阵逐入口核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-009",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-863 Incorrect Authorization",
+   "cwe": [
+    "CWE-863"
+   ],
+   "pattern": "授权判定错误(对象/角色归属错配)",
+   "sink_hint": "授权判定分支",
+   "pitfall": "授权对象/角色归属逐点核对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-010",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
+  },
+  {
+   "lang": "shell",
+   "title": "CWE-639 Authorization Bypass Through User-Controlled Key",
+   "cwe": [
+    "CWE-639"
+   ],
+   "pattern": "用户可控键绕过授权(越权)",
+   "sink_hint": "按用户键取资源的查询点",
+   "pitfall": "资源归属键与访问者身份比对",
+   "source": {
+    "tier": "external_seeded",
+    "origin": "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html)",
+    "date": "2026-09-08"
+   },
+   "id": "INV-shell-011",
+   "family": "AUTHN",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   }
   }
  ]
 }

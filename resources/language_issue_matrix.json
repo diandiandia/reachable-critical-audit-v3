@@ -41,21 +41,29 @@
     "CWE-94"
    ],
    "patterns": [
-    "动态代码执行: 不可信数据进入 eval/系统命令执行路径"
+    "动态代码执行: 不可信数据进入 eval/系统命令执行路径",
+    "外部输入进入 OS 命令执行路径",
+    "外部输入被当作代码生成/执行"
    ],
    "sinks": [
     "eval",
     "system",
     "exec",
     "open 双参管道形态",
-    "反引号命令执行"
+    "反引号命令执行",
+    "system/popen/exec 族调用点",
+    "eval/动态代码加载点"
    ],
    "pitfalls": [
     "open 的双参数可变语义 (文件句柄 vs 管道) 是漏报高发区",
-    "『参数已转义』声称必须逐字符核实转义函数覆盖的字符集"
+    "『参数已转义』声称必须逐字符核实转义函数覆盖的字符集",
+    "命令构造与执行分离; 参数数组优先",
+    "动态代码入口即信任边界"
    ],
    "source_lessons": [
-    "SIG-PERL-EXEC-001 (签名库 L2 词族)"
+    "SIG-PERL-EXEC-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -63,21 +71,30 @@
    "lang": "perl",
    "family": "WEB",
    "cwes": [
-    "CWE-79"
+    "CWE-79",
+    "CWE-22"
    ],
    "patterns": [
-    "输出编码缺失: 用户数据进入 HTML/属性/脚本上下文"
+    "输出编码缺失: 用户数据进入 HTML/属性/脚本上下文",
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "路径名未限制到受限目录: 穿越/跳目录"
    ],
    "sinks": [
     "print/CGI 输出路径",
-    "模板变量直插"
+    "模板变量直插",
+    "HTML 输出/模板渲染点",
+    "文件路径构造与打开点"
    ],
    "pitfalls": [
     "清洗白名单必须逐字符核实字符集实际内容 (白名单含 '.' 即 '..' 序列合法)",
-    "上下文差异: 同一数据在属性/脚本上下文编码要求不同"
+    "上下文差异: 同一数据在属性/脚本上下文编码要求不同",
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "规范化/白名单/根约束三选一必须存在"
    ],
    "source_lessons": [
-    "xss_path_sim 模板实战形态 (templates/harness/xss_path_sim.pl)"
+    "xss_path_sim 模板实战形态 (templates/harness/xss_path_sim.pl)",
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -86,22 +103,35 @@
    "family": "INJECTION",
    "cwes": [
     "CWE-94",
-    "CWE-78"
+    "CWE-78",
+    "CWE-77"
    ],
    "patterns": [
-    "动态脚本块执行: 不可信字符串进入脚本块/命令构造"
+    "动态脚本块执行: 不可信字符串进入脚本块/命令构造",
+    "外部输入进入 OS 命令执行路径",
+    "外部输入进入命令执行路径(无 shell)",
+    "外部输入被当作代码生成/执行"
    ],
    "sinks": [
     "ScriptBlock::Create",
     "Invoke-Expression",
-    "& 调用运算符"
+    "& 调用运算符",
+    "system/popen/exec 族调用点",
+    "命令执行调用点",
+    "eval/动态代码加载点"
    ],
    "pitfalls": [
     "双引号字符串变量插值早于转义——先插值后防护的形态必漏",
-    "管道对象传递 ≠ 字符串拼接 (对象形态不构成注入)"
+    "管道对象传递 ≠ 字符串拼接 (对象形态不构成注入)",
+    "命令构造与执行分离; 参数数组优先",
+    "命令参数白名单",
+    "动态代码入口即信任边界"
    ],
    "source_lessons": [
-    "SIG-PS-SCRIPTBLOCK-001 (签名库 L2 词族)"
+    "SIG-PS-SCRIPTBLOCK-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 23 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -109,24 +139,38 @@
    "lang": "shell",
    "family": "INJECTION",
    "cwes": [
-    "CWE-78"
+    "CWE-78",
+    "CWE-77",
+    "CWE-94"
    ],
    "patterns": [
-    "命令拼接执行: 变量进入命令字符串"
+    "命令拼接执行: 变量进入命令字符串",
+    "外部输入进入 OS 命令执行路径",
+    "外部输入进入命令执行路径(无 shell)",
+    "外部输入被当作代码生成/执行"
    ],
    "sinks": [
     "eval",
     "命令替换 $()",
     "xargs 接不可信输入",
-    "参数展开注入"
+    "参数展开注入",
+    "system/popen/exec 族调用点",
+    "命令执行调用点",
+    "eval/动态代码加载点"
    ],
    "pitfalls": [
     "引号嵌套层级与参数展开次序是判定核心——逐层展开核实",
-    "env 覆盖形态: 攻击者已能写框架文件时的能力支配裁决 (默认文件覆盖 env)"
+    "env 覆盖形态: 攻击者已能写框架文件时的能力支配裁决 (默认文件覆盖 env)",
+    "命令构造与执行分离; 参数数组优先",
+    "命令参数白名单",
+    "动态代码入口即信任边界"
    ],
    "source_lessons": [
     "SIG-SH-EVAL-001 (签名库 L2 词族)",
-    "shell 手册裁决模式四连模板 (能力支配/用户中介/opt-in)"
+    "shell 手册裁决模式四连模板 (能力支配/用户中介/opt-in)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 23 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -134,23 +178,37 @@
    "lang": "csharp",
    "family": "INJECTION",
    "cwes": [
-    "CWE-502"
+    "CWE-502",
+    "CWE-89",
+    "CWE-78"
    ],
    "patterns": [
-    "反序列化输入面: 类型解析受攻击者控制 (多态类型开关)"
+    "反序列化输入面: 类型解析受攻击者控制 (多态类型开关)",
+    "外部输入拼接进 SQL 命令字符串",
+    "不可信数据反序列化",
+    "外部输入进入 OS 命令执行路径"
    ],
    "sinks": [
     "TypeNameHandling 类类型开关",
     "BinaryFormatter",
-    "XmlSerializer 不可信输入"
+    "XmlSerializer 不可信输入",
+    "SQL 语句构造/执行点",
+    "反序列化读取入口",
+    "system/popen/exec 族调用点"
    ],
    "pitfalls": [
     "默认拒绝/配置接受双侧对照: 默认关闭的开关必须按实际部署配置判定, 不得以代码零值推定",
-    "『仅受信通道』声称必须给出信源链证据"
+    "『仅受信通道』声称必须给出信源链证据",
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "反序列化输入按不可信处理",
+    "命令构造与执行分离; 参数数组优先"
    ],
    "source_lessons": [
     "SIG-CS-DESER-001 (签名库 L2 词族)",
-    "cs 手册对照矩阵 (T2 默认拒绝 vs 配置接受实测)"
+    "cs 手册对照矩阵 (T2 默认拒绝 vs 配置接受实测)",
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -158,22 +216,32 @@
    "lang": "csharp",
    "family": "AUTHN",
    "cwes": [
-    "CWE-306"
+    "CWE-306",
+    "CWE-862",
+    "CWE-639"
    ],
    "patterns": [
-    "安全配置默认可达性: 鉴权/防护开关键代码零值与实际提交值不一致"
+    "安全配置默认可达性: 鉴权/防护开关键代码零值与实际提交值不一致",
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
    ],
    "sinks": [
     "鉴权开关键",
     "tls/ssl 防护开关键",
-    "监听地址/端口绑定键"
+    "监听地址/端口绑定键",
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
    ],
    "pitfalls": [
     "『默认可达』声称必须引用 shipped-config 盘点 (提交值 vs 代码零值)",
-    "显式关闭也是提交值——不得把显式关闭误读为默认开启"
+    "显式关闭也是提交值——不得把显式关闭误读为默认开启",
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
    ],
    "source_lessons": [
-    "shipped-config 盘点条款 (REQ-V3.2.1-030, 防护开关代码零值误判实录)"
+    "shipped-config 盘点条款 (REQ-V3.2.1-030, 防护开关代码零值误判实录)",
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -205,22 +273,41 @@
    "lang": "python",
    "family": "INJECTION",
    "cwes": [
-    "CWE-502"
+    "CWE-502",
+    "CWE-89",
+    "CWE-78",
+    "CWE-94"
    ],
    "patterns": [
-    "反序列化输入面: 不可信字节流反序列化为对象图"
+    "反序列化输入面: 不可信字节流反序列化为对象图",
+    "外部输入拼接进 SQL 命令字符串",
+    "外部输入进入 OS 命令执行路径",
+    "外部输入被当作代码生成/执行",
+    "不可信数据反序列化"
    ],
    "sinks": [
     "pickle.loads",
     "yaml.load (非 SafeLoader)",
-    "eval/exec"
+    "eval/exec",
+    "SQL 语句构造/执行点",
+    "system/popen/exec 族调用点",
+    "eval/动态代码加载点",
+    "反序列化读取入口"
    ],
    "pitfalls": [
     "序列化边界 ≠ 信任边界——文件来源/消息队列来源均不可推定受信",
-    "『仅受信输入』声称必须给出信源链证据行"
+    "『仅受信输入』声称必须给出信源链证据行",
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "命令构造与执行分离; 参数数组优先",
+    "动态代码入口即信任边界",
+    "反序列化输入按不可信处理"
    ],
    "source_lessons": [
-    "SIG-PY-PICKLE-001 (签名库 L2 词族)"
+    "SIG-PY-PICKLE-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -279,19 +366,23 @@
     "CWE-770"
    ],
    "patterns": [
-    "流式累积无上限: 数据事件逐块累积到内存"
+    "流式累积无上限: 数据事件逐块累积到内存",
+    "资源分配无上限或无节流"
    ],
    "sinks": [
     "socket/stream 'data' 事件累积",
     "Buffer 拼接循环",
-    "chunk 数组 push"
+    "chunk 数组 push",
+    "分配/队列/累积点"
    ],
    "pitfalls": [
     "分片到达序不可控——按到达累积的量级必须以上限为界",
-    "背压缺失 (消费者不停读) 使累积无平台期"
+    "背压缺失 (消费者不停读) 使累积无平台期",
+    "上限/节流在累积点之前"
    ],
    "source_lessons": [
-    "SIG-TS-ACCUM-001 (签名库 L2 词族, ts 组)"
+    "SIG-TS-ACCUM-001 (签名库 L2 词族, ts 组)",
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -323,22 +414,31 @@
    "lang": "java",
    "family": "INJECTION",
    "cwes": [
-    "CWE-502"
+    "CWE-502",
+    "CWE-89"
    ],
    "patterns": [
-    "反序列化输入面: 对象流反序列化受攻击者控制"
+    "反序列化输入面: 对象流反序列化受攻击者控制",
+    "外部输入拼接进 SQL 命令字符串",
+    "不可信数据反序列化"
    ],
    "sinks": [
     "readObject/ObjectInputStream",
     "SerializationUtils 类工具",
-    "JNDI 查找点"
+    "JNDI 查找点",
+    "SQL 语句构造/执行点",
+    "反序列化读取入口"
    ],
    "pitfalls": [
     "反序列化过滤 (ObjectInputFilter 类) 缺省不启用——『默认防护』声称必须核实启用点",
-    "gadget 链判定按可达类路径枚举, 不得以单类推定"
+    "gadget 链判定按可达类路径枚举, 不得以单类推定",
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "反序列化输入按不可信处理"
    ],
    "source_lessons": [
-    "SIG-JAVA-DESER-001 (签名库 L2 词族)"
+    "SIG-JAVA-DESER-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -373,20 +473,24 @@
     "CWE-770"
    ],
    "patterns": [
-    "流式接收累积无上限: 协程通道/流逐块累积"
+    "流式接收累积无上限: 协程通道/流逐块累积",
+    "资源分配无上限或无节流"
    ],
    "sinks": [
     "Channel.receive 循环",
     "流式 API 累积收集",
-    "缓冲写入点"
+    "缓冲写入点",
+    "分配/队列/累积点"
    ],
    "pitfalls": [
     "协程取消与累积交互: 取消点缺失使累积持续",
-    "帧上限必须对每个分片帧 (含 continuation) 强制"
+    "帧上限必须对每个分片帧 (含 continuation) 强制",
+    "上限/节流在累积点之前"
    ],
    "source_lessons": [
     "SIG-KT-RECEIVE-001 (签名库 L2 词族)",
-    "CK-WS-MATERIALIZE (ws 分片物化形态)"
+    "CK-WS-MATERIALIZE (ws 分片物化形态)",
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -394,22 +498,32 @@
    "lang": "scala",
    "family": "INJECTION",
    "cwes": [
-    "CWE-78"
+    "CWE-78",
+    "CWE-89",
+    "CWE-502"
    ],
    "patterns": [
-    "进程执行注入: 不可信数据进入进程执行路径"
+    "进程执行注入: 不可信数据进入进程执行路径",
+    "外部输入拼接进 SQL 命令字符串",
+    "不可信数据反序列化"
    ],
    "sinks": [
     "Runtime.getRuntime.exec",
     "ProcessBuilder",
-    "sys.process 字符串形态"
+    "sys.process 字符串形态",
+    "SQL 语句构造/执行点",
+    "反序列化读取入口"
    ],
    "pitfalls": [
     "字符串形态与参数数组形态的注入面不同——按实际调用形态判定",
-    "『参数化已防注入』声称必须核实底层 shell 是否介入"
+    "『参数化已防注入』声称必须核实底层 shell 是否介入",
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "反序列化输入按不可信处理"
    ],
    "source_lessons": [
-    "SIG-SCALA-UNSAFE-001 (签名库 L2 词族)"
+    "SIG-SCALA-UNSAFE-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -421,19 +535,23 @@
     "CWE-770"
    ],
    "patterns": [
-    "流式拷贝/累积无上限: 读端无界累积"
+    "流式拷贝/累积无上限: 读端无界累积",
+    "资源分配无上限或无节流"
    ],
    "sinks": [
     "io.Copy 无上限目标",
     "ReadAll",
-    "bufio 累积循环"
+    "bufio 累积循环",
+    "分配/队列/累积点"
    ],
    "pitfalls": [
     "io.Copy 对不可信源必须包 LimitReader——裸拷贝是默认缺陷形态",
-    "『调用方已限流』声称必须核实读取侧实际到达量 (投递量≠到达量)"
+    "『调用方已限流』声称必须核实读取侧实际到达量 (投递量≠到达量)",
+    "上限/节流在累积点之前"
    ],
    "source_lessons": [
-    "SIG-GO-ACCUM-001 (签名库 L2 词族)"
+    "SIG-GO-ACCUM-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -446,22 +564,26 @@
    ],
    "patterns": [
     "远端控制分配大小无上限: 攻击者控制长度进入分配",
-    "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一枚举——限额类缺陷的旁路族"
+    "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一枚举——限额类缺陷的旁路族",
+    "资源分配无上限或无节流"
    ],
    "sinks": [
     "malloc 家族",
     "realloc 扩展",
-    "calloc 计数×尺寸"
+    "calloc 计数×尺寸",
+    "分配/队列/累积点"
    ],
    "pitfalls": [
     "分配请求 ≠ 资源耗尽: 提交内存受输入限制时判 Low (PREC-ALLOC-VIRTUAL-001)",
     "累积型 (逐块预留) 与一次性分配的量级判定不同",
-    "子执行上下文 (worker/线程/子 rt) 的资源参数继承矩阵逐项核对; 哨兵值 (0/-1/非法) 语义 fail-open 还是 fail-closed"
+    "子执行上下文 (worker/线程/子 rt) 的资源参数继承矩阵逐项核对; 哨兵值 (0/-1/非法) 语义 fail-open 还是 fail-closed",
+    "上限/节流在累积点之前"
    ],
    "source_lessons": [
     "SIG-C-ALLOC-001 (签名库 L2 词族)",
     "PREC-ALLOC-VIRTUAL-001",
-    "quickjs lessons 2026-09-07"
+    "quickjs lessons 2026-09-07",
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -470,25 +592,58 @@
    "family": "MEMORY-SAFETY",
    "cwes": [
     "CWE-787",
-    "CWE-125"
+    "CWE-125",
+    "CWE-416",
+    "CWE-120",
+    "CWE-476",
+    "CWE-121",
+    "CWE-122"
    ],
    "patterns": [
-    "解析器边界计算: 长度/索引字段驱动内存访问"
+    "解析器边界计算: 长度/索引字段驱动内存访问",
+    "长度/索引计算错误导致缓冲边界外写入",
+    "释放后使用: 悬垂指针被解引用",
+    "边界外读取: 索引/长度越界访问",
+    "缓冲拷贝未检查输入大小",
+    "空指针解引用",
+    "栈缓冲溢出: 无界拷贝",
+    "堆缓冲溢出: 无界拷贝"
    ],
    "sinks": [
     "长度字段驱动的 memcpy/索引",
     "asn1/tlv 类长度解析",
-    "偏移计算点"
+    "偏移计算点",
+    "缓冲写点: memcpy/strcpy 族/数组下标写",
+    "释放点与后续解引用点",
+    "缓冲读点: 索引/长度驱动读取",
+    "定长缓冲拷贝点: strcpy/gets 族",
+    "指针解引用点(缺空检查)",
+    "栈缓冲拷贝点",
+    "堆缓冲拷贝点: 长度未检拷贝"
    ],
    "pitfalls": [
     "长度字段极值 + 截断矩阵实证是声称类强制 (parser_fuzz 模板)",
     "有符号下溢语义保留/边界指针语义在 stub 复刻时必须逐字保留",
-    "序列化/反序列化读取器的尺寸计算必须 size_t 且逐项溢出检查; 计数 ≤ 剩余输入/单元素最小占用——int 算术回绕 = 小分配大写入"
+    "序列化/反序列化读取器的尺寸计算必须 size_t 且逐项溢出检查; 计数 ≤ 剩余输入/单元素最小占用——int 算术回绕 = 小分配大写入",
+    "长度来源与目标容量双重核对",
+    "释放后引用计数/所有权转移逐点核对",
+    "索引上界与缓冲长度同源核对",
+    "拷贝长度≤目标容量必须机械可证",
+    "解引用前空检查或前置不变量",
+    "栈缓冲拷贝长度检查",
+    "堆缓冲拷贝长度检查"
    ],
    "source_lessons": [
     "parser_fuzz 模板实战形态 (asn1_get_len ASan 2M+ 输入实录)",
     "libarchive/freetype 解析器审计形态 (2026-08)",
-    "quickjs lessons 2026-09-07"
+    "quickjs lessons 2026-09-07",
+    "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 11 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 13 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 14 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 16 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -597,20 +752,24 @@
     "CWE-770"
    ],
    "patterns": [
-    "远端控制分配: new[]/容器预留受攻击者控制"
+    "远端控制分配: new[]/容器预留受攻击者控制",
+    "资源分配无上限或无节流"
    ],
    "sinks": [
     "new[] 攻击者控制长度",
     "reserve/resize 点",
-    "vector 累积 push"
+    "vector 累积 push",
+    "分配/队列/累积点"
    ],
    "pitfalls": [
     "容器自动增长的累积量级以对象图内部急切分配为准 (成员缓冲/嵌套对象)",
-    "顶层对象尺寸低估 3-4 个数量级的形态必须按构造器链枚举"
+    "顶层对象尺寸低估 3-4 个数量级的形态必须按构造器链枚举",
+    "上限/节流在累积点之前"
    ],
    "source_lessons": [
     "SIG-CPP-ALLOC-001 (签名库 L2 词族)",
-    "CK-CHECKPOINT-AFTER-ACCUM 构造器链条目"
+    "CK-CHECKPOINT-AFTER-ACCUM 构造器链条目",
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -647,22 +806,34 @@
    ],
    "patterns": [
     "unsafe 块边界: 安全不变量在 unsafe 内的自证义务",
-    "FFI 边界契约双侧核实: unsafe extern 的指针/长度契约承重在调用侧 (C++ CheckedInt/UTF-8 门) — unsafe 块自证义务的载体是跨语言调用契约而非 rust 侧单边"
+    "FFI 边界契约双侧核实: unsafe extern 的指针/长度契约承重在调用侧 (C++ CheckedInt/UTF-8 门) — unsafe 块自证义务的载体是跨语言调用契约而非 rust 侧单边",
+    "长度/索引计算错误导致缓冲边界外写入",
+    "释放后使用: 悬垂指针被解引用",
+    "边界外读取: 索引/长度越界访问"
    ],
    "sinks": [
     "unsafe 块",
     "裸指针解引用",
     "transmute 点",
-    "FFI 调用点"
+    "FFI 调用点",
+    "缓冲写点: memcpy/strcpy 族/数组下标写",
+    "释放点与后续解引用点",
+    "缓冲读点: 索引/长度驱动读取"
    ],
    "pitfalls": [
     "内层安全不变量必须在 unsafe 块内自证——『外层已保证』声称必须给出作用域证据",
     "safe 包 unsafe 的边界检查归属双向核实",
-    "safe Rust 解析器的递归/深度防护以解析器内建上限为机制 (嵌套块深度门), 非 unsafe 问题但仍属该格防护形态"
+    "safe Rust 解析器的递归/深度防护以解析器内建上限为机制 (嵌套块深度门), 非 unsafe 问题但仍属该格防护形态",
+    "长度来源与目标容量双重核对; safe Rust 下多数内存安全类不可达: 审计焦点=unsafe 块/FFI 边界",
+    "释放后引用计数/所有权转移逐点核对; safe Rust 下多数内存安全类不可达: 审计焦点=unsafe 块/FFI 边界",
+    "索引上界与缓冲长度同源核对; safe Rust 下多数内存安全类不可达: 审计焦点=unsafe 块/FFI 边界"
    ],
    "source_lessons": [
     "SIG-RS-UNSAFE-001 (签名库 L2 词族)",
-    "Firefox 审计 2026-09-04 (stylo/webrender/neqo/encoding_rs/mp4parse/rsdparsa/qcms 21 面核查: 安全不变量承重全部在 FFI 契约双侧)"
+    "Firefox 审计 2026-09-04 (stylo/webrender/neqo/encoding_rs/mp4parse/rsdparsa/qcms 21 面核查: 安全不变量承重全部在 FFI 契约双侧)",
+    "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -671,23 +842,41 @@
    "family": "INJECTION",
    "cwes": [
     "CWE-94",
-    "CWE-78"
+    "CWE-78",
+    "CWE-89",
+    "CWE-502"
    ],
    "patterns": [
-    "动态代码执行: 不可信数据进入 eval/回调形态"
+    "动态代码执行: 不可信数据进入 eval/回调形态",
+    "外部输入拼接进 SQL 命令字符串",
+    "外部输入进入 OS 命令执行路径",
+    "外部输入被当作代码生成/执行",
+    "不可信数据反序列化"
    ],
    "sinks": [
     "eval",
     "assert 字符串形态",
     "call_user_func 动态回调",
-    "include 动态路径"
+    "include 动态路径",
+    "SQL 语句构造/执行点",
+    "system/popen/exec 族调用点",
+    "eval/动态代码加载点",
+    "反序列化读取入口"
    ],
    "pitfalls": [
     "回调形态 (动态函数名/类名) 与 eval 同族——不得漏判",
-    "include 动态路径兼文件包含面, 双面登记"
+    "include 动态路径兼文件包含面, 双面登记",
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "命令构造与执行分离; 参数数组优先",
+    "动态代码入口即信任边界",
+    "反序列化输入按不可信处理"
    ],
    "source_lessons": [
-    "SIG-PHP-EVAL-001 (签名库 L2 词族)"
+    "SIG-PHP-EVAL-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -720,23 +909,41 @@
    "family": "INJECTION",
    "cwes": [
     "CWE-94",
-    "CWE-78"
+    "CWE-78",
+    "CWE-89",
+    "CWE-502"
    ],
    "patterns": [
-    "动态代码执行: 不可信数据进入 eval/系统调用"
+    "动态代码执行: 不可信数据进入 eval/系统调用",
+    "外部输入拼接进 SQL 命令字符串",
+    "外部输入进入 OS 命令执行路径",
+    "外部输入被当作代码生成/执行",
+    "不可信数据反序列化"
    ],
    "sinks": [
     "eval",
     "system/exec/反引号",
     "send 动态方法分发",
-    "constantize"
+    "constantize",
+    "SQL 语句构造/执行点",
+    "system/popen/exec 族调用点",
+    "eval/动态代码加载点",
+    "反序列化读取入口"
    ],
    "pitfalls": [
     "send/constantize 动态分发与 eval 同族——漏判高发",
-    "『调用者受信』声称必须给信源链证据"
+    "『调用者受信』声称必须给信源链证据",
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "命令构造与执行分离; 参数数组优先",
+    "动态代码入口即信任边界",
+    "反序列化输入按不可信处理"
    ],
    "source_lessons": [
-    "SIG-RB-EVAL-001 (签名库 L2 词族)"
+    "SIG-RB-EVAL-001 (签名库 L2 词族)",
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -745,22 +952,31 @@
    "family": "AUTHN",
    "cwes": [
     "CWE-862",
-    "CWE-306"
+    "CWE-306",
+    "CWE-639"
    ],
    "patterns": [
-    "调试/控制端点零鉴权: 暴露组件缺鉴权门禁"
+    "调试/控制端点零鉴权: 暴露组件缺鉴权门禁",
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
    ],
    "sinks": [
     "控制端点/状态页路由",
     "调试接口注册点",
-    "缺 before_action 类守卫的控制器"
+    "缺 before_action 类守卫的控制器",
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
    ],
    "pitfalls": [
     "『默认受保护』声称必须核实路由挂载与守卫链",
-    "无 token 形态的端点常被框架默认放行——按实际路由判定"
+    "无 token 形态的端点常被框架默认放行——按实际路由判定",
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
    ],
    "source_lessons": [
-    "H5 形态实录 (no_token 控制端点零鉴权, 2026-08)"
+    "H5 形态实录 (no_token 控制端点零鉴权, 2026-08)",
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ],
    "status": "seeded"
   },
@@ -817,24 +1033,57 @@
    "status": "seeded",
    "cwes": [
     "CWE-787",
-    "CWE-125"
+    "CWE-125",
+    "CWE-416",
+    "CWE-120",
+    "CWE-476",
+    "CWE-121",
+    "CWE-122"
    ],
    "patterns": [
-    "反序列化器尺寸字段无门: wire 字节解码的长度直接进入分配/写操作"
+    "反序列化器尺寸字段无门: wire 字节解码的长度直接进入分配/写操作",
+    "长度/索引计算错误导致缓冲边界外写入",
+    "释放后使用: 悬垂指针被解引用",
+    "边界外读取: 索引/长度越界访问",
+    "缓冲拷贝未检查输入大小",
+    "空指针解引用",
+    "栈缓冲溢出: 无界拷贝",
+    "堆缓冲溢出: 无界拷贝"
    ],
    "sinks": [
     "GetUint30/varint 解码点",
     "size_in_tagged*常量乘法",
     "分配尺寸参数直通",
-    "头部魔数/偏移无长度守卫读取"
+    "头部魔数/偏移无长度守卫读取",
+    "缓冲写点: memcpy/strcpy 族/数组下标写",
+    "释放点与后续解引用点",
+    "缓冲读点: 索引/长度驱动读取",
+    "定长缓冲拷贝点: strcpy/gets 族",
+    "指针解引用点(缺空检查)",
+    "栈缓冲拷贝点",
+    "堆缓冲拷贝点: 长度未检拷贝"
    ],
    "pitfalls": [
     "『快照/缓存为受信输入』是信任模型声明不是代码防御——防御纵深建议仍需尺寸门 (code-cache 侧 size<kHeaderSize 守卫先例)",
     "乘法回绕必须在分配前检查 (SignedMulOverflow), 回绕后小尺寸分配成立即越界写",
-    "后置 CHECK 不阻断首块写——检查点在写窗口之后属后置检查形态, 按 CK-POSTOP-INVARIANT 判缺陷"
+    "后置 CHECK 不阻断首块写——检查点在写窗口之后属后置检查形态, 按 CK-POSTOP-INVARIANT 判缺陷",
+    "长度来源与目标容量双重核对",
+    "释放后引用计数/所有权转移逐点核对",
+    "索引上界与缓冲长度同源核对",
+    "拷贝长度≤目标容量必须机械可证",
+    "解引用前空检查或前置不变量",
+    "栈缓冲拷贝长度检查",
+    "堆缓冲拷贝长度检查"
    ],
    "source_lessons": [
-    "V8 审计 2026-09-01 (CAND-013 size_in_tagged 无门分配 / CAND-049 GetMagicNumber 越界读, R3/R3.5 双复核确认)"
+    "V8 审计 2026-09-01 (CAND-013 size_in_tagged 无门分配 / CAND-049 GetMagicNumber 越界读, R3/R3.5 双复核确认)",
+    "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 11 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 13 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 14 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 16 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ]
   },
   {
@@ -858,6 +1107,1201 @@
    ],
    "source_lessons": [
     "V8 审计 2026-09-01 (CAND-022 流式 API Run-返回契约, 复活重验改判后 2/2 证伪拦截)"
+   ]
+  },
+  {
+   "lang": "rust",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "rust",
+   "family": "DATA-INTEGRITY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-20"
+   ],
+   "patterns": [
+    "输入校验缺失或不足"
+   ],
+   "sinks": [
+    "外部输入消费点"
+   ],
+   "pitfalls": [
+    "输入校验与消费点同层"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "rust",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22",
+    "CWE-918"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "服务端请求伪造: 外部输入驱动请求目标"
+   ],
+   "sinks": [
+    "文件路径构造与打开点",
+    "外部 URL 请求构造点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在",
+    "请求目标白名单/协议限制"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "rust",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-284",
+    "CWE-863",
+    "CWE-639"
+   ],
+   "patterns": [
+    "访问控制缺失",
+    "授权判定错误(对象/角色归属错配)",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感资源访问入口",
+    "授权判定分支",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "访问控制矩阵逐入口核对",
+    "授权对象/角色归属逐点核对",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "swift",
+   "family": "MEMORY-SAFETY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-787",
+    "CWE-416",
+    "CWE-125"
+   ],
+   "patterns": [
+    "长度/索引计算错误导致缓冲边界外写入",
+    "释放后使用: 悬垂指针被解引用",
+    "边界外读取: 索引/长度越界访问"
+   ],
+   "sinks": [
+    "缓冲写点: memcpy/strcpy 族/数组下标写",
+    "释放点与后续解引用点",
+    "缓冲读点: 索引/长度驱动读取"
+   ],
+   "pitfalls": [
+    "长度来源与目标容量双重核对",
+    "释放后引用计数/所有权转移逐点核对",
+    "索引上界与缓冲长度同源核对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 5 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 7 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 8 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "swift",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "swift",
+   "family": "DATA-INTEGRITY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-20"
+   ],
+   "patterns": [
+    "输入校验缺失或不足"
+   ],
+   "sinks": [
+    "外部输入消费点"
+   ],
+   "pitfalls": [
+    "输入校验与消费点同层"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "swift",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22",
+    "CWE-918"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "服务端请求伪造: 外部输入驱动请求目标"
+   ],
+   "sinks": [
+    "文件路径构造与打开点",
+    "外部 URL 请求构造点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在",
+    "请求目标白名单/协议限制"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "swift",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-284",
+    "CWE-863",
+    "CWE-639"
+   ],
+   "patterns": [
+    "访问控制缺失",
+    "授权判定错误(对象/角色归属错配)",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感资源访问入口",
+    "授权判定分支",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "访问控制矩阵逐入口核对",
+    "授权对象/角色归属逐点核对",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "go",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22",
+    "CWE-79",
+    "CWE-352",
+    "CWE-918"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "状态变更请求缺跨站请求伪造防护",
+    "服务端请求伪造: 外部输入驱动请求目标"
+   ],
+   "sinks": [
+    "文件路径构造与打开点",
+    "HTML 输出/模板渲染点",
+    "状态变更端点(写操作路由)",
+    "外部 URL 请求构造点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在",
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "状态变更需同源/令牌校验",
+    "请求目标白名单/协议限制"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "go",
+   "family": "INJECTION",
+   "status": "seeded",
+   "cwes": [
+    "CWE-78",
+    "CWE-94"
+   ],
+   "patterns": [
+    "外部输入进入 OS 命令执行路径",
+    "外部输入被当作代码生成/执行"
+   ],
+   "sinks": [
+    "system/popen/exec 族调用点",
+    "eval/动态代码加载点"
+   ],
+   "pitfalls": [
+    "命令构造与执行分离; 参数数组优先",
+    "动态代码入口即信任边界"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "go",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862",
+    "CWE-639"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "go",
+   "family": "DATA-INTEGRITY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-20"
+   ],
+   "patterns": [
+    "输入校验缺失或不足"
+   ],
+   "sinks": [
+    "外部输入消费点"
+   ],
+   "pitfalls": [
+    "输入校验与消费点同层"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "java",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22",
+    "CWE-79",
+    "CWE-352",
+    "CWE-918",
+    "CWE-434"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "状态变更请求缺跨站请求伪造防护",
+    "服务端请求伪造: 外部输入驱动请求目标",
+    "文件上传缺类型校验"
+   ],
+   "sinks": [
+    "文件路径构造与打开点",
+    "HTML 输出/模板渲染点",
+    "状态变更端点(写操作路由)",
+    "外部 URL 请求构造点",
+    "文件上传处理与保存点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在",
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "状态变更需同源/令牌校验",
+    "请求目标白名单/协议限制",
+    "类型/内容/存储路径三重校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "java",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862",
+    "CWE-639"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "java",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "kotlin",
+   "family": "INJECTION",
+   "status": "seeded",
+   "cwes": [
+    "CWE-89",
+    "CWE-502"
+   ],
+   "patterns": [
+    "外部输入拼接进 SQL 命令字符串",
+    "不可信数据反序列化"
+   ],
+   "sinks": [
+    "SQL 语句构造/执行点",
+    "反序列化读取入口"
+   ],
+   "pitfalls": [
+    "参数化查询优先; 拼接时必须枚举注入原语",
+    "反序列化输入按不可信处理"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "kotlin",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22",
+    "CWE-79",
+    "CWE-352",
+    "CWE-918",
+    "CWE-434"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "状态变更请求缺跨站请求伪造防护",
+    "服务端请求伪造: 外部输入驱动请求目标",
+    "文件上传缺类型校验"
+   ],
+   "sinks": [
+    "文件路径构造与打开点",
+    "HTML 输出/模板渲染点",
+    "状态变更端点(写操作路由)",
+    "外部 URL 请求构造点",
+    "文件上传处理与保存点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在",
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "状态变更需同源/令牌校验",
+    "请求目标白名单/协议限制",
+    "类型/内容/存储路径三重校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "kotlin",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862",
+    "CWE-639"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "scala",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22",
+    "CWE-79",
+    "CWE-352",
+    "CWE-918",
+    "CWE-434"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "状态变更请求缺跨站请求伪造防护",
+    "服务端请求伪造: 外部输入驱动请求目标",
+    "文件上传缺类型校验"
+   ],
+   "sinks": [
+    "文件路径构造与打开点",
+    "HTML 输出/模板渲染点",
+    "状态变更端点(写操作路由)",
+    "外部 URL 请求构造点",
+    "文件上传处理与保存点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在",
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "状态变更需同源/令牌校验",
+    "请求目标白名单/协议限制",
+    "类型/内容/存储路径三重校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "scala",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862",
+    "CWE-639"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "scala",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "csharp",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-79",
+    "CWE-22",
+    "CWE-352",
+    "CWE-434"
+   ],
+   "patterns": [
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "状态变更请求缺跨站请求伪造防护",
+    "文件上传缺类型校验"
+   ],
+   "sinks": [
+    "HTML 输出/模板渲染点",
+    "文件路径构造与打开点",
+    "状态变更端点(写操作路由)",
+    "文件上传处理与保存点"
+   ],
+   "pitfalls": [
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "规范化/白名单/根约束三选一必须存在",
+    "状态变更需同源/令牌校验",
+    "类型/内容/存储路径三重校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "csharp",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "python",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-79",
+    "CWE-352",
+    "CWE-22",
+    "CWE-918"
+   ],
+   "patterns": [
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "状态变更请求缺跨站请求伪造防护",
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "服务端请求伪造: 外部输入驱动请求目标"
+   ],
+   "sinks": [
+    "HTML 输出/模板渲染点",
+    "状态变更端点(写操作路由)",
+    "文件路径构造与打开点",
+    "外部 URL 请求构造点"
+   ],
+   "pitfalls": [
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "状态变更需同源/令牌校验",
+    "规范化/白名单/根约束三选一必须存在",
+    "请求目标白名单/协议限制"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "python",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "python",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "javascript",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-79",
+    "CWE-352",
+    "CWE-22",
+    "CWE-918",
+    "CWE-434"
+   ],
+   "patterns": [
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "状态变更请求缺跨站请求伪造防护",
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "服务端请求伪造: 外部输入驱动请求目标",
+    "文件上传缺类型校验"
+   ],
+   "sinks": [
+    "HTML 输出/模板渲染点",
+    "状态变更端点(写操作路由)",
+    "文件路径构造与打开点",
+    "外部 URL 请求构造点",
+    "文件上传处理与保存点"
+   ],
+   "pitfalls": [
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "状态变更需同源/令牌校验",
+    "规范化/白名单/根约束三选一必须存在",
+    "请求目标白名单/协议限制",
+    "类型/内容/存储路径三重校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "javascript",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862",
+    "CWE-639"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "javascript",
+   "family": "INJECTION",
+   "status": "seeded",
+   "cwes": [
+    "CWE-78",
+    "CWE-94"
+   ],
+   "patterns": [
+    "外部输入进入 OS 命令执行路径",
+    "外部输入被当作代码生成/执行"
+   ],
+   "sinks": [
+    "system/popen/exec 族调用点",
+    "eval/动态代码加载点"
+   ],
+   "pitfalls": [
+    "命令构造与执行分离; 参数数组优先",
+    "动态代码入口即信任边界"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 9 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 10 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "php",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-79",
+    "CWE-22",
+    "CWE-352",
+    "CWE-434"
+   ],
+   "patterns": [
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "状态变更请求缺跨站请求伪造防护",
+    "文件上传缺类型校验"
+   ],
+   "sinks": [
+    "HTML 输出/模板渲染点",
+    "文件路径构造与打开点",
+    "状态变更端点(写操作路由)",
+    "文件上传处理与保存点"
+   ],
+   "pitfalls": [
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "规范化/白名单/根约束三选一必须存在",
+    "状态变更需同源/令牌校验",
+    "类型/内容/存储路径三重校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 12 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "php",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-862"
+   ],
+   "patterns": [
+    "敏感操作缺授权检查"
+   ],
+   "sinks": [
+    "敏感操作处理函数入口"
+   ],
+   "pitfalls": [
+    "缺授权≠设计意图——核实敏感操作清单"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "php",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "ruby",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-79",
+    "CWE-22",
+    "CWE-352"
+   ],
+   "patterns": [
+    "输出未净化的外部数据: 网页生成路径缺转义",
+    "路径名未限制到受限目录: 穿越/跳目录",
+    "状态变更请求缺跨站请求伪造防护"
+   ],
+   "sinks": [
+    "HTML 输出/模板渲染点",
+    "文件路径构造与打开点",
+    "状态变更端点(写操作路由)"
+   ],
+   "pitfalls": [
+    "输出转义必须在渲染边界且覆盖上下文(HTML/属性/JS)",
+    "规范化/白名单/根约束三选一必须存在",
+    "状态变更需同源/令牌校验"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "ruby",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "perl",
+   "family": "DATA-INTEGRITY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-20",
+    "CWE-200"
+   ],
+   "patterns": [
+    "输入校验缺失或不足",
+    "敏感信息暴露给未授权主体"
+   ],
+   "sinks": [
+    "外部输入消费点",
+    "日志/错误输出/响应生成点"
+   ],
+   "pitfalls": [
+    "输入校验与消费点同层",
+    "敏感字段过滤在序列化层"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 20 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "perl",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "perl",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-284",
+    "CWE-863",
+    "CWE-639"
+   ],
+   "patterns": [
+    "访问控制缺失",
+    "授权判定错误(对象/角色归属错配)",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感资源访问入口",
+    "授权判定分支",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "访问控制矩阵逐入口核对",
+    "授权对象/角色归属逐点核对",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "powershell",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录"
+   ],
+   "sinks": [
+    "文件路径构造与打开点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "powershell",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-284",
+    "CWE-863",
+    "CWE-862"
+   ],
+   "patterns": [
+    "访问控制缺失",
+    "授权判定错误(对象/角色归属错配)",
+    "敏感操作缺授权检查"
+   ],
+   "sinks": [
+    "敏感资源访问入口",
+    "授权判定分支",
+    "敏感操作处理函数入口"
+   ],
+   "pitfalls": [
+    "访问控制矩阵逐入口核对",
+    "授权对象/角色归属逐点核对",
+    "缺授权≠设计意图——核实敏感操作清单"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "powershell",
+   "family": "DATA-INTEGRITY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-20",
+    "CWE-200"
+   ],
+   "patterns": [
+    "输入校验缺失或不足",
+    "敏感信息暴露给未授权主体"
+   ],
+   "sinks": [
+    "外部输入消费点",
+    "日志/错误输出/响应生成点"
+   ],
+   "pitfalls": [
+    "输入校验与消费点同层",
+    "敏感字段过滤在序列化层"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 20 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "powershell",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "shell",
+   "family": "WEB",
+   "status": "seeded",
+   "cwes": [
+    "CWE-22"
+   ],
+   "patterns": [
+    "路径名未限制到受限目录: 穿越/跳目录"
+   ],
+   "sinks": [
+    "文件路径构造与打开点"
+   ],
+   "pitfalls": [
+    "规范化/白名单/根约束三选一必须存在"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "shell",
+   "family": "DATA-INTEGRITY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-20",
+    "CWE-200"
+   ],
+   "patterns": [
+    "输入校验缺失或不足",
+    "敏感信息暴露给未授权主体"
+   ],
+   "sinks": [
+    "外部输入消费点",
+    "日志/错误输出/响应生成点"
+   ],
+   "pitfalls": [
+    "输入校验与消费点同层",
+    "敏感字段过滤在序列化层"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 20 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "shell",
+   "family": "RESOURCE-DOS",
+   "status": "seeded",
+   "cwes": [
+    "CWE-770"
+   ],
+   "patterns": [
+    "资源分配无上限或无节流"
+   ],
+   "sinks": [
+    "分配/队列/累积点"
+   ],
+   "pitfalls": [
+    "上限/节流在累积点之前"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "shell",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-284",
+    "CWE-863",
+    "CWE-639"
+   ],
+   "patterns": [
+    "访问控制缺失",
+    "授权判定错误(对象/角色归属错配)",
+    "用户可控键绕过授权(越权)"
+   ],
+   "sinks": [
+    "敏感资源访问入口",
+    "授权判定分支",
+    "按用户键取资源的查询点"
+   ],
+   "pitfalls": [
+    "访问控制矩阵逐入口核对",
+    "授权对象/角色归属逐点核对",
+    "资源归属键与访问者身份比对"
+   ],
+   "source_lessons": [
+    "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
    ]
   }
  ]

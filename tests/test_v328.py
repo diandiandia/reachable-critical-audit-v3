@@ -26,7 +26,7 @@ def _inv():
 def test_inventory_loads_and_fields():
     d = _inv()
     entries = d['entries']
-    assert len(entries) == 36, "inventory 条目数漂移 (pattern 粒度派生)"
+    assert len(entries) == 192, "inventory 条目数漂移 (36 派生 + 156 Top25 试点种格)"
     assert d['goal']['per_lang_target'] == 10
     for e in entries:
         for k in ("id", "lang", "title", "family", "cwe", "source", "verify"):
@@ -185,4 +185,4 @@ def test_inventory_deproject():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.28"
+    assert we.TOOLING_VERSION == "3.29"

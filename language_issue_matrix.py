@@ -40,6 +40,34 @@ _SEV_CWE = {"787", "125", "416", "415", "476", "190", "129", "843",
 _DEPROJECT_TOKENS = ("quickjs", "qjs", "bjson", "sinatra", "lighttpd", "mbedtls",
                      "django", "grpc", "jsrsasign", "awstats", "ktor", "actix")
 
+# v3.29 (SWR-V3.29-003): cwe→family 映射——从覆盖账本 JSON 派生 (单一事实源,
+# 与 tools/batch_verify fam_map 同源, 零重复维护)
+def _build_cwe_family():
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        with open(os.path.join(here, "resources", "issue_coverage_matrix.json"),
+                  encoding="utf-8") as f:
+            led = json.load(f)
+        m = {}
+        for fam, spec in (led.get("families") or {}).items():
+            for code in (spec.get("cwe") or []):
+                m[str(code)] = fam
+        return m
+    except OSError:
+        return {}
+
+
+_CWE_FAMILY = _build_cwe_family()
+
+
+def _cwe_family(cwes):
+    """cwe 列表 → 账本族 (首位命中映射; 无命中 OTHER)。"""
+    for c in cwes or []:
+        digits = re.sub(r"[^\d]", "", str(c))
+        if digits in _CWE_FAMILY:
+            return _CWE_FAMILY[digits]
+    return "OTHER"
+
 
 def load():
     global _DATA
@@ -114,7 +142,12 @@ def goal_progress():
         per_lang.append({"lang": lg, "entries": len(es),
                          "gap_to_target": max(0, target - len(es)),
                          "battle_confirmed": bc,
+                         "battle_gap": max(0, target - bc),
                          "external_seeded": ext})
+    # 控制器误差信号: K1 达标前按条目 gap, 达标后切换 K2 战役验证 gap
+    per_lang_sorted = sorted(per_lang,
+                             key=lambda r: (-r["battle_gap"], -r["gap_to_target"],
+                                            r["lang"]))
     return {
         "goal": {"per_lang_target": target},
         "milestones": {
@@ -122,11 +155,38 @@ def goal_progress():
             "K2": {"criterion": k2, "progress": f"{k2_ok}/{len(d.get('langs', []))}"},
         },
         "per_lang": per_lang,
+        # v3.29 (SWR-V3.29-001): 控制器输出——K2 战役验证 gap 优先 (K1 达标后
+        # 误差信号自动切换到 K2), 种格与选题优先补误差最大语言
+        "priority": {
+            "per_lang_sorted_by_gap": [
+                {"lang": r["lang"], "gap_to_target": r["gap_to_target"],
+                 "battle_gap": r["battle_gap"], "entries": r["entries"]}
+                for r in per_lang_sorted],
+            "top_gap_languages": [r["lang"] for r in per_lang_sorted[:3]],
+            "note": "控制器输出: 误差信号=K2 battle_gap 优先 (K1 达标后自动切换); 种格与选题优先补误差最大语言 (提示级)",
+        },
         "totals": {"entries": len(inv),
                    "battle_confirmed": sum(1 for e in inv
                                            if e.get("verify", {}).get("status")
                                            == "battle_confirmed")},
     }
+
+
+def hitrate(lang, cwe_list):
+    """v3.29 (SWR-V3.29-002): 审计确认问题 cwe 集对该语言 inventory 条目的
+    命中率——资产→发现能力的传导度量 (只读)。cwe 双形态归一 (CWE-770/770)。"""
+    lg = _norm_lang(lang)
+    queried = {re.sub(r"[^\d]", "", str(c)) for c in (cwe_list or [])}
+    queried.discard("")
+    hits = []
+    for e in inventory_for(lg):
+        entry_cwes = {re.sub(r"[^\d]", "", str(c)) for c in e.get("cwe", [])}
+        if entry_cwes & queried:
+            hits.append({"id": e["id"], "title": e["title"],
+                         "cwe": e.get("cwe", [])})
+    return {"lang": lg, "queried": len(queried), "hit_entries": len(hits),
+            "hits": hits,
+            "hit_rate": f"{len(hits)} 条目 / {len(queried)} 查询"}
 
 
 def seed_entries(path):
@@ -169,6 +229,9 @@ def seed_entries(path):
             continue
         n = sum(1 for x in inv["entries"] if x.get("lang") == e.get("lang")) + 1
         e.setdefault("id", f"INV-{e['lang']}-{n:03d}")
+        # family 归一: 缺失/占位 → 按 cwe 映射 (排序与双写共用同族)
+        if not e.get("family") or e["family"] == "TO_BE_MAPPED":
+            e["family"] = _cwe_family(e.get("cwe"))
         e.setdefault("verify", {"status": "unverified", "battles": [],
                                 "candidates": [], "date": None})
         inv["entries"].append(e)
@@ -179,6 +242,35 @@ def seed_entries(path):
         out = os.path.join(here, "resources", "language_issue_inventory.json")
         with open(out, "w", encoding="utf-8") as f:
             json.dump(inv, f, ensure_ascii=False, indent=1)
+        # v3.29 (SWR-V3.29-003): 双写矩阵 cells (传感器一致性)
+        matrix = load()
+        for e in [x for x in inv["entries"]
+                  if x.get("source", {}).get("tier") == "external_seeded"]:
+            lang, fam = e["lang"], _cwe_family(e.get("cwe"))
+            cell = next((c for c in matrix["cells"]
+                         if c.get("lang") == lang and c.get("family") == fam),
+                        None)
+            if cell is None:
+                cell = {"lang": lang, "family": fam, "status": "seeded",
+                        "cwes": [], "patterns": [], "sinks": [], "pitfalls": [],
+                        "source_lessons": []}
+                matrix["cells"].append(cell)
+            if e.get("pattern") and e["pattern"] not in cell.get("patterns", []):
+                cell.setdefault("patterns", []).append(e["pattern"])
+            for c in e.get("cwe", []):
+                if c not in cell.setdefault("cwes", []):
+                    cell["cwes"].append(c)
+            if e.get("sink_hint") and e["sink_hint"] not in cell.setdefault("sinks", []):
+                cell["sinks"].append(e["sink_hint"])
+            if e.get("pitfall") and e["pitfall"] not in cell.setdefault("pitfalls", []):
+                cell["pitfalls"].append(e["pitfall"])
+            src = e.get("source", {})
+            origin = f"{src.get('origin')} (external_seeded {src.get('date')})"
+            if origin not in cell.setdefault("source_lessons", []):
+                cell["source_lessons"].append(origin)
+        mout = os.path.join(here, "resources", "language_issue_matrix.json")
+        with open(mout, "w", encoding="utf-8") as f:
+            json.dump(matrix, f, ensure_ascii=False, indent=1)
     return {"added": added, "rejected": rejected}
 
 
@@ -223,10 +315,10 @@ def stats():
 
 def main(argv):
     if len(argv) < 2 or argv[1] not in ("cells", "stats", "inventory", "goal",
-                                        "seed"):
+                                        "seed", "hitrate"):
         print("usage: python3 language_issue_matrix.py "
               "cells <lang> [family] | stats | inventory <lang> | goal | "
-              "seed <json-file>", file=sys.stderr)
+              "seed <json-file> | hitrate <lang> <cwe,...>", file=sys.stderr)
         return 2
     if argv[1] == "stats":
         print(json.dumps(stats(), ensure_ascii=False, indent=1))
@@ -242,8 +334,10 @@ def main(argv):
         out = cells_for(argv[2], argv[3] if len(argv) > 3 else None)
     elif argv[1] == "inventory":
         out = inventory_for(argv[2])
-    else:  # seed
+    elif argv[1] == "seed":
         out = seed_entries(argv[2])
+    else:  # hitrate <lang> <cwe,...>
+        out = hitrate(argv[2], argv[3].split(",") if len(argv) > 3 else [])
     print(json.dumps(out, ensure_ascii=False, indent=1))
     return 0
 
