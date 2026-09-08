@@ -89,7 +89,14 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 **目标**：产出 `input_surface.json`（surface 列表）。每个 surface = 一个外部数据入口，附 entry_points 源码证据。
 
 1. **架构上下文**：`python3 surface_mapper.py context <project>` → 语言/构建文件/README 摘要。
+   context 输出另含 `project_kind ∈ {framework, library, infra, app}`（机械）与
+   `maturity ∈ {developing, mature}`（git 版本标签语义: ≥1.0 稳定标签=mature）——
+   project_kind 是测绘期上下文提示, maturity 是 R4 并行触发条件之一,
+   主代理复核后可手动覆盖 maturity（四轴职责表, v3.31 SWR-V3.31-006）。
 2. **4 域并行测绘**（network/data/process/storage）：拉起 4 个子智能体，任务书模板 `assets/task_templates/surface_map_domain.md`。
+   **boundary 第五域（v3.2, 多语言目标）**：语言清单 ≥2 时加派 boundary 域测绘
+   （跨语言桥接/FFI/编解码通道面, 面 type=`boundary`）——size_tier 的
+   domains_split 已含该域, 正文 schema 的 type 枚举同步含 boundary。
    > **派发能力指引（v3.14, SWR-V3.14-007）**：优先派发具备写盘能力的子智能体
    > （允许写 `.audit_results/_r1_<域>.json`）；只读代理（如 Explore）会按落盘
    > 拦截契约以 UNWRITTEN 形态返回完整 JSON，由主代理恢复（写 recovered_by）——
@@ -97,7 +104,7 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
    > 后先 `json.load` 校验文件已落盘（铁律 1）再采信。
    > ⚠️ **任务书 schema 契约（W5 教训 ②）**：任务书必须内嵌下述 canonical schema，禁止让子智能体自定格式：
    > ```json
-   > [{"id":"SURF-<域>-NNN","name":"...","type":"network|data|process|storage",
+   > [{"id":"SURF-<域>-NNN","name":"...","type":"network|data|process|storage|boundary",
    >   "lang":"<面代码语言: c/cpp/go/rust/java/python/... 必填, 从架构上下文继承>",
    >   "entry_points":[{"file":"<相对项目根路径>","line":N,"function":"...",
    >                     "evidence":{"snippet":"<该行代码, 可含上下文注释>"}}],
@@ -291,7 +298,7 @@ medium_plus`）——实质发现被 verdict 语义留在 B.4 计数而不进问
 ## 🧪 R5：实证抽验（声称类强制，REQ-V3-004/060）
 
 **探针→可行性路由前移（v3.21, SWR-V3.21-001）**：R0 探针落盘后、R3 派发前输出
-empirical_feasibility 表（三轨）；  （三轨 = real-target / equivalent-harness / static-only）
+empirical_feasibility 表（三轨 = real-target / equivalent-harness / static-only）；
 R5 harness 目标清单在 R3 定；探针含 no-*
 运行面缺失时向用户报预期 NEEDS_REVIEW 占比 + 三选一决策点（补装运行库 / 借运行面 /
 接受上限）——决策权在用户，主代理不得代选。该表为笔记级产物（不落 schema、
@@ -373,7 +380,8 @@ python3 <skill_dir>/src/lessons_recorder.py <project> --write
 2. 价值判定：高价值条目（新缺陷模式/语言盲区/裁决先例）经去项目化提炼后
    入库清单/先例（两段式：具体发现 → 去项目化 → 入库，来源留追溯字段）；
    低价值条目留项目 lessons 轨迹
-3. **未执行 R6 的审计不得闭合**（报告阶段门禁）
+3. **未执行 R6 的审计不得闭合**（主代理义务, 提示级——无机械门禁承载;
+   审计契约以 lessons.md 落盘为准, 六门禁判据不包含本项）
 5. **蒸馏失败模式清单（v3.22, SWR-V3.22-011）**：收官蒸馏必须逐项过
    已知失败模式 checklist——截断自愈 / 契约漂移 / 簿记缺位 / 签收错名 /
    落盘契约 / 决策记录 / 严重度映射 / 派发简写与模板不一致——任一模式
@@ -516,6 +524,31 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 3. **证据裁决**：证据不匹配时不静默放行也不盲目拒收——suggested_line/suggested_lines 交主代理裁决，证据重写必带 `*_by: main-agent` 标记。
 4. **args 形态纪律（v3.4.5, SWR-V3.4.5-005）**：派发 Workflow 时 args 必须按导出 `next_step` 声明的形态（对象包裹，`args={"candidates": <payload>}`）传递；裸数组是派发错误——脚本已容忍自动包装（机械兜底，SWR-V3.4.5-002），纪律上禁止依赖兜底（gRPC 复活波裸数组误传失败实录）。
 
+## 📟 附录：CLI 速查（命令面全集）
+
+> 审计执行所需的完整命令面。用法细节以各模块 docstring 为准；此处为
+> 阶段归属索引。R 段正文已展开的命令（fidelity/hints 等）不重复展开。
+
+| 命令 | 阶段 | 用途 |
+|---|---|---|
+| `surface_mapper.py scope snapshot/context/validate/merge` | R0/R1 | 范围快照/架构上下文(maturity·project_kind)/面校验/面合并 |
+| `signature_lib.py selfcheck` | R0 | 签名库自检（fixture 召回 vs 完整性自检双语义） |
+| `target_kind.py / target_profile.py --write` | R0 | 目标形态/画像判定 |
+| `signature_matcher.py index/match/gen` | R2 | 签名佐证器（可选链路） |
+| `r2_guard.py validate/anchor/drops/fidelity` | R2 | 假设 schema/锚点/筛选落盘/保真校验 |
+| `batch_verify.py --stage next/collect/bump-attempt` | R3 A' 降级 | 手工波次驱动 |
+| `batch_verify.py --stage workflow-script [--mode verify|refutation]` | R3/R3.5 | Mode W 脚本导出 |
+| `batch_verify.py --stage r35-collect/r35n-collect` | R3.5 | 证伪多数决/复活收集 |
+| `batch_verify.py --stage r4-collect/r4-assert` | R4 | 业务假说收集/断言 |
+| `batch_verify.py --stage grade-recheck` | R5 | 分级机械重算 |
+| `batch_verify.py --stage coverage-ledger [--write]` | R6/选题 | 覆盖账本读/回填 |
+| `batch_verify.py --stage assert/status/report/reopen/scope-review/tracked-ids` | 收尾 | 门禁断言/队列状态/报告/重开/范围裁决/覆盖对账 |
+| `language_issue_matrix.py hints/cells/inventory` | R2 | 假设空间提示 |
+| `language_issue_matrix.py hitrate/stats/goal/seed` | R6 | 命中率记账/知识库状态/目标/回填（维护工具链） |
+| `harness_runner.py templates/env` | R5 | 实证模板注册表/环境探针 |
+| `fixminer.py <project> [--since N]` | R2 | 安全修复挖掘（修复驱动假设） |
+| `lessons_recorder.py <project> --write` | R6 | lessons 机械提取落盘 |
+
 ## 📚 附录：资产地图
 
 - 核心模块（L1 src/）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
@@ -523,7 +556,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
 - `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：45 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
 - `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
-- `tests/`：300+ 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
+- `tests/`：550 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
 ---
