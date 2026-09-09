@@ -589,7 +589,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - 核心模块（L1 src/）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：45 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
+- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：47 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
 - `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
 - `tests/`：555 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
@@ -600,7 +600,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.36。
+TOOLING 3.37。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -643,3 +643,4 @@ TOOLING 3.36。
 | v3.34 | 2026-09-08 | 文件分层重构 |
 | v3.35 | 2026-09-08 | SKILL.md 净化重构: 增量段迁档 + 只留审计设计 + 17 条规范性归位 |
 | v3.36 | 2026-09-08 | Caddy 验收发现: trust_boundary 规范枚举透传修复 |
+| v3.37 | 2026-09-09 | Caddy 验收复盘三修复: 任务书引用绝对化 + 切片容量/量级驱动权清单 |

@@ -62,9 +62,9 @@ def test_ck_limit_bypass_enum_structure():
 def test_asset_count_45_synced():
     """SWR-V3.27-004 计数联动: 清单库 45 + SKILL.md 正文节计数同步。"""
     d = json.load(open(os.path.join(WORKSPACE, "assets", "resources", "checklist_library.json")))
-    assert len(d['checklists']) == 45
+    assert len(d['checklists']) == 47  # v3.37 +2 (SWR-V3.37-002/003)
     sk = open(os.path.join(WORKSPACE, "SKILL.md")).read()
-    assert "45 条检查清单" in sk, "SKILL.md 清单计数未同步 45"
+    assert "47 条检查清单" in sk, "SKILL.md 清单计数未同步 47"
 
 
 def test_biz_template_convention():
@@ -78,4 +78,4 @@ def test_biz_template_convention():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.36"
+    assert we.TOOLING_VERSION == "3.37"

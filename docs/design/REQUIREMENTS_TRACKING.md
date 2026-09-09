@@ -1162,3 +1162,14 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 |---|---|---|---|
 | REQ-V3.36-001 | normalize_surfaces str 分支规范枚举短路透传 | 已完成 | src/surface_mapper.py + tests/test_v336.py |
 | REQ-V3.36-002 | dict 遗留分支大小写变体规范值对称短路 | 已完成 | src/surface_mapper.py + tests/test_v336.py |
+
+## 系统需求（REQ-V3.37）（共 3 条）
+
+> 手工追加段（2026-09-09）。案例支撑：Caddy 验收复盘——taskFiles 相对路径
+> 派发失败实录 / CAND-011 切片语义误报实证证伪 / CAND-002 量级前提幻觉证伪降级。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.37-001 | workflow_export 三处 taskFile 引用绝对化 | 已完成 | src/workflow_export.py + tests/test_v337.py |
+| REQ-V3.37-002 | CK-SLICE-CAPACITY 清单条目 (切片越界声称容量语义) | 已完成 | assets/resources/checklist_library.json + tests/test_v337.py |
+| REQ-V3.37-003 | CK-MAGNITUDE-OWNERSHIP 清单条目 (资源声称量级驱动权) | 已完成 | assets/resources/checklist_library.json + tests/test_v337.py |

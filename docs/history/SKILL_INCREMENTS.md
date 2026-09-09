@@ -1552,3 +1552,25 @@ VALID_TRUST 成员的规范枚举串误伤：`local`/`trusted_channel`/`unknown`
 **验收判据**：test_v336.py 5 用例（8 规范串透传/自由文本映射回归/混合批/
 dict 变体/遗留自由文本 dict 回归）+ 全量 555 绿 + servo 旧队列复跑零新增
 告警 + Caddy 域文件（原始串未被动）重合并 35 面边界语义无损恢复。
+
+## v3.37 增量段（2026-09-09）
+
+**背景**：Caddy 阶段 6 验收复盘三教训——(1) refutation/resurrect 导出的
+taskFiles 为相对路径，Workflow agent cwd 非项目根致 Read 失败（主代理手工
+补绝对路径绕开；verify 因恰为绝对路径幸免）；(2) verifier 对 Go 二索引切片
+边界语义误判（cap vs len）致 CAND-011 整候选误报，R5 实证拦截；
+(3) CAND-002 资源类声称量级前提幻觉（攻击者无驱动无界累积的输入维度），
+证伪 1/2 后主代理裁决降级。
+
+**修复（SWR-V3.37-001/002/003）**：
+1. workflow_export 三处 taskFile/taskFiles 落盘引用绝对化（resurrect/
+   verify/refutation 同形态；任务书落盘位置不变）；
+2. 新清单条目 CK-SLICE-CAPACITY（family=memory-safety）：切片越界声称
+   必须核对输入缓冲容量语义——2-index 边界=cap 非 len，ReadAll/ReadFile
+   类输入 cap≥初始缓冲恒定不越界；无 cap 证据的越界声称降为代码卫生建议；
+3. 新清单条目 CK-MAGNITUDE-OWNERSHIP（family=empirical）：资源类声称
+   （oom/unbounded）的量级驱动权必须归属攻击者输入维度，单请求上界=部署
+   内容、聚合上界=平台连接上限的形态不得报 remote oom。
+
+**验收判据**：test_v337.py 5 用例 + 全量 560 绿 + 计数守卫 45→47 同步 +
+旧队列复跑零新增告警。
