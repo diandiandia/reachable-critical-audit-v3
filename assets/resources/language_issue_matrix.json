@@ -573,25 +573,29 @@
    "patterns": [
     "远端控制分配大小无上限: 攻击者控制长度进入分配",
     "资源门禁强制点=计数分配器包装层: 裸 malloc/mmap/第三方分配器站点逐一枚举——限额类缺陷的旁路族",
-    "资源分配无上限或无节流"
+    "资源分配无上限或无节流",
+    "协议滥用节流阈值默认 0=fail-open (上游 opt-in 加固)"
    ],
    "sinks": [
     "malloc 家族",
     "realloc 扩展",
     "calloc 计数×尺寸",
-    "分配/队列/累积点"
+    "分配/队列/累积点",
+    "glitch 计数 + thres&&门控的强制路径"
    ],
    "pitfalls": [
     "分配请求 ≠ 资源耗尽: 提交内存受输入限制时判 Low (PREC-ALLOC-VIRTUAL-001)",
     "累积型 (逐块预留) 与一次性分配的量级判定不同",
     "子执行上下文 (worker/线程/子 rt) 的资源参数继承矩阵逐项核对; 哨兵值 (0/-1/非法) 语义 fail-open 还是 fail-closed",
-    "上限/节流在累积点之前"
+    "上限/节流在累积点之前",
+    "量级驱动权判据: 默认配置 sink 零强制效果 + 每事件成本为协议固有处理 → 不得报 remote 级 DoS, 按防御规避内核/加固缺口口径 (CK-MAGNITUDE-OWNERSHIP)"
    ],
    "source_lessons": [
     "SIG-C-ALLOC-001 (签名库 L2 词族)",
     "PREC-ALLOC-VIRTUAL-001",
     "quickjs lessons 2026-09-07",
-    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "haproxy acceptance audit (battle_verified 2026-09-10)"
    ],
    "status": "seeded"
   },
@@ -615,7 +619,8 @@
     "缓冲拷贝未检查输入大小",
     "空指针解引用",
     "栈缓冲溢出: 无界拷贝",
-    "堆缓冲溢出: 无界拷贝"
+    "堆缓冲溢出: 无界拷贝",
+    "定长数组安全依赖上游封顶的隐式约束 (无自身守卫)"
    ],
    "sinks": [
     "长度字段驱动的 memcpy/索引",
@@ -627,7 +632,8 @@
     "定长缓冲拷贝点: strcpy/gets 族",
     "指针解引用点(缺空检查)",
     "栈缓冲拷贝点",
-    "堆缓冲拷贝点: 长度未检拷贝"
+    "堆缓冲拷贝点: 长度未检拷贝",
+    "响应头栈数组循环写无计数检查"
    ],
    "pitfalls": [
     "长度字段极值 + 截断矩阵实证是声称类强制 (parser_fuzz 模板)",
@@ -639,7 +645,8 @@
     "拷贝长度≤目标容量必须机械可证",
     "解引用前空检查或前置不变量",
     "栈缓冲拷贝长度检查",
-    "堆缓冲拷贝长度检查"
+    "堆缓冲拷贝长度检查",
+    "越界声称必须核算到达 sink 的上游封顶链 (每层 mux 的计数门)——边界实测 (N 头分界) 优于静态推断; 无自身守卫但上游封顶完备 = 硬化建议而非漏洞"
    ],
    "source_lessons": [
     "parser_fuzz 模板实战形态 (asn1_get_len ASan 2M+ 输入实录)",
@@ -651,7 +658,8 @@
     "CWE Top 25 2025 rank 11 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 13 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 14 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
-    "CWE Top 25 2025 rank 16 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 16 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "haproxy acceptance audit (battle_verified 2026-09-10)"
    ],
    "status": "seeded"
   },
@@ -2369,6 +2377,26 @@
    ],
    "source_lessons": [
     "caddy acceptance audit (battle_verified 2026-09-09)"
+   ]
+  },
+  {
+   "lang": "c",
+   "family": "AUTHN",
+   "status": "seeded",
+   "cwes": [
+    "CWE-306"
+   ],
+   "patterns": [
+    "集群同步协议默认无认证 (无 secret 机制载体)"
+   ],
+   "sinks": [
+    "入站同步监听的三段纯文本握手 (版本/主机名/对端名)"
+   ],
+   "pitfalls": [
+    "判据: 配置启用即攻击面; '无认证是可选关闭的默认' 与 '无认证机制载体' 是两种强度——grep 全文件无 secret/sign/hmac 标识符才可下后者结论"
+   ],
+   "source_lessons": [
+    "haproxy acceptance audit (battle_verified 2026-09-10)"
    ]
   }
  ]

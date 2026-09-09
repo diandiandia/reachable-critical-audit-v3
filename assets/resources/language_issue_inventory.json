@@ -4695,6 +4695,96 @@
    "pattern": "对 ReadAll/ReadFile 返回切片做固定高界切片时, 越界前提错误 (len 小 cap 大)",
    "sink_hint": "keyData[:40] 前缀检查 (os.ReadFile 返回 cap≥初始缓冲)",
    "pitfall": "静态'无长度守卫即 panic'声称须先核对输入切片的容量语义再下结论"
+  },
+  {
+   "lang": "c",
+   "family": "AUTHN",
+   "title": "集群同步协议默认无认证 (无 secret 机制载体)",
+   "cwe": [
+    "CWE-306"
+   ],
+   "pattern": "集群同步协议默认无认证 (无 secret 机制载体)",
+   "sink_hint": "入站同步监听的三段纯文本握手 (版本/主机名/对端名)",
+   "pitfall": "判据: 配置启用即攻击面; '无认证是可选关闭的默认' 与 '无认证机制载体' 是两种强度——grep 全文件无 secret/sign/hmac 标识符才可下后者结论",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "haproxy acceptance audit",
+    "date": "2026-09-10"
+   },
+   "source_lessons": [
+    "haproxy .audit_results/lessons.md CAND-003"
+   ],
+   "id": "INV-c-016",
+   "verify": {
+    "status": "battle_confirmed",
+    "battles": [
+     "haproxy"
+    ],
+    "candidates": [
+     "CAND-003"
+    ],
+    "date": "2026-09-10"
+   }
+  },
+  {
+   "lang": "c",
+   "family": "RESOURCE-DOS",
+   "title": "协议滥用节流阈值默认 0=fail-open (上游 opt-in 加固)",
+   "cwe": [
+    "CWE-770"
+   ],
+   "pattern": "协议滥用节流阈值默认 0=fail-open (上游 opt-in 加固)",
+   "sink_hint": "glitch 计数 + thres&&门控的强制路径",
+   "pitfall": "量级驱动权判据: 默认配置 sink 零强制效果 + 每事件成本为协议固有处理 → 不得报 remote 级 DoS, 按防御规避内核/加固缺口口径 (CK-MAGNITUDE-OWNERSHIP)",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "haproxy acceptance audit",
+    "date": "2026-09-10"
+   },
+   "source_lessons": [
+    "haproxy .audit_results/lessons.md CAND-001"
+   ],
+   "id": "INV-c-017",
+   "verify": {
+    "status": "battle_confirmed",
+    "battles": [
+     "haproxy"
+    ],
+    "candidates": [
+     "CAND-001"
+    ],
+    "date": "2026-09-10"
+   }
+  },
+  {
+   "lang": "c",
+   "family": "MEMORY-SAFETY",
+   "title": "定长数组安全依赖上游封顶的隐式约束 (无自身守卫)",
+   "cwe": [
+    "CWE-787"
+   ],
+   "pattern": "定长数组安全依赖上游封顶的隐式约束 (无自身守卫)",
+   "sink_hint": "响应头栈数组循环写无计数检查",
+   "pitfall": "越界声称必须核算到达 sink 的上游封顶链 (每层 mux 的计数门)——边界实测 (N 头分界) 优于静态推断; 无自身守卫但上游封顶完备 = 硬化建议而非漏洞",
+   "source": {
+    "tier": "battle_verified",
+    "origin": "haproxy acceptance audit",
+    "date": "2026-09-10"
+   },
+   "source_lessons": [
+    "haproxy .audit_results/lessons.md CAND-006"
+   ],
+   "id": "INV-c-018",
+   "verify": {
+    "status": "battle_confirmed",
+    "battles": [
+     "haproxy"
+    ],
+    "candidates": [
+     "CAND-006"
+    ],
+    "date": "2026-09-10"
+   }
   }
  ]
 }

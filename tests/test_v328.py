@@ -27,7 +27,7 @@ def _inv():
 def test_inventory_loads_and_fields():
     d = _inv()
     entries = d['entries']
-    assert len(entries) == 199, "inventory 条目数漂移 (36 派生 + 156 Top25 + 7 Caddy battle_verified)"
+    assert len(entries) == 202, "inventory 条目数漂移 (36 派生 + 156 Top25 + 7 Caddy battle_verified)"
     assert d['goal']['per_lang_target'] == 10
     for e in entries:
         for k in ("id", "lang", "title", "family", "cwe", "source", "verify"):
@@ -168,7 +168,7 @@ def test_quickjs_entries_confirm_candidates():
     by_title = {e['title'][:12]: e for e in d['entries']}
     found = [e for e in d['entries']
              if e['verify']['status'] == 'battle_confirmed']
-    assert len(found) == 9  # 2 QuickJS (v3.28) + 7 Caddy 验收 (v3.36)
+    assert len(found) == 12  # 2 QuickJS + 7 Caddy + 3 haproxy (v3.38 验收)
     cands = [c for e in found for c in e['verify']['candidates']]
     for c in ("CAND-001", "H-2-F1", "H-7-F2",   # QuickJS
               "CAND-006", "CAND-010", "CAND-011", "H-1-F1", "H-3-F2", "H-4-F2"):
