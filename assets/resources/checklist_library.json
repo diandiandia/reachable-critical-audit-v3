@@ -1498,6 +1498,40 @@
    "source_lessons": [
     "quickjs lessons 2026-09-07 (worker 子 rt/SAB backing/消息队列三站点 + 哨兵 fail-open 实录)"
    ]
+  },
+  {
+   "id": "CK-SLICE-CAPACITY",
+   "family": "memory-safety",
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "声称 s[:N]/s[i:j] 切片越界 panic 前, 先回答: 该输入切片的 cap 是多少、由谁分配 (分配点/增长策略)",
+    "2-index 切片表达式的边界条件是 j <= cap(s) 而非 j <= len(s)——len 小 cap 大的输入上 [:N] 恒不越界, 读到的是 cap 内未初始化尾区",
+    "ReadAll/ReadFile/网络读缓冲类输入的 cap >= 初始缓冲常量——固定小 N 的前缀切片恒安全, '无长度守卫即 panic' 声称不成立",
+    "判据: 声称 panic 必须给出 cap 证据; 无 cap 证据的越界声称降级为 '无守卫的代码卫生建议' 而非漏洞"
+   ],
+   "source_lessons": [
+    "caddy 验收 CAND-011 实证证伪 (cap-vs-len 语言语义前提错误致整候选误报, 2026-09-09)"
+   ]
+  },
+  {
+   "id": "CK-MAGNITUDE-OWNERSHIP",
+   "family": "empirical",
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "steps": [
+    "资源类声称 (oom/unbounded/高占用) 先列量级变量: 单请求累积上界 S 与聚合上界 N 各自由谁控制",
+    "S 由部署内容尺寸/配置决定且攻击者仅控制 '请求哪个既有资源'+并发数 → 量级驱动权不在攻击者输入维度",
+    "N 受平台 fd/连接/流上限约束 → 不存在攻击者可控的无界维度",
+    "判据: 两上界均非攻击者输入 → 不得报 remote 级 oom——按加固缺口口径申报 (部署前提显式标注) 或降级 NEEDS_REVIEW"
+   ],
+   "source_lessons": [
+    "caddy 验收 CAND-002 量级前提幻觉 (证伪 1/2 主代理裁决降级, 2026-09-09)"
+   ]
   }
  ],
  "platform_trust_models": [

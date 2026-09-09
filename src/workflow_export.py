@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.36"
+TOOLING_VERSION = "3.37"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
@@ -596,7 +596,10 @@ def export_script_resurrect(project_root, batch_size=8):
         tf = os.path.join(_tasks_dir, f"resurrect_{c['id']}.md")
         with open(tf, "w") as f:
             f.write(c["prompt"])
-        c["taskFile"] = f".audit_results/_tasks/resurrect_{c['id']}.md"
+        # v3.37 (SWR-V3.37-001): 引用字段绝对化——Workflow agent cwd
+        # 不可假定为项目根, 相对路径 Read 失败 (Caddy 波次主代理手工
+        # 补绝对路径实录)
+        c["taskFile"] = os.path.join(_tasks_dir, f"resurrect_{c['id']}.md")
     slim = [{"id": c["id"], "taskFile": c["taskFile"]} for c in payload]
     with open(os.path.join(project_root, ".audit_results",
                            "resurrect_payload_slim.json"), "w") as f:
@@ -808,7 +811,8 @@ def export_script(project_root, mode="verify", batch_size=4):
             tf = os.path.join(_tasks_dir, f"verify_{c['id']}.md")
             with open(tf, "w") as f:
                 f.write(c["prompt"])
-            c["taskFile"] = f".audit_results/_tasks/verify_{c['id']}.md"
+            # v3.37 (SWR-V3.37-001): 绝对化 (同 resurrect 形态)
+            c["taskFile"] = os.path.join(_tasks_dir, f"verify_{c['id']}.md")
         slim = [{"id": c["id"], "taskFile": c["taskFile"]} for c in payload]
         with open(os.path.join(project_root, ".audit_results",
                                "verify_payload_slim.json"), "w") as f:
@@ -851,7 +855,8 @@ def export_script(project_root, mode="verify", batch_size=4):
                 tf = os.path.join(_tasks_dir, f"refute_{c['id']}_{i}.md")
                 with open(tf, "w") as f:
                     f.write(pr)
-                tfs.append(f".audit_results/_tasks/refute_{c['id']}_{i}.md")
+                # v3.37 (SWR-V3.37-001): 绝对化 (同 verify 形态)
+                tfs.append(os.path.join(_tasks_dir, f"refute_{c['id']}_{i}.md"))
             c["taskFiles"] = tfs
         slim = [{"id": c["id"], "taskFiles": c["taskFiles"]} for c in payload]
         with open(os.path.join(project_root, ".audit_results",
