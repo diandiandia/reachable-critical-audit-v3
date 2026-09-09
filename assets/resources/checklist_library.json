@@ -1514,7 +1514,21 @@
    ],
    "source_lessons": [
     "caddy 验收 CAND-011 实证证伪 (cap-vs-len 语言语义前提错误致整候选误报, 2026-09-09)"
-   ]
+   ],
+   "binding": {
+    "cwe": [
+     "CWE-125",
+     "CWE-787"
+    ],
+    "keywords": [
+     "切片",
+     "slice",
+     "越界",
+     "out of range"
+    ],
+    "note": "v3.38 (SWR-V3.38-001): 补挂载规则——v3.37 缺 binding 致 binder 永不注入"
+   },
+   "name": "切片越界声称容量语义检查"
   },
   {
    "id": "CK-MAGNITUDE-OWNERSHIP",
@@ -1531,7 +1545,48 @@
    ],
    "source_lessons": [
     "caddy 验收 CAND-002 量级前提幻觉 (证伪 1/2 主代理裁决降级, 2026-09-09)"
-   ]
+   ],
+   "binding": {
+    "cwe": [],
+    "keywords": [],
+    "applies_to_phase": "R5",
+    "note": "v3.38 (SWR-V3.38-001): 实证语义空间挂载 (claim 属实证集或 empirical 在位)"
+   },
+   "name": "资源声称量级驱动权检查"
+  },
+  {
+   "id": "CK-SIBLING-CONSISTENCY",
+   "family": "sibling-consistency",
+   "applies_to": [
+    "verifier",
+    "refuter"
+   ],
+   "binding": {
+    "keywords": [
+     "端点",
+     "endpoint",
+     "监听",
+     "listener",
+     "listen",
+     "handler",
+     "handle",
+     "admin",
+     "api",
+     "路由",
+     "route"
+    ],
+    "note": "v3.38 (SWR-V3.38-001): 端点/监听形态关键词匹配——同族一致性是端点形态检查, cwe 族绑定会短路 resource 兜底 (SWR-087 CK-GENERIC-RESOURCE 机制); 关键词按真实候选 summary 词汇校准"
+   },
+   "steps": [
+    "枚举同功能族的全部兄弟实例 (同路由表的其余端点/同模块接口的其余实现/同解析族的其余路径)",
+    "对每个防御维度 (体量封顶/鉴权门/超时/输入校验) 建对比矩阵",
+    "任一兄弟有防御而本 sink 无 → 缺陷假设 (修复残留/防御不一致形态)",
+    "判据: 不一致必须有文档化解释, 否则成立"
+   ],
+   "source_lessons": [
+    "caddy 验收 CAND-001 形态 (/config 封顶 /load 无, 2026-09-09)"
+   ],
+   "name": "同族不一致防御检查"
   }
  ],
  "platform_trust_models": [

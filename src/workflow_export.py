@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.37"
+TOOLING_VERSION = "3.38"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
@@ -49,6 +49,9 @@ VERDICT_SCHEMA = {
         "evidence": {"type": "string"},
         "evidence_grade": {"enum": ["static_only", "edge_proven", "empirically_confirmed"]},
         "blocking_point": {"type": ["string", "null"]},
+        # v3.38 (SWR-V3.38-002): 自证伪轮——verifier 自认的判定翻转点,
+        # 证伪者以此为首选攻击面 (可选字段, 空数组容忍)
+        "self_refutations": {"type": "array", "items": {"type": "string"}},
         "edge_evidence": {"type": "array", "items": {
             "type": "object", "required": ["edge", "proof"],
             "properties": {"edge": {"type": "string"}, "proof": {"type": "string"}}}},
@@ -378,6 +381,13 @@ def refute_prompt(c, idx):
     # 次要段截断且必带标记 (旧版静默 [:800] 曾让证伪者误读上下文)
     evidence = _truncate_evidence(c.get('evidence', ''), budget=3000)
     chain = c.get('call_chain', [])
+    sr_note = ""
+    sr = c.get("self_refutations") or []
+    if sr:
+        # v3.38 (SWR-V3.38-002): verifier 自认的翻转点 = 证伪首选攻击面
+        sr_note = ("\n证伪攻击面 (verifier 自证伪清单, v3.38 SWR-V3.38-002): "
+                   "优先逐条验证以下翻转点的前提是否成立: "
+                   + " | ".join(str(x) for x in sr[:6]))
     chain_note = ""
     if len(chain) > 12:
         chain_note = f" ...[截断: 全链 {len(chain)} 跳, 见 verify_queue.json]"
@@ -385,7 +395,7 @@ def refute_prompt(c, idx):
     return (
         f"你是独立证伪者 #{idx}（对抗性复核）。候选 {c['id']} 被判 REACHABLE。\n"
         f"任务: 尽力证伪该结论。默认立场: 有疑问即 refuted=true。\n"
-        f"你的证伪视角: {angle}{toolbox}\n\n"
+        f"你的证伪视角: {angle}{toolbox}{sr_note}\n\n"
         f"原判定证据: {evidence}\n"
         f"调用链: {chain}{chain_note}\n"
         f"证据分级: {c.get('evidence_grade')}\n\n"
@@ -779,6 +789,22 @@ def export_script(project_root, mode="verify", batch_size=4):
                 prompt += "\n\n" + checklist_section
             if hints:
                 prompt += "\n\n" + hints
+            # v3.38 (SWR-V3.38-002): 自证伪轮 (结构化)——产出 self_refutations
+            prompt += (
+                "\n\n## 自证伪轮（v3.38, SWR-V3.38-002, 提示级）\n"
+                "裁决确定后产出 self_refutations 数组 (≥2 条): 每条是一个"
+                "『若该前提为假/该证据错位, 本判定即翻转』的翻转点——"
+                "REACHABLE 判定攻击自己的量级/主体/前提维度, UNREACHABLE 判定"
+                "攻击自己的防御前提 (该防御是否默认生效、是否覆盖攻击者可控的"
+                "全部维度)。空数组容忍但须在 evidence 说明省略理由。")
+            # v3.38 (SWR-V3.38-004): 实证机会条款 (提示级)
+            prompt += (
+                "\n\n## 实证机会条款（v3.38, SWR-V3.38-004, 提示级）\n"
+                "目标可构建且 claim 属实证类 (crash/panic/oom/unbounded/xss/"
+                "protocol_dos/rce/leak) 时: 存在低成本实证路径 (构建 + 最小复现)"
+                "则建议实测并在 evidence 附数字与复现步骤; 无实证环境时记录 "
+                "blocker 证据 (工具链缺失/无运行面)。实测数字是分级升档与证伪"
+                "攻击面——无实测不得声称 empirically_confirmed。")
             # SWR-V3.3.2-020: 复活复核 gap 渲染 (REQ-V3.2-021「附复活者证据」的
             # 机械载体——七项目批次 6 波手工后处理 hack 的制度化)
             gap = c.get("re_verify_gap")

@@ -188,6 +188,10 @@ SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
   3. `python3 signature_matcher.py gen <hits.json>` → 佐证 hints（**不是**最终候选）
 - R0 `signature_lib.py selfcheck` 不受影响（回归锚点 + 去项目化扫描是第一原则守卫，仍强制）。
 
+**同族不一致防御枚举（v3.38, SWR-V3.38-001, 提示级）**：hints 装载后，对目标中同族多实例功能面（同路由表其余端点/同模块接口其余实现/同解析族其余路径）做防御维度对比矩阵（体量封顶/鉴权门/超时/输入校验）——任一兄弟有防御而本面没有即假设（修复残留形态，差分证据强于绝对声称）。
+
+**公开面关联检索（v3.38, SWR-V3.38-003, 提示级）**：网络可用时，假设生成前对目标做公开面关联（已知 CVE/GHSA 检索 + 上游 master 对账，落盘 `.audit_results/upstream_recon.json` 可无）——已修形态直接降级或改口径，未修形态附佐证；**上游后修 = 快照缺陷候选**（时间差假设，直接进假设空间）；网络不可用零阻塞跳过。
+
 **differential 发现通道（v3.23, SWR-V3.23-004，提示级）**：surface_model=semantic/hybrid
 且 generation_layers 含 jit 的目标，R2 可（可选）对语义轴关键操作跑 `differential`
 探针（`assets/templates/harness/differential_probe.py`：解释器 vs JIT / 多 JIT 层 / 元素类型
@@ -367,6 +371,7 @@ equivalent 档结论强度低于 real_target——真实目标环境可及时，
 补测前先核取 verifier/证伪者证据中已有实测数字——backfill 规范（v3.4.3-061）以证据文本实测为依据，同事实重复实证是执行层浪费（提示级）。
 
 1. harness 模板（`assets/templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）/ paired_control_probe（v3.30 通用双测对照探针——对照 vs 攻击命令 VmHWM 峰值差分, langs:["any"]，资源类声称配对测量）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
+   **harness 回收条款（v3.38, SWR-V3.38-005, 提示级）**：收官复盘对现场构造的实证程序做通用化评审——形态跨项目可复用则去项目化入库`assets/templates/harness/`（paired_control_probe 入库先例）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
    **harness 依赖条款（v3.33, SWR-V3.33-011，提示级）**：(a) 独立 harness crate
    的依赖解析不与目标仓 workspace Cargo.lock 共享——版本敏感依赖必须对照目标仓
@@ -589,7 +594,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - 核心模块（L1 src/）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：47 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
+- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：48 条检查清单（v3.27 增补 1 条限额旁路枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
 - `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
 - `tests/`：555 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
@@ -600,7 +605,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.37。
+TOOLING 3.38。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -644,3 +649,4 @@ TOOLING 3.37。
 | v3.35 | 2026-09-08 | SKILL.md 净化重构: 增量段迁档 + 只留审计设计 + 17 条规范性归位 |
 | v3.36 | 2026-09-08 | Caddy 验收发现: trust_boundary 规范枚举透传修复 |
 | v3.37 | 2026-09-09 | Caddy 验收复盘三修复: 任务书引用绝对化 + 切片容量/量级驱动权清单 |
+| v3.38 | 2026-09-09 | 模型能力利用五机制: 同族不一致/自证伪轮/公开面前置/实证机会/harness 回收 |
