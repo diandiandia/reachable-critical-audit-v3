@@ -532,26 +532,34 @@
    "family": "RESOURCE-DOS",
    "cwes": [
     "CWE-400",
-    "CWE-770"
+    "CWE-770",
+    "CWE-789"
    ],
    "patterns": [
     "流式拷贝/累积无上限: 读端无界累积",
-    "资源分配无上限或无节流"
+    "资源分配无上限或无节流",
+    "同库其他端点已封顶而本端点未封顶 = 修复的不完全覆盖残留",
+    "shouldBuf 恒 true (占位符引用响应体) 或 MIME/status 门命中即整缓冲无预算"
    ],
    "sinks": [
     "io.Copy 无上限目标",
     "ReadAll",
     "bufio 累积循环",
-    "分配/队列/累积点"
+    "分配/队列/累积点",
+    "配置装载 handler 的 io.Copy/ReadAll 无 MaxBytesReader",
+    "ResponseRecorder 族 NewResponseRecorder(w, buf, shouldBuf)"
    ],
    "pitfalls": [
     "io.Copy 对不可信源必须包 LimitReader——裸拷贝是默认缺陷形态",
     "『调用方已限流』声称必须核实读取侧实际到达量 (投递量≠到达量)",
-    "上限/节流在累积点之前"
+    "上限/节流在累积点之前",
+    "端点级字节预算必须与功能面逐一对照, 不能以'同功能端点已封顶'推定",
+    "缓冲检查点不存在 = 累积后检查; 攻击者不驱动体量时按加固缺口口径评级"
    ],
    "source_lessons": [
     "SIG-GO-ACCUM-001 (签名库 L2 词族)",
-    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "caddy acceptance audit (battle_verified 2026-09-09)"
    ],
    "status": "seeded"
   },
@@ -1343,7 +1351,8 @@
     "路径名未限制到受限目录: 穿越/跳目录",
     "输出未净化的外部数据: 网页生成路径缺转义",
     "状态变更请求缺跨站请求伪造防护",
-    "服务端请求伪造: 外部输入驱动请求目标"
+    "服务端请求伪造: 外部输入驱动请求目标",
+    "解析器对齐性结论用于路由/授权判定时, 错误吞没 = 门失效放行"
    ],
    "sinks": [
     "文件路径构造与打开点",
@@ -1361,7 +1370,8 @@
     "CWE Top 25 2025 rank 6 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 1 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 3 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
-    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 22 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "caddy acceptance audit (battle_verified 2026-09-09)"
    ]
   },
   {
@@ -1399,19 +1409,23 @@
    ],
    "patterns": [
     "敏感操作缺授权检查",
-    "用户可控键绕过授权(越权)"
+    "用户可控键绕过授权(越权)",
+    "存储中既有 root.crt/root.key 原样采纳无来源校验 + 自动信任安装 = 主机级 MITM 基础"
    ],
    "sinks": [
     "敏感操作处理函数入口",
-    "按用户键取资源的查询点"
+    "按用户键取资源的查询点",
+    "truststore.Install 于 app Start 无条件执行 (root 无人工门)"
    ],
    "pitfalls": [
     "缺授权≠设计意图——核实敏感操作清单",
-    "资源归属键与访问者身份比对"
+    "资源归属键与访问者身份比对",
+    "'交互确认是人工门'的 drop 论据在 root+Linux 无交互场景不成立——按部署形态复核门的存在性"
    ],
    "source_lessons": [
     "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
-    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "caddy acceptance audit (battle_verified 2026-09-09)"
    ]
   },
   {
@@ -1419,19 +1433,28 @@
    "family": "DATA-INTEGRITY",
    "status": "seeded",
    "cwes": [
-    "CWE-20"
+    "CWE-20",
+    "CWE-59",
+    "CWE-345"
    ],
    "patterns": [
-    "输入校验缺失或不足"
+    "输入校验缺失或不足",
+    "退化 env 几何 + 世界可写 CWD = 本地低权主体预置目录/symlink 链",
+    "存储中既有 root.crt/root.key 原样采纳无来源校验 + 自动信任安装 = 主机级 MITM 基础"
    ],
    "sinks": [
-    "外部输入消费点"
+    "外部输入消费点",
+    "AppConfigDir/AppDataDir 回退 './app'; MkdirAll+WriteFile 无原子替换无跟链防护",
+    "truststore.Install 于 app Start 无条件执行 (root 无人工门)"
    ],
    "pitfalls": [
-    "输入校验与消费点同层"
+    "输入校验与消费点同层",
+    "权限位 (0700/0600) 防不住既有 inode 跟链写与异主目录放行; --resume 读回构成完整写→读链",
+    "'交互确认是人工门'的 drop 论据在 root+Linux 无交互场景不成立——按部署形态复核门的存在性"
    ],
    "source_lessons": [
-    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 18 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "caddy acceptance audit (battle_verified 2026-09-09)"
    ]
   },
   {
@@ -2302,6 +2325,50 @@
     "CWE Top 25 2025 rank 19 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 17 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+   ]
+  },
+  {
+   "lang": "go",
+   "family": "MEMORY-SAFETY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-125",
+    "CWE-416"
+   ],
+   "patterns": [
+    "对 ReadAll/ReadFile 返回切片做固定高界切片时, 越界前提错误 (len 小 cap 大)",
+    "管理面替换先行于业务 app 提交; app Start 失败后 provisional 监听存活"
+   ],
+   "sinks": [
+    "keyData[:40] 前缀检查 (os.ReadFile 返回 cap≥初始缓冲)",
+    "配置提交错误路径: 只回滚内存状态不回滚已启动的管理监听"
+   ],
+   "pitfalls": [
+    "静态'无长度守卫即 panic'声称须先核对输入切片的容量语义再下结论",
+    "回滚兜底枚举只覆盖 app 类实例时, 非 app 实例 (管理 server) 即盲区"
+   ],
+   "source_lessons": [
+    "caddy acceptance audit (battle_verified 2026-09-09)"
+   ]
+  },
+  {
+   "lang": "go",
+   "family": "NUMERIC",
+   "status": "seeded",
+   "cwes": [
+    "CWE-697"
+   ],
+   "patterns": [
+    "解析器对齐性结论用于路由/授权判定时, 错误吞没 = 门失效放行"
+   ],
+   "sinks": [
+    "MatchQuery.MatchWithError: url.ParseQuery 错误按不匹配处理"
+   ],
+   "pitfalls": [
+    "';' 触发面比文档宽: 值位裸 ';' 亦整串判错; 坏转义保留部分 map"
+   ],
+   "source_lessons": [
+    "caddy acceptance audit (battle_verified 2026-09-09)"
    ]
   }
  ]

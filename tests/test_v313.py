@@ -58,9 +58,10 @@ def test_ledger_new_families_and_rows():
     assert 444 in ledger["families"]["WEB"]["cwe"]
     assert 1333 in ledger["families"]["RESOURCE-DOS"]["cwe"]
     assert 190 in ledger["families"]["MEMORY-SAFETY"]["cwe"]  # 不重归
-    for fam in ("NUMERIC", "ERROR-HANDLING"):
+    for fam, expect in (("NUMERIC", {"go": 1}),   # Caddy 验收 CAND-006 (CWE-697) 记分
+                        ("ERROR-HANDLING", {})):
         rows = [r for r in ledger["rows"] if r["family"] == fam]
-        assert rows and rows[0]["langs"] == {}
+        assert rows and rows[0]["langs"] == expect
 
 
 def test_ledger_reanchor_aggregation(tmp_path):

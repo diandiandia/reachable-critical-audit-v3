@@ -35,8 +35,8 @@ def test_goal_k1_reached_k2_honest():
     g = lim.goal_progress()
     assert g["milestones"]["K1"]["progress"] == "16/16"
     assert g["milestones"]["K2"]["progress"] == "0/16"
-    assert g["totals"]["entries"] == 192
-    assert g["totals"]["battle_confirmed"] == 2
+    assert g["totals"]["entries"] == 199
+    assert g["totals"]["battle_confirmed"] == 9
 
 
 # ---- SWR-V3.29-002: hitrate ----
