@@ -1173,3 +1173,16 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.37-001 | workflow_export 三处 taskFile 引用绝对化 | 已完成 | src/workflow_export.py + tests/test_v337.py |
 | REQ-V3.37-002 | CK-SLICE-CAPACITY 清单条目 (切片越界声称容量语义) | 已完成 | assets/resources/checklist_library.json + tests/test_v337.py |
 | REQ-V3.37-003 | CK-MAGNITUDE-OWNERSHIP 清单条目 (资源声称量级驱动权) | 已完成 | assets/resources/checklist_library.json + tests/test_v337.py |
+
+## 系统需求（REQ-V3.38）（共 5 条）
+
+> 手工追加段（2026-09-09）。案例支撑：MODEL_LEVERAGE_EVAL_V3_37 评估件
+> （用户裁定执行 A-E）；v3.37 条目缺 binding 永不挂载为本批取证发现。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.38-001 | v3.37 两条目 binding 修复 + CK-SIBLING-CONSISTENCY 条目 | 已完成 | checklist_library.json + binder + tests/test_v338.py |
+| REQ-V3.38-002 | 自证伪轮结构化 (schema 可选字段 + 任务书条款 + 证伪注入) | 已完成 | src/workflow_export.py + tests/test_v338.py |
+| REQ-V3.38-003 | 公开面关联检索前置 R2 (提示级) | 已完成 | SKILL.md + tests/test_v338.py |
+| REQ-V3.38-004 | 实证机会条款 (提示级) | 已完成 | src/workflow_export.py + tests/test_v338.py |
+| REQ-V3.38-005 | harness 回收条款 (提示级) | 已完成 | SKILL.md + tests/test_v338.py |

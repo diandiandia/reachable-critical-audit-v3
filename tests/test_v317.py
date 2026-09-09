@@ -90,7 +90,7 @@ def test_checklist_family_added():
     lib = json.load(open(os.path.join(ROOT, "assets", "resources",
                                       "checklist_library.json")))
     ids = [c["id"] for c in lib["checklists"]]
-    assert len(ids) == 47  # v3.37 +2 (SWR-V3.37-002/003)
+    assert len(ids) == 48  # v3.37 +2 (SWR-V3.37-002/003)
     for cid in ("CK-GC-WRITE-BARRIER", "CK-GC-ROOT-SCAN", "CK-TIER-TRANSITION",
                 "CK-ALLOC-ESCAPE", "CK-GENERATED-CODE"):
         item = [c for c in lib["checklists"] if c["id"] == cid][0]
@@ -343,6 +343,6 @@ def test_tooling_version_and_skillmd():
         "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.37"
+    assert we.TOOLING_VERSION == "3.38"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
-    assert "| v3.17 |" in skill and "47 条检查清单" in skill
+    assert "| v3.17 |" in skill and "48 条检查清单" in skill

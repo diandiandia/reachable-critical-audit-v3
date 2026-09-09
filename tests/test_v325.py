@@ -152,4 +152,4 @@ def test_r5_harvest_hint():
 # ---- 版本链 ----
 
 def test_tooling_version_325():
-    assert we.TOOLING_VERSION == "3.37"
+    assert we.TOOLING_VERSION == "3.38"
