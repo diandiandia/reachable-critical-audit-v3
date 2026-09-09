@@ -64,7 +64,7 @@ def test_anomaly_mode_aware_threshold(tmp_path):
 
 # ---- SWR-V3.14-005: 账本幂等分支增量指引 ----
 
-def test_ledger_idempotent_merge_guidance(tmp_path, capsys):
+def test_ledger_idempotent_merge_guidance(tmp_path, capsys, monkeypatch):
     # 先首写烧 sources key (r4 前置需 H1-H7 全 VERIFIED), 再复跑验证幂等分支
     # manual_merge_guidance (delta=队列聚合非零)
     # v3.17 收尾修复: 本测试写真实账本资产且无快照/恢复——installed 副本跑
@@ -74,12 +74,25 @@ def test_ledger_idempotent_merge_guidance(tmp_path, capsys):
     _ledger_path = _os.path.join(ROOT, "assets", "resources", "issue_coverage_matrix.json")
     _snapshot = open(_ledger_path).read()
     try:
-        _run_ledger_guidance(tmp_path, capsys)
+        _run_ledger_guidance(tmp_path, capsys, monkeypatch)
     finally:
         open(_ledger_path, "w").write(_snapshot)
 
 
-def _run_ledger_guidance(tmp_path, capsys):
+def _run_ledger_guidance(tmp_path, capsys, monkeypatch):
+    # v3.36 (SWR-V3.36-003): 账本写隔离——测试写入 tmp 沙箱副本,
+    # 不烧生产 assets 的 sources (幂等身份污染/flake 根因)
+    import shutil
+    sandbox = tmp_path / "ledger_copy.json"
+    shutil.copy(os.path.join(ROOT, "assets", "resources",
+                             "issue_coverage_matrix.json"), sandbox)
+    # 清空历史 sources (含 v3.17 修复前烧入的 pytest 临时路径 hash):
+    # 幂等判定的测试语义只需首写/复跑两态, 历史身份会致路径编号纪元
+    # 重启后误跳过 (installed 副本 flake 实录)
+    _sd = json.load(open(sandbox))
+    _sd["sources"] = []
+    json.dump(_sd, open(sandbox, "w"))
+    monkeypatch.setenv("COVERAGE_LEDGER", str(sandbox))
     r4 = [{"hypothesis_id": h, "verdict": "reviewed_clean", "findings": [],
            "tracked_surfaces": [], "status": "VERIFIED"}
           for h in ["H-1", "H-2", "H-3", "H-4", "H-5", "H-6", "H-7"]]

@@ -1691,7 +1691,12 @@ def stage_coverage_ledger(project_root, write=False):
     if _parent not in sys.path:
         sys.path.insert(0, _parent)
         sys.path.insert(0, os.path.join(_parent, "src"))
-    ledger_path = os.path.join(_parent, "assets", "resources", "issue_coverage_matrix.json")
+    # v3.36 (SWR-V3.36-003): COVERAGE_LEDGER 环境覆盖——测试/沙箱上下文
+    # 写隔离账本副本, 防测试运行把 pytest 临时路径 hash 烧进生产账本
+    # sources (历次全量跑累积 80 条临时路径 hash, 路径纪元重启后幂等
+    # 判定误跳过的 flake 实录: test_ledger_idempotent_merge_guidance)
+    ledger_path = os.environ.get("COVERAGE_LEDGER") or os.path.join(
+        _parent, "assets", "resources", "issue_coverage_matrix.json")
     if not os.path.exists(ledger_path):
         print("Error: resources/issue_coverage_matrix.json 缺失", file=sys.stderr)
         return 1
