@@ -41,6 +41,18 @@ VALID_TRUST = {"unauthenticated_remote", "authenticated_remote", "gated",
                "trusted_channel", "local", "environment", "unknown",
                "host_api"}  # v3.3 (REQ-V3.3-008): 宿主 API 边界 (库组件默认)
 
+_ASCII_KW = __import__("re").compile(r"\b([A-Za-z0-9_-]+)\b")
+
+
+def _kw_hit(kw, text):
+    """v3.39 (SWR-V3.39-001): ASCII 关键词按词边界匹配——子串语义会误配
+    ("cli" 命中 "client" 把 wire 字节自由文本误映射为 local, haproxy 验收
+    40/82 面实录; "env" 命中 "environment" 同形态)。CJK 关键词保持子串
+    (无词边界概念)。与 checklist_binder._kw_match 判据同源 (SWR-V3.4.4-001)。"""
+    if kw.isascii():
+        return kw in _ASCII_KW.findall(text)
+    return kw in text
+
 # 遍历排除段 (精确分段匹配——子串匹配会把 test_xxx/target_xxx 目录整体跳过,
 # v3.5 测试基线修复实证)
 SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build",
@@ -544,15 +556,15 @@ def normalize_surfaces(data, project_root=None):
             # 35/70 面改写实录)。规范输入是精确值, 映射纯属误猜。
             if t in VALID_TRUST:
                 mapped = t
-            elif any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
+            elif any(_kw_hit(k, t) for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
                 mapped = "unauthenticated_remote"
-            elif any(k in t for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
+            elif any(_kw_hit(k, t) for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
                 mapped = "host_api"  # v3.3 (REQ-V3.3-008)
-            elif any(k in t for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
+            elif any(_kw_hit(k, t) for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
                 mapped = "local"
-            elif any(k in t for k in ("tls", "会话", "令牌", "token", "认证")):
+            elif any(_kw_hit(k, t) for k in ("tls", "会话", "令牌", "token", "认证")):
                 mapped = "authenticated_remote"
-            elif any(k in t for k in ("gated", "gate", "门控")):
+            elif any(_kw_hit(k, t) for k in ("gated", "gate", "门控")):
                 mapped = "gated"
             else:
                 mapped = "environment"
@@ -566,15 +578,15 @@ def normalize_surfaces(data, project_root=None):
             # 关键词改写为 local, 同 SWR-V3.36-001 病根另一入口)
             if t in VALID_TRUST:
                 mapped = t
-            elif any(k in t for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
+            elif any(_kw_hit(k, t) for k in ("未认证", "unauthenticated", "任意", "外部请求者")):
                 mapped = "unauthenticated_remote"
-            elif any(k in t for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
+            elif any(_kw_hit(k, t) for k in ("宿主", "host api", "host_api", "公共 api", "库调用方", "调用方传入")):
                 mapped = "host_api"  # v3.3 (REQ-V3.3-008)
-            elif any(k in t for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
+            elif any(_kw_hit(k, t) for k in ("部署者", "cli", "配置", "env", "本地", "localhost", "127.0.0.1")):
                 mapped = "local"
-            elif any(k in t for k in ("tls", "会话", "令牌", "token", "认证")):
+            elif any(_kw_hit(k, t) for k in ("tls", "会话", "令牌", "token", "认证")):
                 mapped = "authenticated_remote"
-            elif any(k in t for k in ("gated", "gate", "门控")):
+            elif any(_kw_hit(k, t) for k in ("gated", "gate", "门控")):
                 mapped = "gated"
             else:
                 mapped = "environment"

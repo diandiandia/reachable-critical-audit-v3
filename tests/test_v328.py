@@ -12,6 +12,8 @@ import tempfile
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
 sys.path.insert(0, os.path.join(WORKSPACE, "src"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_guards
 
 import language_issue_matrix as lim
 
@@ -27,7 +29,7 @@ def _inv():
 def test_inventory_loads_and_fields():
     d = _inv()
     entries = d['entries']
-    assert len(entries) == 202, "inventory 条目数漂移 (36 派生 + 156 Top25 + 7 Caddy battle_verified)"
+    assert len(entries) == asset_guards.INVENTORY_ENTRIES, "inventory 条目数漂移 (36 派生 + 156 Top25 + 7 Caddy battle_verified)"
     assert d['goal']['per_lang_target'] == 10
     for e in entries:
         for k in ("id", "lang", "title", "family", "cwe", "source", "verify"):
@@ -168,7 +170,7 @@ def test_quickjs_entries_confirm_candidates():
     by_title = {e['title'][:12]: e for e in d['entries']}
     found = [e for e in d['entries']
              if e['verify']['status'] == 'battle_confirmed']
-    assert len(found) == 12  # 2 QuickJS + 7 Caddy + 3 haproxy (v3.38 验收)
+    assert len(found) == asset_guards.BATTLE_CONFIRMED
     cands = [c for e in found for c in e['verify']['candidates']]
     for c in ("CAND-001", "H-2-F1", "H-7-F2",   # QuickJS
               "CAND-006", "CAND-010", "CAND-011", "H-1-F1", "H-3-F2", "H-4-F2"):
@@ -188,4 +190,4 @@ def test_inventory_deproject():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.38"
+    assert we.TOOLING_VERSION == "3.39"

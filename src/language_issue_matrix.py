@@ -293,10 +293,23 @@ def seed_entries(path):
         with open(out, "w", encoding="utf-8") as f:
             json.dump(inv, f, ensure_ascii=False, indent=1)
         # v3.29 (SWR-V3.29-003): 双写矩阵 cells (传感器一致性)
+        # v3.39 (SWR-V3.39-002): 覆盖全部成功种格条目 (battle_verified 条目
+        # 此前需手动双写 + 手动建格——haproxy R6 c×AUTHN 缺格实录), 格缺失
+        # 自动创建; 幂等 (已存在 pattern/cwe 不重复追加)
         matrix = load()
+        tier_dates = {}
+        for e in inv["entries"]:
+            tier = e.get("source", {}).get("tier")
+            if tier:
+                tier_dates[e["id"]] = (tier, e.get("source", {}).get("date"))
         for e in [x for x in inv["entries"]
-                  if x.get("source", {}).get("tier") == "external_seeded"]:
-            lang, fam = e["lang"], _cwe_family(e.get("cwe"))
+                  if x.get("id") in [a for a in added if isinstance(a, str)]
+                  or x.get("id") in [a.get("id") if isinstance(a, dict) else None for a in added]]:
+            if e["id"] not in tier_dates:
+                continue
+            # v3.39 (SWR-V3.39-002): 格键统一用条目声明 family——双写一致性
+            # 测试按 (lang, family) 对账, _cwe_family 派生会与之分叉
+            lang, fam = e["lang"], e.get("family") or _cwe_family(e.get("cwe"))
             cell = next((c for c in matrix["cells"]
                          if c.get("lang") == lang and c.get("family") == fam),
                         None)
@@ -315,7 +328,8 @@ def seed_entries(path):
             if e.get("pitfall") and e["pitfall"] not in cell.setdefault("pitfalls", []):
                 cell["pitfalls"].append(e["pitfall"])
             src = e.get("source", {})
-            origin = f"{src.get('origin')} (external_seeded {src.get('date')})"
+            _tier, _date = tier_dates.get(e["id"], ("external_seeded", src.get("date")))
+            origin = f"{src.get('origin')} ({_tier} {_date})"
             if origin not in cell.setdefault("source_lessons", []):
                 cell["source_lessons"].append(origin)
         mout = os.path.join(RESOURCES_DIR, "language_issue_matrix.json")

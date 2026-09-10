@@ -10,6 +10,8 @@ import sys
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSPACE)
 sys.path.insert(0, os.path.join(WORKSPACE, "src"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_guards
 
 import language_issue_matrix as lim
 
@@ -35,8 +37,8 @@ def test_goal_k1_reached_k2_honest():
     g = lim.goal_progress()
     assert g["milestones"]["K1"]["progress"] == "16/16"
     assert g["milestones"]["K2"]["progress"] == "0/16"
-    assert g["totals"]["entries"] == 202
-    assert g["totals"]["battle_confirmed"] == 12
+    assert g["totals"]["entries"] == asset_guards.INVENTORY_ENTRIES
+    assert g["totals"]["battle_confirmed"] == asset_guards.BATTLE_CONFIRMED
 
 
 # ---- SWR-V3.29-002: hitrate ----
@@ -110,4 +112,4 @@ def test_skmd_r2_and_r6_clauses():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.38"
+    assert we.TOOLING_VERSION == "3.39"

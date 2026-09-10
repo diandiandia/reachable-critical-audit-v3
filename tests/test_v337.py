@@ -6,6 +6,8 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_guards
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
@@ -110,7 +112,7 @@ def test_t4_checklist_count_and_legacy_regression():
     """T-4: 清单总数 47 + 既有条目零改动 (抽样 45 条 id 稳定)。"""
     d = json.load(open(os.path.join(ROOT, "assets", "resources",
                                     "checklist_library.json")))
-    assert len(d["checklists"]) == 48
+    assert len(d["checklists"]) == asset_guards.CHECKLISTS
     ids = [c["id"] for c in d["checklists"]]
     assert len(ids) == len(set(ids)), "清单 id 重复"
     assert "CK-UNBOUNDED-HOPS" in ids and "CK-DYNAMIC-DEFENSE" in ids

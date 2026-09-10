@@ -510,7 +510,7 @@ stdout 保持纯 JSON 契约）。结构（v3.7，SWR-V3.7-002）：
   REQ-V3.4-007——本批新增覆盖格与仍存缺口格，为下批选题依据）
 
 严重程度机械映射（cwe 列表 + sink_type 全量 `CWE-(\d+)` 提取取 max；
-`severity_override` 合法值 {critical,high,medium} + reason 优先，非法值回退
+`severity_override` 合法值 {critical,high,medium} + reason 优先，非法值回退；**字段形态（v3.39, SWR-V3.39-004）**: `severity_override` 为字符串，理由写独立字段 `severity_override_reason`（dict 形态会被机械归一化并告警）
 机械值 + 告警行）：
 | 级别 | 账本族（CWE） |
 |---|---|
@@ -605,7 +605,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.38。
+TOOLING 3.39。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -650,3 +650,4 @@ TOOLING 3.38。
 | v3.36 | 2026-09-08 | Caddy 验收发现: trust_boundary 规范枚举透传修复 |
 | v3.37 | 2026-09-09 | Caddy 验收复盘三修复: 任务书引用绝对化 + 切片容量/量级驱动权清单 |
 | v3.38 | 2026-09-09 | 模型能力利用五机制: 同族不一致/自证伪轮/公开面前置/实证机会/harness 回收 |
+| v3.39 | 2026-09-10 | haproxy 验收复盘四修复: 关键词词边界/seed 双写扩展/计数守卫集中/severity_override 契约 |

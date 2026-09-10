@@ -519,6 +519,16 @@ def stage_collect(project_root, batch_id, verdicts):
         # SWR-V3.7-001: 主代理严重程度覆盖透传——机械分级与真实影响不符时,
         # 覆盖值+理由落盘; 队列 JSON 仍是唯一事实源 (可直接编辑)
         if v.get("severity_override"):
+            ov = v["severity_override"]
+            # v3.39 (SWR-V3.39-004): dict 形态 {value, reason} 容忍归一化
+            # (haproxy r4-collect AttributeError 实录——契约未文档化)
+            if isinstance(ov, dict):
+                v["severity_override"] = ov.get("value")
+                v["severity_override_reason"] = ov.get("reason",
+                    v.get("severity_override_reason", ""))
+                print(json.dumps({"warning": "severity_override_dict_normalized",
+                                  "id": v.get("id"), "normalized_to": v["severity_override"]}),
+                      file=sys.stderr)
             entry["severity_override"] = v["severity_override"]
             entry["severity_override_reason"] = v.get("severity_override_reason", "")
         # v3.17 (SWR-V3.17-003): containment 落盘 (verifier 显式或 profile 推导)
