@@ -1186,3 +1186,16 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.38-003 | 公开面关联检索前置 R2 (提示级) | 已完成 | SKILL.md + tests/test_v338.py |
 | REQ-V3.38-004 | 实证机会条款 (提示级) | 已完成 | src/workflow_export.py + tests/test_v338.py |
 | REQ-V3.38-005 | harness 回收条款 (提示级) | 已完成 | SKILL.md + tests/test_v338.py |
+
+## 系统需求（REQ-V3.39）（共 4 条）
+
+> 手工追加段（2026-09-10）。案例支撑：haproxy 验收复盘——40/82 面自由文本
+> 误映射裁决实录 / c×AUTHN 缺格手动建实录 / R6 守卫失同步两次复发 /
+> r4-collect AttributeError 实录。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.39-001 | normalize 关键词词边界匹配 | 已完成 | src/surface_mapper.py + tests/test_v339.py |
+| REQ-V3.39-002 | seed 双写覆盖全部条目 + 缺格自动建 | 已完成 | src/language_issue_matrix.py + tests/test_v339.py |
+| REQ-V3.39-003 | 资产计数守卫集中 (asset_guards) | 已完成 | tests/asset_guards.py + 三测试文件 |
+| REQ-V3.39-004 | severity_override 形态契约 + 容忍归一化 | 已完成 | SKILL.md + tools/batch_verify.py + tests/test_v339.py |

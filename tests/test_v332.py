@@ -89,4 +89,4 @@ def test_hints_no_kind_backward_compat():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.38"
+    assert we.TOOLING_VERSION == "3.39"

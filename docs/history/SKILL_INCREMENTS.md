@@ -1596,3 +1596,25 @@ taskFiles 为相对路径，Workflow agent cwd 非项目根致 Read 失败（主
 
 **验收判据**：test_v338.py 5 用例 + 全量 565 绿 + 计数 47→48 同步 +
 servo 旧队列复跑零新增告警 + 阶段 6 新项目验收（判据见评估件第四节）。
+
+## v3.39 增量段（2026-09-10）
+
+**背景**：haproxy 阶段 6 验收复盘四欠账——(1) normalize 的 ASCII 关键词子串
+匹配缺陷（"cli" 命中 "client" 把 wire 字节自由文本误映射为 local，40/82 面
+依赖主代理逐类裁决；binder 词边界修复 SWR-V3.4.4-001 的 normalize 侧未跟进）；
+(2) seed 双写仅覆盖 external_seeded，battle_verified 条目需手动双写+手动建格
+（c×AUTHN 缺格实录）；(3) 资产计数守卫散落多测试文件，R6 回填守卫失同步两次
+复发（caddy/haproxy）；(4) severity_override 字段形态未文档化（dict 形态致
+r4-collect AttributeError 实录）。
+
+**修复（SWR-V3.39-001~004）**：
+1. normalize 两分支关键词匹配改词边界语义（ASCII `\b` 词边界，CJK 子串，
+   与 binder _kw_match 判据同源）；
+2. seed_entries 双写覆盖全部成功种格条目 + 格缺失自动创建 + 格键统一用
+   条目声明 family；
+3. tests/asset_guards.py 计数常量集中（合法回填后守卫更新 = 单点编辑）；
+4. SKILL.md severity_override 形态契约 + batch_verify dict 形态容忍归一化
+   （+warn）。
+
+**验收判据**：test_v339.py 4 用例 + 全量 569 绿 + servo/haproxy 双队列复跑
+零新增告警。
