@@ -99,7 +99,7 @@ def test_t4_counts_and_regression():
     """T-4: 清单 48 + 既有 47 条 id 稳定。"""
     d = json.load(open(os.path.join(ROOT, "assets", "resources",
                                     "checklist_library.json")))
-    assert len(d["checklists"]) == 48
+    assert len(d["checklists"]) == 49  # v3.40 +1 (SWR-V3.40-003)
     ids = [c["id"] for c in d["checklists"]]
     assert len(ids) == len(set(ids))
     for cid in ("CK-UNBOUNDED-HOPS", "CK-SLICE-CAPACITY", "CK-MAGNITUDE-OWNERSHIP"):

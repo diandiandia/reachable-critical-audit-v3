@@ -251,7 +251,7 @@ def test_checklist_postop_invariant():
     p = os.path.join(ROOT, "assets", "resources", "checklist_library.json")
     d = json.load(open(p))
     ids = [c["id"] for c in d["checklists"]]
-    assert len(ids) == 48  # v3.15 +1; v3.17 +5; v3.37 +2 (SWR-V3.37-002/003)
+    assert len(ids) == 49  # v3.15 +1; v3.17 +5; v3.37 +2; v3.40 +1 (SWR-V3.40-003)
     item = [c for c in d["checklists"] if c["id"] == "CK-POSTOP-INVARIANT"][0]
     assert "verifier" in item["applies_to"] and "refuter" in item["applies_to"]
     for tok in signature_lib.DEPROJECT_BLACKLIST:
@@ -264,12 +264,12 @@ def test_tooling_version_and_skillmd():
         "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.39"  # v3.13 版本链前进 (SWR-V3.13-006)
+    assert we.TOOLING_VERSION == "3.40"  # v3.13 版本链前进 (SWR-V3.13-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "| v3.9 |" in skill and "| v3.10 |" in skill  # 版本历史表行
     hist = open(os.path.join(ROOT, "docs/history/SKILL_INCREMENTS.md")).read()
     assert "已裁除" in hist, "裁除记录须在增量段档案中可追溯"
-    assert "48 条检查清单" in skill
+    assert "49 条检查清单" in skill
 
 
 # --- cve-ghsa-draft check_no_cjk ---

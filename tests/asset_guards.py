@@ -1,7 +1,7 @@
 """v3.39 (SWR-V3.39-003): 资产计数守卫常量集中——合法回填后的守卫更新 =
 单点编辑 (R6 守卫失同步两次复发: caddy/haproxy 回填轮)。硬编码计数是漂移
 守卫语义不变, 只是集中到本文件。"""
-CHECKLISTS = 48
+CHECKLISTS = 49
 INVENTORY_ENTRIES = 202
 BATTLE_CONFIRMED = 12
 BATTLE_QUICKJS = 2
