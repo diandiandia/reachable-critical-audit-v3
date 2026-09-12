@@ -1199,3 +1199,20 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.39-002 | seed 双写覆盖全部条目 + 缺格自动建 | 已完成 | src/language_issue_matrix.py + tests/test_v339.py |
 | REQ-V3.39-003 | 资产计数守卫集中 (asset_guards) | 已完成 | tests/asset_guards.py + 三测试文件 |
 | REQ-V3.39-004 | severity_override 形态契约 + 容忍归一化 | 已完成 | SKILL.md + tools/batch_verify.py + tests/test_v339.py |
+
+## 系统需求（REQ-V3.40）（共 7 条）
+
+> 手工追加段（2026-09-12）。案例支撑：hadoop 验收复盘——mechanism 档越级两例被证伪者
+> check_scope 复现纠正 / CAND-024 触发器链 2/2 证伪 / ZK vs LevelDB 修复不对称 /
+> TYPE 3bit 声称与源码 2bit 声明不符 / setuid 部署拓扑 12 轮收敛 /
+> B2 批次 13 条全 keep / 证伪者实测两例白丢（AXFR rrsets / fd-hold 3/3）。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.40-001 | grade_verdict fidelity 分支 (mechanism 档不升 empirically_confirmed) | 已完成 | src/evidence_ledger.py + tests/test_v340.py |
+| REQ-V3.40-002 | verifier 任务书攻击者字节承载判定 (步骤 3.5) | 已完成 | tools/batch_verify.py + tests/test_v340.py |
+| REQ-V3.40-003 | checklist +1 CK-SIBLING-FIX-AUDIT (修复触发型) | 已完成 | assets/resources/checklist_library.json (49) |
+| REQ-V3.40-004 | hypothesis_filter 位域证据义务 | 已完成 | assets/task_templates/hypothesis_filter.md |
+| REQ-V3.40-005 | ENVIRONMENT_PROBES setuid 部署拓扑段 | 已完成 | assets/harness_manuals/ENVIRONMENT_PROBES.md |
+| REQ-V3.40-006 | hypothesis_filter 默认关方向判定 | 已完成 | assets/task_templates/hypothesis_filter.md |
+| REQ-V3.40-007 | r35-collect 实证回填候选扫描 (warn 级) | 已完成 | tools/batch_verify.py + tests/test_v340.py |
