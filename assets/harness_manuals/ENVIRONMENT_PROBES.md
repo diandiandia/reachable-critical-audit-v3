@@ -60,3 +60,27 @@ blocker 存在 → R5 可选路径裁决（主代理降级 NEEDS_REVIEW + correc
   冒充目标机制实证，也不得以 DEBUG 拦截冒充防御存在（release 语义另证）
 - 对照实验义务：同输入跑 release 变体 + sanitizer 变体 + 未补丁基线三组,
   因果性由差异建立（单组崩溃不足归因）
+
+## setuid 辅助二进制部署拓扑（v3.40, SWR-V3.40-005）
+
+setuid-root 辅助二进制（容器执行器/特权 helper 形态）的 real_target 实证
+必须先复刻部署拓扑。五要素（逐项失败日志即修复映射，按失败顺序排）:
+
+1. **配置链**: cfg 文件与全部祖先目录须 root 属主且非组/全局可写（启动
+   自检拒绝）；cfg 路径常为编译期常量——先查构建变量（如 CMake 传入的
+   CONF_DIR）再放 cfg，运行时环境变量覆盖通常无效
+2. **二进制权限**: root 属主 + 属组等于 cfg 声明组 + 无 other 写/执行位
+   + setuid 位（6750 形态）；检查链逐项报错文本对应逐项修复
+3. **调用者身份**: setuid 下 nm_uid = 调用者**真实 uid**——须以专用服务
+   账户运行（root 直跑会被 "Running as root is not allowed" 拒绝）；
+   本地/日志目录属主 = 该服务账户
+4. **数据目录族**: usercache 等父目录须预置（mkdir 无 -p 语义时父目录
+   缺失即失败）；tmp/private_slash_tmp/private_var_slash_tmp 类目录须
+   **运行用户**属主（chmod 由降权后的进程执行, 属主不符即 EPERM）
+5. **工作目录**: 脚本复制目标（launch_container 类文件）落在 work_dir
+   ——须容器用户可写目录（root-only 目录会在复制步失败）
+
+实操注记: 该拓扑的收敛轮数通常远大于缺陷触发本身（10+ 轮失败日志驱动的
+逐项修复是常态, 非异常）；注入类实证的目标是"euid=0 下注入命令执行"的
+proof 文件（root 属主落盘即成立, 无需真实被调二进制存在——shell 先报
+command not found 再执行注入命令的形态属设计内行为）。

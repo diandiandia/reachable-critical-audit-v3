@@ -1587,6 +1587,35 @@
     "caddy 验收 CAND-001 形态 (/config 封顶 /load 无, 2026-09-09)"
    ],
    "name": "同族不一致防御检查"
+  },
+  {
+   "id": "CK-SIBLING-FIX-AUDIT",
+   "family": "sibling-fix-audit",
+   "applies_to": [
+    "verifier",
+    "main-agent"
+   ],
+   "binding": {
+    "keywords": [
+     "fixminer",
+     "修复",
+     "CVE-",
+     "patch",
+     "加固",
+     "validat"
+    ],
+    "note": "v3.40 (SWR-V3.40-003): 修复触发型——fixminer 命中/公开补丁出现在证据文本时绑定; 与 CK-SIBLING-CONSISTENCY (端点关键词触发型) 互补非重造"
+   },
+   "steps": [
+    "命中修复提交/公开补丁对某函数/类/模块的加固后, 枚举同族实例 (同接口实现/同解析族/同 handler 注册点/同序列化入口) 的加固状态",
+    "对每个同族实例按加固维度 (类校验/长度上限/白名单/权限收敛) 建差分矩阵",
+    "任一兄弟已加固而本实例未加固 → 修复残留假设 (实测形态: 同族存储实现其一已加反序列化白名单而兄弟仍裸流; 同函数内层类名已校验而外层仍初始化加载)",
+    "判据: 修复提交 diff 范围之外的同族实例未同步加固即成立"
+   ],
+   "source_lessons": [
+    "hadoop 验收 lessons 第 3 条 (同族反序列化存储加固不对称, 修复仅覆盖单实例/内层路径, 2026-09-10)"
+   ],
+   "name": "修复残留同族枚举检查"
   }
  ],
  "platform_trust_models": [
