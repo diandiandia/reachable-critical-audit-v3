@@ -1583,6 +1583,28 @@ def stage_r35_collect(project_root, transcript_dir):
         if st:
             notes[cid] = st
     result = {"status": "R35_COLLECTED", "candidates": sorted(by_id)}
+    # v3.40 (SWR-V3.40-007): 实证回填候选扫描——证伪者实测数字常落在
+    # strengthened/reason 而非 note (poc_evidence 只采 note 字段, 实测
+    # 数字白丢两例: 未鉴权 AXFR rrsets 计数/fd-hold 试验比)。扫描后以
+    # warn 级清单交主代理按 R5 回填规范裁决, 不自动改写 (纪律 #4)。
+    EMP_BACKFILL_MARKERS = ("rrsets", "exit code", "OutOfMemory", "OOM",
+                            "VmRSS", "NOERROR", "NXDOMAIN", "SIGSEGV",
+                            "heap-buffer-overflow", "stack-buffer-overflow",
+                            "AIOOBE", "ArrayIndexOutOfBounds", "试验",
+                            "trials", "OOB", "exfil", "带出进程", "落盘")
+    backfill_candidates = []
+    for cid in sorted(by_id):
+        blob = "；".join(
+            str(x) for d in by_id[cid] for k in ("strengthened", "reason", "note")
+            for x in (d.get(k) or []) if x)
+        if blob and any(mk in blob for mk in EMP_BACKFILL_MARKERS):
+            backfill_candidates.append(cid)
+    if backfill_candidates:
+        result["empirical_backfill_candidates"] = {
+            "ids": backfill_candidates,
+            "advice": ("证伪者证据文本命中实测数字形态——主代理按 R5 实证回填"
+                       "规范裁决 (backfilled_by + 实测数字依据 + fidelity 标注; "
+                       "mechanism 档不得升 empirically_confirmed)。不自动改写。")}
     if notes:
         result["strengthened_notes"] = notes
         result["sibling_advisory"] = (
@@ -3063,6 +3085,17 @@ premises_verified 字段（每项 premise/file:line/status）——只写结论�
   服务绑定/用户授权中介/系统回调) / remote (网络可达内容)。DIRECT+host_api
   通常推导 same_process, 但平台组件注入面会使其升为 same_device_cross_app——
   该层级决定申报口径与 CVSS 基线 (AV:L 同设备 vs AV:N 远程), 不得含糊
+
+### 步骤 3.5（v3.40, SWR-V3.40-002）: 攻击者字节承载判定
+claim_type ∈ {{rce, leak, crash, oom, protocol_dos, unbounded}} 时:
+- 在 call_chain 中标注**至少一跳**的字节承载证据——哪个跳上哪个字段携带
+  攻击者字节 (如「RPC 载荷字段 X」「argv 参数」「文件内容」), 写入 evidence;
+- 全链任一跳都不承载攻击者字节 → 链是**触发器链而非数据流链**: verdict
+  不得判 REACHABLE (改 NEEDS_REVIEW), claim_type 改 other 并注明
+  「结构性可达, 字节承载未证」;
+- 该区分证据必须落在 edge_evidence 的 proof 文本内 (实录: 调用链四边
+  逐跳真实但任一跳都不承载攻击者字节, 2/2 证伪——rce 类声称必须自证
+  字节通路, 不得以「sink 被执行」替代「字节到达 sink」)。
 
 ### 步骤 4: 阻断检测
 - 强类型转换、掩码（`& 0xFF`）、参数化绑定（`?` 占位符）、边界检查（`offset+len <= total`）

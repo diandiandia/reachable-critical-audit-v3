@@ -142,10 +142,25 @@ def grade_verdict(v):
         errors.append("empirical 缺 status, 按 canonical 保留键 (outcome/"
                       "evidence_numbers/report) 推断 empirically_confirmed "
                       "(建议回填 status:'confirmed')")
-    if empirical and isinstance(empirical, dict) and \
-       (status in CONFIRMED_EMPIRICAL_STATUSES or scope_infer or canonical_infer):
+    empirically_ok = (empirical and isinstance(empirical, dict)
+                      and (status in CONFIRMED_EMPIRICAL_STATUSES
+                           or scope_infer or canonical_infer))
+    # v3.40 (SWR-V3.40-001): fidelity 分支——mechanism 档按范围纪律不得升
+    # empirically_confirmed (SKILL.md R5: 机制级复刻不构成目标实证)。
+    # 实录: 主代理回填越级两例, 由 R3.5 证伪者 harness_runner.check_scope
+    # 复现纠正——判级函数此前不读 fidelity, 文档纪律零机械承载。
+    # fidelity 缺省 real_target (SKILL.md R5 缺省语义), 仅精确值 "mechanism"
+    # 触发阻断分支。
+    fidelity = (str(empirical.get("fidelity", "real_target")).lower()
+                if isinstance(empirical, dict) else "real_target")
+    if empirically_ok and fidelity != "mechanism":
         grade = "empirically_confirmed"
     else:
+        if empirically_ok:
+            # mechanism 档: 落入下方边证据逻辑复算, 判级不得落 empirically_confirmed
+            errors.append("empirical fidelity=mechanism: 判级维持 edge_proven "
+                          "及以下 (范围纪律——mechanism 档不得升 empirically_confirmed; "
+                          "回填脚本可先跑 harness_runner.check_scope 复核)")
         # v3.4.2: 旧队列显式 null (JSON null → None) 守卫——actix-web 复跑
         # CAND-010 edge_evidence=None 曾致 TypeError (None 不可迭代)
         chain = v.get("call_chain") or []
