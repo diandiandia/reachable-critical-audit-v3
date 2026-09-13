@@ -52,8 +52,8 @@ def _cand(cid, summary="", cwe=None, claim="other"):
 def test_ledger_new_families_and_rows():
     ledger = json.load(open(os.path.join(ROOT, "assets", "resources",
                                          "issue_coverage_matrix.json")))
-    assert ledger["families"]["NUMERIC"]["cwe"] == [191, 369, 681, 697]
-    assert ledger["families"]["ERROR-HANDLING"]["cwe"] == [457, 665]
+    assert ledger["families"]["NUMERIC"]["cwe"] == [191, 369, 681, 697, 704]
+    assert ledger["families"]["ERROR-HANDLING"]["cwe"] == [129, 457, 476, 665]
     assert 436 in ledger["families"]["WEB"]["cwe"]
     assert 444 in ledger["families"]["WEB"]["cwe"]
     assert 1333 in ledger["families"]["RESOURCE-DOS"]["cwe"]
@@ -190,7 +190,7 @@ def test_new_checklists_deproject():
 # ---- SWR-V3.13-006: 版本链 ----
 
 def test_tooling_version_and_skillmd_counts():
-    assert we.TOOLING_VERSION == "3.42"
+    assert we.TOOLING_VERSION == "3.43"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "| v3.13 |" in skill
     assert "50 条检查清单" in skill and "19 条裁决先例" in skill

@@ -80,9 +80,10 @@ def test_matrix_cells_grew_by_seed():
 def test_top25_entries_origin_and_tier():
     ext = [e for e in INV["entries"]
            if e["source"]["tier"] == "external_seeded"]
-    assert len(ext) == 156
-    for e in ext:
-        assert "cwe.mitre.org/top25" in e["source"]["origin"], e["id"]
+    assert len(ext) == 157
+    top25 = [e for e in ext if "cwe.mitre.org/top25" in e["source"]["origin"]]
+    assert len(top25) == 156  # Top25 基线不变 (v3.43 +1 为 CVE 族分析条目)
+    for e in top25:
         assert e["source"]["date"] == "2026-09-08"
         assert e["verify"]["status"] == "unverified", \
             f"{e['id']} 外部条目不得伪造 battle_confirmed"
@@ -112,4 +113,4 @@ def test_skmd_r2_and_r6_clauses():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.42"
+    assert we.TOOLING_VERSION == "3.43"

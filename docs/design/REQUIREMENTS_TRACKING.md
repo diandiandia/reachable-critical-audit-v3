@@ -1251,3 +1251,22 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | SWR-V3.42-004 | SKILL.md upstream 已修声称树内 commit 佐证提示 | 已实现 |
 | SWR-V3.42-005 | filter 任务书信息暴露/跨信任域 drop 维度核对 | 已实现 |
 | SWR-V3.42-006 | SKILL.md 实证回填前缀级联提示（CONFIRMED→③d / SOURCE_FACT 不触发） | 已实现 |
+
+
+> 手工追加段 v3.43（2026-09-13）。案例支撑：用户架构评估裁定（机制冻结实验）——
+> 2026 年 9+ kernel LPE CVE 页缓存写入越权族（Copy Fail 31431/Dirty Frag 43284+43500/
+> Fragnesia 46300/Dirty Decrypt 31635/PinTheft 43494/DirtyClone 43503/pedit COW 46331）
+> 矩阵零种子 / Keycloak hitrate 7/18 十格缺口 / ptrace 谓词逻辑错误（46333 潜伏 10 年）
+> 形态不在任何检测要点 / Dirty Pipe 2022→2026 修复族间隔超 fixminer 默认窗口 /
+> 2025 UAF 族六大 CVE 与 H3 检测要点对应 / 条款密度与遵守率负相关矛盾无度量。
+
+| SWR | 需求 | 状态 |
+|---|---|---|
+| SWR-V3.43-001 | c 矩阵 TRUST-BOUNDARY 页缓存所有权族（external_seeded, INV-c-019） | 已实现 |
+| SWR-V3.43-002 | java 矩阵七族归并种格（battle_verified, INV-java-015..021） | 已实现 |
+| SWR-V3.43-003 | SKILL.md H7 谓词弱化或逻辑错误形态 | 已实现 |
+| SWR-V3.43-004 | SKILL.md fixminer 跨多年窗口提示 | 已实现 |
+| SWR-V3.43-005 | biz_hypothesis.md H3 kernel 锚点示例 | 已实现 |
+| SWR-V3.43-006 | skill-optimizer 义务入库第四问 | 已实现 |
+| SWR-V3.43-007 | skill-optimizer 架构重设计触发判据（五信号） | 已实现 |
+| SWR-V3.43-008 | SKILL.md R6 条款消费度量（提示级无门禁） | 已实现 |

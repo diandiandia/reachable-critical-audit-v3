@@ -4832,6 +4832,296 @@
     "date": null
    },
    "id": "INV-java-014"
+  },
+  {
+   "lang": "java",
+   "family": "INJECTION",
+   "title": "日志注入: 用户可控值进日志记录 (控制字符/伪造记录行/敏感头)",
+   "cwe": [
+    "CWE-117",
+    "CWE-532"
+   ],
+   "patterns": [
+    "用户可控值 (client_id/用户名/URL 参数) 写入日志无消毒",
+    "访问日志记录敏感头 (Authorization/Cookie)"
+   ],
+   "sinks": [
+    "logger 调用点 + 用户可控参数",
+    "access log 头记录点"
+   ],
+   "pitfalls": [
+    "消毒修复常单点——同族其他日志调用点未消毒是 fix-variant 形态",
+    "access log 掩码默认空列表 = 无掩码"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-015",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "用户可控值 (client_id/用户名/URL 参数) 写入日志无消毒; 访问日志记录敏感头 (Authorization/Cookie)",
+   "sink_hint": "logger 调用点 + 用户可控参数; access log 头记录点",
+   "pitfall": "消毒修复常单点——同族其他日志调用点未消毒是 fix-variant 形态; access log 掩码默认空列表 = 无掩码"
+  },
+  {
+   "lang": "java",
+   "family": "AUTHN",
+   "title": "信任代理判定 fail-open: 未配置可信地址时恒真 + 客户端自置信任头被采信",
+   "cwe": [
+    "CWE-290",
+    "CWE-287"
+   ],
+   "patterns": [
+    "isProxyTrusted 类判定未配置白名单时恒 true",
+    "客户端可自置的信任头 (X-Forwarded-Trusted-Proxy 类) 直接设 true"
+   ],
+   "sinks": [
+    "代理信任判定点",
+    "头驱动的证书/身份查找门禁点"
+   ],
+   "pitfalls": [
+    "门禁不消费平台可信判定的形态 (平台契约短路)",
+    "证书头门禁的关闭条件与平台层加固无法代偿"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-016",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "isProxyTrusted 类判定未配置白名单时恒 true; 客户端可自置的信任头 (X-Forwarded-Trusted-Proxy 类) 直接设 true",
+   "sink_hint": "代理信任判定点; 头驱动的证书/身份查找门禁点",
+   "pitfall": "门禁不消费平台可信判定的形态 (平台契约短路); 证书头门禁的关闭条件与平台层加固无法代偿"
+  },
+  {
+   "lang": "java",
+   "family": "RACE",
+   "title": "时序窗口: TOCTOU 检查与消费跨事务分离 / 并发窗口 (竞态窗口+会话过期+重放)",
+   "cwe": [
+    "CWE-367",
+    "CWE-362",
+    "CWE-613",
+    "CWE-294"
+   ],
+   "patterns": [
+    "检查与撤销写入跨事务分离 (contains 检查→流结束才 put)",
+    "持久化旁路在 CAS 判定之外无条件执行",
+    "单次使用语义的占位与消费时序窗口"
+   ],
+   "sinks": [
+    "单次消费检查点",
+    "撤销/持久化写入点",
+    "锁获取与释放回调点"
+   ],
+   "pitfalls": [
+    "contains 只读检查与 put 原子写的窗口是默认形态——占位写前移是修复方向",
+    "存量对象不受新保护机制覆盖 (开关翻转场景)"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-017",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "检查与撤销写入跨事务分离 (contains 检查→流结束才 put); 持久化旁路在 CAS 判定之外无条件执行; 单次使用语义的占位与消费时序窗口",
+   "sink_hint": "单次消费检查点; 撤销/持久化写入点; 锁获取与释放回调点",
+   "pitfall": "contains 只读检查与 put 原子写的窗口是默认形态——占位写前移是修复方向; 存量对象不受新保护机制覆盖 (开关翻转场景)"
+  },
+  {
+   "lang": "java",
+   "family": "ERROR-HANDLING",
+   "title": "空引用/越界解引用: 解析结果零长度元素未防御 (Java 形态 AIOOBE/NPE)",
+   "cwe": [
+    "CWE-476",
+    "CWE-129"
+   ],
+   "patterns": [
+    "split 后索引未检查长度 (尾随分隔符形态)",
+    "DOM getFirstChild 空引用",
+    "列表 get(0) 空列表",
+    "LDAP 属性值 substring/charAt/parseLong 未校验"
+   ],
+   "sinks": [
+    "split/index 点",
+    "DOM 节点取值点",
+    "外部数据属性解析点"
+   ],
+   "pitfalls": [
+    "Java String.split 移除尾随空串的语义是 AIOOBE 高发形态",
+    "异常逃逸 vs 捕获的分支方向核实"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-018",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "split 后索引未检查长度 (尾随分隔符形态); DOM getFirstChild 空引用; 列表 get(0) 空列表; LDAP 属性值 substring/charAt/parseLong 未校验",
+   "sink_hint": "split/index 点; DOM 节点取值点; 外部数据属性解析点",
+   "pitfall": "Java String.split 移除尾随空串的语义是 AIOOBE 高发形态; 异常逃逸 vs 捕获的分支方向核实"
+  },
+  {
+   "lang": "java",
+   "family": "NUMERIC",
+   "title": "类型混淆: 不可信 claim 强转 (JSON 类型攻击者可控)",
+   "cwe": [
+    "CWE-704"
+   ],
+   "patterns": [
+    "getOtherClaims 取值直接强转 String 无 instanceof",
+    "验签前使用未验签 claim 字段"
+   ],
+   "sinks": [
+    "claim 强转点"
+   ],
+   "pitfalls": [
+    "外层 catch 兜底只收敛为 400 不影响鉴权判定——按错误路径缺陷定位"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-019",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "getOtherClaims 取值直接强转 String 无 instanceof; 验签前使用未验签 claim 字段",
+   "sink_hint": "claim 强转点",
+   "pitfall": "外层 catch 兜底只收敛为 400 不影响鉴权判定——按错误路径缺陷定位"
+  },
+  {
+   "lang": "java",
+   "family": "RESOURCE-DOS",
+   "title": "无界集合累积: 分页参数直通 skip/limit 无钳制 (java 形态)",
+   "cwe": [
+    "CWE-789",
+    "CWE-770"
+   ],
+   "patterns": [
+    "HTTP 分页参数 (first/max) 直通 skip/limit 无上界钳制",
+    "skip-before-limit 顺序的放大杠杆",
+    "provider 侧全量物化在 limit 之前"
+   ],
+   "sinks": [
+    "skip/limit 流操作点",
+    "provider 全量遍历点"
+   ],
+   "pitfalls": [
+    "first 是独立放大杠杆 (skip 施加于 limit 之前)",
+    "只钳 max 不钳 first 的常规缓解不完整",
+    "默认请求 (max=10) 也强制全量遍历的形态"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-020",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "HTTP 分页参数 (first/max) 直通 skip/limit 无上界钳制; skip-before-limit 顺序的放大杠杆; provider 侧全量物化在 limit 之前",
+   "sink_hint": "skip/limit 流操作点; provider 全量遍历点",
+   "pitfall": "first 是独立放大杠杆 (skip 施加于 limit 之前); 只钳 max 不钳 first 的常规缓解不完整; 默认请求 (max=10) 也强制全量遍历的形态"
+  },
+  {
+   "lang": "java",
+   "family": "AUTHN",
+   "title": "撤销策略未生效: 多层 notBefore/撤销校验维度缺失",
+   "cwe": [
+    "CWE-303"
+   ],
+   "patterns": [
+    "realm/client/user 三级 notBefore 校验不完整的调用点",
+    "撤销策略验证修复后未覆盖的兄弟路径"
+   ],
+   "sinks": [
+    "TokenVerifier.withChecks(NotBeforeCheck) 调用点"
+   ],
+   "pitfalls": [
+    "同族调用点对比矩阵: 修复后带全维度 vs 未修复缺维度",
+    "无生产调用者的缺陷形态按不可达处理"
+   ],
+   "source": {
+    "tier": "battle_verified",
+    "origin": "Keycloak lessons 2026-09-13"
+   },
+   "id": "INV-java-021",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "realm/client/user 三级 notBefore 校验不完整的调用点; 撤销策略验证修复后未覆盖的兄弟路径",
+   "sink_hint": "TokenVerifier.withChecks(NotBeforeCheck) 调用点",
+   "pitfall": "同族调用点对比矩阵: 修复后带全维度 vs 未修复缺维度; 无生产调用者的缺陷形态按不可达处理"
+  },
+  {
+   "lang": "c",
+   "family": "TRUST-BOUNDARY",
+   "title": "零拷贝/in-place 优化所有权: 外部支撑页被协议栈 in-place 写",
+   "cwe": [
+    "CWE-787",
+    "CWE-290"
+   ],
+   "patterns": [
+    "splice/vmsplice 植入的只读页被当作自有缓冲做 in-place 加密/解密写",
+    "skb fragment 槽接收外部支撑页后协议栈直接改写",
+    "零拷贝优化路径跳过页所有权/可写性检查"
+   ],
+   "sinks": [
+    "splice/vmsplice 页植入点 (pipe_buffer ops)",
+    "skb frag 槽填充点",
+    "scatterlist 外部页绑定点",
+    "in-place 加密/解密路径 (AEAD/ESP/RxRPC 族)"
+   ],
+   "pitfalls": [
+    "外部支撑页 in-place 写 = 越权写判据: 页 owner 与写入者非同一主体",
+    "同族防御对比矩阵: splice 路径族的页所有权检查逐点对照——任一兄弟有防御而本面没有即假设",
+    "优化路径清单枚举: 零拷贝/in-place 优化是独立假设空间 (修复变体族 ground truth 可跨多年)",
+    "确定性逻辑缺陷 (无竞态) 形态——不依赖时序, 实证成本低"
+   ],
+   "source": {
+    "tier": "external_seeded",
+    "origin": "2026 Linux kernel LPE CVE 公开披露族分析 (Copy Fail CVE-2026-31431 / Dirty Frag CVE-2026-43284+43500 / Fragnesia CVE-2026-46300 / Dirty Decrypt CVE-2026-31635 / PinTheft CVE-2026-43494 / DirtyClone CVE-2026-43503 / pedit COW CVE-2026-46331; Dirty Pipe CVE-2022-0847 家族)",
+    "date": "2026-09-13"
+   },
+   "id": "INV-c-019",
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "pattern": "splice/vmsplice 植入的只读页被当作自有缓冲做 in-place 加密/解密写; skb fragment 槽接收外部支撑页后协议栈直接改写; 零拷贝优化路径跳过页所有权/可写性检查",
+   "sink_hint": "splice/vmsplice 页植入点 (pipe_buffer ops); skb frag 槽填充点; scatterlist 外部页绑定点; in-place 加密/解密路径 (AEAD/ESP/RxRPC 族)",
+   "pitfall": "外部支撑页 in-place 写 = 越权写判据: 页 owner 与写入者非同一主体; 同族防御对比矩阵: splice 路径族的页所有权检查逐点对照——任一兄弟有防御而本面没有即假设; 优化路径清单枚举: 零拷贝/in-place 优化是独立假设空间 (修复变体族 ground truth 可跨多年); 确定性逻辑缺陷 (无竞态) 形态——不依赖时序, 实证成本低"
   }
  ]
 }

@@ -30,7 +30,8 @@
   "STATE",
   "NUMERIC",
   "ERROR-HANDLING",
-  "OTHER"
+  "OTHER",
+  "TRUST-BOUNDARY"
  ],
  "cells": [
   {
@@ -415,30 +416,42 @@
    "family": "INJECTION",
    "cwes": [
     "CWE-502",
-    "CWE-89"
+    "CWE-89",
+    "CWE-117",
+    "CWE-532"
    ],
    "patterns": [
     "反序列化输入面: 对象流反序列化受攻击者控制",
     "外部输入拼接进 SQL 命令字符串",
-    "不可信数据反序列化"
+    "不可信数据反序列化",
+    "用户可控值 (client_id/用户名/URL 参数) 写入日志无消毒",
+    "访问日志记录敏感头 (Authorization/Cookie)",
+    "用户可控值 (client_id/用户名/URL 参数) 写入日志无消毒; 访问日志记录敏感头 (Authorization/Cookie)"
    ],
    "sinks": [
     "readObject/ObjectInputStream",
     "SerializationUtils 类工具",
     "JNDI 查找点",
     "SQL 语句构造/执行点",
-    "反序列化读取入口"
+    "反序列化读取入口",
+    "logger 调用点 + 用户可控参数",
+    "access log 头记录点",
+    "logger 调用点 + 用户可控参数; access log 头记录点"
    ],
    "pitfalls": [
     "反序列化过滤 (ObjectInputFilter 类) 缺省不启用——『默认防护』声称必须核实启用点",
     "gadget 链判定按可达类路径枚举, 不得以单类推定",
     "参数化查询优先; 拼接时必须枚举注入原语",
-    "反序列化输入按不可信处理"
+    "反序列化输入按不可信处理",
+    "消毒修复常单点——同族其他日志调用点未消毒是 fix-variant 形态",
+    "access log 掩码默认空列表 = 无掩码",
+    "消毒修复常单点——同族其他日志调用点未消毒是 fix-variant 形态; access log 掩码默认空列表 = 无掩码"
    ],
    "source_lessons": [
     "SIG-JAVA-DESER-001 (签名库 L2 词族)",
     "CWE Top 25 2025 rank 2 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
-    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 15 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "Keycloak lessons 2026-09-13 (battle_verified None)"
    ],
    "status": "seeded"
   },
@@ -446,22 +459,37 @@
    "lang": "java",
    "family": "ERROR-HANDLING",
    "cwes": [
-    "CWE-457"
+    "CWE-457",
+    "CWE-476",
+    "CWE-129"
    ],
    "patterns": [
-    "异常逃逸: 解析/校验异常穿透正常路径成为判定依据差异"
+    "异常逃逸: 解析/校验异常穿透正常路径成为判定依据差异",
+    "split 后索引未检查长度 (尾随分隔符形态)",
+    "DOM getFirstChild 空引用",
+    "列表 get(0) 空列表",
+    "LDAP 属性值 substring/charAt/parseLong 未校验",
+    "split 后索引未检查长度 (尾随分隔符形态); DOM getFirstChild 空引用; 列表 get(0) 空列表; LDAP 属性值 substring/charAt/parseLong 未校验"
    ],
    "sinks": [
     "日期时间解析",
     "类型转换点",
-    "枚举解析点"
+    "枚举解析点",
+    "split/index 点",
+    "DOM 节点取值点",
+    "外部数据属性解析点",
+    "split/index 点; DOM 节点取值点; 外部数据属性解析点"
    ],
    "pitfalls": [
     "异常逃逸类缺陷常被多个假说同事实共享实证——去重后主申报方承载 severity",
-    "吞错转正常路径与逃逸判定的方向不得颠倒"
+    "吞错转正常路径与逃逸判定的方向不得颠倒",
+    "Java String.split 移除尾随空串的语义是 AIOOBE 高发形态",
+    "异常逃逸 vs 捕获的分支方向核实",
+    "Java String.split 移除尾随空串的语义是 AIOOBE 高发形态; 异常逃逸 vs 捕获的分支方向核实"
    ],
    "source_lessons": [
-    "java-jwt H2/H7 同事实共享实证实录 (DateTimeException 逃逸形态)"
+    "java-jwt H2/H7 同事实共享实证实录 (DateTimeException 逃逸形态)",
+    "Keycloak lessons 2026-09-13 (battle_verified None)"
    ],
    "status": "seeded"
   },
@@ -1512,27 +1540,47 @@
    "cwes": [
     "CWE-862",
     "CWE-639",
-    "CWE-863"
+    "CWE-863",
+    "CWE-290",
+    "CWE-287",
+    "CWE-303"
    ],
    "patterns": [
     "敏感操作缺授权检查",
     "用户可控键绕过授权(越权)",
-    "白名单判定挂在不稳定的解析形态上(URI 解析失败即放行/字符串拆分路径绕过门禁)"
+    "白名单判定挂在不稳定的解析形态上(URI 解析失败即放行/字符串拆分路径绕过门禁)",
+    "isProxyTrusted 类判定未配置白名单时恒 true",
+    "客户端可自置的信任头 (X-Forwarded-Trusted-Proxy 类) 直接设 true",
+    "realm/client/user 三级 notBefore 校验不完整的调用点",
+    "撤销策略验证修复后未覆盖的兄弟路径",
+    "isProxyTrusted 类判定未配置白名单时恒 true; 客户端可自置的信任头 (X-Forwarded-Trusted-Proxy 类) 直接设 true",
+    "realm/client/user 三级 notBefore 校验不完整的调用点; 撤销策略验证修复后未覆盖的兄弟路径"
    ],
    "sinks": [
     "敏感操作处理函数入口",
     "按用户键取资源的查询点",
-    "scheme 白名单判定点/前缀校验点"
+    "scheme 白名单判定点/前缀校验点",
+    "代理信任判定点",
+    "头驱动的证书/身份查找门禁点",
+    "TokenVerifier.withChecks(NotBeforeCheck) 调用点",
+    "代理信任判定点; 头驱动的证书/身份查找门禁点"
    ],
    "pitfalls": [
     "缺授权≠设计意图——核实敏感操作清单",
     "资源归属键与访问者身份比对",
-    "守卫实现与下游解析器语义不等价 (严格 URI vs 词法 scheme 检测) 即 fail-open; 白名单存在 ≠ 生效, 判定失败分支必须逐形态实测"
+    "守卫实现与下游解析器语义不等价 (严格 URI vs 词法 scheme 检测) 即 fail-open; 白名单存在 ≠ 生效, 判定失败分支必须逐形态实测",
+    "门禁不消费平台可信判定的形态 (平台契约短路)",
+    "证书头门禁的关闭条件与平台层加固无法代偿",
+    "同族调用点对比矩阵: 修复后带全维度 vs 未修复缺维度",
+    "无生产调用者的缺陷形态按不可达处理",
+    "门禁不消费平台可信判定的形态 (平台契约短路); 证书头门禁的关闭条件与平台层加固无法代偿",
+    "同族调用点对比矩阵: 修复后带全维度 vs 未修复缺维度; 无生产调用者的缺陷形态按不可达处理"
    ],
    "source_lessons": [
     "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
     "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
-    "2026-09-12 hibernate-orm JNDI fail-open 审计实证 (7 原语穿透, 双假说同事实) (source_seeded 2026-09-12)"
+    "2026-09-12 hibernate-orm JNDI fail-open 审计实证 (7 原语穿透, 双假说同事实) (source_seeded 2026-09-12)",
+    "Keycloak lessons 2026-09-13 (battle_verified None)"
    ]
   },
   {
@@ -1540,19 +1588,32 @@
    "family": "RESOURCE-DOS",
    "status": "seeded",
    "cwes": [
-    "CWE-770"
+    "CWE-770",
+    "CWE-789"
    ],
    "patterns": [
-    "资源分配无上限或无节流"
+    "资源分配无上限或无节流",
+    "HTTP 分页参数 (first/max) 直通 skip/limit 无上界钳制",
+    "skip-before-limit 顺序的放大杠杆",
+    "provider 侧全量物化在 limit 之前",
+    "HTTP 分页参数 (first/max) 直通 skip/limit 无上界钳制; skip-before-limit 顺序的放大杠杆; provider 侧全量物化在 limit 之前"
    ],
    "sinks": [
-    "分配/队列/累积点"
+    "分配/队列/累积点",
+    "skip/limit 流操作点",
+    "provider 全量遍历点",
+    "skip/limit 流操作点; provider 全量遍历点"
    ],
    "pitfalls": [
-    "上限/节流在累积点之前"
+    "上限/节流在累积点之前",
+    "first 是独立放大杠杆 (skip 施加于 limit 之前)",
+    "只钳 max 不钳 first 的常规缓解不完整",
+    "默认请求 (max=10) 也强制全量遍历的形态",
+    "first 是独立放大杠杆 (skip 施加于 limit 之前); 只钳 max 不钳 first 的常规缓解不完整; 默认请求 (max=10) 也强制全量遍历的形态"
    ],
    "source_lessons": [
-    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 25 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "Keycloak lessons 2026-09-13 (battle_verified None)"
    ]
   },
   {
@@ -2423,6 +2484,92 @@
    ],
    "source_lessons": [
     "2026-09-12 hibernate-orm H-2 审计实证 (枚举 ordinal/fromLong 截断/SparseByteVector 文本构造器) (source_seeded 2026-09-12)"
+   ]
+  },
+  {
+   "lang": "c",
+   "family": "TRUST-BOUNDARY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-787",
+    "CWE-290"
+   ],
+   "patterns": [
+    "splice/vmsplice 植入的只读页被当作自有缓冲做 in-place 加密/解密写",
+    "skb fragment 槽接收外部支撑页后协议栈直接改写",
+    "零拷贝优化路径跳过页所有权/可写性检查",
+    "splice/vmsplice 植入的只读页被当作自有缓冲做 in-place 加密/解密写; skb fragment 槽接收外部支撑页后协议栈直接改写; 零拷贝优化路径跳过页所有权/可写性检查"
+   ],
+   "sinks": [
+    "splice/vmsplice 页植入点 (pipe_buffer ops)",
+    "skb frag 槽填充点",
+    "scatterlist 外部页绑定点",
+    "in-place 加密/解密路径 (AEAD/ESP/RxRPC 族)",
+    "splice/vmsplice 页植入点 (pipe_buffer ops); skb frag 槽填充点; scatterlist 外部页绑定点; in-place 加密/解密路径 (AEAD/ESP/RxRPC 族)"
+   ],
+   "pitfalls": [
+    "外部支撑页 in-place 写 = 越权写判据: 页 owner 与写入者非同一主体",
+    "同族防御对比矩阵: splice 路径族的页所有权检查逐点对照——任一兄弟有防御而本面没有即假设",
+    "优化路径清单枚举: 零拷贝/in-place 优化是独立假设空间 (修复变体族 ground truth 可跨多年)",
+    "确定性逻辑缺陷 (无竞态) 形态——不依赖时序, 实证成本低",
+    "外部支撑页 in-place 写 = 越权写判据: 页 owner 与写入者非同一主体; 同族防御对比矩阵: splice 路径族的页所有权检查逐点对照——任一兄弟有防御而本面没有即假设; 优化路径清单枚举: 零拷贝/in-place 优化是独立假设空间 (修复变体族 ground truth 可跨多年); 确定性逻辑缺陷 (无竞态) 形态——不依赖时序, 实证成本低"
+   ],
+   "source_lessons": [
+    "external_seeded 2026-09-13: 2026 Linux kernel LPE CVE 公开披露族分析 (Copy Fail CVE-2026-31431 / Dirty Frag CVE-2026-43284+43500 / Fragnesia CVE-2026-46300 / Dirty Decrypt CVE-2026-31635 / PinTheft CVE-2026-43494 / DirtyClone CVE-2026-43503 / pedit COW CVE-2026-46331; Dirty Pipe CVE-2022-0847 家族)",
+    "2026 Linux kernel LPE CVE 公开披露族分析 (Copy Fail CVE-2026-31431 / Dirty Frag CVE-2026-43284+43500 / Fragnesia CVE-2026-46300 / Dirty Decrypt CVE-2026-31635 / PinTheft CVE-2026-43494 / DirtyClone CVE-2026-43503 / pedit COW CVE-2026-46331; Dirty Pipe CVE-2022-0847 家族) (external_seeded 2026-09-13)"
+   ]
+  },
+  {
+   "lang": "java",
+   "family": "RACE",
+   "status": "seeded",
+   "cwes": [
+    "CWE-367",
+    "CWE-362",
+    "CWE-613",
+    "CWE-294"
+   ],
+   "patterns": [
+    "检查与撤销写入跨事务分离 (contains 检查→流结束才 put)",
+    "持久化旁路在 CAS 判定之外无条件执行",
+    "单次使用语义的占位与消费时序窗口",
+    "检查与撤销写入跨事务分离 (contains 检查→流结束才 put); 持久化旁路在 CAS 判定之外无条件执行; 单次使用语义的占位与消费时序窗口"
+   ],
+   "sinks": [
+    "单次消费检查点",
+    "撤销/持久化写入点",
+    "锁获取与释放回调点",
+    "单次消费检查点; 撤销/持久化写入点; 锁获取与释放回调点"
+   ],
+   "pitfalls": [
+    "contains 只读检查与 put 原子写的窗口是默认形态——占位写前移是修复方向",
+    "存量对象不受新保护机制覆盖 (开关翻转场景)",
+    "contains 只读检查与 put 原子写的窗口是默认形态——占位写前移是修复方向; 存量对象不受新保护机制覆盖 (开关翻转场景)"
+   ],
+   "source_lessons": [
+    "INV-java-017: 时序窗口: TOCTOU 检查与消费跨事务分离 / 并发窗口 (竞态窗口+会话过期+重放)"
+   ]
+  },
+  {
+   "lang": "java",
+   "family": "NUMERIC",
+   "status": "seeded",
+   "cwes": [
+    "CWE-704"
+   ],
+   "patterns": [
+    "getOtherClaims 取值直接强转 String 无 instanceof",
+    "验签前使用未验签 claim 字段",
+    "getOtherClaims 取值直接强转 String 无 instanceof; 验签前使用未验签 claim 字段"
+   ],
+   "sinks": [
+    "claim 强转点"
+   ],
+   "pitfalls": [
+    "外层 catch 兜底只收敛为 400 不影响鉴权判定——按错误路径缺陷定位"
+   ],
+   "source_lessons": [
+    "INV-java-019: 类型混淆: 不可信 claim 强转 (JSON 类型攻击者可控)"
    ]
   }
  ]

@@ -264,7 +264,7 @@ def test_tooling_version_and_skillmd():
         "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.42"  # v3.13 版本链前进 (SWR-V3.13-006)
+    assert we.TOOLING_VERSION == "3.43"  # v3.13 版本链前进 (SWR-V3.13-006)
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "| v3.9 |" in skill and "| v3.10 |" in skill  # 版本历史表行
     hist = open(os.path.join(ROOT, "docs/history/SKILL_INCREMENTS.md")).read()

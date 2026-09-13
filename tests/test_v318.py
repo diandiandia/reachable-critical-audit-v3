@@ -33,7 +33,7 @@ def test_matrix_schema_valid():
     m = _matrix()
     assert set(m["langs"]) == set(_ledger()["langs"]), "langs 与账本不一致"
     assert set(m["families"]) == set(_ledger()["families"]), "families 与账本不一致"
-    assert len(m["langs"]) == 16 and len(m["families"]) == 12
+    assert len(m["langs"]) == 16 and len(m["families"]) == 13
     for c in m["cells"]:
         assert c.get("status") == "seeded"
         assert c["lang"] in m["langs"] and c["family"] in m["families"]
@@ -81,8 +81,8 @@ def test_cells_for_seeded_only_and_alias():
 
 def test_stats_shape():
     s = lim.stats()
-    assert s["total_cells"] == 192
-    assert s["seeded"] >= 32 and s["seeded"] + s["pending"] == 192
+    assert s["total_cells"] == 208
+    assert s["seeded"] >= 32 and s["seeded"] + s["pending"] == 208
     assert set(s["per_lang"]) == set(_ledger()["langs"])
     assert set(s["per_family"]) == set(_ledger()["families"])
     # 每语言至少 1 种格 (首版种格判据)
@@ -93,7 +93,7 @@ def test_cli_cells_and_stats():
     r = subprocess.run([sys.executable, os.path.join(ROOT, "src", "language_issue_matrix.py"),
                         "stats"], capture_output=True, text=True)
     assert r.returncode == 0
-    assert json.loads(r.stdout)["total_cells"] == 192
+    assert json.loads(r.stdout)["total_cells"] == 208
     r2 = subprocess.run([sys.executable, os.path.join(ROOT, "src", "language_issue_matrix.py"),
                          "cells", "go", "RESOURCE-DOS"], capture_output=True, text=True)
     assert r2.returncode == 0
@@ -123,4 +123,4 @@ def test_tooling_version_318():
         "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.42"
+    assert we.TOOLING_VERSION == "3.43"

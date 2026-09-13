@@ -56,10 +56,10 @@ def test_t2_seed_battle_doublewrite(tmp_path):
             json.dump(payload, f)
             fpath = f.name
         r = lim.seed_entries(fpath)
-        assert r["added"] == ["INV-c-019"], r
+        assert r["added"] == ["INV-c-020"], r
         # 双写核验
         inv2 = json.load(open(inv_p))
-        e = next(x for x in inv2["entries"] if x["id"] == "INV-c-019")
+        e = next(x for x in inv2["entries"] if x["id"] == "INV-c-020")
         mat2 = json.load(open(mat_p))
         cell = next(c for c in mat2["cells"] if c["lang"] == "c" and c["family"] == "STATE")
         assert probe["pattern"] in cell["patterns"]
@@ -68,7 +68,7 @@ def test_t2_seed_battle_doublewrite(tmp_path):
     finally:
         # 回滚探针条目与格内容
         inv3 = json.load(open(inv_p))
-        inv3["entries"] = [x for x in inv3["entries"] if x["id"] != "INV-c-019"]
+        inv3["entries"] = [x for x in inv3["entries"] if x["id"] != "INV-c-020"]
         json.dump(inv3, open(inv_p, "w"), ensure_ascii=False, indent=1)
         mat3 = json.load(open(mat_p))
         cell = next(c for c in mat3["cells"] if c["lang"] == "c" and c["family"] == "STATE")

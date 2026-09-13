@@ -175,7 +175,7 @@ inventory 的各族 Top 条目逐一做缺陷形态展开——"该缺陷形态�
 近期安全修复史时，执行 `python3 <skill_dir>/tools/fixminer.py <project>
 [--since N]`——按族分类的修复 commit 是该代码库缺陷形态的 ground truth，
 每族生成"同款缺陷在树内其他位置可能残留"的假设（修复变体复核先例，
-SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
+SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。同形态修复族间隔 >1 年时（如 page cache 写越权族 2022→2026 变体潮），--since 默认窗口挖不到 ground truth——族信号驱动需长窗口或手工指定修复 commit（SWR-V3.43-004）。
 ——返回该语言已种格的族条目（典型漏洞形态/关键 sink/判定要点），作为
 假设空间提示（提示级，无强制义务；未种格 pending 零注入零提示）。
 矩阵回填纪律（SWR-V3.18-003）：每版本验收审计收官时把验收项目覆盖的
@@ -304,7 +304,7 @@ project_kind==framework 不再单独触发；maturity 由 git 版本标签语义
 | H4 | 跨进程信任边界破坏（CWE-20+89/78：输入拼进 exec/路径/转发头；初始化时序注入面 v3.11——启动窄窗/冷启动注入/初始化时序竞态） |（含 site-isolation/资源归因子条 v3.24：跨进程资源（纹理/缓存/下载/导航目标/worker 等）绑定到错误 origin 即信任边界破坏——检查资源创建与归因的 origin 上下文一致性）
 | H5 | 暴露组件鉴权缺失（CWE-862/926：调试端点/状态页/目录列表） |
 | H6 | 多租户 owner 比对缺失（CWE-639/285：锁/会话/缓存归属） |
-| H7 | **信任边界专项（v3 新增）**：① 同 UID/IPC 高危操作 ② 路径语义（.. 上溯/symlink/空路径回退）越界 ③ 鉴权谓词弱化（前缀/子串/hash 替代全名） |
+| H7 | **信任边界专项（v3 新增）**：① 同 UID/IPC 高危操作 ② 路径语义（.. 上溯/symlink/空路径回退）越界 ③ 鉴权谓词弱化或逻辑错误（前缀/子串/hash 替代全名；条件写错/比较对象错位——谓词本身错误而非被弱化，潜伏长周期形态, SWR-V3.43-003） |
 
 任务书模板 `assets/task_templates/biz_hypothesis.md`（v3.4.3 起注入实际 surface id 清单
 `{surface_id_list}` + canonical 输出示例；H7 默认值全表预算 ≤1200 字）。
@@ -422,6 +422,9 @@ python3 <skill_dir>/src/lessons_recorder.py <project> --write
    低价值条目留项目 lessons 轨迹
 3. **未执行 R6 的审计不得闭合**（主代理义务, 提示级——无机械门禁承载;
    审计契约以 lessons.md 落盘为准, 六门禁判据不包含本项）
+   **条款消费度量（v3.43, SWR-V3.43-008, 提示级无门禁）**：审计收官时在
+   lessons.md 记录本轮实际被装载/消费的 SKILL.md 条款清单——两周期后按
+   消费记录批量裁除死条款（条款密度与遵守率负相关，无消费即裁除）。
 5. **蒸馏失败模式清单（v3.22, SWR-V3.22-011）**：收官蒸馏必须逐项过
    已知失败模式 checklist——截断自愈 / 契约漂移 / 簿记缺位 / 签收错名 /
    落盘契约 / 决策记录 / 严重度映射 / 派发简写与模板不一致——任一模式
@@ -606,7 +609,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.42。
+TOOLING 3.43。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -655,3 +658,4 @@ TOOLING 3.42。
 | v3.40 | 2026-09-12 | Hadoop 验收复盘七修复: fidelity 判级分支/攻击者字节承载/修复残留枚举/位域证据/setuid 拓扑手册/默认关方向/实证回填候选 |
 | v3.41 | 2026-09-13 | hibernate-orm 审计复盘七修复: 复活 gap 字段契约分离/报告 import 路径对齐/claim_type 枚举告警/方言平台矩阵条款/通道转义对账清单/逃生舱等价先例/java 矩阵两格 |
 | v3.42 | 2026-09-13 | Keycloak 审计复盘六修复: refutation 资格判定健壮化(空 dict=未复核)/r4-collect 近似键字段名诊断/verifier 分支级声称提示/upstream 已修声称树内核实/信息暴露跨信任域 drop 维度/实证回填前缀级联提示 |
+| v3.43 | 2026-09-13 | 机制冻结实验+知识补种: c 矩阵 TRUST-BOUNDARY 页缓存所有权族/java 矩阵七族归并种格/H7 谓词逻辑错误形态/fixminer 跨多年窗口/H3 kernel 锚点+skill-optimizer 第四问与重设计触发判据/条款消费度量 |

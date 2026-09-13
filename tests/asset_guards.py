@@ -2,7 +2,7 @@
 单点编辑 (R6 守卫失同步两次复发: caddy/haproxy 回填轮)。硬编码计数是漂移
 守卫语义不变, 只是集中到本文件。"""
 CHECKLISTS = 50  # v3.41 +1 (SWR-V3.41-005)
-INVENTORY_ENTRIES = 204  # v3.41 +2 (INV-java-013/014, SWR-V3.41-007)
+INVENTORY_ENTRIES = 212  # v3.43 +9 (INV-c-019 页缓存族 + INV-java-015..021 七族归并) (INV-c-019 + INV-java-015..021, SWR-V3.43-001/002)
 BATTLE_CONFIRMED = 12
 BATTLE_QUICKJS = 2
 BATTLE_CADDY = 7
