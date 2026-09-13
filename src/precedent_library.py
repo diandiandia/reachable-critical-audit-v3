@@ -23,6 +23,7 @@ CWE_FAMILY_MAP = {
                    "PREC-GATE-RATING-001"],
     ("CWE-770", "CWE-789"): ["PREC-GATE-RATING-001", "PREC-STREAM-MATERIALIZE-001"],
     ("CWE-1333",): ["PREC-RUNTIME-VERSION-001"],
+    ("CWE-89",): ["PREC-ESCAPE-HATCH-EQUIV"],
     ("CWE-841", "CWE-696", "CWE-670"): ["PREC-STATE-GATE-REENTRY"],
 }
 
@@ -42,6 +43,8 @@ KEYWORD_MAP = {
     "host": ["PREC-HOST-FAMILY-001"],
     "referer": ["PREC-VICTIM-TRIGGER-001"],
     "状态机": ["PREC-STATE-GATE-REENTRY"],
+    "逃生舱": ["PREC-ESCAPE-HATCH-EQUIV"],
+    "等价": ["PREC-ESCAPE-HATCH-EQUIV"],
     "state machine": ["PREC-STATE-GATE-REENTRY"],
     # v3.15 (SWR-V3.15-010): 守卫封顶类阻断主张——gpac CAND-007/001 复活推翻实录
     "封顶": ["PREC-GUARD-SUBSET-001"],

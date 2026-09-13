@@ -4785,6 +4785,53 @@
     ],
     "date": "2026-09-10"
    }
+  },
+  {
+   "lang": "java",
+   "title": "Java 形态内存安全: 越界索引与截断 cast",
+   "family": "MEMORY-SAFETY",
+   "cwe": [
+    "CWE-129",
+    "CWE-125"
+   ],
+   "pattern": "枚举 ordinal 下标无界/数值窄化截断/文本构造器绕过校验门禁",
+   "sink_hint": "enumConstants[ordinal]/intValue() 窄化/parse 后下标",
+   "pitfall": "JVM 边界检查把后果限制为 AIOOBE/异常, 但截断 cast 的静默错值无告警——判级按实际后果而非 CWE 族; 结构校验门禁与文本构造器路径不一致即假设",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "2026-09-12 hibernate-orm H-2 审计实证 (枚举 ordinal/fromLong 截断/SparseByteVector 文本构造器)",
+    "date": "2026-09-12"
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "id": "INV-java-013"
+  },
+  {
+   "lang": "java",
+   "title": "白名单 fail-open: 守卫实现与解析器语义不等价",
+   "family": "AUTHN",
+   "cwe": [
+    "CWE-863"
+   ],
+   "pattern": "白名单判定挂在不稳定的解析形态上(URI 解析失败即放行/字符串拆分路径绕过门禁)",
+   "sink_hint": "scheme 白名单判定点/前缀校验点",
+   "pitfall": "守卫实现与下游解析器语义不等价 (严格 URI vs 词法 scheme 检测) 即 fail-open; 白名单存在 ≠ 生效, 判定失败分支必须逐形态实测",
+   "source": {
+    "tier": "source_seeded",
+    "origin": "2026-09-12 hibernate-orm JNDI fail-open 审计实证 (7 原语穿透, 双假说同事实)",
+    "date": "2026-09-12"
+   },
+   "verify": {
+    "status": "unverified",
+    "battles": [],
+    "candidates": [],
+    "date": null
+   },
+   "id": "INV-java-014"
   }
  ]
 }

@@ -1216,3 +1216,21 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.40-005 | ENVIRONMENT_PROBES setuid 部署拓扑段 | 已完成 | assets/harness_manuals/ENVIRONMENT_PROBES.md |
 | REQ-V3.40-006 | hypothesis_filter 默认关方向判定 | 已完成 | assets/task_templates/hypothesis_filter.md |
 | REQ-V3.40-007 | r35-collect 实证回填候选扫描 (warn 级) | 已完成 | tools/batch_verify.py + tests/test_v340.py |
+
+## 系统需求（REQ-V3.41）（共 7 条）
+
+> 手工追加段（2026-09-13）。案例支撑：hibernate-orm 验收复盘——复活 gap 渲染 bool 拼接
+> TypeError（重验轮首跑触发）/ 报告 B.5「evidence_ledger 不可导入」+ B.2「现场重算失败」降级文案 /
+> H-4 两条 source_fact/empirical_mechanism 非法 claim_type 静默流入 + H-6 空串触发 gate ③b /
+> H2 单方言实测外推 MySQL/Spanner 族致 CAND-006 复活翻转 / comment-hint-format 三通道转义不对称 /
+> CAND-005 逃生舱等价性边界论证 / java 矩阵 5/10 命中。
+
+| 编号 | 需求 | 状态 | 证据 |
+|---|---|---|---|
+| REQ-V3.41-001 | 复活 gap 渲染字段契约分离 (resurrect_gap 文本 + re_verify_gap bool 条件) | 已完成 | src/workflow_export.py + tests/test_v341.py |
+| REQ-V3.41-002 | 报告段 import 路径对齐 src (B.5/B.2 机械渲染恢复) | 已完成 | tools/batch_verify.py + tests/test_v341.py |
+| REQ-V3.41-003 | r4-collect claim_type 枚举告警 (warn + 建议映射, 不自动改写) | 已完成 | tools/batch_verify.py + tests/test_v341.py |
+| REQ-V3.41-004 | verifier 任务书方言/平台语义矩阵条款 (提示级) | 已完成 | tools/batch_verify.py + tests/test_v341.py |
+| REQ-V3.41-005 | checklist +1 CK-CHANNEL-ESCAPE-LEDGER (通道转义对账族) | 已完成 | assets/resources/checklist_library.json (50) |
+| REQ-V3.41-006 | precedent +1 PREC-ESCAPE-HATCH-EQUIV (逃生舱等价族) | 已完成 | assets/resources/precedent_library.json (19) |
+| REQ-V3.41-007 | java 矩阵回填两格 (MEMORY-SAFETY 越界/截断 + AUTHN fail-open) | 已完成 | assets/resources/language_issue_inventory.json (INV-java-013/014) |

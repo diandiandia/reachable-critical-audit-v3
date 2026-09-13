@@ -294,6 +294,20 @@
     "gpac CAND-007 avilib short-read guard bypass (2026-08)",
     "gpac CAND-001 RTSP buffer tier auto-switch (2026-08)"
    ]
+  },
+  {
+   "id": "PREC-ESCAPE-HATCH-EQUIV",
+   "name": "逃生舱类 sink 与既有无校验通道等价 = 零能力增量",
+   "criterion": "逃生舱类 sink（如 HQL function('sql 片段')/未注册函数名直出）与库内既有无校验通道（如原生 SQL 透传）语义等价的形态, 不立候选、归宿主 API 设计内能力边界——「守卫开启前可注入」不构成相对该既有无校验通道的新增能力; 边界论证本身（等价性 + 守卫语义）写入申报材料, 不作为缺陷申报",
+   "counterexample": "逃生舱通道显著宽于既有通道（新语法位置/新注入维度/守卫语义承诺更强）或既有通道本身受独立门禁而逃生舱不受时, 该先例不适用 (format 通道绕过 appendLiteral 即属此形态)",
+   "applicability_scope": "宿主可控文本进 SQL/命令/路径类 sink 的『设计内能力』裁决 (R2 筛选/R3 判定/复活波边界论证)",
+   "applications": [
+    "safe mode 默认关 + function('sql 片段') 等价 createNativeQuery → 不复活 (设计内能力)",
+    "format 模式反斜杠逃逸绕过 appendLiteral → 不适用 (守卫承诺更强的通道)"
+   ],
+   "source_lessons": [
+    "hibernate-orm CAND-005 复活实录: 零能力增量边界论证 (2026-09)"
+   ]
   }
  ]
 }

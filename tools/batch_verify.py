@@ -1070,6 +1070,11 @@ def _preserve_adjudication(old, new):
 
 R4_VERDICTS = ("confirmed", "reviewed_clean", "not_applicable")
 R4_SEVERITIES = ("critical", "high", "medium", "low")
+# SWR-V3.41-003: claim_type 枚举 (与 verifier schema/任务书双侧一致——
+# 归一后等值比较; hibernate-orm H-4 两条 source_fact/empirical_mechanism
+# 非法值静默流入实录)
+R4_CLAIM_TYPES = ("crash", "panic", "oom", "unbounded", "xss", "protocol_dos",
+                  "rce", "leak", "other", "null")
 
 
 def _warn_r4_enums(items):
@@ -1107,6 +1112,30 @@ def _warn_r4_enums(items):
                     "suggestion": {"suggested": "low",
                                    "note": "informational 归一化建议: 核实类/"
                                            "过程记录类 finding 归 Low"}})
+            # SWR-V3.41-003: claim_type 枚举告警——非法值静默流入曾被主代理
+            # 手工归一 (hibernate-orm H-4 source_fact/empirical_mechanism 实录,
+            # H-6 空串触发 gate ③b 实录)。只告警 + 建议映射, 不自动改写。
+            ct_raw = fi.get("claim_type")
+            ct = (str(ct_raw).strip().lower() if ct_raw is not None else "")
+            if ct_raw is not None and not ct:
+                warnings.append({
+                    "kind": "empty_claim_type", "hypothesis_id": hid,
+                    "finding": f"{hid}-F{n}", "value": ct_raw,
+                    "hint": "claim_type 为空串: 无声称时置 null (空串在 gate ③b "
+                            "按 severity>=Medium 触发实证义务, 曾致被迫事后补 "
+                            "SOURCE_FACT 文本)",
+                    "suggestion": {"suggested": "null",
+                                   "note": "无实证类声称 → claim_type 置 null"}})
+            elif ct and ct not in R4_CLAIM_TYPES:
+                warnings.append({
+                    "kind": "illegal_claim_type", "hypothesis_id": hid,
+                    "finding": f"{hid}-F{n}", "value": ct_raw,
+                    "hint": f"claim_type 需为 {R4_CLAIM_TYPES} 之一; 非法值会进入"
+                            f"报告渲染与 gate ③b 判定",
+                    "suggestion": {"suggested": "other",
+                                   "note": "source_fact/empirical_mechanism 类"
+                                           "实证描述词不是声称枚举——无 crash/"
+                                           "oom/rce/leak 类声称时归一化 other"}})
             title = (fi.get("title") or "").lower()
             if "[refuted]" in title or "informational" in title:
                 warnings.append({
@@ -2207,7 +2236,11 @@ def stage_tracked_ids(project_root):
 
 def _gates_for_report(project_root, queue, surfaces):
     """机械调用六门禁 (evidence_ledger.assert_ledger)——渲染 ①-⑧ 行, 不新增判据。"""
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    # SWR-V3.41-002: 与其余 5 处导入点同形双插 (根 + src)——缺 /src 曾致
+    # 报告 B.5/B.2 降级文案 (hibernate-orm 审计实录)
+    _rep_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, _rep_parent)
+    sys.path.insert(0, os.path.join(_rep_parent, "src"))
     try:
         import evidence_ledger as _el
     except ImportError:
@@ -2550,7 +2583,11 @@ def _render_appendix_b_process(project_root, queue, report_json):
     # 比对致计数恒 0 (Pillow 实录)。归一失败归 unknown 桶。
     out.append("### B.2 语言覆盖表")
     try:
-        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        # SWR-V3.41-002: 与其余 5 处导入点同形双插 (根 + src)——缺 /src 曾致
+        # 报告 B.5/B.2 降级文案 (hibernate-orm 审计实录)
+        _rep_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        sys.path.insert(0, _rep_parent)
+        sys.path.insert(0, os.path.join(_rep_parent, "src"))
         import surface_mapper as _sm
         inv = _sm.language_inventory(project_root)
         surf_langs = {}
@@ -3109,6 +3146,11 @@ claim_type ∈ {{rce, leak, crash, oom, protocol_dos, unbounded}} 时:
   检测）与构建变体差异（调试/发布配置）影响攻击面维度——同一代码路径在不同
   平台版本有不同攻击面（低版本无限制/高版本有门）; 阻断论证必须按**受影响
   版本区间**陈述; 注入参数/调试面被发布构建过滤的差异作为前提维度写进 evidence
+- 方言/平台语义矩阵（v3.41, SWR-V3.41-004, 提示级）: 阻断论证引用单一方言/
+  平台实测时，须逐格核实同族方言/平台的语义差异（转义字符/引号/空值语义
+  等）——单格实测不得外推到语义相异方言族；同库对照证据（各方言自身实现，
+  如 appendLiteral 系转义分支）是逐格核实的廉价锚点；外推必须显式标注
+  覆盖格数（渲染类候选单方言实测外推致复活翻转实录）
 
 ### 步骤 5: 路径覆盖
 - 列出所有到达该 Sink 点的调用路径

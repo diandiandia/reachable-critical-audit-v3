@@ -1511,23 +1511,28 @@
    "status": "seeded",
    "cwes": [
     "CWE-862",
-    "CWE-639"
+    "CWE-639",
+    "CWE-863"
    ],
    "patterns": [
     "敏感操作缺授权检查",
-    "用户可控键绕过授权(越权)"
+    "用户可控键绕过授权(越权)",
+    "白名单判定挂在不稳定的解析形态上(URI 解析失败即放行/字符串拆分路径绕过门禁)"
    ],
    "sinks": [
     "敏感操作处理函数入口",
-    "按用户键取资源的查询点"
+    "按用户键取资源的查询点",
+    "scheme 白名单判定点/前缀校验点"
    ],
    "pitfalls": [
     "缺授权≠设计意图——核实敏感操作清单",
-    "资源归属键与访问者身份比对"
+    "资源归属键与访问者身份比对",
+    "守卫实现与下游解析器语义不等价 (严格 URI vs 词法 scheme 检测) 即 fail-open; 白名单存在 ≠ 生效, 判定失败分支必须逐形态实测"
    ],
    "source_lessons": [
     "CWE Top 25 2025 rank 4 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
-    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)"
+    "CWE Top 25 2025 rank 24 (https://cwe.mitre.org/top25/archive/2025/2025_cwe_top25.html) (external_seeded 2026-09-08)",
+    "2026-09-12 hibernate-orm JNDI fail-open 审计实证 (7 原语穿透, 双假说同事实) (source_seeded 2026-09-12)"
    ]
   },
   {
@@ -2397,6 +2402,27 @@
    ],
    "source_lessons": [
     "haproxy acceptance audit (battle_verified 2026-09-10)"
+   ]
+  },
+  {
+   "lang": "java",
+   "family": "MEMORY-SAFETY",
+   "status": "seeded",
+   "cwes": [
+    "CWE-129",
+    "CWE-125"
+   ],
+   "patterns": [
+    "枚举 ordinal 下标无界/数值窄化截断/文本构造器绕过校验门禁"
+   ],
+   "sinks": [
+    "enumConstants[ordinal]/intValue() 窄化/parse 后下标"
+   ],
+   "pitfalls": [
+    "JVM 边界检查把后果限制为 AIOOBE/异常, 但截断 cast 的静默错值无告警——判级按实际后果而非 CWE 族; 结构校验门禁与文本构造器路径不一致即假设"
+   ],
+   "source_lessons": [
+    "2026-09-12 hibernate-orm H-2 审计实证 (枚举 ordinal/fromLong 截断/SparseByteVector 文本构造器) (source_seeded 2026-09-12)"
    ]
   }
  ]

@@ -1616,6 +1616,37 @@
     "hadoop 验收 lessons 第 3 条 (同族反序列化存储加固不对称, 修复仅覆盖单实例/内层路径, 2026-09-10)"
    ],
    "name": "修复残留同族枚举检查"
+  },
+  {
+   "id": "CK-CHANNEL-ESCAPE-LEDGER",
+   "name": "转义责任下沉型设计的全通道对账",
+   "family": "injection",
+   "binding": {
+    "cwe": [
+     "CWE-89",
+     "CWE-74",
+     "CWE-116"
+    ],
+    "keywords": [
+     "appendFormat",
+     "appendSql",
+     "escape",
+     "转义",
+     "literal",
+     "comment",
+     "hint",
+     "quote",
+     "format"
+    ]
+   },
+   "steps": [
+    "同一函数族全部宿主文本通道（注释/提示/字面量/标识符/格式模式类）逐条列渲染点与转义点",
+    "单通道防御 ≠ 全族防御：一条通道有转义而兄弟通道没有即假设（不对称缺陷）",
+    "渲染分支逐个枚举：字面量化路径（QueryLiteral/appendLiteral）之外的直出分支（硬编码引号包裹）是最常被漏的通道"
+   ],
+   "source_lessons": [
+    "2026-09-12 hibernate-orm: comment 通道有转义/hint 通道无/format 非复合路径绕过 appendLiteral (CAND-006 复活)"
+   ]
   }
  ],
  "platform_trust_models": [

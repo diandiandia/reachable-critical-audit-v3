@@ -69,12 +69,12 @@ def test_verifier_prompt_datacarry():
 
 # ---------- SWR-V3.40-003: checklist 49 + CK-SIBLING-FIX-AUDIT ----------
 
-def test_checklist_49_sibling_fix_audit():
+def test_checklist_50_sibling_fix_audit():
     d = json.load(open(os.path.join(
         ROOT, "assets", "resources", "checklist_library.json")))
     items = d["checklists"] if isinstance(d, dict) and "checklists" in d else d
-    assert len(items) == 49, f"计数守卫: 期望 49, got {len(items)}"
-    c = items[-1]
+    assert len(items) == 50, f"计数守卫: 期望 50, got {len(items)}"  # v3.41 +1 (SWR-V3.41-005)
+    c = items[-2]
     assert c["id"] == "CK-SIBLING-FIX-AUDIT"
     assert c["family"] == "sibling-fix-audit"
     assert "source_lessons" in c and c["source_lessons"]

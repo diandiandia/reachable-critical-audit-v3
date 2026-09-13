@@ -594,7 +594,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - 核心模块（L1 src/）：`surface_mapper.py`（R1）/ `signature_lib.py`+`signature_matcher.py`（R0/R2）/ `generation_registry.py`（生成层注册表）/ `language_issue_matrix.py`（语言问题矩阵, v3.18）/ `evidence_ledger.py`（分级+六门禁+一致性断言）/ `harness_runner.py`（R5）/ `workflow_export.py`（Mode W）/ `checklist_binder.py`（清单绑定）/ `precedent_library.py`（先例裁决）/ `r2_guard.py`（假设 schema 守卫）
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
-- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：18 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族）；`assets/resources/checklist_library.json`：49 条检查清单（v3.27 增补 1 条限额旁路枚举族; v3.40 增补 1 条修复残留同族枚举族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
+- `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：19 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族；v3.41 增补 1 条逃生舱等价族）；`assets/resources/checklist_library.json`：50 条检查清单（v3.27 增补 1 条限额旁路枚举族; v3.40 增补 1 条修复残留同族枚举族; v3.41 增补 1 条通道转义对账族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
 - `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
 - `tests/`：555 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
@@ -605,7 +605,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.40。
+TOOLING 3.41。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -652,3 +652,4 @@ TOOLING 3.40。
 | v3.38 | 2026-09-09 | 模型能力利用五机制: 同族不一致/自证伪轮/公开面前置/实证机会/harness 回收 |
 | v3.39 | 2026-09-10 | haproxy 验收复盘四修复: 关键词词边界/seed 双写扩展/计数守卫集中/severity_override 契约 |
 | v3.40 | 2026-09-12 | Hadoop 验收复盘七修复: fidelity 判级分支/攻击者字节承载/修复残留枚举/位域证据/setuid 拓扑手册/默认关方向/实证回填候选 |
+| v3.41 | 2026-09-13 | hibernate-orm 审计复盘七修复: 复活 gap 字段契约分离/报告 import 路径对齐/claim_type 枚举告警/方言平台矩阵条款/通道转义对账清单/逃生舱等价先例/java 矩阵两格 |

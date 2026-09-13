@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.40"
+TOOLING_VERSION = "3.41"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
@@ -807,14 +807,17 @@ def export_script(project_root, mode="verify", batch_size=4):
                 "攻击面——无实测不得声称 empirically_confirmed。")
             # SWR-V3.3.2-020: 复活复核 gap 渲染 (REQ-V3.2-021「附复活者证据」的
             # 机械载体——七项目批次 6 波手工后处理 hack 的制度化)
-            gap = c.get("re_verify_gap")
-            if gap:
+            # SWR-V3.41-001: 字段契约分离——gap 文本读 resurrect_gap (字符串,
+            # 复活者 gap 原文), re_verify_gap 仅作 bool 条件 (两者混淆曾致
+            # bool 拼接 TypeError, hibernate-orm 复活重验轮实录)
+            gap_text = c.get("resurrect_gap") or ""
+            if c.get("re_verify_gap") or gap_text:
                 prompt += (
                     "\n\n## 复活复核 gap（主代理注入, REQ-V3.2-021）\n"
                     "这是 R3.5-N 复活攻击后的重验轮次。上一轮 verifier 判定 UNREACHABLE，"
                     "复活攻击者发现以下阻断缺口。请先在步骤 0 中逐条核实 gap 的 "
                     "file:line 与机制真伪；gap 成立则必须按其方向重做阻断分析并给出"
-                    "新裁决；gap 不成立则在新 evidence 中明确反驳理由：\n" + gap)
+                    "新裁决；gap 不成立则在新 evidence 中明确反驳理由：\n" + gap_text)
             # Mode W: workflow agent 无文件系统, 心跳契约是 Mode A' 机制;
             # 结构化输出由 schema 强制 (StructuredOutput 自动重试), 收集由主代理落盘
             prompt += (

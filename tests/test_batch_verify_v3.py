@@ -185,7 +185,7 @@ def test_gap_rendered_in_verify_payload():
     json.dump({"schema_version": "3.0", "candidates": [
         {"id": "CAND-001", "source_file": "a.c", "source_line": 1,
          "sink_type": "CWE-770", "status": "PENDING", "language": "c",
-         "re_verify_gap": "遗漏 multipart 预解析分支"},
+         "re_verify_gap": True, "resurrect_gap": "遗漏 multipart 预解析分支"},
         {"id": "CAND-002", "source_file": "b.c", "source_line": 1,
          "sink_type": "CWE-400", "status": "PENDING", "language": "c"}]},
         open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
