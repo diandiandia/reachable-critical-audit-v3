@@ -1234,3 +1234,20 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | REQ-V3.41-005 | checklist +1 CK-CHANNEL-ESCAPE-LEDGER (通道转义对账族) | 已完成 | assets/resources/checklist_library.json (50) |
 | REQ-V3.41-006 | precedent +1 PREC-ESCAPE-HATCH-EQUIV (逃生舱等价族) | 已完成 | assets/resources/precedent_library.json (19) |
 | REQ-V3.41-007 | java 矩阵回填两格 (MEMORY-SAFETY 越界/截断 + AUTHN fail-open) | 已完成 | assets/resources/language_issue_inventory.json (INV-java-013/014) |
+
+
+> 手工追加段 v3.42（2026-09-13）。案例支撑：Keycloak 审计复盘——refutation 资格判定「键存在即已复核」
+> 语义致签收 setdefault 后两次导出空转（手工清理 12 个空 dict 恢复）/ H1-H2 用 hypothesis 而非
+> hypothesis_id 致 r4-collect 零提取且诊断无字段名映射（主代理手工读文件定位）/ CAND-010 isAbsolute
+> 分支断言被 real-target 证伪（真实缺口在 CWD 回退）/ CVE-2026-1180 公开声称已修而树内无修复
+> （H-4-F1 High 时间差发现）/ HYP-009 filter drop 后 R4 从用户 oracle 维度重发现 High / CONFIRMED
+> 前缀触发 ③d 需补 independent_review。
+
+| SWR | 需求 | 状态 |
+|---|---|---|
+| SWR-V3.42-001 | refutation 资格判定健壮化：_has_refutation_result（votes/summary 判定）+ empty_refutation_keys advisory | 已实现 |
+| SWR-V3.42-002 | r4-collect 近似键字段名诊断（hypothesis/hypothesisId 映射提示） | 已实现 |
+| SWR-V3.42-003 | verifier 任务书分支级声称提示（待实证子断言标注） | 已实现 |
+| SWR-V3.42-004 | SKILL.md upstream 已修声称树内 commit 佐证提示 | 已实现 |
+| SWR-V3.42-005 | filter 任务书信息暴露/跨信任域 drop 维度核对 | 已实现 |
+| SWR-V3.42-006 | SKILL.md 实证回填前缀级联提示（CONFIRMED→③d / SOURCE_FACT 不触发） | 已实现 |
