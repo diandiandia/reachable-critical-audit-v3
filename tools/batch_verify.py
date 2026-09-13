@@ -1308,6 +1308,14 @@ def stage_r4_collect(project_root, findings_file):
         if isinstance(findings, dict):
             diag = (f" (顶层 keys={sorted(findings.keys())[:6]}, "
                     f"hypotheses 类型={type(findings.get('hypotheses')).__name__})")
+        # SWR-V3.42-002: 近似键字段名诊断——H1/H2 用 hypothesis 而非
+        # hypothesis_id 时零提取且诊断无映射提示 (主代理手工读文件定位实录)
+        first = items[0] if isinstance(items, list) and items and isinstance(items[0], dict) else {}
+        near_keys = [k for k in first.keys()
+                     if k in ("hypothesis", "hypothesisId", "hypID", "hyp")]
+        if near_keys and "hypothesis_id" not in first:
+            diag += (f" [字段名提示: 检测到近似键 {near_keys}, "
+                     f"预期 hypothesis_id (SWR-V3.42-002)]")
         print(json.dumps(
             {"status": "R4_COLLECT_WARNING",
              "warning": (f"输入含 {len(items)} 条目但 0 条提取到 hypothesis_id——"
@@ -3063,6 +3071,10 @@ file:line）；证据不足时 claim_type=other 并在 evidence 写明"结构性
 premises_verified 字段（每项 premise/file:line/status）——只写结论不写
 条目清单的前提断裂会在 collect 侧产生 warn，且 resurrect 派发无法机械
 评估承重前提的核验覆盖。
+（v3.42, SWR-V3.42-003, 提示级）证据中的**分支级声称**（isAbsolute/fallback/
+else-branch/条件分支行为）须标注为「待实证子断言」，不得作为结论性证据——
+门禁与复核均基于同一源码，只有部署布局实证能拦截此类误差（实录：绝对路径
+旁路断言被 real-target 证伪，真实缺口在 CWD 回退分支）。
 
 {step05}
 - 模板产物存在性（v3.11, SWR-V3.11-008）: sink 所在模板/生成器文件不随源码

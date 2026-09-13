@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.41"
+TOOLING_VERSION = "3.42"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
@@ -682,6 +682,16 @@ def _post_resurrect_advisory(ids):
                      "refutation_history 再导出强制复核波 (libarchive CAND-020/011 实录形态)")}
 
 
+def _has_refutation_result(c):
+    """SWR-V3.42-001: refutation 为 dict 且含 votes 或 summary 才视为已复核。
+
+    空 dict / 仅签收字段 (strengthened_verified_by 等) = 未复核——键存在
+    语义曾致静默空转 (主代理签收 setdefault 形态实录: 导出 qualified_total=0
+    且零诊断, 需手工清理空 dict 恢复出队)。"""
+    r = c.get("refutation")
+    return isinstance(r, dict) and ("votes" in r or "summary" in r)
+
+
 def export_script(project_root, mode="verify", batch_size=4):
     queue = bv.load_queue(project_root)
     candidates = queue["candidates"]
@@ -700,12 +710,18 @@ def export_script(project_root, mode="verify", batch_size=4):
         qualified = [c for c in candidates
                      if c.get("status") == "VERIFIED" and c.get("verdict") == "REACHABLE"
                      and c.get("evidence_grade") in ("edge_proven", "empirically_confirmed")
-                     and "refutation" not in c]
+                     and not _has_refutation_result(c)]
         # SWR-V3.15-004: 复活重验后带陈旧 refutation 的候选被资格排除 → 静默空转
         # (libarchive CAND-020/011 实录) —— 导出结果附 advisory 提示归档
         advisory = [c["id"] for c in candidates
                     if c.get("re_verify_gap") and c.get("verdict") == "REACHABLE"
                     and "refutation" in c]
+        # SWR-V3.42-001: 空 refutation dict (主代理签收 setdefault 形态) 视为
+        # 未复核——键存在语义曾致 qualified_total=0 静默空转且无诊断
+        empty_refutation_keys = [c["id"] for c in candidates
+                                 if c.get("verdict") == "REACHABLE"
+                                 and "refutation" in c
+                                 and not _has_refutation_result(c)]
         qualified_total = len(qualified)
         pool = qualified[:batch_size]
     else:
@@ -716,6 +732,8 @@ def export_script(project_root, mode="verify", batch_size=4):
         # SWR-V3.15-004: 空池同样附 advisory——静默空转正是 libarchive 实录形态
         if mode == "refutation" and advisory:
             r["post_resurrect_advisory"] = _post_resurrect_advisory(advisory)
+        if mode == "refutation" and empty_refutation_keys:
+            r["empty_refutation_keys"] = empty_refutation_keys
         return r
 
     payload = []

@@ -190,7 +190,7 @@ SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。
 
 **同族不一致防御枚举（v3.38, SWR-V3.38-001, 提示级）**：hints 装载后，对目标中同族多实例功能面（同路由表其余端点/同模块接口其余实现/同解析族其余路径）做防御维度对比矩阵（体量封顶/鉴权门/超时/输入校验）——任一兄弟有防御而本面没有即假设（修复残留形态，差分证据强于绝对声称）。
 
-**公开面关联检索（v3.38, SWR-V3.38-003, 提示级）**：网络可用时，假设生成前对目标做公开面关联（已知 CVE/GHSA 检索 + 上游 master 对账，落盘 `.audit_results/upstream_recon.json` 可无）——已修形态直接降级或改口径，未修形态附佐证；**上游后修 = 快照缺陷候选**（时间差假设，直接进假设空间）；网络不可用零阻塞跳过。
+**公开面关联检索（v3.38, SWR-V3.38-003, 提示级）**：网络可用时，假设生成前对目标做公开面关联（已知 CVE/GHSA 检索 + 上游 master 对账，落盘 `.audit_results/upstream_recon.json` 可无）——已修形态直接降级或改口径，未修形态附佐证；**上游后修 = 快照缺陷候选**（时间差假设，直接进假设空间）；网络不可用零阻塞跳过。upstream「已修复/已包含」结论必须附树内 commit 佐证（git log -S / merge-base --is-ancestor），无法佐证时按未修复处理——版本号声称与树内事实不符是时间差发现的直接来源（SWR-V3.42-004）。
 
 **differential 发现通道（v3.23, SWR-V3.23-004，提示级）**：surface_model=semantic/hybrid
 且 generation_layers 含 jit 的目标，R2 可（可选）对语义轴关键操作跑 `differential`
@@ -351,6 +351,7 @@ static-only 轨候选的证伪票价值=机制静态确证（非浪费），派�
 **实证回填规范（v3.4.3, SWR-V3.4.3-061；v3.10, SWR-V3.10-005 键名规范化）**：主代理回填
 `empirical` 结构化 dict 只允许发生在 verifier/证伪者证据文本含真实实测的场景——必须带
 `backfilled_by` 标记 + 实测数字依据（成本曲线/RSS/exit code/请求计数）；禁止无依据回填。
+回填前缀语义（SWR-V3.42-006）：CONFIRMED 前缀触发 ③d independent_review 要求（无 independent_review/r3_link 即违规）；机制级静态确证写 SOURCE_FACT 前缀（has_confirmed 判定包含 source_fact 关键词）。回填前预判 gate 链级联。
 **canonical 键集**：保留键 `outcome`/`evidence_numbers`/`report`（报告渲染既有消费键）+
   `status:"confirmed"`（v3.20, SWR-V3.20-006: 机械判级条件键——缺 status 的
   canonical 回填会被 grade_verdict 按保留键推断 empirically_confirmed 并附
@@ -605,7 +606,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.41。
+TOOLING 3.42。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -653,3 +654,4 @@ TOOLING 3.41。
 | v3.39 | 2026-09-10 | haproxy 验收复盘四修复: 关键词词边界/seed 双写扩展/计数守卫集中/severity_override 契约 |
 | v3.40 | 2026-09-12 | Hadoop 验收复盘七修复: fidelity 判级分支/攻击者字节承载/修复残留枚举/位域证据/setuid 拓扑手册/默认关方向/实证回填候选 |
 | v3.41 | 2026-09-13 | hibernate-orm 审计复盘七修复: 复活 gap 字段契约分离/报告 import 路径对齐/claim_type 枚举告警/方言平台矩阵条款/通道转义对账清单/逃生舱等价先例/java 矩阵两格 |
+| v3.42 | 2026-09-13 | Keycloak 审计复盘六修复: refutation 资格判定健壮化(空 dict=未复核)/r4-collect 近似键字段名诊断/verifier 分支级声称提示/upstream 已修声称树内核实/信息暴露跨信任域 drop 维度/实证回填前缀级联提示 |
