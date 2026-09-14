@@ -1,205 +1,155 @@
-"""v3.4.4 验收暴露缺陷修复批次测试 (SWR-V3.4.4-001..010)。"""
+"""test_v3_44 — K1 (linux kernel) 复盘修复测试 (SWR-V3.44-001..009)。
+
+D-1a 复活簿记掩蔽洞 / D-1b 复活波导出纪律 / D-2 未合并补丁检索 /
+D-3 签收级联+口径一致性 / D-4 fixminer 预期管理 / D-6 全覆盖子集清单+
+配置分支语义核查 / D-7 多批次归档 / D-8 版本链 3.44 / D-9 批次开题四步。
+(命名防撞: test_v344.py 为 v3.4.4 时代旧文件, 保留不动。)
+"""
 import json
 import os
 import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))), "tools"))
-
 import tempfile
 
-import checklist_binder
-import precedent_library
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+
 import batch_verify as bv
 import workflow_export as we
-import lessons_recorder as lr
+
+SKILL = open(os.path.join(ROOT, "SKILL.md")).read()
 
 
-def _mk_project(cands):
+def _mk_fixture():
+    """声称类未选中 / 非声称类未选中 / selected 有 journal 记录 三形态项目。"""
     tmp = tempfile.mkdtemp()
-    os.makedirs(os.path.join(tmp, ".audit_results"))
-    json.dump({"schema_version": "3.0", "candidates": cands},
-              open(os.path.join(tmp, ".audit_results", "verify_queue.json"), "w"))
-    return tmp
+    ar = os.path.join(tmp, ".audit_results")
+    os.makedirs(ar)
+    queue = {"candidates": [
+        {"id": "C-1", "status": "VERIFIED", "verdict": "UNREACHABLE",
+         "claim_type": "crash", "evidence": "sink 触发 crash"},
+        {"id": "C-2", "status": "VERIFIED", "verdict": "UNREACHABLE",
+         "claim_type": "other", "evidence": "结构性可达"},
+        {"id": "C-3", "status": "VERIFIED", "verdict": "UNREACHABLE",
+         "claim_type": "crash", "evidence": "sink 触发 crash"},
+    ]}
+    json.dump(queue, open(os.path.join(ar, "verify_queue.json"), "w"))
+    json.dump({"selected": ["C-3"]},
+              open(os.path.join(ar, "_resurrect_sample.json"), "w"))
+    journal = os.path.join(tmp, "journal")
+    os.makedirs(journal)
+    with open(os.path.join(journal, "journal.jsonl"), "w") as f:
+        f.write(json.dumps({"type": "result", "result":
+                            {"id": "C-3", "revived": False,
+                             "reason": "九维复核维持 UNREACHABLE"}}) + "\n")
+    return tmp, journal
 
 
-def _cand(cid, status="PENDING", verdict=None, grade="static_only"):
-    return {"id": cid, "status": status, "verdict": verdict,
-            "evidence_grade": grade, "claim_type": None,
-            "source_file": "x.js", "source_line": 1}
+# ---- SWR-V3.44-001: 声称类跳过自动簿记 (掩蔽洞修复) ----
 
-
-# ---- SWR-V3.4.4-001: 词边界匹配 ----
-def test_signal_word_boundary():
-    sig = {"text": ["ws"]}
-    cand = {"lang": "javascript"}
-    # "jws" 子串不得命中 (jsrsasign CAND-001 实测误配)
-    assert checklist_binder._signals_ok(sig, cand,
-                                        "KJUR.jws.JWS.verify token") is False
-    # 独立 "ws" 词命中
-    assert checklist_binder._signals_ok(sig, cand,
-                                        "ws server frame handling") is True
-    # "websocket" 内嵌 "ws" 不命中 (有独立 websocket 关键词兜底)
-    assert checklist_binder._signals_ok(sig, cand, "websocket codec") is False
-    # CJK 关键词保持子串语义
-    assert checklist_binder._signals_ok({"text": ["无上限"]}, cand,
-                                        "该路径无上限") is True
-    # requires_lang 同样词边界: "c" 不得误配 "scala"
-    assert checklist_binder._signals_ok({"requires_lang": ["c"]},
-                                        {"lang": "scala"}, "") is False
-    assert checklist_binder._signals_ok({"requires_lang": ["c"]},
-                                        {"lang": "c"}, "") is True
-
-
-def test_precedent_signal_word_boundary():
-    p = {"applicability_signals": {"text": ["ws"]}}
-    cand = {"lang": "javascript"}
-    assert precedent_library._signals_ok(p, cand,
-                                         "jws verify flow") is False
-    assert precedent_library._signals_ok(p, cand, "ws frame") is True
-
-
-# ---- SWR-V3.4.4-002: r4-collect 保留主代理裁决字段 ----
-def test_r4_collect_preserves_adjudication():
-    tmp = _mk_project([])
-    f1 = {"hypothesis_id": "H7", "verdict": "confirmed",
-          "findings": [{"title": "F5 pkey typo", "claim_type": None,
-                        "claim_nulled_by": "main-agent-deployment-layout-correction",
-                        "empirical_result": "CONFIRMED(src 笔误真实)",
-                        "evidence": "原始证据 [主代理裁决 2026-08-21: 部署布局纠正]"}]}
-    bv.stage_r4_collect(tmp, _wfile(tmp, f1))
-    q = bv.load_queue(tmp)
-    got = q["r4_findings"][0]["findings"][0]
-    assert got["claim_type"] is None
-    assert got["claim_nulled_by"] == "main-agent-deployment-layout-correction"
-
-    # 重新 collect (agent 新产出带 claim_type=crash 与无标记 empirical)
-    f2 = {"hypothesis_id": "H7", "verdict": "confirmed",
-          "findings": [{"title": "F5 pkey typo", "claim_type": "crash",
-                        "empirical_result": "plain text no marker",
-                        "evidence": "新证据 (无裁决段)"}]}
-    bv.stage_r4_collect(tmp, _wfile(tmp, f2))
-    q = bv.load_queue(tmp)
-    got = q["r4_findings"][0]["findings"][0]
-    # 旧裁决 (claim 置空) 保留, agent 显式 crash 不覆盖
-    assert got["claim_type"] is None
-    assert got["claim_nulled_by"] == "main-agent-deployment-layout-correction"
-    # CONFIRMED 前缀的旧 empirical 保留 (新值无标记)
-    assert got["empirical_result"].startswith("CONFIRMED")
-    # 主代理裁决段追加进 evidence (agent 新证据与裁决尾拼接)
-    assert got["evidence"].startswith("新证据 (无裁决段)")
-    assert "主代理裁决" in got["evidence"]
-    assert "adjudication_preserved_from" in got
-
-
-def _wfile(tmp, findings):
-    p = os.path.join(tmp, ".audit_results", "_f.json")
-    json.dump(findings, open(p, "w"), ensure_ascii=False)
-    return p
-
-
-# ---- SWR-V3.4.4-003: refutation 截断告警 qualified_total ----
-def test_refutation_qualified_total():
-    cands = [_cand(f"R-{i}", status="VERIFIED", verdict="REACHABLE",
-                   grade="edge_proven") for i in range(1, 7)]
-    tmp = _mk_project(cands)
-    r = we.export_script(tmp, mode="refutation", batch_size=4)
-    assert r["qualified_total"] == 6
-    assert r["count"] == 4
-    assert r["truncated"] is True
-    assert r["exported"] == 4
-    assert "batch-size 6" in r["advice"]
-    # 全量导出时无截断标记
-    r2 = we.export_script(tmp, mode="refutation", batch_size=6)
-    assert r2["qualified_total"] == 6
-    assert "truncated" not in r2
-
-
-# ---- SWR-V3.4.4-004: collect 报错指引 r35-collect ----
-def test_collect_error_hints_r35():
-    tmp = _mk_project([])
-    td = os.path.join(tmp, "_wf")
-    os.makedirs(td)
-    with open(os.path.join(td, "journal.jsonl"), "w") as f:
-        f.write(json.dumps({"type": "result",
-                            "result": {"id": "CAND-1", "refuted": False,
-                                       "reason": "x"}}) + "\n")
-    import contextlib
-    import io
-    buf = io.StringIO()
-    with contextlib.redirect_stderr(buf):
-        try:
-            bv.stage_collect(tmp, 0, {})
-        except SystemExit:
-            pass
-        # stage_collect 是 CLI 分支的底层函数; 直接测 helper
-        hint = bv._refutation_journal_hint(td)
-    assert "r35-collect" in hint
-
-
-# ---- SWR-V3.4.4-005/006: R4 任务书部署布局 + 前缀契约 ----
-def test_r4_template_deployment_and_prefix():
-    tpl = open(os.path.join(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__))), "assets", "task_templates", "biz_hypothesis.md")).read()
-    assert "部署布局" in tpl and "SWR-V3.4.4-005" in tpl
-    # v3.10 (SWR-V3.10-008): 措辞生态中立化——npm 系短语 (vm 全量加载 src)
-    # 替换为发布面三查 + 编译开关面通用形态
-    assert "发布面三查" in tpl and "编译开关面" in tpl
-    assert "CONFIRMED:" in tpl and "REFUTED:" in tpl and "SOURCE_FACT:" in tpl
-    assert "SWR-V3.4.4-006" in tpl
-
-
-# ---- SWR-V3.4.4-007: verifier 任务书计数类规范 ----
-def test_verifier_prompt_counting_clause():
-    cand = _cand("X-1")
-    cand["source_file"] = "a.js"
-    cand["sink_type"] = "CWE-338"
-    cand["lang"] = "javascript"
-    ctx = bv._build_context(cand, "/tmp")
-    p = bv._build_prompt(cand, ctx, "/tmp")
-    assert "SWR-V3.4.4-007" in p
-    assert "几何随机变量" in p
-
-
-# ---- SWR-V3.4.4-008: tooling 版本守卫 ----
-def test_tooling_version_guard():
-    tmp = _mk_project([])
-    # 构造版本不符的导出脚本
-    with open(os.path.join(tmp, ".audit_results", "workflow_verify.js"), "w") as f:
-        f.write('const x = 1\nreturn { mode: "verify", tooling_version: "9.9.9" }\n')
-    w = bv._tooling_version_warning(tmp)
-    assert w is not None and "9.9.9" in w and we.TOOLING_VERSION in w
-    # 无脚本/无版本字段 → 无告警
-    tmp2 = _mk_project([])
-    assert bv._tooling_version_warning(tmp2) is None
-    # 导出端注入版本号
-    tmp3 = _mk_project([_cand("A-1")])
-    we.export_script(tmp3, mode="verify", batch_size=1)
-    js = open(os.path.join(tmp3, ".audit_results", "workflow_verify.js")).read()
-    assert f'tooling_version: "{we.TOOLING_VERSION}"' in js
-    assert bv._tooling_version_warning(tmp3) is None
-
-
-# ---- SWR-V3.4.4-009: lessons 项目名绝对化 ----
-def test_lessons_project_name_absolutized():
-    data = lr.collect(os.path.join(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__))), "..", "jsrsasign_tmp_dummy"))
-    # 即使目录不存在, collect 也应产出绝对化后的 basename (非空/非 "..")
-    assert data["project"] and data["project"] not in (".", "..", "")
-
-
-# ---- SWR-V3.4.4-010: workflow_export CLI resurrect ----
-def test_cli_resurrect_empty_pool():
-    tmp = _mk_project([])
-    import contextlib
-    import io
-    buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        rc = we.main([__file__, tmp, "--mode", "resurrect"])
-    out = json.loads(buf.getvalue())
+def test_r35n_claim_like_not_masked(capsys):
+    tmp, journal = _mk_fixture()
+    rc = bv.stage_r35n_collect(tmp, journal, expect_ids=["C-3"])
     assert rc == 0
-    assert out["status"] == "WORKFLOW_NOTHING_TO_DO"
-    assert out["mode"] == "resurrect"
+    out = capsys.readouterr().out
+    assert "claim_like_unreviewed" in out
+    lines = [l for l in out.split("\n") if l.strip()]
+    assert json.loads(lines[-1])["claim_like_unreviewed"] == ["C-1"]
+    q = json.load(open(os.path.join(tmp, ".audit_results", "verify_queue.json")))
+    by_id = {c["id"]: c for c in q["candidates"]}
+    # 声称类未选中: 不簿记 → gate ③c 持续违规 (掩蔽洞关闭)
+    assert "resurrection_review" not in by_id["C-1"]
+    # 非声称类: 簿记照常
+    assert by_id["C-2"]["resurrection_review"]["revived"] is False
+    assert "复活抽样未选中" in by_id["C-2"]["resurrection_review"]["outcome"]
+    # selected 有 journal: 真实落盘不受影响
+    assert by_id["C-3"]["resurrection_review"]["revived"] is False
+    assert "九维复核" in by_id["C-3"]["resurrection_review"]["outcome"]
+
+
+# ---- SWR-V3.44-002: 复活波导出纪律条款 ----
+
+def test_skillmd_resurrect_export_discipline():
+    assert "export_script_resurrect" in SKILL
+    assert "selected ⊇ 声称类集" in SKILL
+    assert "SWR-V3.44-002" in SKILL
+
+
+def _prompt():
+    cand = {"id": "X", "source_file": "net/core/skbuff.c", "source_line": 1,
+            "sink_type": "CWE-787", "summary": "越界写"}
+    return bv._build_prompt(cand, bv._build_context(cand), "/tmp")
+
+
+# ---- SWR-V3.44-003: 未合并补丁检索义务 ----
+
+def test_verify_prompt_unmerged_patch_search():
+    p = _prompt()
+    assert "lore.kernel.org / openwall" in p
+    assert "检索受限" in p
+    assert "SWR-V3.44-003" in p
+
+
+# ---- SWR-V3.44-004: 签收级联预推演 + 口径一致性 ----
+
+def test_skillmd_signing_cascade_and_consistency():
+    assert "签收前两级预推演" in SKILL
+    assert "claim 重评级联" in SKILL
+    assert "口径一致性" in SKILL
+    assert "profile 派生缺省不适用" in SKILL
+
+
+# ---- SWR-V3.44-005: fixminer 预期管理 ----
+
+def test_skillmd_fixminer_expectation():
+    assert "修复族密集目标" in SKILL
+    assert "变体残留" in SKILL
+    assert "SWR-V3.44-005" in SKILL
+
+
+# ---- SWR-V3.44-006: 全覆盖子集清单 + 配置分支语义核查 ----
+
+def test_verify_prompt_subset_and_config_branch():
+    p = _prompt()
+    assert "子集清单" in p
+    assert "配置/构建前提分支的语义核查" in p
+    assert "SWR-V3.44-006" in p
+
+
+# ---- SWR-V3.44-007: 多批次归档约定 ----
+
+def test_skillmd_batch_archive_convention():
+    assert "同项目多批次续审" in SKILL
+    assert "batch_<N>" in SKILL
+    assert "SWR-V3.44-007" in SKILL
+
+
+# ---- SWR-V3.44-008: 版本链 ----
+
+def test_tooling_version_344():
+    assert we.TOOLING_VERSION == "3.44"
+
+
+def test_claim_like_same_source_as_gate():
+    """is_claim_like 同源 (SWR-V3.15-002 单真相) —— 簿记分流与 gate ③c 一致。"""
+    import evidence_ledger as el
+    # 声称类判定与 gate 同源: crash claim → True, other → False
+    assert el.is_claim_like({"claim_type": "crash"}) is True
+    assert el.is_claim_like({"claim_type": "other"}) is False
+    assert el.is_claim_like({"claim_type": None, "evidence": "oom 风险"}) is True
+
+
+# ---- SWR-V3.44-009: 同项目多批次开题四步条款 ----
+
+def test_skillmd_batch_opening_four_steps():
+    assert "同项目多批次开题四步" in SKILL
+    assert "--since 1825" in SKILL
+    assert "五年窗口 recon" in SKILL
+    assert "批次计划文档" in SKILL
+    assert "SWR-V3.44-009" in SKILL
+
+
+if __name__ == "__main__":
+    import pytest
+    pytest.main([__file__, "-x", "-q"])
