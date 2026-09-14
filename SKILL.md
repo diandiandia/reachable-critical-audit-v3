@@ -43,6 +43,9 @@ Mode B（独立 CLI 子进程）为 v2.1 机制，v3 不再需要。
 ## 🛠️ R0：目录守卫 + 自检（任一步失败即终止）
 
 1. **目录守卫**：`mkdir -p <project>/.audit_results/`；所有产物必须以 `.audit_results/` 为前缀。
+   **同项目多批次续审（v3.44, SWR-V3.44-007, 提示级）**：批前把上层产物归档
+   `.audit_results/batch_<N>/`（报告/教训/队列/波次注册表），新批从干净顶层
+   重跑 R0-R6——工具只读写顶层，归档子目录天然隔离，不改任何机制。
 1.5 **scope 快照**（v3.2.2, REQ-V3.2.2-018）：
    ```bash
    python3 <skill_dir>/src/surface_mapper.py scope snapshot <project>
@@ -176,6 +179,9 @@ inventory 的各族 Top 条目逐一做缺陷形态展开——"该缺陷形态�
 [--since N]`——按族分类的修复 commit 是该代码库缺陷形态的 ground truth，
 每族生成"同款缺陷在树内其他位置可能残留"的假设（修复变体复核先例，
 SKILL_LESSONS_C §1.4.5）；fixminer 只挖不判，假设由主代理生成。同形态修复族间隔 >1 年时（如 page cache 写越权族 2022→2026 变体潮），--since 默认窗口挖不到 ground truth——族信号驱动需长窗口或手工指定修复 commit（SWR-V3.43-004）。
+修复族密集目标（快照已含全部近期修复）的批次预期：低 REACHABLE 率是预期
+而非审计失败，价值 = 修复变体残留 + 未覆盖兄弟路径；批次开题时按 fixminer
+信号预设预期（v3.44, SWR-V3.44-005）。
 ——返回该语言已种格的族条目（典型漏洞形态/关键 sink/判定要点），作为
 假设空间提示（提示级，无强制义务；未种格 pending 零注入零提示）。
 矩阵回填纪律（SWR-V3.18-003）：每版本验收审计收官时把验收项目覆盖的
@@ -258,6 +264,9 @@ collect 时 `--from-journal <dir> --expect CAND-001,CAND-002,...` 以注册表�
 **补强签收层级指引（v3.14 SWR-V3.14-008 文案补全）**：证伪者/复活者补强**R3.5-N 复活攻击抽样（REQ-V3.2-021）**：声称类 UNREACHABLE 全量 + 其他类
 20% 抽样（最少 2, 上限 8）做 N=1 复活复核；抽样决策落盘
 `.audit_results/_resurrect_sample.json`；revived → 回 R3 重验。
+复活波优先经 `export_script_resurrect` 导出（内置声称类全量规则, 与 gate ③c
+同源）; 主代理手工构造 payload 时, 派发前机械对照 `is_claim_like` 清单核验
+selected ⊇ 声称类集（v3.44, SWR-V3.44-002, 提示级）。
 **sibling 回显（v3.32, SWR-V3.32-003）**：r35-collect 输出 strengthened_notes
 + sibling_advisory——补强中含机制静态确证的 sibling 向量时主代理裁决立候选
 （SWR-V3.19-003 实质机制优先；不自动立候选）。
@@ -267,6 +276,12 @@ collect 时 `--from-journal <dir> --expect CAND-001,CAND-002,...` 以注册表�
 `attribution_correction_verified_by`（与 `strengthened[]` 平级，**非 entry
 内部**）；demote 裁决须落 `adjudication_verification`（回源码核实证伪者承重
 前提主张）。均为 warn 级不阻断。
+**签收前两级预推演（v3.44, SWR-V3.44-004, 提示级）**：① claim 重评级联——
+签收的补强含 claim 重评时, 先推演新 claim 是否 ∈ 实证类（crash/panic/oom/
+unbounded/xss/protocol_dos/rce/leak）→ gate ③/R5 触发 → 终态预判
+（NEEDS_REVIEW 降级或实证计划）, 签收与终态决策一体完成; ② 口径一致性——
+containment/attacker_tier/severity 结构化值与证据文本对照（内核/软中断
+上下文等 profile 派生缺省不适用场景, 按证据文本取值）。
 
 **Mode A' 降级**（无 Workflow 工具时）：`--stage next` 出队 3~4 候选 → Agent 工具逐候选验证（任务书含心跳契约：先写 `.pending` 占位，完成后写 `_verify_<id>.json`，目标存在且非本人 pending → 追加 `.agent-<id>` 后缀）→ `--stage collect` → 循环。
 
@@ -609,7 +624,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.43。
+TOOLING 3.44。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -659,3 +674,4 @@ TOOLING 3.43。
 | v3.41 | 2026-09-13 | hibernate-orm 审计复盘七修复: 复活 gap 字段契约分离/报告 import 路径对齐/claim_type 枚举告警/方言平台矩阵条款/通道转义对账清单/逃生舱等价先例/java 矩阵两格 |
 | v3.42 | 2026-09-13 | Keycloak 审计复盘六修复: refutation 资格判定健壮化(空 dict=未复核)/r4-collect 近似键字段名诊断/verifier 分支级声称提示/upstream 已修声称树内核实/信息暴露跨信任域 drop 维度/实证回填前缀级联提示 |
 | v3.43 | 2026-09-13 | 机制冻结实验+知识补种: c 矩阵 TRUST-BOUNDARY 页缓存所有权族/java 矩阵七族归并种格/H7 谓词逻辑错误形态/fixminer 跨多年窗口/H3 kernel 锚点+skill-optimizer 第四问与重设计触发判据/条款消费度量 |
+| v3.44 | 2026-09-14 | K1 (linux kernel) 验收复盘七修复一裁除: 复活簿记掩蔽洞(声称类跳过自动簿记)/复活波导出纪律/未合并补丁检索义务/签收级联预推演+口径一致性/fixminer 预期管理/全覆盖子集清单+配置分支语义核查/多批次归档约定; 双栏呈现裁除(已存在机制); 冻结守卫收窄为判定逻辑守卫 |

@@ -684,6 +684,7 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
     # UNREACHABLE 落盘 resurrection_review, 此前未选中靠主代理手工补写
     # (3 例实录); selected 集内无 journal 记录=异常, 交主代理不自动写
     auto_bookkept = []
+    claim_like_unreviewed = []
     sample_file = os.path.join(project_root, ".audit_results", "_resurrect_sample.json")
     selected = set()
     if os.path.exists(sample_file):
@@ -691,13 +692,31 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
             selected = set(json.load(open(sample_file)).get("selected", []))
         except (ValueError, OSError):
             pass
+    # SWR-V3.44-001: is_claim_like 与 gate ③c 同源 (SWR-V3.15-002 单真相)——
+    # 簿记循环按声称类分流, 判定不复制 (路径插入同 stage_r35_collect 形态)
+    _parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+        sys.path.insert(0, os.path.join(_parent, "src"))
+    import evidence_ledger as _el44
     for c in queue["candidates"]:
         if c.get("verdict") == "UNREACHABLE" and not c.get("resurrection_review"):
             if c["id"] in selected:
                 continue
+            # 声称类跳过自动簿记——写「未选中」簿记会使 gate ③c 的 presence
+            # 检查被满足而无一真实复活复核 (掩蔽洞: 初版样本漏声称类全量靠 gate
+            # 前置自检才暴露; 先 collect 再 gate 则掩蔽使违规不可见)。
+            # 声称类无真实复核 = 持续违规, 不得机械掩蔽 (禁止自动改写: 不代做复活)。
+            if _el44.is_claim_like(c):
+                claim_like_unreviewed.append(c["id"])
+                continue
             c["resurrection_review"] = {"revived": False,
                                         "outcome": "复活抽样未选中 (规则见 _resurrect_sample.json)"}
             auto_bookkept.append(c["id"])
+    if claim_like_unreviewed:
+        print(f"Warning (SWR-V3.44-001): 声称类候选 {claim_like_unreviewed} 无真实"
+              f"复活复核且未簿记——gate ③c 将持续违规, 须经复活波复核或主代理裁决",
+              file=sys.stderr)
     save_queue(project_root, queue)
     tw = _tooling_version_warning(project_root)
     if tw:
@@ -705,7 +724,8 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
     print(json.dumps({"status": "R35N_COLLECTED",
                       "updated": updated, "skipped_existing": skipped,
                       "candidates": [d["id"] for d in decisions],
-                      "auto_bookkept": auto_bookkept},
+                      "auto_bookkept": auto_bookkept,
+                      "claim_like_unreviewed": claim_like_unreviewed},
                      ensure_ascii=False))
     return 0
 
@@ -3112,6 +3132,12 @@ else-branch/条件分支行为）须标注为「待实证子断言」，不得�
   执行主体等直接决定攻击面的依赖）查询 OSV/官方 advisory 的已知 CVE 状态,
   产出 dependency_cve_notes 写入 evidence 尾段（注记级: 不改变 verdict,
   供报告附录 B 与申报语境引用）。无依赖清单或非关键依赖 → 跳过
+- **未合并补丁检索（v3.44, SWR-V3.44-003, 提示级）**: 写「无首发归属/无公开
+  修复」类断言前，必须执行未合并补丁检索（lore.kernel.org / openwall 关键词:
+  sink 关键标识 + 子系统名）——公开但未合并的补丁同样是「非首发发现」判定
+  输入（git log 只能命中已合并历史, 未合并补丁不在其中, 曾致 verifier 断言
+  无归属而证伪者检索到 4 天前的未合并补丁）。网络不可用或检索范围受限时
+  如实注明「检索受限」，不得写「无公开修复」。
 
 ### 步骤 2: 多态穿透
 遇接口/抽象类/虚函数/特征(trait)，搜索所有具体实现类继续回溯
@@ -3154,6 +3180,13 @@ claim_type ∈ {{rce, leak, crash, oom, protocol_dos, unbounded}} 时:
   枚举结果逐条写入 guard_pass_subsets 字段（v3.20, SWR-V3.20-004）：
   该缺口（守卫通过子集未枚举）已在实战被复活波命中，是 verifier 阻断
   论证的最高频翻转维度之一。
+- 声明「全覆盖/无未枚举子集」前必须列出**子集清单**——自身 residual note
+  承认「其余实现未逐一核查」与「全覆盖」声明自相矛盾是复活波命中形态
+  （v3.44, SWR-V3.44-006）
+- 配置/构建前提分支的语义核查（v3.44, SWR-V3.44-006）: 标注「该分支不可达」
+  前，先核查该分支下防御前提是否成立（CONFIG_*=n/flag=0 分支的守护性质——
+  「默认构建不会走到」≠「该分支下前提成立」）；分支语义未核查的「不可达」
+  标注不构成阻断论证
 - 运行时版本条件（v3.11, SWR-V3.11-011）: 版本 API 级判断（版本宏/运行时能力
   检测）与构建变体差异（调试/发布配置）影响攻击面维度——同一代码路径在不同
   平台版本有不同攻击面（低版本无限制/高版本有门）; 阻断论证必须按**受影响
