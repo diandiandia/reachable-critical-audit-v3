@@ -343,6 +343,6 @@ def test_tooling_version_and_skillmd():
         "workflow_export", os.path.join(ROOT, "src", "workflow_export.py"))
     we = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(we)
-    assert we.TOOLING_VERSION == "3.43"
+    assert we.TOOLING_VERSION == "3.44"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "| v3.17 |" in skill and "50 条检查清单" in skill

@@ -1270,3 +1270,28 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 | SWR-V3.43-006 | skill-optimizer 义务入库第四问 | 已实现 |
 | SWR-V3.43-007 | skill-optimizer 架构重设计触发判据（五信号） | 已实现 |
 | SWR-V3.43-008 | SKILL.md R6 条款消费度量（提示级无门禁） | 已实现 |
+
+
+> 手工追加段 v3.44（2026-09-14）。案例支撑：Linux kernel K1 验收审计复盘
+> （/root/linux/.audit_results/lessons.md 对 skill 的教训第 1-7 条 + 本会话
+> Q2 同项目多批次归档分析）：复活簿记掩蔽洞（初版样本漏声称类全量 7 条,
+> 簿记「未选中」可使 gate ③c presence 检查被满足而无一真实复核）/
+> 复活波手工构造 payload 绕过导出器内置声称类规则 / verifier「无公开修复」
+> 断言被证伪者查获 4 天前未合并补丁 / strengthened claim 重评触发 gate ③
+> 级联两次签收后才走 / containment profile 派生与证据文本矛盾三例 /
+> 修复族密集目标低 REACHABLE 率误判发现力 / 复活 4/9 命中三形态
+> （全覆盖声明与 residual note 自相矛盾、配置分支预设不可达、守卫窗口解耦）。
+
+| SWR | 需求 | 状态 |
+|---|---|---|
+| SWR-V3.44-001 | r35n-collect 声称类跳过自动簿记（掩蔽洞修复）+ claim_like_unreviewed warn | 已实现 |
+| SWR-V3.44-002 | SKILL.md 复活波导出纪律（selected ⊇ 声称类集机械核验） | 已实现 |
+| SWR-V3.44-003 | verifier step 1.5 未合并补丁检索义务（lore/openwall + 检索受限注明） | 已实现 |
+| SWR-V3.44-004 | SKILL.md 签收前两级预推演（claim 级联 + 口径一致性） | 已实现 |
+| SWR-V3.44-005 | SKILL.md fixminer 修复族密集目标预期管理 | 已实现 |
+| SWR-V3.44-006 | verifier step 4 全覆盖子集清单 + 配置分支语义核查 | 已实现 |
+| SWR-V3.44-007 | SKILL.md R0 同项目多批次归档约定（batch_<N>） | 已实现 |
+| SWR-V3.44-008 | 版本链 3.44 + 冻结守卫收窄为判定逻辑守卫（hunk 函数名锚定） | 已实现 |
+
+裁除记录：双栏呈现（linux lessons 第 6 条）——已存在机制（NEEDS_REVIEW
+佐证注记列）+ 义务四问④（可推导写作形态不入库）。

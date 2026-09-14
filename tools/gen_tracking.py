@@ -62,6 +62,8 @@ VERSIONS = [
     ("V3.41",  "docs/design/REQ_V3_41.md",  "docs/design/SWR_V3_41.md"),
     ("V3.42",  "docs/design/REQ_V3_42.md",  "docs/design/SWR_V3_42.md"),
     ("V3.43",  "docs/design/REQ_V3_43.md",  "docs/design/SWR_V3_43.md"),
+    # v3.44 登记 (K1 验收复盘, 同 v3.12 语义: 手工段维护, 禁止再生成)
+    ("V3.44",  "docs/design/REQ_V3_44.md",  "docs/design/SWR_V3_44.md"),
     # v3.17 登记 (同 v3.16 语义: 手工段维护, 禁止再生成)
     ("V3.17",  "docs/design/REQ_V3_17.md",  "docs/design/SWR_V3_17.md"),
     # v3.18 登记 (同 v3.17 语义)

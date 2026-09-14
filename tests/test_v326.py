@@ -108,4 +108,4 @@ def test_tooling_version_guard():
     sys.path.insert(0, WORKSPACE)
     sys.path.insert(0, os.path.join(WORKSPACE, "src"))
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.43"
+    assert we.TOOLING_VERSION == "3.44"

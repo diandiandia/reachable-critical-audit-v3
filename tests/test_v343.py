@@ -130,14 +130,24 @@ def test_skillmd_consumption_metric_hint():
 
 # ---------- 机制冻结守卫 ----------
 
-def test_mechanism_freeze_scope():
-    """本周期判定逻辑零改动: workflow_export/batch_verify 只含版本号机械步。
+# v3.44 (SWR-V3.44-008): v3.43 周期文件级冻结已随 K1 验收闭合 (判据达成)。
+# 守卫从「本周期判定逻辑零改动 (文件级)」收窄为「判定逻辑守卫」——
+# 允许域 = P3 提示级 prompt 文本 / P1 簿记守卫; 禁止域 = 判定函数与 schema
+# (diff hunk 头命中受保护函数名即违规, 用 hunk 的 @@ 函数锚定判定)。
 
-    用 git diff 校验 src/tools 的改动行中除 TOOLING_VERSION 外无其他逻辑行。
+PROTECTED = ("def assert_ledger", "def severity_for", "def grade_verdict",
+             "VERDICT_SCHEMA", "REFUTATION_SCHEMA", "RESURRECT_SCHEMA",
+             "def _aggregate_counts", "def is_claim_like", "def resurrect_pool")
+
+def test_mechanism_freeze_scope():
+    """判定逻辑守卫: 受保护判定函数/schema 的 diff hunk 零命中。
+
+    锚点 = v3.43 末提交 (dd967a1); 允许改动 src/tools 文件中的提示级
+    prompt 文本与簿记守卫, 禁止触碰判定函数本体。
     """
     import subprocess
     r = subprocess.run(
-        ["git", "-C", ROOT, "diff", "HEAD", "--", "src/workflow_export.py",
+        ["git", "-C", ROOT, "diff", "dd967a1", "--", "src/workflow_export.py",
          "tools/batch_verify.py", "src/evidence_ledger.py",
          "src/surface_mapper.py", "src/signature_lib.py",
          "src/language_issue_matrix.py", "src/harness_runner.py",
@@ -146,20 +156,14 @@ def test_mechanism_freeze_scope():
         capture_output=True, text=True)
     diff = r.stdout
     if not diff:
-        return  # 已提交或无改动 (提交后此测试退化为零断言)
-    # 未提交阶段: 只有 workflow_export.py 的 TOOLING_VERSION 行允许
-    changed_files = [l for l in diff.split("\n") if l.startswith("diff --git")]
-    changed = set()
-    for l in changed_files:
-        f = l.split(" b/")[1]
-        changed.add(f)
-    assert changed <= {"src/workflow_export.py"}, \
-        f"机制冻结违规: 改动文件 {changed}"
-    # workflow_export 的改动行只能是 TOOLING_VERSION
+        return  # 无改动
+    hits = []
     for line in diff.split("\n"):
-        if line.startswith("+") and not line.startswith("+++"):
-            assert "TOOLING_VERSION" in line or line == "+", \
-                f"机制冻结违规: {line!r}"
+        if line.startswith("@@"):
+            for p in PROTECTED:
+                if p in line:
+                    hits.append((line.strip(), p))
+    assert not hits, f"判定逻辑守卫违规 (受保护函数被改动): {hits}"
 
 
 if __name__ == "__main__":
