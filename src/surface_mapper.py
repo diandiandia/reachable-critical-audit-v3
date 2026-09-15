@@ -29,6 +29,7 @@ import generation_registry as gr
 DOMAINS = ["network", "data", "process", "storage"]
 # v3.2 (SWR-V3.2-011): 第五域 boundary——跨语言 FFI 边界是第一等攻击面 (P-B)
 BOUNDARY_DOMAIN = "boundary"
+VALID_SURF_TYPES = set(DOMAINS) | {BOUNDARY_DOMAIN}
 BOUNDARY_KINDS = ("extern", "ctypes", "cffi", "cgo", "n-api", "jni", "panama",
                "embed", "ffi-other", "proto", "http-service", "subprocess", "grpc", "cli",
                "capi")  # SWR-V3.4.3-031: C-API 扩展模块胶水 (Python C-API/Lua C-API/N-API);
@@ -647,6 +648,14 @@ def validate_surfaces(data, project_root=None):
         if tag in seen:
             errors.append(f"{tag}: duplicate id")
         seen.add(tag)
+        # SWR-V3.45-001: type 枚举 warn (域前缀形态如 network_endpoint 为
+        # 历史兼容值, 按前缀计入 merge 计数不告警; 既不枚举也非域前缀才告警)
+        _t = s.get("type")
+        if _t and _t not in VALID_SURF_TYPES \
+                and not any(_t.startswith(_d + "_") for _d in DOMAINS):
+            errors.append(f"{tag}: type={_t!r} 非枚举值 (建议归一到 network|data|"
+                          f"process|storage|boundary; merge 计数按前缀匹配, "
+                          f"SWR-V3.45-001)")
         for f in ("type", "name", "entry_points", "taint_channels",
                   "trust_boundary", "confidence"):
             if f not in s:
@@ -930,9 +939,12 @@ def merge_surfaces(files, project_root=None):
     # (reviewed_by + empty_domain_reason, validate 契约已有) 才豁免提示。
     per_domain = {d: 0 for d in DOMAINS}
     for s in merged["surfaces"]:
-        t = s.get("type")
-        if t in per_domain:
-            per_domain[t] += 1
+        t = s.get("type") or ""
+        # SWR-V3.45-001: 前缀匹配——全名形态 (network_endpoint 等) 按域前缀计数,
+        # 全等匹配曾致全名 type 漏计 (warn 恒触发, K2-9 实录)
+        for d in DOMAINS:
+            if t == d or t.startswith(d + "_"):
+                per_domain[d] += 1
     signed_empty = set()
     for f in files:
         try:

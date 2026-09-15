@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.44"
+TOOLING_VERSION = "3.45"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
@@ -513,7 +513,11 @@ def resurrect_prompt(c):
         f"  9. 构建配置前提是否已枚举（指针压缩/sandbox/特性开关/GC 模式等\n"
         f"     build-config 维度）——默认构建可能把内存破坏路径变成 OOM/拒绝\n"
         f"     路径, verifier 未按配置矩阵陈述影响的阻断论证不完整\n"
-        f"     （SWR-V3.19-006; noPC 变体实证实录）\n\n"
+        f"     （SWR-V3.19-006; noPC 变体实证实录）\n"
+        f"  10. 实证通道已开时（qemu 真实内核引导形态），优先自建 harness 补测\n"
+        f"      verifier 未实测维度（SWR-V3.45-011; 复活质量显著提升实录）\n"
+        f"  11. gap 引用行号 ±5 容差，以定义形态为准；重验者逐字核对\n"
+        f"      （SWR-V3.45-011）\n\n"
         f"原判定证据: {_truncate_evidence(c.get('evidence', ''))}\n"
         f"调用链: {c.get('call_chain', [])[:8]}\n\n"
         f"输出 revived=true/false + reason（附 file:line）；revived=true 时 "

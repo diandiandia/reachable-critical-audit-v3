@@ -416,6 +416,18 @@ def _derive_containment(v, c, project_root):
     except Exception:
         prof = {}
     if prof.get("containment_default") not in (None, "none"):
+        # SWR-V3.45-008: 派生值 × 内核上下文一致性 warn (K1-4 实录: 派生
+        # process_sandbox 与 softirq 上下文证据矛盾静默入库); verifier 显式
+        # 给值时已提前 return, 不会进入此分支
+        _derived_val = prof.get("containment_default")
+        if _derived_val == "process_sandbox":
+            _ev = (v.get("evidence") or "").lower()
+            if any(_k in _ev for _k in ("softirq", "kthread", "workqueue",
+                                        "软中断", "中断上下文", "kernel thread",
+                                        "io_thread")):
+                print(f"Warning (SWR-V3.45-008): {c.get('id')} containment="
+                      f"process_sandbox 为 profile 派生值, 证据含内核上下文信号"
+                      f"——一致性待主代理复核 (K1-4 实录)", file=sys.stderr)
         return prof["containment_default"]
     return "none"
 
@@ -510,6 +522,9 @@ def stage_collect(project_root, batch_id, verdicts):
             entry["claim_type"] = v["claim_type"]
         elif v.get("claim_type") and v["verdict"] != "REACHABLE":
             entry["claim_type"] = None
+            # SWR-V3.45-007: verifier 声称值追溯归档 (K2-8 实录: 16 条 UNREACHABLE
+            # claim 全丢失, R3.5-N 分类只能回证据文本关键词人工划分)
+            entry["claim_self_reported"] = v["claim_type"]
             entry["claim_nulled_by"] = "collect-claim-null-v3.2.2"
         if v.get("edge_evidence"):
             entry["edge_evidence"] = v["edge_evidence"]
@@ -672,7 +687,10 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
         if c is None:
             print(f"Warning: {d['id']} 不在队列, 跳过", file=sys.stderr)
             continue
-        if c.get("resurrection_review"):
+        # SWR-V3.45-003: auto_bookkept 占位可被 journal 真决策覆写 (K5-11 实录:
+        # 占位记录挡住 revived=true 真决策, 幂等跳过盲区); 无标记旧记录保持跳过
+        if c.get("resurrection_review") \
+                and not c["resurrection_review"].get("auto_bookkept"):
             skipped += 1
             continue
         c["resurrection_review"] = {
@@ -711,6 +729,7 @@ def stage_r35n_collect(project_root, transcript_dir, expect_ids=None):
                 claim_like_unreviewed.append(c["id"])
                 continue
             c["resurrection_review"] = {"revived": False,
+                                        "auto_bookkept": True,
                                         "outcome": "复活抽样未选中 (规则见 _resurrect_sample.json)"}
             auto_bookkept.append(c["id"])
     if claim_like_unreviewed:
@@ -1157,12 +1176,16 @@ def _warn_r4_enums(items):
                                            "实证描述词不是声称枚举——无 crash/"
                                            "oom/rce/leak 类声称时归一化 other"}})
             title = (fi.get("title") or "").lower()
-            if "[refuted]" in title or "informational" in title:
+            # SWR-V3.45-005: 已合规形态 (severity=Low + [refuted] 标题) 不再告警
+            # (K4-13 实录: 23 条合规条目仍逐条告警, 判据与 hint 的合规选项不一致)
+            _compliant = (sev == "low" and "[refuted]" in title)
+            if ("[refuted]" in title or "informational" in title) and not _compliant:
                 warnings.append({
                     "kind": "refuted_finding_in_list", "hypothesis_id": hid,
                     "finding": f"{hid}-F{n}",
                     "hint": "自证伪条目不应以确认问题形态进清单——证伪断言移出 "
-                            "findings 数组, 或 severity=Low + title 标 [refuted]"})
+                            "findings 数组, 或 severity=Low + title 标 [refuted] "
+                            "(已合规形态不再告警, SWR-V3.45-005)"})
     for w in warnings:
         print(json.dumps({"status": "R4_ENUM_WARNING", "warning": w},
                          ensure_ascii=False), file=sys.stderr)
@@ -1293,6 +1316,20 @@ def stage_r4_collect(project_root, findings_file):
                           "note": "未写回队列 (原子性: 部分合并禁止)——修复输入文件后重跑 r4-collect"},
                          ensure_ascii=False), file=sys.stderr)
         return 1
+    # SWR-V3.45-002: 混合形态缺 id 告警 (K3-7 实录: H3/H5 用 hypothesis 键
+    # 被静默丢)。0 条提取到 id 的整组缺失形态已有 v3.42 近似键诊断
+    # (R4_COLLECT_WARNING + 字段名提示, 不自动改写); 本告警只补「部分条目
+    # 缺 id」的混合形态——不归一化, 不自动改写 (诊断指引由主代理修复输入)
+    no_hid_idx = [i for i, f in enumerate(items)
+                  if not (f.get("hypothesis_id") or f.get("hypothesis"))]
+    if no_hid_idx and len(no_hid_idx) < len(items):
+        print(json.dumps({"status": "R4_ENUM_WARNING", "warning": {
+            "kind": "missing_hypothesis_id",
+            "hint": (f"输入含 {len(no_hid_idx)} 条无 hypothesis_id/hypothesis 的"
+                     f"假说条目 (索引 {no_hid_idx}), 将被跳过——核实任务书输出"
+                     f"契约 (SWR-V3.45-002); 整组缺失形态走 R4_COLLECT_WARNING "
+                     f"近似键诊断")}}, ensure_ascii=False),
+            file=sys.stderr)
     existing = {f.get("hypothesis_id"): f for f in queue.get("r4_findings", [])}
     collected = 0
     for f in items:
@@ -2589,7 +2626,11 @@ def _render_appendix_b_process(project_root, queue, report_json):
     hyp_path = os.path.join(project_root, ".audit_results", "hypotheses.json")
     if os.path.exists(hyp_path):
         try:
-            out.append(f"- 假设: {len(json.load(open(hyp_path)).get('hypotheses', []))}")
+            # SWR-V3.45-004: 双形态容错——裸数组 (K5 形态) 与 dict.hypotheses
+            # (K4 形态) 均取 len; 裸数组下 .get() 抛 AttributeError 致渲染整体失败
+            _hd = json.load(open(hyp_path))
+            _n_hyp = len(_hd) if isinstance(_hd, list) else len(_hd.get("hypotheses", []))
+            out.append(f"- 假设: {_n_hyp}")
         except (OSError, ValueError):
             out.append("- 假设: （hypotheses.json 损坏）")
     else:
@@ -3096,6 +3137,14 @@ else-branch/条件分支行为）须标注为「待实证子断言」，不得�
 门禁与复核均基于同一源码，只有部署布局实证能拦截此类误差（实录：绝对路径
 旁路断言被 real-target 证伪，真实缺口在 CWD 回退分支）。
 
+（v3.45, SWR-V3.45-010）同一字段多处读取的**快照读/活体读**区分：守卫与消费
+读取序不一致时，枚举 [快照值, 活体值) 窗口内的语义后果（K2-4 实录：原子快照
+读与守卫活体读被当同一次读取，未枚举收缩窗口致漏报）。
+（v3.45, SWR-V3.45-010）UNREACHABLE 阻断论证必须枚举**生命周期/提交期 GC**
+维度：写在元素自身分配内 ≠ 写入时刻元素仍在世（K2-5 实录：提交期回收先于
+消费，空间包含论证被推翻）。
+（v3.45, SWR-V3.45-010, 可选维度）交付二进制核查：配置提取工具 / nm /
+objdump 实证配置与修复进入交付物——比构建配置源码面更强的证据层（K3-10 实录）。
 {step05}
 - 模板产物存在性（v3.11, SWR-V3.11-008）: sink 所在模板/生成器文件不随源码
   构建但随产物生成进入部署——存在性按「模板 → 实例化产物」链判定（产物生成
@@ -3196,6 +3245,7 @@ claim_type ∈ {{rce, leak, crash, oom, protocol_dos, unbounded}} 时:
   等）——单格实测不得外推到语义相异方言族；同库对照证据（各方言自身实现，
   如 appendLiteral 系转义分支）是逐格核实的廉价锚点；外推必须显式标注
   覆盖格数（渲染类候选单方言实测外推致复活翻转实录）
+- UNREACHABLE 时 claim_type 按声称分析填写（collect 归档 claim_self_reported 供追溯与复活抽样分类，SWR-V3.45-007）
 
 ### 步骤 5: 路径覆盖
 - 列出所有到达该 Sink 点的调用路径

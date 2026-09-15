@@ -155,6 +155,10 @@ High/Medium/Critical 且 empirical_result 前缀 CONFIRMED 的 finding 须有
 ## 🎯 R2：假设生成（LLM 主路径）→ LLM 筛选
 
 **假设生成主路径**：LLM 直接基于 surface 图生成假设（主代理或限时 agent）。
+**派发条款（v3.45, SWR-V3.45-013, 提示级）**：派发假设生成 agent 时任务书必须含
+分片落盘条款（每 ~15 条写增量文件 `_hypo_<GROUP>_partN.json` 或等价形态, 完成后
+合并）与「最终回复只给统计, 严禁粘贴完整 JSON」——96KB 回复触发 Prompt is too
+long API 断连、落盘文件截断的实录（一死一活对照: 分片落盘者存活）。
 **复审计场景（W6 §22.2）**：R2 上下文自动注入旧审计终稿摘要（同目标复审计时）。
 **shipped-config 盘点（v3.2.1, REQ-V3.2.1-030/031）**：含 config 目录的组件跑
 `export_script_shipped_config` → 提交值 vs 代码零值对照 → 落盘
@@ -174,6 +178,11 @@ python3 <skill_dir>/src/language_issue_matrix.py hints <surface.lang> [--kind <t
 inventory 的各族 Top 条目逐一做缺陷形态展开——"该缺陷形态在本目标中可能
 藏在哪些 sink 形态"（对抗枚举 = 以缺陷形态为输入维度的假设生成；库型/
 引擎目标该步为强制建议——R4 族深挖 7/9 与 R2 面图 0/9 的对照实录）。
+**新机制×旧机制组合窗口（v3.45, SWR-V3.45-015, 提示级）**：目标近期引入新机制
+（新特性/新子系统/新屏障）时, 枚举新机制与树内历史机制（查找模式/状态位/旧回调
+契约）的组合窗口——新机制的 selftest 只覆盖其自身面, 与历史机制的交叉组合是
+零覆盖区（K5 实录: 新引入的拒绝屏障 × 六年前引入的查找模式状态位清位 = 该批次
+唯一 REACHABLE 候选, selftest 对该组合零命中）。
 **修复驱动假设条款（v3.32, SWR-V3.32-002, 提示级）**：目标为 git 仓库且有
 近期安全修复史时，执行 `python3 <skill_dir>/tools/fixminer.py <project>
 [--since N]`——按族分类的修复 commit 是该代码库缺陷形态的 ground truth，
@@ -236,10 +245,13 @@ taskFile 薄封装（任务书落盘 _tasks/, payload 只带 id+taskFile 引用�
 审计闭合（R6）时执行 `--stage coverage-ledger --write` 回填账本
 （前置与时序见 R6 条款，v3.6 起强制）。
 **同项目多批次开题四步（v3.44, SWR-V3.44-009, 提示级）**：同一大目标分批次
-审计时，每批开题按四步走——① 五年窗口 recon：`fixminer.py <project> --since 1825`
-+ 逐子系统五年 CVE 检索并入 `upstream_recon.json`；② R1 面测绘本批
-子系统；③ 落盘批次计划文档（子系统 × CVE 密度 × 假设空间 × 规模预期）；
-④ R2-R6 执行。五年窗口的修复族是变体残留假设的主要来源——老修复族的
+审计时，每批开题按四步走——**① 前置: 工作区卫生检查（v3.45, SWR-V3.45-014）**:
+`git status --short` 必须为空; 前批次 harness 插桩遗留先还原（跨批次共享同一工作区
+的代价——插桩行会污染 pristine-binary 对照与实证, K4 批次实录）。② 五年
+窗口 recon：`fixminer.py <project> --since 1825`
++ 逐子系统五年 CVE 检索并入 `upstream_recon.json`；③ R1 面测绘本批
+子系统；④ 落盘批次计划文档（子系统 × CVE 密度 × 假设空间 × 规模预期）；
+⑤ R2-R6 执行。五年窗口的修复族是变体残留假设的主要来源——老修复族的
 同款缺口可在多年后的快照仍存在（残留形态是批次增量价值的预期所在）。
 
 **入队**：筛选 kept 的假设按 focus sink 簇化（同 sink 合并为一条簇级候选），写入 `verify_queue.json`：
@@ -549,7 +561,10 @@ protocol_dos→高，xss→中）→ medium 默认。leak→严重已入表（RE
 **containment 调整（v3.17, SWR-V3.17-003）**：机械映射后按候选 `containment`
 降档——`language` 仅 critical→high；`process_sandbox` 逐档（critical→high→
 medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
-`severity_override` 仍绝对优先。调整时来源串写 `containment:xxx`，问题清单
+`severity_override` 仍绝对优先。**主代理 severity 裁决与机械映射不一致时,
+用 severity_override + severity_override_reason 落盘**（v3.45, SWR-V3.45-016, 提示级）——
+通道存在但主代理未用的实录（裁决 Low 而机械渲染按 claim_type(other) 显示中级,
+报告以第三节裁决为准但清单仍误导）。调整时来源串写 `containment:xxx`，问题清单
 行尾渲染 `[语言防护]/[沙箱收敛]/[硬件隔离]` 标记。
 
 ## 📏 数据模型速查
@@ -630,7 +645,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.44。
+TOOLING 3.45。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -681,3 +696,4 @@ TOOLING 3.44。
 | v3.42 | 2026-09-13 | Keycloak 审计复盘六修复: refutation 资格判定健壮化(空 dict=未复核)/r4-collect 近似键字段名诊断/verifier 分支级声称提示/upstream 已修声称树内核实/信息暴露跨信任域 drop 维度/实证回填前缀级联提示 |
 | v3.43 | 2026-09-13 | 机制冻结实验+知识补种: c 矩阵 TRUST-BOUNDARY 页缓存所有权族/java 矩阵七族归并种格/H7 谓词逻辑错误形态/fixminer 跨多年窗口/H3 kernel 锚点+skill-optimizer 第四问与重设计触发判据/条款消费度量 |
 | v3.44 | 2026-09-14 | K1 (linux kernel) 验收复盘八修复一裁除: 复活簿记掩蔽洞(声称类跳过自动簿记)/复活波导出纪律/未合并补丁检索义务/签收级联预推演+口径一致性/fixminer 预期管理/全覆盖子集清单+配置分支语义核查/多批次归档约定/同项目多批次开题四步(五年窗口 recon); 双栏呈现裁除(已存在机制); 冻结守卫收窄为判定逻辑守卫 |
+| v3.45 | 2026-09-15 | K2-K5 (linux kernel 批次 2-5) 复盘十六修复一裁除: 域计数前缀匹配+type 枚举告警/r4-collect 混合缺 id 告警/r35n 簿记占位可覆写/hypotheses 渲染双形态/refuted 合规不告警/交付物引导面探针/claim_self_reported 归档/containment 一致性告警/biz 任务书三条款/verifier 三维度/复活任务书两增补/筛选进度摘要/R2 派发分片落盘/开题卫生检查/新机制×旧机制组合窗口/severity override 提示; taskFile 相对路径裁除(已修) |

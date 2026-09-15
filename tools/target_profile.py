@@ -16,9 +16,11 @@ R0 阶段判定审计目标的"形态画像"——运行时/引擎形态与超�
 用法:
     python3 tools/target_profile.py <project_root> [--write]
 """
+import glob
 import json
 import os
 import re
+import shutil
 import sys
 
 SKIP_DIRS = {".git", "node_modules", ".venv", "target", "build",
@@ -197,12 +199,35 @@ def recommend(root):
                         "evidence": "README/构建清单命中沙箱关键词",
                         "recommends": "containment_default=process_sandbox"})
 
+    # SWR-V3.45-006: 交付物引导面探针——static-only 判定前核对树内是否自带
+    # 可引导产物与宿主仿真/交叉编译工具 (K2-7 实录: 三候选+复活者各自独立证伪
+    # 同一 static-only 前提; 判定依据从未核对交付树内已构建镜像)。提示级建议,
+    # 主代理签收后消费者装载, 零信号零行为变化。
+    boot_hits = []
+    for _g in ("arch/*/boot/Image", "arch/*/boot/bzImage", "arch/*/boot/zImage",
+               "arch/x86/boot/vmlinux.bin"):
+        boot_hits.extend(glob.glob(os.path.join(root, _g)))
+    for _f in ("vmlinux", "vmlinuz", "bzImage"):
+        if os.path.isfile(os.path.join(root, _f)):
+            boot_hits.append(os.path.join(root, _f))
+    qemu = shutil.which("qemu-system-aarch64") or shutil.which("qemu-system-x86_64") \
+        or shutil.which("qemu-system-riscv64") or shutil.which("qemu-system-arm")
+    xgcc = shutil.which("aarch64-linux-gnu-gcc") or shutil.which("x86_64-linux-gnu-gcc") \
+        or shutil.which("riscv64-linux-gnu-gcc") or shutil.which("arm-linux-gnueabihf-gcc")
+    empirical_modes = []
+    if boot_hits and (qemu or xgcc):
+        empirical_modes = ["real-target"]
+        signals.append({"id": "S7", "signal": "bootable_artifact",
+                        "evidence": f"树内可引导产物 {len(boot_hits)} 处 + 宿主 "
+                                    f"qemu/交叉编译器信号 (qemu={bool(qemu)}, xgcc={bool(xgcc)})",
+                        "recommends": "empirical_modes=[real-target] (提示级, "
+                                      "主代理签收后生效, SWR-V3.45-006)"})
     recommended = {
         "surface_model": surface_model,
         "generation_layers": layers,
         "scale_class": scale_class,
         "containment_default": containment,
-        "empirical_modes": [],
+        "empirical_modes": empirical_modes,
     }
     conf = "high" if signals else "low"
     return {"recommended": recommended, "signals": signals, "confidence": conf}

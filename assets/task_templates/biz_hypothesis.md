@@ -75,6 +75,9 @@ R3 候选的 verdict，不是本假说 verdict——验收批次四文件全逃�
 成立 finding 的假说 → verdict=confirmed，证伪的断言不写进 findings 数组**；若必须
 保留证伪记录，该条 severity=Low 且 title 前缀标 `[refuted]`（进附录而非问题清单）。
 severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法值。
+**散文意图映射（v3.45, SWR-V3.45-009）**: 部分证伪但无 confirmed finding →
+reviewed_clean（证伪断言留在 findings 须 severity=Low + title 标 [refuted]）；
+有 confirmed finding → confirmed（K4-11 散文 verdict 实录）。
 
 ## v3.1 字段义务（缺失将被拒收）
 1. **tracked_surfaces**: 每个 finding 必须列出审查触及的 surface id 数组——
@@ -123,6 +126,10 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
    disposition}；全表文字 ≤1200 字（v3.4.3 SWR-V3.4.3-051: 800 字预算
    实测两项目 agent 卡 783/796 极限压缩致五维描述砍损）。非安全相关项进
    一句话带过（不占表格行）
+2. **面桥接（v3.45, SWR-V3.45-009）**: finding 落在本清单外的新面时，
+tracked_surfaces 不填该面，在 coverage_note 声明新面 file:line 证据——由主代理
+回填 input_surface.json 后重跑 r4-collect（R4_TRACKED_MISSING 是原子性阻断，
+不桥接不合并；K4-14 实录）。
 
 ## 产出（强制 JSON 写入 {out}，最终回复同 JSON）
 {"hypothesis_id":"{hypothesis_id}","verdict":"confirmed|reviewed_clean|not_applicable（仅此三值）",
@@ -141,6 +148,10 @@ severity 只用 Critical/High/Medium/Low 四枚举，informational 不是合法�
 leak|other|null——缺枚举值置 null，禁止自造 default_reachability 类形态）、
 evidence 注明"核实结论：<防御机制 file:line>"。该类条目由主代理标
 positive_confirmation 后不进问题清单（v3.7 正向确认自动排除）。
+**非法值反例（v3.45, SWR-V3.45-009）**: static_verified / self_refuted /
+sibling_differential / empirical_mechanism 等描述词不是声称枚举——机制确认写
+empirical_result 的 SOURCE_FACT 前缀，claim_type 归一 other；证伪条目
+claim_type=null。非法值会在 collect 告警并要求归一（K3-8/K4-12 两批再现实录）。
 
 ## 义务入库三问（v3.3.2, REQ-V3.3.2-022）
 本任务书每项义务（字段/段/表）都经三问校准：①触发条件（何时执行）
