@@ -109,7 +109,10 @@ def test_r35n_auto_bookkeep_unselected(tmp_path):
     assert "CAND-001" in out.get("auto_bookkept", [])
     q = bv.load_queue(proj)
     rr = q["candidates"][0].get("resurrection_review")
-    assert rr == {"revived": False, "outcome": "复活抽样未选中 (规则见 _resurrect_sample.json)"}
+    # v3.45 (SWR-V3.45-003): 簿记记录带 auto_bookkept 标记——journal 真决策
+    # 可覆写占位; 无标记旧记录保持幂等跳过
+    assert rr == {"revived": False, "auto_bookkept": True,
+                  "outcome": "复活抽样未选中 (规则见 _resurrect_sample.json)"}
 
 
 def test_r35n_auto_bookkeep_skips_selected(tmp_path):
@@ -203,4 +206,4 @@ def test_skillmd_v322_clauses():
 
 
 def test_tooling_version_322():
-    assert we.TOOLING_VERSION == "3.44"
+    assert we.TOOLING_VERSION == "3.45"

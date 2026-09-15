@@ -1296,3 +1296,38 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 
 裁除记录：双栏呈现（linux lessons 第 6 条）——已存在机制（NEEDS_REVIEW
 佐证注记列）+ 义务四问④（可推导写作形态不入库）。
+
+> 手工追加段 v3.45（2026-09-15）。案例支撑：Linux kernel K2-K5 批次复盘
+> （/root/linux/.audit_results/batch_K{2,3,4,5}/lessons.md「对 skill 的教训」
+> 节共 28 条 + 阶段 0 四问评估）：域计数全名 type 漏计（K2-9）/ r4-collect
+> 混合缺 id 静默丢（K3-7）/ r35n 簿记占位挡 revived 真决策（K5-11）/
+> hypotheses 裸数组渲染崩溃（K5-8）/ refuted 合规仍告警（K4-13）/
+> static-only 授权被三候选+复活者独立证伪（K2-7）/ claim 分类丢失（K2-8）/
+> containment 派生矛盾静默入库（K1-4, v3.44 漏网）/ biz 任务书枚举两批
+> 再现（K3-8/K4-11/K4-14）/ verifier 三维度（K2-4/K2-5/K3-10）/
+> 复活任务书两增补（K2-10/K3-9）/ 筛选 7/7 停滞 vs 加指令零停滞（K4-10）/
+> 96KB 回复断连一死一活（K5-7）/ 跨批次插桩遗留（K4-15）/ 新机制×旧机制
+> 组合窗口（K5-3）/ severity override 未用（K5-6）。
+> 裁除：taskFile 相对路径（取证已修, workflow_export.py:603 绝对路径）。
+
+| SWR | 需求 | 状态 |
+|---|---|---|
+| SWR-V3.45-001 | surface_mapper 域计数前缀匹配 + type 枚举 warn（域前缀形态兼容不告警） | 已实现 |
+| SWR-V3.45-002 | r4-collect 混合形态缺 hypothesis_id 告警（整组缺失走既有 v3.42 诊断, 不自动改写） | 已实现 |
+| SWR-V3.45-003 | r35n-collect auto_bookkept 占位标记 + journal 真决策覆写（无标记旧记录幂等不变） | 已实现 |
+| SWR-V3.45-004 | 报告渲染 hypotheses.json 双形态容错（裸数组/dict） | 已实现 |
+| SWR-V3.45-005 | refuted-in-list 告警只在非合规形态触发 | 已实现 |
+| SWR-V3.45-006 | target_profile 交付物引导面探针 S7（树内镜像+宿主 qemu/交叉编译器 → real-target 建议） | 已实现 |
+| SWR-V3.45-007 | collect 对非 REACHABLE 声称值归档 claim_self_reported | 已实现 |
+| SWR-V3.45-008 | containment 派生值与内核上下文证据一致性 warn | 已实现 |
+| SWR-V3.45-009 | biz_hypothesis 三条款（claim_type 反例/verdict 意图映射/面桥接） | 已实现 |
+| SWR-V3.45-010 | verifier 步骤 0 三维度（快照活体读/GC 生命周期/交付二进制） | 已实现 |
+| SWR-V3.45-011 | resurrect_prompt 两增补（实证通道信号/gap 行号容差） | 已实现 |
+| SWR-V3.45-012 | hypothesis_filter 进度摘要条款 | 已实现 |
+| SWR-V3.45-013 | SKILL.md R2 派发条款（分片落盘+回复只给统计） | 已实现 |
+| SWR-V3.45-014 | SKILL.md 开题四步前置工作区卫生检查 | 已实现 |
+| SWR-V3.45-015 | SKILL.md 对抗枚举新机制×旧机制组合窗口 | 已实现 |
+| SWR-V3.45-016 | SKILL.md severity override 通道提示 | 已实现 |
+
+裁除记录：taskFile 相对路径（K2-11）——取证已修（workflow_export.py:603
+_tasks_dir = os.path.join(project_root, ...) 绝对路径, K5 波次 payload 实测）。
