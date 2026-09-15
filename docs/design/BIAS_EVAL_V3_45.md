@@ -44,8 +44,16 @@
 - 边界: D-16 若发现 severity_override 已在 SKILL.md R4 节有提示, 则降级为
   文案位置调整 (取证时已核实 R4 节无此提示, 仅 render 优先级条款)。
 
-## 实现期重跑记录 (实现后填写)
+## 实现期重跑记录 (实现后填写, 2026-09-15)
 
-- [ ] test_deproject_assets.py 0 命中
-- [ ] 注入文本无项目名/机器路径
-- [ ] 旧队列复跑 warn 零新增
+- [x] test_deproject_assets.py 0 命中 (635 全绿含 deproject 10 用例)
+- [x] 注入文本无项目名/机器路径 — **实现期抓出 1 处违规并修正**: D-14/D-15/D-10
+  初版注入含 kernel 专属标识符 (act_skbmod.c/failfs/LOOKUP_MOUNTPOINT/READ_ONCE/
+  extract-ikconfig), 已去项目化为机制描述 (拒绝屏障×历史查找模式清位/原子快照读/
+  配置提取工具); 检测关键词族 (softirq/kthread 等内核上下文信号) 属域词汇
+  非项目名, 保留为 D-8 判定逻辑本体
+- [x] 旧队列复跑 warn 零新增 (haproxy/caddy/hadoop/keycloak/hibernate-orm 5/5
+  ASSERT_PASSED, warn 与变更前一致 = skipped_gates 三条)
+- [x] 兼容性: v3.42 近似键诊断机制与 D-2 冲突已裁 (别名归一撤销, 只补混合形态
+  告警); v322 簿记形状测试同步新标记 (意向语义变更); legacy 全名 type
+  (network_endpoint) 纳入容忍集
