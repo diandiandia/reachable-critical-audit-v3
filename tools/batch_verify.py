@@ -432,6 +432,40 @@ def _derive_containment(v, c, project_root):
     return "none"
 
 
+# SWR-V3.46-001: 句级否定清洗——免责句式 ("不是 remote"/"非远程" 类, K6 批次级
+# 4 候选误标 + K7 第 4 次触发 8 候选手工修正实录) 不参与 remote 关键词计数。
+# 否定标记必须紧邻 (前 6 字符窗, 后缀匹配) 关键词之前才豁免——否定在关键词
+# 之后不豁免 ("远程服务器没有校验" 仍计 remote)。
+_REMOTE_KEYWORDS = ("远程", "网络", "remote", "http", "url", "下载",
+                    "服务器", "字节流", "网络内容")
+_NEGATION_MARKERS = ("不是", "并非", "不构成", "不涉及", "不经", "未经",
+                     "不属于", "不再是", "没有", "无", "未", "非",
+                     "not", "no", "never", "without", "non-", "n't",
+                     "fails to", "unlikely", "neither", "none")
+_NEG_WINDOW = 6
+
+
+def _remote_keyword_scan(ev):
+    """SWR-V3.46-001: 逐句扫描远程关键词——返回 (正向命中数, 是否出现免责句式)。
+    免责句式 = 否定标记紧邻关键词之前 (后缀匹配, 6 字符窗) 的句式。"""
+    pos_hits = 0
+    any_disclaimer = False
+    for s in re.split(r"[。！？!?;；\n]+", ev):
+        for k in _REMOTE_KEYWORDS:
+            start = 0
+            while True:
+                i = s.find(k, start)
+                if i < 0:
+                    break
+                prefix = s[max(0, i - _NEG_WINDOW):i].rstrip()
+                if any(prefix.endswith(m) for m in _NEGATION_MARKERS):
+                    any_disclaimer = True
+                else:
+                    pos_hits += 1
+                start = i + len(k)
+    return pos_hits, any_disclaimer
+
+
 def _derive_attacker_tier(v, c):
     """SWR-V3.11-002: attacker_tier 缺省推导——verifier 未显式给出时按
     reachability_type/trust_boundary/evidence 信号推导; 无法判定返回 None
@@ -454,9 +488,14 @@ def _derive_attacker_tier(v, c):
                 or "intent extra" in ev or "intent 参数" in ev
                 or "exported=" in ev or "android:exported" in ev):
             return "same_device_cross_app"
-        if any(k in ev for k in ("远程", "网络", "remote", "http", "url", "下载",
-                                 "服务器", "字节流", "网络内容")):
+        pos_hits, any_disclaimer = _remote_keyword_scan(ev)
+        if pos_hits > 0:
             return "remote"
+        if any_disclaimer:
+            # SWR-V3.46-001: 全免责句形态推导 None 交主代理裁决 (不机械兜底——
+            # 免责句可能是"澄清后仍远程", 自动剔除会产生反向误标)
+            print(f"Warning (SWR-V3.46-001): {c.get('id')} attacker_tier 证据"
+                  f"仅含免责句式(否定语义), 推导 None 交主代理裁决", file=sys.stderr)
         return None
     return None
 
@@ -894,7 +933,10 @@ def _tooling_version_warning(project_root):
             continue
         if local and m.group(2) != local:
             warnings.append(f"{name} 由 v{m.group(2)} 导出, 当前代码 v{local} "
-                            f"——collect 结果与导出端版本不一致, 请核对")
+                            f"——collect 结果与导出端版本不一致, 请核对。"
+                            f"仅提示不阻断——重跑 --stage workflow-script 重新"
+                            f"导出后可安全运行 (旧 JS 判据可能落后当前版本, "
+                            f"SWR-V3.46-006)")
     return "; ".join(warnings) if warnings else None
 
 
@@ -967,17 +1009,59 @@ def _adapt_r4_finding(f):
     return out, flags
 
 
+def _norm_hypothesis_keys(item):
+    """SWR-V3.46-002: 假说对象键名归一——K9 三形态漂移 (a) "id" 替代
+    hypothesis_id (H1-H4/H6/H7 六文件) (b) "hypothesis" 描述键干扰 (H4)
+    (c) "hypothesis_tracked_surfaces" 前缀键不被识别 (H6) (K8 #7 变体扩散)。
+    键改名不丢内容, flags 可追责——非契约本身, 契约以任务书 canonical 示例为准。"""
+    flags = []
+    if "hypothesis_id" not in item and isinstance(item.get("id"), str):
+        item["hypothesis_id"] = item.pop("id")
+        flags.append("id->hypothesis_id")
+    h = item.get("hypothesis")
+    if isinstance(h, str):
+        hid = item.get("hypothesis_id")
+        if hid is None and re.fullmatch(r"H-?[1-7]", h.strip()):
+            # 裸 id 形态不归一——既有 v3.42 近似键诊断契约拥有该形态
+            # (R4_COLLECT_WARNING, 不自动改写); 此处只处理描述文本干扰
+            pass
+        elif hid is None:
+            m = re.search(r"\bH[1-7]\b", h.strip())
+            if m:
+                item["hypothesis_id"] = m.group(0)
+                item["hypothesis_note"] = item.pop("hypothesis")
+                flags.append("hypothesis-desc->hypothesis_id+note")
+            else:
+                item["hypothesis_note"] = item.pop("hypothesis")
+                flags.append("hypothesis-desc->hypothesis_note")
+        elif _norm_hypothesis_id(h) == _norm_hypothesis_id(hid):
+            item.pop("hypothesis")
+            flags.append("hypothesis-dup-dropped")
+        else:
+            flags.append("hypothesis-mismatch-kept")
+    if "tracked_surfaces" not in item \
+       and isinstance(item.get("hypothesis_tracked_surfaces"), list):
+        item["tracked_surfaces"] = item.pop("hypothesis_tracked_surfaces")
+        flags.append("hypothesis_tracked_surfaces->tracked_surfaces")
+    return flags
+
+
 def _normalize_r4_payload(raw):
     """SWR-V3.4.3-001: 文件级漂移归一——hypotheses 对象形态 + findings 顶层数组。
-    返回 (items, norm_flags)。canonical 输入零变化 (回归锚)。"""
+    返回 (items, norm_flags)。canonical 输入零变化 (回归锚)。
+    SWR-V3.46-002: 假说对象键名归一 (K9 三形态) 并入三形态入口。"""
     flags = []
     if isinstance(raw, dict) and isinstance(raw.get("hypotheses"), list):
+        for it in raw["hypotheses"]:
+            if isinstance(it, dict):
+                flags.extend(_norm_hypothesis_keys(it))
         return raw["hypotheses"], flags
     if isinstance(raw, dict) and isinstance(raw.get("hypotheses"), dict):
         hyps = raw["hypotheses"]
         items = []
         for k, hbody in hyps.items():
             item = {"hypothesis_id": k, **hbody}
+            flags.extend(_norm_hypothesis_keys(item))
             items.append(item)
         flags.append("hypotheses-dict")
         # findings 顶层数组形态: {id, hypothesis, ...} 按 hypothesis 归位
@@ -1009,6 +1093,11 @@ def _normalize_r4_payload(raw):
             flags.extend(f"finding:{x}" for x in ff)
             items.append(nf)
         return items, flags
+    # 单对象形态 (无 hypotheses 包裹): 假说对象 (含 "hypothesis" 描述键干扰
+    # 形态) 走键名归一; 单 finding 对象不适用 (有 title 特征)
+    if isinstance(raw, dict) and ("findings" in raw or "verdict" in raw) \
+            and "title" not in raw:
+        flags.extend(_norm_hypothesis_keys(raw))
     return [raw], flags
 
 
@@ -1267,6 +1356,10 @@ def stage_r4_collect(project_root, findings_file):
     # 静默入库或静默兜底误导 (tomcat 审计: PARTIAL/REFUTED_HIGH 散文 verdict 与
     # informational 非法 severity 直接进清单)。warn 不阻断 (C2: 拒收需新重试机制)。
     _warn_r4_enums(items)
+    # SWR-V3.46-002: 键名归一命中告警——漂移形态计数 (K8/K9 实录), warn 不阻断
+    if norm_flags:
+        print(f"Warning (SWR-V3.46-002): r4 schema 归一 {len(norm_flags)} 处: "
+              f"{', '.join(dict.fromkeys(norm_flags))}", file=sys.stderr)
     # v3.9 (SWR-V3.9-002): tracked_surfaces 硬失败守卫——静默缺簿记导致门禁⑦
     # 假失败、反向制造手工补救 (Pillow H7 13 面缺失实录)。input_surface.json
     # 存在时校验; 违规 hypothesis 整体不合并 (原子性: 部分合并禁止)。
@@ -3393,10 +3486,15 @@ def main():
             mode = arg.split("=", 1)[1]
         elif arg == "--mode" and i + 1 < len(args):
             mode = args[i + 1]
-        elif arg.startswith("--file="):
-            findings_file = arg.split("=", 1)[1]
-        elif arg == "--file" and i + 1 < len(args):
-            findings_file = args[i + 1]
+        elif arg.startswith("--file=") or (arg == "--file" and i + 1 < len(args)):
+            val = arg.split("=", 1)[1] if arg.startswith("--file=") else args[i + 1]
+            if findings_file:
+                # SWR-V3.46-003: 重复 --file 显式报错 (K8: 多文件传入静默只取首个,
+                # 主代理误以为一次 collect 七假说)
+                print(f"Error: --file 重复指定 (只接受一个合并 findings 文件): "
+                      f"{findings_file}, {val}", file=sys.stderr)
+                sys.exit(1)
+            findings_file = val
         elif arg.startswith("--cand-"):
             parts = arg.split("=", 1)
             if len(parts) == 2:

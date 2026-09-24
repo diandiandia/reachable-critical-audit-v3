@@ -19,7 +19,7 @@ import sys
 # SWR-V3.4.4-008: tooling 版本一致性守卫——导出脚本内嵌本版本号, collect 侧
 # 对比检测导出/收集两端代码版本漂移 (jsrsasign 验收: workspace 导出 +
 # installed 旧版收集的实测事故)
-TOOLING_VERSION = "3.45"
+TOOLING_VERSION = "3.46"
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import batch_verify as bv
@@ -214,6 +214,17 @@ if (!args.candidates) {
   return { mode: 'verify', error: 'args.candidates 缺失 (resume 必须携带与首跑一致的 args, W6 §5)' }
 }
 
+// SWR-V3.46-003: taskFile 存在性预检——手工重打路径漂移 (K9: refutation 波把
+// _0/_1 改写成 _r0/_r1 致一票拒绝执行) 在派发前快速失败, 不等 agent 入场读文件
+const _taskFiles = args.candidates.flatMap((c) => c.taskFile
+  ? [c.taskFile]
+  : Array.isArray(c.taskFiles) ? c.taskFiles : []);
+const _missingFiles = [...new Set(_taskFiles.filter(Boolean))]
+  .filter((f) => !require('fs').existsSync(f));
+if (_missingFiles.length) {
+  return { mode: 'verify', error: 'taskFile 不存在: ' + _missingFiles.join(', ') };
+}
+
 const VERDICT_SCHEMA = __SCHEMA__
 
 // v3.10.2 (SWR-V3.10.2-005): 输入 fail-fast——默认契约 (c.prompt) 与薄封装
@@ -257,6 +268,15 @@ if (Array.isArray(args)) { args = { candidates: args }; }
 else { args = args || {}; }
 if (!args.candidates) {
   return { mode: 'refutation', error: 'args.candidates 缺失 (resume 必须携带与首跑一致的 args, W6 §5)' }
+}
+
+// SWR-V3.46-003: taskFile 存在性预检 (K9 refutation 波路径漂移实录), 见 verify
+const _taskFiles = args.candidates.flatMap((c) =>
+  Array.isArray(c.taskFiles) ? c.taskFiles : (c.taskFile ? [c.taskFile] : []));
+const _missingFiles = [...new Set(_taskFiles.filter(Boolean))]
+  .filter((f) => !require('fs').existsSync(f));
+if (_missingFiles.length) {
+  return { mode: 'refutation', error: 'taskFile 不存在: ' + _missingFiles.join(', ') };
 }
 
 const REFUTATION_SCHEMA = __SCHEMA__
@@ -437,6 +457,15 @@ if (!args.candidates) {
   return { mode: 'resurrect', error: 'args.candidates 缺失 (W6 §5)' }
 }
 
+// SWR-V3.46-003: taskFile 存在性预检 (K9 refutation 波路径漂移实录), 见 verify
+const _taskFiles = args.candidates.flatMap((c) =>
+  Array.isArray(c.taskFiles) ? c.taskFiles : (c.taskFile ? [c.taskFile] : []));
+const _missingFiles = [...new Set(_taskFiles.filter(Boolean))]
+  .filter((f) => !require('fs').existsSync(f));
+if (_missingFiles.length) {
+  return { mode: 'resurrect', error: 'taskFile 不存在: ' + _missingFiles.join(', ') };
+}
+
 const RESURRECT_SCHEMA = __SCHEMA__
 
 const results = await pipeline(
@@ -532,6 +561,11 @@ def export_script_resurrect(project_root, batch_size=8):
     # 记录) 存在且与当前候选集合一致时以文件为权威池 (此前文件 write-only 无人读,
     # 三权威冲突实录: 主代理 selected 与导出器内部池不一致)。文件保持可选——
     # 不存在/漂移时内部抽样并重写 (现状即缺省路径, 零新义务)。
+    # SWR-V3.46-007: eligible 集 = UNREACHABLE 且未经复活复核 (REQ-V3.2-021
+    # 「声称类 UNREACHABLE 全量」条款的自动范围)。REQ-V3.2-021 的「其他类
+    # 20% 抽样」不在导出器自动范围内——NEEDS_REVIEW 等其余类的抽样由主代理
+    # 手工 payload 完成, 抽样决策落盘 _resurrect_sample.json (工具能力与需求
+    # 一致性澄清, K7 教训 #9; 零行为变更)。
     cands = queue["candidates"]
     eligible_ids = {c["id"] for c in cands
                     if c.get("status") == "VERIFIED"

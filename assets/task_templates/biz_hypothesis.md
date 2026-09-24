@@ -27,6 +27,12 @@ evidence 为单字符串、r3_link 为字符串或 null）：
 ]}
 ```
 
+**键名契约（v3.46, SWR-V3.46-002）**: 示例键名必须逐字一致——
+`hypothesis_id` 不接受 `id` 替代; 假说级 `tracked_surfaces` 不接受
+`hypothesis_tracked_surfaces` 前缀拼写; 假说对象内不得出现 `hypothesis`
+描述键（描述写入 findings.evidence 或省略）。键名漂移会被 collect 归一并
+告警, 但归一非契约——以本示例为准。
+
 ## 分配假说: {hypothesis_id}
 - H1 远端控制分配 (CWE-789): 远端字段×sizeof 进分配无上限（检查清单第一条: **限制检查点与累积点的先后**——全量累积后才检查=缺陷, W6 §14.3）
 - H2 远端控制索引/长度 (CWE-125/787)
