@@ -14,8 +14,8 @@
 1. 每个 surface 的 entry_points 必须附 **file:line + 代码片段证据**（REQ-V3-022，缺证据被校验拒收）
 2. trust_boundary 逐通道记录（未认证远程/受信通道/gate）
    **config 门核条款（v3.46, SWR-V3.46-004）**: 写 `local` 前必须核对编译面——
-   被 Kconfig/feature 开关/构建清单门控或默认关闭的通道不得写 local，应写
-   `unknown` 并在 evidence 引 config 定义行（file:line + 开关名）。config 状态
+   被构建开关/feature 清单/构建清单门控或默认关闭的通道不得写 local，应写
+   `unknown` 并在 evidence 引开关定义行（file:line + 开关名）。config 状态
    未核实的「默认可达」声明是前提失实（config 门控面在筛选/复核阶段被推翻实录）。
 3. 产出 schema 见下
 4. **五域一律输出下方 canonical 包裹形态**（v3.8, SWR-V3.8-009）：

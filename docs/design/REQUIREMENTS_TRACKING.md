@@ -1333,7 +1333,7 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 _tasks_dir = os.path.join(project_root, ...) 绝对路径, K5 波次 payload 实测）。
 
 > 手工追加段 v3.46（2026-09-24）。案例支撑：Linux kernel K6-K9 批次复盘
-> （/root/linux/.audit_results/batch_K{6,7,8,9}/lessons.md「对 skill 的教训」
+> （linux 项目 .audit_results/batch_K{6,7,8,9}/lessons.md「对 skill 的教训」
 > 节共 12 条 + 阶段 0 四问评估）：attacker_tier 否定语义盲区两批触发
 > （K6-9/K7-8, 12+ 候选手工修正）/ R1 任务书缺编译面前置（K6-10）/
 > workflow 版本滞后告警语义（K6-11）/ 零硬件实证通道未沉淀（K6-12, K7-10）/
