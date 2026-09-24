@@ -102,7 +102,11 @@ PROJECT_TOKENS = ("gpac", "freetype", "s2n-tls", "nghttp2", "libarchive",
                   "zookeeper", "kafka", "shardingsphere", "aiohttp", "gson",
                   "libpng", "libjpeg", "libvpx", "aom", "media3", "quic-go",
                   "pyjwt", "quarkus", "phpseclib", "cosign", "etcd", "sinatra",
-                  "lighttpd", "django", "nestjs", "ktor", "actix", "webrick")
+                  "lighttpd", "django", "nestjs", "ktor", "actix", "webrick",
+                  # v3.46 (SWR-V3.46-005): 内核审计批的项目专属驱动名
+                  # (K6 dummy_hcd/usb-storage, K7 nciemp 实录)——手册初版带入
+                  # usb-storage 未被旧黑名单捕获, 修复后同步扩守卫防回退
+                  "usb-storage", "dummy_hcd", "nciemp")
 
 
 def _scan_tokens(src):

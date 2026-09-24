@@ -140,6 +140,26 @@ def test_norm_bare_id_hypothesis_key_untouched():
     assert flags == []
 
 
+def test_norm_hypothesis_desc_no_id():
+    # 描述文本无内嵌 H-N → 转 hypothesis_note (无 id 提取)
+    raw = {"hypothesis": "跨进程信任边界描述", "findings": []}
+    items, flags = bv._normalize_r4_payload(raw)
+    assert items[0]["hypothesis_note"] == "跨进程信任边界描述"
+    assert "hypothesis_id" not in items[0]
+    assert "hypothesis" not in items[0]
+    assert "hypothesis-desc->hypothesis_note" in flags
+
+
+def test_norm_hypothesis_mismatch_kept():
+    # hypothesis_id 已存在且 hypothesis 值不同 → 保守保留 + flag (不猜不删)
+    raw = {"hypotheses": {"H2": {"hypothesis": "H3", "verdict": "confirmed",
+                                 "findings": [], "tracked_surfaces": ["S-3"]}}}
+    items, flags = bv._normalize_r4_payload(raw)
+    assert items[0]["hypothesis_id"] == "H2"
+    assert items[0]["hypothesis"] == "H3"
+    assert "hypothesis-mismatch-kept" in flags
+
+
 def test_norm_dict_form_dup_dropped():
     raw = {"hypotheses": {"H2": {"hypothesis": "H2", "verdict": "confirmed",
                                  "findings": [], "tracked_surfaces": ["S-3"]}}}
