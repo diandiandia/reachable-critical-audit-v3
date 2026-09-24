@@ -1331,3 +1331,26 @@ DST pytest 全绿（SWR-V3.7 全部标记已完成，Phase 3.7 验收后加 ✅�
 
 裁除记录：taskFile 相对路径（K2-11）——取证已修（workflow_export.py:603
 _tasks_dir = os.path.join(project_root, ...) 绝对路径, K5 波次 payload 实测）。
+
+> 手工追加段 v3.46（2026-09-24）。案例支撑：Linux kernel K6-K9 批次复盘
+> （/root/linux/.audit_results/batch_K{6,7,8,9}/lessons.md「对 skill 的教训」
+> 节共 12 条 + 阶段 0 四问评估）：attacker_tier 否定语义盲区两批触发
+> （K6-9/K7-8, 12+ 候选手工修正）/ R1 任务书缺编译面前置（K6-10）/
+> workflow 版本滞后告警语义（K6-11）/ 零硬件实证通道未沉淀（K6-12, K7-10）/
+> resurrect 导出器抽样规则澄清（K7-9）/ r4-collect 多文件静默只取首个
+> （K8-6）/ r4 schema 键名漂移三形态扩散（K8-7/K9-9）/ workflow args 手工
+> 重打 taskFile 路径漂移一票拒绝（K9-8）。
+> 裁除：heredoc \x00 双转义（K8-8）——环境级一次教训, 无技能侧机制承载。
+
+| SWR | 需求 | 状态 |
+|---|---|---|
+| SWR-V3.46-001 | attacker_tier 句级否定清洗（免责句式不参与关键词计数; 全免责推导 None + warn 交主代理） | 已实现 |
+| SWR-V3.46-002 | r4 schema 键名归一三形态（id→hypothesis_id / hypothesis 描述键 / hypothesis_tracked_surfaces 前缀）+ norm_flags 告警 + biz 模板键名契约 | 已实现 |
+| SWR-V3.46-003 | workflow 导出 JS taskFile fs.existsSync 预检（verify/refutation/resurrect）+ r4-collect 重复 --file 显式报错 | 已实现 |
+| SWR-V3.46-004 | surface_map 任务书 config 门核条款（写 local 前核对编译面） | 已实现 |
+| SWR-V3.46-005 | kernel_zero_hardware_channels.md 零硬件实证通道手册（四条, 回收 SWR-V3.38-005 欠账） | 已实现 |
+| SWR-V3.46-006 | workflow 版本滞后告警文案补全（仅提示不阻断 + 重导出后可安全运行） | 已实现 |
+| SWR-V3.46-007 | resurrect 导出器 eligible 抽样规则注释澄清（NEEDS_REVIEW 20% 抽样为主代理手工 payload） | 已实现 |
+
+裁除记录：heredoc \x00 双转义（K8-8）——环境级一次教训（Python 注入 heredoc
+'EOF' 内 `\\x00` 落盘为字面反斜杠序列），无技能侧机制可承载，保留于 lessons。

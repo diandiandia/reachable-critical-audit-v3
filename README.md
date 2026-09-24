@@ -116,7 +116,7 @@ python3 -c "import sys; sys.path.insert(0,'<skill_dir>'); import surface_mapper,
 
 # 2) 资产完整（v3.1 三资产）
 python3 -c "import json; json.load(open('<skill_dir>/assets/resources/precedent_library.json')); json.load(open('<skill_dir>/assets/resources/checklist_library.json')); print('ok')"
-ls <skill_dir>/assets/harness_manuals/ | wc -l    # 期望 18
+ls <skill_dir>/assets/harness_manuals/ | wc -l    # 期望 19
 
 # 3) 测试全绿
 python3 -m pytest <skill_dir>/tests/ -q

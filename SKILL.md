@@ -406,6 +406,10 @@ equivalent 档结论强度低于 real_target——真实目标环境可及时，
 
 1. harness 模板（`assets/templates/harness/`）：ws_frame_alloc / ws_frame_accum / xss_path_sim / parser_fuzz（C/C++ 解析器 crash 声称类）/ resource_rate_probe（v3.6 通用协议级速率灌注探针，langs:["any"]，protocol_dos/unbounded/oom 声称）/ differential（v3.17 通用差分执行探针——共享语料 × N 组运行配置比对分歧, langs:["any"]，配置轴类声称首选）/ paired_control_probe（v3.30 通用双测对照探针——对照 vs 攻击命令 VmHWM 峰值差分, langs:["any"]，资源类声称配对测量）；无匹配模板时现场构造（采样协议通用：RSS/存活/exit code + delivery-rate 确认）。
    **harness 回收条款（v3.38, SWR-V3.38-005, 提示级）**：收官复盘对现场构造的实证程序做通用化评审——形态跨项目可复用则去项目化入库`assets/templates/harness/`（paired_control_probe 入库先例）。
+   **零硬件实证通道手册（v3.46, SWR-V3.46-005, 提示级）**：无物理外设/无硬件
+   射频环境的内核实证通道——`assets/harness_manuals/kernel_zero_hardware_channels.md`
+   （纯软件 USB 控制器/虚拟 USB 存储控制器/协议模拟控制器/RPC responder 四条,
+   均 equivalent 档标注 + 单变量纪律）。
 2. 实证程序落盘 `.audit_results/empirical/<name>/`（含 Cargo.toml/源码 + EMPIRICAL_REPORT.md：工具链版本/输入/输出/判定）。
    **harness 依赖条款（v3.33, SWR-V3.33-011，提示级）**：(a) 独立 harness crate
    的依赖解析不与目标仓 workspace Cargo.lock 共享——版本敏感依赖必须对照目标仓
@@ -635,7 +639,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 - `tools/batch_verify.py`：队列编排 CLI（collect/bump-attempt/workflow-script/r4-*/assert/status）
 - `tools/gen_tracking.py`：需求追踪矩阵重建（文档工具）
 - `assets/resources/signature_library.json`：25 个签名（9 L3 语义族 + 16 L2 语言词族；回归锚点库在 `tests/fixtures/known_instances.json`，R0 完整性自检 + fixture 仓库 anchor recall；v3.6 起 L2 无确认锚点以 confirmed:false 占位诚实簿记）；`assets/resources/precedent_library.json`：19 条裁决先例（v3.5.2 裁 9 条永不可达先例；v3.12 增补 1 条状态机族；v3.15 增补 1 条守卫子集族；v3.41 增补 1 条逃生舱等价族）；`assets/resources/checklist_library.json`：50 条检查清单（v3.27 增补 1 条限额旁路枚举族; v3.40 增补 1 条修复残留同族枚举族; v3.41 增补 1 条通道转义对账族）（v3.12 增补 4 条状态机族；v3.13 增补 4 条数值语义/错误路径族；v3.15 增补 1 条 vendored 契约族；v3.17 增补 4 条运行时内存模型族 + 1 条生成物溯源族）
-- `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build（共 18 个）
+- `assets/task_templates/`：3 个任务书模板（surface_map_domain/hypothesis_filter/biz_hypothesis）；`assets/templates/harness/`：7 个实证模板（ws_frame_alloc/ws_frame_accum/xss_path_sim/parser_fuzz/resource_rate_probe/differential/paired_control_probe）；`assets/harness_manuals/`：16 语言工具链手册 + ENVIRONMENT_PROBES/mixed_build/kernel_zero_hardware_channels（共 19 个）
 - `tests/`：555 个单测/集成测试（改模块后必须全绿）；`assets/lessons/`：全部历史教训 + W5 回归发现
 - v2.1 遗产：仅 `docs/legacy/SKILL_V2.1.md`（规范备份）
 
@@ -645,7 +649,7 @@ medium）；`hardware_isolated` 两档；medium 封底；none/缺失零变化；
 
 历史增量段全文已迁至 `docs/history/SKILL_INCREMENTS.md`（零内容损失,
 追溯入口）；本表为版本链漂移守卫的机械锚点（最新行版本 == TOOLING）。
-TOOLING 3.45。
+TOOLING 3.46。
 
 | 版本 | 日期 | 主题 |
 |---|---|---|
@@ -697,3 +701,4 @@ TOOLING 3.45。
 | v3.43 | 2026-09-13 | 机制冻结实验+知识补种: c 矩阵 TRUST-BOUNDARY 页缓存所有权族/java 矩阵七族归并种格/H7 谓词逻辑错误形态/fixminer 跨多年窗口/H3 kernel 锚点+skill-optimizer 第四问与重设计触发判据/条款消费度量 |
 | v3.44 | 2026-09-14 | K1 (linux kernel) 验收复盘八修复一裁除: 复活簿记掩蔽洞(声称类跳过自动簿记)/复活波导出纪律/未合并补丁检索义务/签收级联预推演+口径一致性/fixminer 预期管理/全覆盖子集清单+配置分支语义核查/多批次归档约定/同项目多批次开题四步(五年窗口 recon); 双栏呈现裁除(已存在机制); 冻结守卫收窄为判定逻辑守卫 |
 | v3.45 | 2026-09-15 | K2-K5 (linux kernel 批次 2-5) 复盘十六修复一裁除: 域计数前缀匹配+type 枚举告警/r4-collect 混合缺 id 告警/r35n 簿记占位可覆写/hypotheses 渲染双形态/refuted 合规不告警/交付物引导面探针/claim_self_reported 归档/containment 一致性告警/biz 任务书三条款/verifier 三维度/复活任务书两增补/筛选进度摘要/R2 派发分片落盘/开题卫生检查/新机制×旧机制组合窗口/severity override 提示; taskFile 相对路径裁除(已修) |
+| v3.46 | 2026-09-24 | K6-K9 (linux kernel 批次 6-9) 复盘七修复一裁除: attacker_tier 句级否定清洗/r4 schema 键名归一三形态+模板键名契约/workflow taskFile 存在性预检+r4-collect 多文件显式报错/surface_map config 门核条款/零硬件实证通道手册/版本滞后告警文案/复活抽样规则注释; heredoc \x00 双转义裁除(环境教训) |

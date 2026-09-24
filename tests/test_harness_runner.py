@@ -60,7 +60,8 @@ def test_env_traps_covers_16_langs():
                         "assets", "harness_manuals")
     manuals = {f[:-3] for f in os.listdir(base)
                if f.endswith(".md")
-               and f not in ("mixed_build.md", "ENVIRONMENT_PROBES.md")}
+               and f not in ("mixed_build.md", "ENVIRONMENT_PROBES.md",
+                             "kernel_zero_hardware_channels.md")}
     assert len(manuals) == 16
     missing = manuals - set(hr.PER_LANG_ENV_TRAPS)
     assert missing == set(), f"缺 env 陷阱的语言: {missing}"

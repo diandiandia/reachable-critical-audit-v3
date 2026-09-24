@@ -190,7 +190,7 @@ def test_new_checklists_deproject():
 # ---- SWR-V3.13-006: 版本链 ----
 
 def test_tooling_version_and_skillmd_counts():
-    assert we.TOOLING_VERSION == "3.45"
+    assert we.TOOLING_VERSION == "3.46"
     skill = open(os.path.join(ROOT, "SKILL.md")).read()
     assert "| v3.13 |" in skill
     assert "50 条检查清单" in skill and "19 条裁决先例" in skill

@@ -129,4 +129,4 @@ def test_skmd_axis_table_and_channel_boundary():
 
 def test_tooling_version_guard():
     import workflow_export as we
-    assert we.TOOLING_VERSION == "3.45"
+    assert we.TOOLING_VERSION == "3.46"

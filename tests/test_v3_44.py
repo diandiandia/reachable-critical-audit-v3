@@ -128,7 +128,7 @@ def test_skillmd_batch_archive_convention():
 # ---- SWR-V3.44-008: 版本链 ----
 
 def test_tooling_version_344():
-    assert we.TOOLING_VERSION == "3.45"
+    assert we.TOOLING_VERSION == "3.46"
 
 
 def test_claim_like_same_source_as_gate():

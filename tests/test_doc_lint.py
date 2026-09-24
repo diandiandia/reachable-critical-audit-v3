@@ -121,7 +121,7 @@ def test_asset_counts_current():
 def test_readme_wc_line():
     """README 手册计数行 = 磁盘实况 (v3.5 低#1 同根)。"""
     readme = open(os.path.join(WORKSPACE, "README.md")).read()
-    assert "期望 18" in readme, "README 手册 wc 行漂移"
+    assert "期望 19" in readme, "README 手册 wc 行漂移"
 
 
 def test_sk_parser_fuzz_listed():

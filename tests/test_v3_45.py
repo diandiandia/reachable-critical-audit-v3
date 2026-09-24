@@ -302,4 +302,4 @@ def test_d16_override_hint():
 # ---- 版本链 ----
 
 def test_tooling_version():
-    assert we.TOOLING_VERSION == "3.45"
+    assert we.TOOLING_VERSION == "3.46"
